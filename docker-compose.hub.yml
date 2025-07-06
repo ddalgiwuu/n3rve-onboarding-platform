@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  # Backend Service (MongoDB Atlas 사용)
+  backend:
+    image: n3rve/backend:latest
+    container_name: n3rve-backend
+    restart: always
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # MongoDB Atlas connection string
+      MONGODB_URI: ${MONGODB_URI}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-${JWT_SECRET}}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-https://n3rve-onboarding.com/api/auth/google/callback}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://n3rve-onboarding.com,https://www.n3rve-onboarding.com}
+    volumes:
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "3000:3000"
+    networks:
+      - n3rve-network
+
+  # Frontend Service
+  frontend:
+    image: n3rve/frontend:latest
+    container_name: n3rve-frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      # SSL certificates volume (for production)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+    networks:
+      - n3rve-network
+
+networks:
+  n3rve-network:
+    driver: bridge

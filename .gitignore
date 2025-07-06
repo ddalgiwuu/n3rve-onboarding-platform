@@ -1,0 +1,102 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+*.env
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.vuepress/dist/
+.cache/
+.parcel-cache/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+
+# Testing
+coverage/
+.nyc_output/
+
+# Temporary files
+*.tmp
+*.temp
+.temp/
+.tmp/
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+
+# AWS
+*.pem
+.aws/
+
+# Docker
+.docker/
+
+# Uploads (local development)
+uploads/
+public/uploads/
+
+# Compiled files
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Private keys and certificates
+*.key
+*.crt
+*.pem
+*.p12
+*.pfx
+
+# Backup files
+*.bak
+*.backup
+
+# Lock files (keep for consistency)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml

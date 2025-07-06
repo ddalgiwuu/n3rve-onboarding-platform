@@ -1,0 +1,74 @@
+name: Simple Deploy to EC2
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Deploy to EC2
+      env:
+        PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+        HOST: ${{ secrets.EC2_HOST }}
+        USER: ubuntu
+      run: |
+        echo "Starting deployment to EC2..."
+        echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+        
+        # Deploy to EC2
+        ssh -o StrictHostKeyChecking=no -i private_key ${USER}@${HOST} << 'ENDSSH'
+          set -e
+          echo "Connected to EC2"
+          
+          cd ~/n3rve-platform
+          echo "Current directory: $(pwd)"
+          
+          # Pull latest code
+          echo "Pulling latest code..."
+          git pull origin main
+          
+          # Check environment file
+          if [ ! -f .env ]; then
+            echo "Warning: .env file not found"
+          fi
+          
+          # Stop all containers
+          echo "Stopping containers..."
+          docker-compose down || true
+          docker stop $(docker ps -aq) || true
+          
+          # Clean up to free memory
+          echo "Cleaning up Docker resources..."
+          docker system prune -af --volumes
+          
+          # Build with minimal resources
+          echo "Building frontend..."
+          docker build -t n3rve-frontend:latest \
+            --build-arg VITE_API_URL=https://n3rve-onboarding.com/api \
+            --build-arg VITE_DROPBOX_APP_KEY=slffi4mfztfohqd \
+            --build-arg VITE_DROPBOX_REDIRECT_URI=https://n3rve-onboarding.com/dropbox-callback \
+            -f frontend/Dockerfile ./frontend
+          
+          echo "Building backend..."
+          docker build -t n3rve-backend:latest -f backend/Dockerfile ./backend
+          
+          # Update docker-compose to use local images
+          sed -i 's|build:|image: n3rve-|g' docker-compose.prod.yml || true
+          
+          # Start services
+          echo "Starting services..."
+          docker-compose -f docker-compose.prod.yml up -d
+          
+          # Show status
+          echo "Deployment complete. Container status:"
+          docker ps
+          
+          echo "Checking logs..."
+          docker-compose -f docker-compose.prod.yml logs --tail=20
+        ENDSSH
+        
+        echo "Deployment script completed"
