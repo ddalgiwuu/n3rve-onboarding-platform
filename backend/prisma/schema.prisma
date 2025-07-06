@@ -1,0 +1,390 @@
+// This is your updated Prisma schema file
+// 모든 소비자 폼 데이터를 완벽하게 저장하기 위한 스키마 업데이트
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URI")
+}
+
+// User model - 변경 없음
+model User {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  email             String   @unique
+  googleId          String   @unique
+  provider          Provider @default(GOOGLE)
+  role              Role     @default(USER)
+  name              String
+  profilePicture    String?
+  company           String?
+  phone             String?
+  isActive          Boolean  @default(true)
+  emailVerified     Boolean  @default(true)
+  isProfileComplete Boolean  @default(false)
+  lastLogin         DateTime?
+  
+  // Preferences as embedded document
+  preferences       UserPreferences
+  
+  // Relations
+  submissions       Submission[]
+  reviewedSubmissions Submission[] @relation("ReviewedSubmissions")
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([role, isActive])
+  @@index([createdAt])
+  @@index([isProfileComplete])
+}
+
+// User preferences type
+type UserPreferences {
+  language      Language @default(KO)
+  notifications NotificationSettings
+}
+
+type NotificationSettings {
+  email Boolean @default(true)
+  sms   Boolean @default(false)
+  push  Boolean @default(true)
+}
+
+// Submission model - 업데이트됨
+model Submission {
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  status          SubmissionStatus @default(PENDING)
+  submitterEmail  String
+  submitterName   String
+  submitterId     String           @db.ObjectId
+  submitter       User             @relation(fields: [submitterId], references: [id])
+  
+  // Artist info - 다중 언어 번역 추가
+  artistName      String
+  artistNameEn    String?
+  artistTranslations Translation[]  // 추가: 아티스트 다중 언어 번역
+  labelName       String?
+  genre           String[]
+  biography       String?
+  socialLinks     SocialLinks?
+  artistType      ArtistType?
+  members         Member[]
+  
+  // Album info - 추가 필드
+  albumTitle      String
+  albumTitleEn    String?
+  albumTranslations Translation[]
+  albumType       AlbumType
+  releaseDate     DateTime
+  albumDescription String?
+  albumVersion    String?
+  releaseVersion  String?
+  albumGenre      String[]
+  albumSubgenre   String[]
+  primaryTitle    String?         // 추가
+  hasTranslation  Boolean?        // 추가
+  translationLanguage String?     // 추가
+  translatedTitle String?         // 추가
+  
+  // Tracks
+  tracks          Track[]
+  
+  // Files
+  files           Files
+  
+  // Release info
+  release         ReleaseInfo
+  
+  // Admin fields
+  adminNotes      String?
+  reviewedBy      String?          @db.ObjectId
+  reviewer        User?            @relation("ReviewedSubmissions", fields: [reviewedBy], references: [id])
+  reviewedAt      DateTime?
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  @@index([status, createdAt])
+  @@index([submitterId, createdAt])
+  @@index([releaseDate], map: "approved_releases_index")
+  @@fulltext([artistName, albumTitle])
+}
+
+// Embedded types for Submission
+type SocialLinks {
+  instagram   String?
+  youtube     String?
+  spotify     String?
+  appleMusic  String?
+  twitter     String?
+  facebook    String?
+  tiktok      String?
+  website     String?
+}
+
+type Member {
+  name        String
+  role        String
+  spotifyUrl  String?  // 추가
+  appleMusicUrl String? // 추가
+}
+
+type Translation {
+  language String
+  title    String
+}
+
+// 추가: 기여자 타입
+type Contributor {
+  name          String
+  role          String
+  spotifyUrl    String?
+  appleMusicUrl String?
+}
+
+type Track {
+  id                    String
+  titleKo               String
+  titleEn               String
+  artists               String[]        // 추가
+  featuringArtists      String[]        // 추가
+  contributors          Contributor[]   // 추가
+  composer              String
+  lyricist              String
+  arranger              String?
+  featuring             String?
+  isTitle               Boolean @default(false)
+  isrc                  String?
+  explicitContent       Boolean @default(false)
+  trackVersion          String?
+  lyricsLanguage        String?
+  producer              String?
+  mixer                 String?
+  masterer              String?
+  previewStart          Int?
+  previewEnd            Int?
+  genre                 String?
+  subgenre              String?
+  alternateGenre        String?
+  alternateSubgenre     String?
+  lyrics                String? @db.String
+  audioLanguage         String?
+  metadataLanguage      String?
+  playtimeStartShortClip Int?
+  previewLength         Int?
+  translations          Json[]
+  trackType             TrackType @default(AUDIO)
+  dolbyAtmos            Boolean @default(false)
+  stereo                Boolean @default(false)  // 추가
+  hasCustomReleaseDate  Boolean?                 // 추가
+  consumerReleaseDate   DateTime?                // 추가
+  releaseTime           String?                  // 추가
+}
+
+type Files {
+  coverImage        String?
+  artistPhoto       String?
+  audioFiles        AudioFile[]
+  additionalFiles   AdditionalFile[]
+  motionArt         String?
+  musicVideo        String?
+  coverImageUrl     String?
+  artistPhotoUrl    String?
+  motionArtUrl      String?
+  musicVideoUrl     String?
+}
+
+type AudioFile {
+  trackId     String
+  filename    String?
+  fileSize    Int?
+  duration    Int?
+  dropboxUrl  String?
+  fileName    String?
+}
+
+type AdditionalFile {
+  filename    String?
+  fileType    String?
+  fileSize    Int?
+  dropboxUrl  String?
+  fileName    String?
+}
+
+// 추가: 한국 DSP 정보 타입
+type KoreanDSPInfo {
+  lyricsAttached    Boolean
+  artistPageLink    String?
+  melonLink         String?
+  genieLink         String?
+  bugsLink          String?
+  vibeLink          String?
+  translation       KoreanTranslation?
+  newArtist         Boolean?
+  albumCredits      String?
+}
+
+type KoreanTranslation {
+  hasTranslation    Boolean
+  koreanTitle       String?
+  englishTitle      String?
+  artistNameKo      String?
+  artistNameEn      String?
+  labelNameKo       String?
+  labelNameEn       String?
+}
+
+type ReleaseInfo {
+  distributors              String[]
+  priceType                 PriceType @default(FREE)
+  price                     Float?
+  copyrightHolder           String?
+  copyrightYear             String
+  recordingCountry          String
+  recordingLanguage         String
+  upc                       String?
+  catalogNumber             String?
+  territories               String[]
+  notes                     String?
+  originalReleaseDate       String
+  consumerReleaseDate       String
+  releaseTime               String?
+  selectedTimezone          String?
+  cRights                   String
+  pRights                   String
+  previewStart              Int?
+  territoryType             TerritoryType @default(WORLDWIDE)
+  albumNotes                String?
+  parentalAdvisory          ParentalAdvisory @default(NONE)
+  preOrderEnabled           Boolean @default(false)
+  preOrderDate              String?
+  releaseFormat             ReleaseFormat @default(STANDARD)
+  isCompilation             Boolean @default(false)
+  previouslyReleased        Boolean @default(false)
+  previousReleaseDate       String?
+  previousReleaseInfo       String?
+  trackGenres               Json?
+  dspProfileUpdate          DspProfileUpdate?
+  
+  // 추가: DSP별 지역 설정
+  dspTerritories            Json?
+  
+  // 추가: 한국 DSP 정보
+  koreanDSP                 KoreanDSPInfo?
+  
+  // 추가: 모든 마케팅 필드들
+  albumIntroduction         String?
+  albumDescription          String?
+  marketingKeywords         String?
+  targetAudience            String?
+  promotionPlans            String?
+  toundatesUrl              String?
+  artistGender              String?
+  socialMovements           String?
+  artistBio                 String?
+  similarArtists            String?
+  hasSyncHistory            Boolean?
+  syncHistory               String?
+  spotifyArtistId           String?
+  appleMusicArtistId        String?
+  soundcloudArtistId        String?
+  artistUgcPriorities       String?
+  youtubeUrl                String?
+  tiktokUrl                 String?
+  facebookUrl               String?
+  instagramUrl              String?
+  xUrl                      String?
+  twitchUrl                 String?
+  threadsUrl                String?
+  moods                     String[]
+  instruments               String[]
+  hook                      String?
+  mainPitch                 String?
+  marketingDrivers          String?
+  socialMediaPlan           String?
+  artistName                String?
+  artistCountry             String?
+  artistCurrentCity         String?
+  artistHometown            String?
+  artistAvatar              String?
+  artistLogo                String?
+  pressShotUrl              String?
+  pressShotCredits          String?
+}
+
+type DspProfileUpdate {
+  updateProfile                Boolean @default(false)
+  internationalFormCompleted   Boolean?
+}
+
+// Enums - 변경 없음
+enum Provider {
+  GOOGLE
+}
+
+enum Role {
+  ADMIN
+  USER
+  GUEST
+}
+
+enum Language {
+  KO
+  EN
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum ArtistType {
+  SOLO
+  GROUP
+  DUO
+  BAND
+  ORCHESTRA
+  CHOIR
+  DJ
+  PRODUCER
+}
+
+enum AlbumType {
+  SINGLE
+  EP
+  ALBUM
+}
+
+enum TrackType {
+  AUDIO
+  MUSIC_VIDEO
+}
+
+enum PriceType {
+  FREE
+  PAID
+}
+
+enum TerritoryType {
+  WORLDWIDE
+  SELECT
+  EXCLUDE
+}
+
+enum ParentalAdvisory {
+  NONE
+  EXPLICIT
+  CLEAN
+}
+
+enum ReleaseFormat {
+  STANDARD
+  DELUXE
+  SPECIAL
+  REMASTERED
+  ANNIVERSARY
+}

@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # MongoDB Service
+  mongodb:
+    image: mongo:8.0
+    container_name: n3rve-mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-changeThisPassword}
+      MONGO_INITDB_DATABASE: n3rve_platform
+    volumes:
+      - mongodb_data:/data/db
+      - ./docker/mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+    ports:
+      - "27018:27017"  # Only expose in development, remove for production
+    networks:
+      - n3rve-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: mongod --setParameter diagnosticDataCollectionEnabled=false
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: n3rve-backend
+    restart: always
+    environment:
+      NODE_ENV: ${NODE_ENV:-production}
+      PORT: 3000
+      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:changeThisPassword@mongodb:27017/n3rve_platform?authSource=admin}
+      JWT_SECRET: ${JWT_SECRET:-changeThisJWTSecret}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-${JWT_SECRET:-changeThisJWTSecret}}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-https://n3rve-onboarding.com/api/auth/google/callback}
+      CORS_ORIGIN: ${CORS_ORIGIN:-https://n3rve-onboarding.com}
+    volumes:
+      - ./backend/uploads:/app/uploads
+    ports:
+      - "3000:3000"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - n3rve-network
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api}
+        VITE_DROPBOX_CLIENT_ID: ${VITE_DROPBOX_CLIENT_ID}
+        VITE_DROPBOX_APP_KEY: ${VITE_DROPBOX_APP_KEY}
+        VITE_DROPBOX_REDIRECT_URI: ${VITE_DROPBOX_REDIRECT_URI}
+        VITE_DROPBOX_ACCESS_TOKEN: ${VITE_DROPBOX_ACCESS_TOKEN}
+    container_name: n3rve-frontend
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
+      # SSL certificates volume (for production)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+    depends_on:
+      - backend
+    networks:
+      - n3rve-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  n3rve-network:
+    driver: bridge
