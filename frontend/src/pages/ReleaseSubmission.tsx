@@ -458,13 +458,114 @@ export default function ReleaseSubmission() {
     }
   }
 
+  // 번역 추가 함수
+  const addTranslation = (type: 'artist' | 'album') => {
+    if (type === 'artist') {
+      setBasicInfo({
+        ...basicInfo,
+        artistTranslations: [...basicInfo.artistTranslations, { language: '', title: '' }]
+      })
+    } else {
+      setBasicInfo({
+        ...basicInfo,
+        albumTranslations: [...basicInfo.albumTranslations, { language: '', title: '' }]
+      })
+    }
+  }
+
+  const removeTranslation = (type: 'artist' | 'album', index: number) => {
+    if (type === 'artist') {
+      setBasicInfo({
+        ...basicInfo,
+        artistTranslations: basicInfo.artistTranslations.filter((_, i) => i !== index)
+      })
+    } else {
+      setBasicInfo({
+        ...basicInfo,
+        albumTranslations: basicInfo.albumTranslations.filter((_, i) => i !== index)
+      })
+    }
+  }
+
+  const updateTranslation = (type: 'artist' | 'album', index: number, field: keyof Translation, value: string) => {
+    if (type === 'artist') {
+      setBasicInfo({
+        ...basicInfo,
+        artistTranslations: basicInfo.artistTranslations.map((trans, i) =>
+          i === index ? { ...trans, [field]: value } : trans
+        )
+      })
+    } else {
+      setBasicInfo({
+        ...basicInfo,
+        albumTranslations: basicInfo.albumTranslations.map((trans, i) =>
+          i === index ? { ...trans, [field]: value } : trans
+        )
+      })
+    }
+  }
+
+  // 멤버 관리 함수
+  const addMember = () => {
+    setBasicInfo({
+      ...basicInfo,
+      artistMembers: [...basicInfo.artistMembers, { name: '', role: '', spotifyUrl: '', appleMusicUrl: '' }]
+    })
+  }
+
+  const removeMember = (index: number) => {
+    setBasicInfo({
+      ...basicInfo,
+      artistMembers: basicInfo.artistMembers.filter((_, i) => i !== index)
+    })
+  }
+
+  const updateMember = (index: number, field: keyof Member, value: string) => {
+    setBasicInfo({
+      ...basicInfo,
+      artistMembers: basicInfo.artistMembers.map((member, i) =>
+        i === index ? { ...member, [field]: value } : member
+      )
+    })
+  }
+
+  // 트랙 기여자 관리 함수
+  const addContributor = (trackId: string) => {
+    setTracks(tracks.map(track =>
+      track.id === trackId
+        ? { ...track, contributors: [...track.contributors, { name: '', role: '', spotifyUrl: '', appleMusicUrl: '' }] }
+        : track
+    ))
+  }
+
+  const removeContributor = (trackId: string, index: number) => {
+    setTracks(tracks.map(track =>
+      track.id === trackId
+        ? { ...track, contributors: track.contributors.filter((_, i) => i !== index) }
+        : track
+    ))
+  }
+
+  const updateContributor = (trackId: string, index: number, field: keyof Contributor, value: string) => {
+    setTracks(tracks.map(track =>
+      track.id === trackId
+        ? {
+            ...track,
+            contributors: track.contributors.map((contributor, i) =>
+              i === index ? { ...contributor, [field]: value } : contributor
+            )
+          }
+        : track
+    ))
+  }
+
   const renderStep = () => {
     switch (activeStep) {
-      case 0: // 기본 정보
+      case 0: // 아티스트 정보
         return (
           <div className="space-y-6 animate-fade-in">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              {t('기본 정보', 'Basic Information')}
+              {t('아티스트 정보', 'Artist Information')}
             </h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -495,6 +596,144 @@ export default function ReleaseSubmission() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('아티스트 유형', 'Artist Type')} *
+                </label>
+                <select
+                  value={basicInfo.artistType}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, artistType: e.target.value })}
+                  className="input-modern"
+                >
+                  <option value="SOLO">{t('솔로', 'Solo')}</option>
+                  <option value="GROUP">{t('그룹', 'Group')}</option>
+                  <option value="BAND">{t('밴드', 'Band')}</option>
+                  <option value="DUO">{t('듀오', 'Duo')}</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('레이블명', 'Label Name')}
+                </label>
+                <input
+                  type="text"
+                  value={basicInfo.labelName}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, labelName: e.target.value })}
+                  className="input-modern"
+                />
+              </div>
+            </div>
+
+            {/* 아티스트 번역 */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t('아티스트명 번역', 'Artist Name Translations')}
+                </label>
+                <button
+                  onClick={() => addTranslation('artist')}
+                  className="btn-ghost text-sm"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  {t('번역 추가', 'Add Translation')}
+                </button>
+              </div>
+              {basicInfo.artistTranslations.map((translation, index) => (
+                <div key={index} className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={translation.language}
+                    onChange={(e) => updateTranslation('artist', index, 'language', e.target.value)}
+                    className="input-modern w-32"
+                    placeholder={t('언어 코드', 'Language code')}
+                  />
+                  <input
+                    type="text"
+                    value={translation.title}
+                    onChange={(e) => updateTranslation('artist', index, 'title', e.target.value)}
+                    className="input-modern flex-1"
+                    placeholder={t('번역된 이름', 'Translated name')}
+                  />
+                  <button
+                    onClick={() => removeTranslation('artist', index)}
+                    className="text-red-500 hover:text-red-600 p-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            {/* 그룹/밴드인 경우 멤버 정보 */}
+            {['GROUP', 'BAND', 'DUO'].includes(basicInfo.artistType) && (
+              <div>
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t('멤버 정보', 'Member Information')}
+                  </label>
+                  <button
+                    onClick={addMember}
+                    className="btn-ghost text-sm"
+                  >
+                    <Plus className="w-4 h-4 mr-1" />
+                    {t('멤버 추가', 'Add Member')}
+                  </button>
+                </div>
+                {basicInfo.artistMembers.map((member, index) => (
+                  <div key={index} className="glassmorphism p-4 mb-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={member.name}
+                        onChange={(e) => updateMember(index, 'name', e.target.value)}
+                        className="input-modern"
+                        placeholder={t('멤버 이름', 'Member name')}
+                      />
+                      <input
+                        type="text"
+                        value={member.role}
+                        onChange={(e) => updateMember(index, 'role', e.target.value)}
+                        className="input-modern"
+                        placeholder={t('역할 (예: 보컬, 기타)', 'Role (e.g., Vocal, Guitar)')}
+                      />
+                      <input
+                        type="url"
+                        value={member.spotifyUrl || ''}
+                        onChange={(e) => updateMember(index, 'spotifyUrl', e.target.value)}
+                        className="input-modern"
+                        placeholder="Spotify URL"
+                      />
+                      <input
+                        type="url"
+                        value={member.appleMusicUrl || ''}
+                        onChange={(e) => updateMember(index, 'appleMusicUrl', e.target.value)}
+                        className="input-modern"
+                        placeholder="Apple Music URL"
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeMember(index)}
+                      className="text-red-500 hover:text-red-600 mt-2"
+                    >
+                      <Trash2 className="w-4 h-4 inline mr-1" />
+                      {t('멤버 삭제', 'Remove Member')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )
+
+      case 1: // 앨범 기본 정보
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {t('앨범 기본 정보', 'Album Basic Information')}
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('앨범명 (한글)', 'Album Title (Korean)')} *
                 </label>
                 <input
@@ -520,18 +759,6 @@ export default function ReleaseSubmission() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('레이블명', 'Label Name')}
-                </label>
-                <input
-                  type="text"
-                  value={basicInfo.labelName}
-                  onChange={(e) => setBasicInfo({ ...basicInfo, labelName: e.target.value })}
-                  className="input-modern"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('앨범 타입', 'Album Type')} *
                 </label>
                 <select
@@ -547,6 +774,160 @@ export default function ReleaseSubmission() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('앨범 버전', 'Album Version')}
+                </label>
+                <input
+                  type="text"
+                  value={basicInfo.albumVersion}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, albumVersion: e.target.value })}
+                  className="input-modern"
+                  placeholder={t('예: Deluxe, Remastered', 'e.g., Deluxe, Remastered')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('발매 포맷', 'Release Format')}
+                </label>
+                <select
+                  value={basicInfo.releaseFormat}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, releaseFormat: e.target.value })}
+                  className="input-modern"
+                >
+                  <option value="STANDARD">{t('표준', 'Standard')}</option>
+                  <option value="DELUXE">{t('디럭스', 'Deluxe')}</option>
+                  <option value="REMASTERED">{t('리마스터', 'Remastered')}</option>
+                  <option value="SPECIAL">{t('스페셜', 'Special')}</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('장르', 'Genre')}
+                </label>
+                <input
+                  type="text"
+                  value={basicInfo.genre.join(', ')}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    genre: e.target.value.split(',').map(g => g.trim()).filter(g => g) 
+                  })}
+                  className="input-modern"
+                  placeholder={t('쉼표로 구분 (예: Pop, K-Pop)', 'Comma separated (e.g., Pop, K-Pop)')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('서브 장르', 'Sub Genre')}
+                </label>
+                <input
+                  type="text"
+                  value={basicInfo.subgenre.join(', ')}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    subgenre: e.target.value.split(',').map(g => g.trim()).filter(g => g) 
+                  })}
+                  className="input-modern"
+                  placeholder={t('쉼표로 구분', 'Comma separated')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('녹음 언어', 'Recording Language')}
+                </label>
+                <input
+                  type="text"
+                  value={basicInfo.recordingLanguage}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, recordingLanguage: e.target.value })}
+                  className="input-modern"
+                  placeholder="ko"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('보호자 경고', 'Parental Advisory')}
+                </label>
+                <select
+                  value={basicInfo.parentalAdvisory}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, parentalAdvisory: e.target.value })}
+                  className="input-modern"
+                >
+                  <option value="NONE">{t('없음', 'None')}</option>
+                  <option value="EXPLICIT">{t('명시적 콘텐츠', 'Explicit Content')}</option>
+                  <option value="CLEAN">{t('클린 버전', 'Clean Version')}</option>
+                </select>
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="inline-flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={basicInfo.isCompilation}
+                    onChange={(e) => setBasicInfo({ ...basicInfo, isCompilation: e.target.checked })}
+                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                    {t('컴필레이션 앨범입니다', 'This is a compilation album')}
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            {/* 앨범 번역 */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t('앨범명 번역', 'Album Title Translations')}
+                </label>
+                <button
+                  onClick={() => addTranslation('album')}
+                  className="btn-ghost text-sm"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  {t('번역 추가', 'Add Translation')}
+                </button>
+              </div>
+              {basicInfo.albumTranslations.map((translation, index) => (
+                <div key={index} className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={translation.language}
+                    onChange={(e) => updateTranslation('album', index, 'language', e.target.value)}
+                    className="input-modern w-32"
+                    placeholder={t('언어 코드', 'Language code')}
+                  />
+                  <input
+                    type="text"
+                    value={translation.title}
+                    onChange={(e) => updateTranslation('album', index, 'title', e.target.value)}
+                    className="input-modern flex-1"
+                    placeholder={t('번역된 제목', 'Translated title')}
+                  />
+                  <button
+                    onClick={() => removeTranslation('album', index)}
+                    className="text-red-500 hover:text-red-600 p-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+
+      case 2: // 발매 설정
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {t('발매 설정', 'Release Settings')}
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('발매일', 'Release Date')} *
                 </label>
                 <input
@@ -556,6 +937,30 @@ export default function ReleaseSubmission() {
                   className="input-modern"
                   required
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('발매 시간', 'Release Time')}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="time"
+                    value={basicInfo.releaseTime}
+                    onChange={(e) => setBasicInfo({ ...basicInfo, releaseTime: e.target.value })}
+                    className="input-modern flex-1"
+                  />
+                  <select
+                    value={basicInfo.selectedTimezone}
+                    onChange={(e) => setBasicInfo({ ...basicInfo, selectedTimezone: e.target.value })}
+                    className="input-modern w-32"
+                  >
+                    <option value="KST">KST</option>
+                    <option value="UTC">UTC</option>
+                    <option value="EST">EST</option>
+                    <option value="PST">PST</option>
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -598,6 +1003,18 @@ export default function ReleaseSubmission() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('저작권 연도', 'Copyright Year')}
+                </label>
+                <input
+                  type="text"
+                  value={basicInfo.copyrightYear}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, copyrightYear: e.target.value })}
+                  className="input-modern"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('C Rights', 'C Rights')} *
                 </label>
                 <input
@@ -623,58 +1040,108 @@ export default function ReleaseSubmission() {
                   required
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  UPC
+                </label>
+                <input
+                  type="text"
+                  value={basicInfo.upc}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, upc: e.target.value })}
+                  className="input-modern"
+                  placeholder={t('12자리 숫자', '12-digit number')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('카탈로그 번호', 'Catalog Number')}
+                </label>
+                <input
+                  type="text"
+                  value={basicInfo.catalogNumber}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, catalogNumber: e.target.value })}
+                  className="input-modern"
+                />
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('번역 정보', 'Translation Info')}
+            {/* 예약 주문 설정 */}
+            <div className="space-y-4">
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  checked={basicInfo.preOrderEnabled}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, preOrderEnabled: e.target.checked })}
+                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  {t('예약 주문 활성화', 'Enable pre-order')}
+                </span>
               </label>
-              <div className="space-y-4">
-                <label className="inline-flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={basicInfo.hasTranslation}
-                    onChange={(e) => setBasicInfo({ ...basicInfo, hasTranslation: e.target.checked })}
-                    className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                    {t('번역된 제목이 있습니다', 'Has translated title')}
-                  </span>
-                </label>
 
-                {basicInfo.hasTranslation && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 ml-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('번역 언어', 'Translation Language')}
-                      </label>
-                      <input
-                        type="text"
-                        value={basicInfo.translationLanguage}
-                        onChange={(e) => setBasicInfo({ ...basicInfo, translationLanguage: e.target.value })}
-                        className="input-modern"
-                        placeholder="en"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('번역된 제목', 'Translated Title')}
-                      </label>
-                      <input
-                        type="text"
-                        value={basicInfo.translatedTitle}
-                        onChange={(e) => setBasicInfo({ ...basicInfo, translatedTitle: e.target.value })}
-                        className="input-modern"
-                      />
-                    </div>
+              {basicInfo.preOrderEnabled && (
+                <div className="ml-6">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('예약 주문 시작일', 'Pre-order Start Date')}
+                  </label>
+                  <input
+                    type="date"
+                    value={basicInfo.preOrderDate}
+                    onChange={(e) => setBasicInfo({ ...basicInfo, preOrderDate: e.target.value })}
+                    className="input-modern"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* 이전 발매 정보 */}
+            <div className="space-y-4">
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  checked={basicInfo.previouslyReleased}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, previouslyReleased: e.target.checked })}
+                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  {t('이전에 발매된 적이 있습니다', 'Previously released')}
+                </span>
+              </label>
+
+              {basicInfo.previouslyReleased && (
+                <div className="ml-6 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('이전 발매일', 'Previous Release Date')}
+                    </label>
+                    <input
+                      type="date"
+                      value={basicInfo.previousReleaseDate}
+                      onChange={(e) => setBasicInfo({ ...basicInfo, previousReleaseDate: e.target.value })}
+                      className="input-modern"
+                    />
                   </div>
-                )}
-              </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('이전 발매 정보', 'Previous Release Information')}
+                    </label>
+                    <textarea
+                      value={basicInfo.previousReleaseInfo}
+                      onChange={(e) => setBasicInfo({ ...basicInfo, previousReleaseInfo: e.target.value })}
+                      className="input-modern"
+                      rows={2}
+                      placeholder={t('이전 발매 레이블, 배급사 등', 'Previous label, distributor, etc.')}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )
 
-      case 1: // 트랙 정보
+      case 3: // 트랙 정보
         return (
           <div className="space-y-6 animate-fade-in">
             <div className="flex justify-between items-center mb-4">
@@ -735,39 +1202,14 @@ export default function ReleaseSubmission() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('작곡가', 'Composer')} *
+                      {t('트랙 버전', 'Track Version')}
                     </label>
                     <input
                       type="text"
-                      value={track.composer}
-                      onChange={(e) => updateTrack(track.id, 'composer', e.target.value)}
+                      value={track.trackVersion}
+                      onChange={(e) => updateTrack(track.id, 'trackVersion', e.target.value)}
                       className="input-modern"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('작사가', 'Lyricist')} *
-                    </label>
-                    <input
-                      type="text"
-                      value={track.lyricist}
-                      onChange={(e) => updateTrack(track.id, 'lyricist', e.target.value)}
-                      className="input-modern"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('편곡자', 'Arranger')}
-                    </label>
-                    <input
-                      type="text"
-                      value={track.arranger}
-                      onChange={(e) => updateTrack(track.id, 'arranger', e.target.value)}
-                      className="input-modern"
+                      placeholder={t('예: Acoustic, Remix', 'e.g., Acoustic, Remix')}
                     />
                   </div>
 
@@ -808,6 +1250,57 @@ export default function ReleaseSubmission() {
                       className="input-modern"
                     />
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('가사 언어', 'Lyrics Language')}
+                    </label>
+                    <input
+                      type="text"
+                      value={track.lyricsLanguage}
+                      onChange={(e) => updateTrack(track.id, 'lyricsLanguage', e.target.value)}
+                      className="input-modern"
+                      placeholder="ko"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('오디오 언어', 'Audio Language')}
+                    </label>
+                    <input
+                      type="text"
+                      value={track.audioLanguage}
+                      onChange={(e) => updateTrack(track.id, 'audioLanguage', e.target.value)}
+                      className="input-modern"
+                      placeholder="ko"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('미리듣기 구간 (초)', 'Preview Range (seconds)')}
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={track.previewStart}
+                        onChange={(e) => updateTrack(track.id, 'previewStart', parseInt(e.target.value) || 0)}
+                        className="input-modern"
+                        placeholder={t('시작', 'Start')}
+                        min="0"
+                      />
+                      <span className="self-center">~</span>
+                      <input
+                        type="number"
+                        value={track.previewEnd}
+                        onChange={(e) => updateTrack(track.id, 'previewEnd', parseInt(e.target.value) || 30)}
+                        className="input-modern"
+                        placeholder={t('종료', 'End')}
+                        min="0"
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex flex-wrap gap-4 mt-4">
@@ -846,6 +1339,18 @@ export default function ReleaseSubmission() {
                       Dolby Atmos
                     </span>
                   </label>
+
+                  <label className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={track.stereo}
+                      onChange={(e) => updateTrack(track.id, 'stereo', e.target.checked)}
+                      className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                      Stereo
+                    </span>
+                  </label>
                 </div>
 
                 <div>
@@ -865,12 +1370,256 @@ export default function ReleaseSubmission() {
                     </p>
                   )}
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('가사', 'Lyrics')}
+                  </label>
+                  <textarea
+                    value={track.lyrics}
+                    onChange={(e) => updateTrack(track.id, 'lyrics', e.target.value)}
+                    className="input-modern"
+                    rows={4}
+                    placeholder={t('가사를 입력하세요', 'Enter lyrics')}
+                  />
+                </div>
               </div>
             ))}
           </div>
         )
 
-      case 2: // 파일 업로드
+      case 4: // 기여자 및 크레딧
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {t('기여자 및 크레딧', 'Contributors & Credits')}
+            </h3>
+
+            {tracks.map((track, index) => (
+              <div key={track.id} className="glassmorphism p-6 space-y-4">
+                <h4 className="font-semibold text-gray-900 dark:text-white">
+                  {t('트랙', 'Track')} {index + 1}: {track.titleKo || t('제목 없음', 'Untitled')}
+                </h4>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('작곡가', 'Composer')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={track.composer}
+                      onChange={(e) => updateTrack(track.id, 'composer', e.target.value)}
+                      className="input-modern"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('작사가', 'Lyricist')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={track.lyricist}
+                      onChange={(e) => updateTrack(track.id, 'lyricist', e.target.value)}
+                      className="input-modern"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('편곡자', 'Arranger')}
+                    </label>
+                    <input
+                      type="text"
+                      value={track.arranger}
+                      onChange={(e) => updateTrack(track.id, 'arranger', e.target.value)}
+                      className="input-modern"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('프로듀서', 'Producer')}
+                    </label>
+                    <input
+                      type="text"
+                      value={track.producer || ''}
+                      onChange={(e) => updateTrack(track.id, 'producer', e.target.value)}
+                      className="input-modern"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('믹싱 엔지니어', 'Mixing Engineer')}
+                    </label>
+                    <input
+                      type="text"
+                      value={track.mixer || ''}
+                      onChange={(e) => updateTrack(track.id, 'mixer', e.target.value)}
+                      className="input-modern"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('마스터링 엔지니어', 'Mastering Engineer')}
+                    </label>
+                    <input
+                      type="text"
+                      value={track.masterer || ''}
+                      onChange={(e) => updateTrack(track.id, 'masterer', e.target.value)}
+                      className="input-modern"
+                    />
+                  </div>
+                </div>
+
+                {/* 아티스트 관리 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('참여 아티스트', 'Participating Artists')}
+                  </label>
+                  <div className="space-y-2">
+                    {track.artists.map((artist, artistIndex) => (
+                      <div key={artistIndex} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={artist}
+                          onChange={(e) => {
+                            const newArtists = [...track.artists]
+                            newArtists[artistIndex] = e.target.value
+                            updateTrack(track.id, 'artists', newArtists)
+                          }}
+                          className="input-modern flex-1"
+                          placeholder={t('아티스트 이름', 'Artist name')}
+                        />
+                        <button
+                          onClick={() => {
+                            const newArtists = track.artists.filter((_, i) => i !== artistIndex)
+                            updateTrack(track.id, 'artists', newArtists.length > 0 ? newArtists : [''])
+                          }}
+                          className="text-red-500 hover:text-red-600 p-2"
+                          disabled={track.artists.length === 1}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => updateTrack(track.id, 'artists', [...track.artists, ''])}
+                      className="btn-ghost text-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      {t('아티스트 추가', 'Add Artist')}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 피처링 아티스트 */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('피처링 아티스트', 'Featuring Artists')}
+                  </label>
+                  <div className="space-y-2">
+                    {track.featuringArtists.map((artist, featIndex) => (
+                      <div key={featIndex} className="flex gap-2">
+                        <input
+                          type="text"
+                          value={artist}
+                          onChange={(e) => {
+                            const newFeats = [...track.featuringArtists]
+                            newFeats[featIndex] = e.target.value
+                            updateTrack(track.id, 'featuringArtists', newFeats)
+                          }}
+                          className="input-modern flex-1"
+                          placeholder={t('피처링 아티스트 이름', 'Featuring artist name')}
+                        />
+                        <button
+                          onClick={() => {
+                            const newFeats = track.featuringArtists.filter((_, i) => i !== featIndex)
+                            updateTrack(track.id, 'featuringArtists', newFeats)
+                          }}
+                          className="text-red-500 hover:text-red-600 p-2"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    <button
+                      onClick={() => updateTrack(track.id, 'featuringArtists', [...track.featuringArtists, ''])}
+                      className="btn-ghost text-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      {t('피처링 추가', 'Add Featuring')}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 기타 기여자 */}
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      {t('기타 기여자', 'Other Contributors')}
+                    </label>
+                    <button
+                      onClick={() => addContributor(track.id)}
+                      className="btn-ghost text-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      {t('기여자 추가', 'Add Contributor')}
+                    </button>
+                  </div>
+                  {track.contributors.map((contributor, contribIndex) => (
+                    <div key={contribIndex} className="glassmorphism p-4 mb-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={contributor.name}
+                          onChange={(e) => updateContributor(track.id, contribIndex, 'name', e.target.value)}
+                          className="input-modern"
+                          placeholder={t('이름', 'Name')}
+                        />
+                        <input
+                          type="text"
+                          value={contributor.role}
+                          onChange={(e) => updateContributor(track.id, contribIndex, 'role', e.target.value)}
+                          className="input-modern"
+                          placeholder={t('역할 (예: 기타, 드럼)', 'Role (e.g., Guitar, Drums)')}
+                        />
+                        <input
+                          type="url"
+                          value={contributor.spotifyUrl || ''}
+                          onChange={(e) => updateContributor(track.id, contribIndex, 'spotifyUrl', e.target.value)}
+                          className="input-modern"
+                          placeholder="Spotify URL"
+                        />
+                        <input
+                          type="url"
+                          value={contributor.appleMusicUrl || ''}
+                          onChange={(e) => updateContributor(track.id, contribIndex, 'appleMusicUrl', e.target.value)}
+                          className="input-modern"
+                          placeholder="Apple Music URL"
+                        />
+                      </div>
+                      <button
+                        onClick={() => removeContributor(track.id, contribIndex)}
+                        className="text-red-500 hover:text-red-600 mt-2"
+                      >
+                        <Trash2 className="w-4 h-4 inline mr-1" />
+                        {t('기여자 삭제', 'Remove Contributor')}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+
+      case 5: // 파일 업로드
         return (
           <div className="space-y-6 animate-fade-in">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -984,10 +1733,313 @@ export default function ReleaseSubmission() {
                 </div>
               </div>
             </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="ml-3">
+                  <h4 className="text-sm font-medium text-blue-800">
+                    {t('파일 요구사항', 'File Requirements')}
+                  </h4>
+                  <ul className="mt-2 text-sm text-blue-700 space-y-1">
+                    <li>• {t('앨범 커버: 3000x3000px, JPG/PNG', 'Album Cover: 3000x3000px, JPG/PNG')}</li>
+                    <li>• {t('오디오 파일: WAV 또는 FLAC 권장', 'Audio Files: WAV or FLAC recommended')}</li>
+                    <li>• {t('이미지 파일: 고해상도 권장', 'Image Files: High resolution recommended')}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
           </div>
         )
 
-      case 3: // 마케팅 정보
+      case 6: // 지역 및 배급
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {t('지역 및 배급', 'Region & Distribution')}
+            </h3>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('배포 지역', 'Distribution Territory')}
+              </label>
+              <select
+                value={basicInfo.territoryType}
+                onChange={(e) => setBasicInfo({ ...basicInfo, territoryType: e.target.value })}
+                className="input-modern"
+              >
+                <option value="WORLDWIDE">{t('전세계', 'Worldwide')}</option>
+                <option value="SELECTED">{t('선택 지역', 'Selected Territories')}</option>
+                <option value="EXCLUDED">{t('제외 지역', 'Excluded Territories')}</option>
+              </select>
+            </div>
+
+            {basicInfo.territoryType === 'SELECTED' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('포함 지역', 'Included Territories')}
+                </label>
+                <textarea
+                  value={basicInfo.territories.join(', ')}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    territories: e.target.value.split(',').map(t => t.trim()).filter(t => t) 
+                  })}
+                  className="input-modern"
+                  rows={3}
+                  placeholder={t('국가 코드를 쉼표로 구분 (예: KR, US, JP)', 'Comma-separated country codes (e.g., KR, US, JP)')}
+                />
+              </div>
+            )}
+
+            {basicInfo.territoryType === 'EXCLUDED' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('제외 지역', 'Excluded Territories')}
+                </label>
+                <textarea
+                  value={basicInfo.excludedTerritories.join(', ')}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    excludedTerritories: e.target.value.split(',').map(t => t.trim()).filter(t => t) 
+                  })}
+                  className="input-modern"
+                  rows={3}
+                  placeholder={t('국가 코드를 쉼표로 구분', 'Comma-separated country codes')}
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('가격 설정', 'Pricing')}
+              </label>
+              <select
+                value={basicInfo.priceType}
+                onChange={(e) => setBasicInfo({ ...basicInfo, priceType: e.target.value })}
+                className="input-modern"
+              >
+                <option value="FREE">{t('무료', 'Free')}</option>
+                <option value="PAID">{t('유료', 'Paid')}</option>
+                <option value="PREMIUM">{t('프리미엄', 'Premium')}</option>
+              </select>
+            </div>
+
+            {basicInfo.priceType !== 'FREE' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('가격 (USD)', 'Price (USD)')}
+                </label>
+                <input
+                  type="number"
+                  value={basicInfo.price}
+                  onChange={(e) => setBasicInfo({ ...basicInfo, price: parseFloat(e.target.value) || 0 })}
+                  className="input-modern"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('배급사', 'Distributors')}
+              </label>
+              <textarea
+                value={basicInfo.distributors.join(', ')}
+                onChange={(e) => setBasicInfo({ 
+                  ...basicInfo, 
+                  distributors: e.target.value.split(',').map(d => d.trim()).filter(d => d) 
+                })}
+                className="input-modern"
+                rows={2}
+                placeholder={t('배급사 이름을 쉼표로 구분', 'Comma-separated distributor names')}
+              />
+            </div>
+
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('DSP별 지역 설정', 'DSP-specific Territories')}
+              </h4>
+              <div className="space-y-4">
+                {['Spotify', 'Apple Music', 'YouTube Music', 'Amazon Music'].map(dsp => (
+                  <div key={dsp}>
+                    <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
+                      {dsp}
+                    </label>
+                    <input
+                      type="text"
+                      value={basicInfo.dspTerritories[dsp]?.join(', ') || ''}
+                      onChange={(e) => setBasicInfo({ 
+                        ...basicInfo, 
+                        dspTerritories: {
+                          ...basicInfo.dspTerritories,
+                          [dsp]: e.target.value.split(',').map(t => t.trim()).filter(t => t)
+                        }
+                      })}
+                      className="input-modern"
+                      placeholder={t('기본값: 전세계', 'Default: Worldwide')}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )
+
+      case 7: // 한국 DSP 설정
+        return (
+          <div className="space-y-6 animate-fade-in">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+              {t('한국 DSP 설정', 'Korean DSP Settings')}
+            </h3>
+
+            <div className="space-y-4">
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  checked={basicInfo.koreanDSPInfo.lyricsAttached}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    koreanDSPInfo: { ...basicInfo.koreanDSPInfo, lyricsAttached: e.target.checked }
+                  })}
+                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  {t('가사 첨부됨', 'Lyrics Attached')}
+                </span>
+              </label>
+
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  checked={basicInfo.koreanDSPInfo.newArtist}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    koreanDSPInfo: { ...basicInfo.koreanDSPInfo, newArtist: e.target.checked }
+                  })}
+                  className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                />
+                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                  {t('신인 아티스트', 'New Artist')}
+                </span>
+              </label>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('아티스트 페이지 링크', 'Artist Page Link')}
+                </label>
+                <input
+                  type="url"
+                  value={basicInfo.koreanDSPInfo.artistPageLink || ''}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    koreanDSPInfo: { ...basicInfo.koreanDSPInfo, artistPageLink: e.target.value }
+                  })}
+                  className="input-modern"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('멜론 링크', 'Melon Link')}
+                </label>
+                <input
+                  type="url"
+                  value={basicInfo.koreanDSPInfo.melonLink || ''}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    koreanDSPInfo: { ...basicInfo.koreanDSPInfo, melonLink: e.target.value }
+                  })}
+                  className="input-modern"
+                  placeholder="https://www.melon.com/..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('지니 링크', 'Genie Link')}
+                </label>
+                <input
+                  type="url"
+                  value={basicInfo.koreanDSPInfo.genieLink || ''}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    koreanDSPInfo: { ...basicInfo.koreanDSPInfo, genieLink: e.target.value }
+                  })}
+                  className="input-modern"
+                  placeholder="https://www.genie.co.kr/..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('벅스 링크', 'Bugs Link')}
+                </label>
+                <input
+                  type="url"
+                  value={basicInfo.koreanDSPInfo.bugsLink || ''}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    koreanDSPInfo: { ...basicInfo.koreanDSPInfo, bugsLink: e.target.value }
+                  })}
+                  className="input-modern"
+                  placeholder="https://music.bugs.co.kr/..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('바이브 링크', 'Vibe Link')}
+                </label>
+                <input
+                  type="url"
+                  value={basicInfo.koreanDSPInfo.vibeLink || ''}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    koreanDSPInfo: { ...basicInfo.koreanDSPInfo, vibeLink: e.target.value }
+                  })}
+                  className="input-modern"
+                  placeholder="https://vibe.naver.com/..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('앨범 크레딧', 'Album Credits')}
+                </label>
+                <textarea
+                  value={basicInfo.koreanDSPInfo.albumCredits || ''}
+                  onChange={(e) => setBasicInfo({ 
+                    ...basicInfo, 
+                    koreanDSPInfo: { ...basicInfo.koreanDSPInfo, albumCredits: e.target.value }
+                  })}
+                  className="input-modern"
+                  rows={4}
+                  placeholder={t('한국 DSP용 앨범 크레딧 정보', 'Album credits for Korean DSPs')}
+                />
+              </div>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-start">
+                <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5" />
+                <div className="ml-3">
+                  <h4 className="text-sm font-medium text-blue-800">
+                    {t('한국 DSP 참고사항', 'Korean DSP Notes')}
+                  </h4>
+                  <ul className="mt-2 text-sm text-blue-700 space-y-1">
+                    <li>• {t('멜론, 지니, 벅스, 바이브는 한국 주요 음원 사이트입니다', 'Melon, Genie, Bugs, and Vibe are major Korean music platforms')}</li>
+                    <li>• {t('기존 아티스트의 경우 기존 페이지 링크를 제공해주세요', 'For existing artists, please provide existing page links')}</li>
+                    <li>• {t('신인 아티스트는 "신인 아티스트" 옵션을 체크해주세요', 'For new artists, please check the "New Artist" option')}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 8: // 마케팅 정보
         return (
           <div className="space-y-6 animate-fade-in">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -1216,7 +2268,7 @@ export default function ReleaseSubmission() {
           </div>
         )
 
-      case 4: // 소셜 미디어
+      case 9: // 소셜 미디어
         return (
           <div className="space-y-6 animate-fade-in">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -1380,7 +2432,7 @@ export default function ReleaseSubmission() {
           </div>
         )
 
-      case 5: // 프로모션 계획
+      case 10: // 프로모션 계획
         return (
           <div className="space-y-6 animate-fade-in">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -1456,7 +2508,7 @@ export default function ReleaseSubmission() {
           </div>
         )
 
-      case 6: // 검토 및 제출
+      case 11: // 검토 및 제출
         return (
           <div className="space-y-6 animate-fade-in">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
@@ -1548,8 +2600,8 @@ export default function ReleaseSubmission() {
           </h1>
 
           {/* Progress Steps */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
+          <div className="mb-8 overflow-x-auto">
+            <div className="flex items-center justify-between min-w-max">
               {steps.map((step, index) => (
                 <div
                   key={step.id}
@@ -1560,7 +2612,8 @@ export default function ReleaseSubmission() {
                       activeStep >= step.id
                         ? 'bg-purple-600 text-white'
                         : 'bg-gray-300 dark:bg-gray-600 text-gray-600 dark:text-gray-400'
-                    } mx-auto transition-colors`}
+                    } mx-auto transition-colors cursor-pointer`}
+                    onClick={() => setActiveStep(step.id)}
                   >
                     <step.icon className="w-6 h-6" />
                   </div>
