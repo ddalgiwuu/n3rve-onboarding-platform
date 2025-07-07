@@ -10,39 +10,28 @@ export default function Dashboard() {
   const stats = [
     {
       label: t('총 릴리스', 'Total Releases'),
-      value: '12',
+      value: '0',
       icon: Music,
       color: 'from-purple-500 to-pink-500',
       description: t('등록된 앨범', 'Registered albums'),
     },
     {
       label: t('대기 중', 'Pending'),
-      value: '3',
+      value: '0',
       icon: FileText,
       color: 'from-blue-500 to-cyan-500',
       description: t('검토 대기 중', 'Awaiting review'),
     },
     {
       label: t('아티스트', 'Artists'),
-      value: '5',
+      value: '0',
       icon: Users,
       color: 'from-green-500 to-emerald-500',
       description: t('등록된 아티스트', 'Registered artists'),
     },
-    {
-      label: t('이번 달 수익', 'Monthly Revenue'),
-      value: '₩2.5M',
-      icon: TrendingUp,
-      color: 'from-orange-500 to-red-500',
-      description: t('예상 수익', 'Expected revenue'),
-    },
   ]
 
-  const recentSubmissions = [
-    { id: 1, title: 'Neon Dreams', artist: 'AURORA', status: 'approved', date: '2024-01-15' },
-    { id: 2, title: 'Electric Heart', artist: 'SYNTHWAVE', status: 'pending', date: '2024-01-14' },
-    { id: 3, title: 'Digital Love', artist: 'CYBER', status: 'review', date: '2024-01-13' },
-  ]
+  const recentSubmissions: any[] = []
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -87,7 +76,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stats.map((stat, index) => {
             const Icon = stat.icon
             return (
@@ -131,7 +120,14 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-4">
-            {recentSubmissions.map((submission, index) => (
+            {recentSubmissions.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-500 dark:text-gray-400">
+                  {t('아직 제출된 음원이 없습니다', 'No submissions yet')}
+                </p>
+              </div>
+            ) : (
+              recentSubmissions.map((submission, index) => (
               <div
                 key={submission.id}
                 className="glass-effect p-4 rounded-xl hover:shadow-lg transition-all duration-300 animate-slide-in-left"
@@ -157,7 +153,8 @@ export default function Dashboard() {
                   </div>
                 </div>
               </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 

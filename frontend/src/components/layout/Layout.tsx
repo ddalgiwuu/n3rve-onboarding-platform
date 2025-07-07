@@ -1,15 +1,43 @@
 import { Outlet } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Header from './Header'
 import Sidebar from './Sidebar'
 
 export default function Layout() {
   // Start with sidebar closed by default
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const resizeTimeoutRef = useRef<NodeJS.Timeout>()
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen)
   }
+
+  // Fix sidebar flickering on resize
+  useEffect(() => {
+    const handleResize = () => {
+      // Clear existing timeout
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current)
+      }
+
+      // Debounce resize events
+      resizeTimeoutRef.current = setTimeout(() => {
+        // Close sidebar on mobile when resizing to mobile viewport
+        if (window.innerWidth < 1024 && sidebarOpen) {
+          setSidebarOpen(false)
+        }
+      }, 150) // 150ms debounce
+    }
+
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      if (resizeTimeoutRef.current) {
+        clearTimeout(resizeTimeoutRef.current)
+      }
+    }
+  }, [sidebarOpen])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-gray-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 flex">

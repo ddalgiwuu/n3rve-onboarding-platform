@@ -9,8 +9,9 @@ const ArtistProfileGuide = () => {
 
   const sections = [
     {
-      icon: <User className="w-6 h-6" />,
+      icon: User,
       title: t('profileGuide.basicInfo', 'Basic Information'),
+      color: 'from-purple-500 to-pink-500',
       items: [
         t('profileGuide.artistName', 'Choose a unique artist name'),
         t('profileGuide.biography', 'Write a compelling biography'),
@@ -19,8 +20,9 @@ const ArtistProfileGuide = () => {
       ]
     },
     {
-      icon: <Image className="w-6 h-6" />,
+      icon: Image,
       title: t('profileGuide.visualAssets', 'Visual Assets'),
+      color: 'from-blue-500 to-cyan-500',
       items: [
         t('profileGuide.profilePhoto', 'High-quality profile photo (min. 1000x1000px)'),
         t('profileGuide.coverImage', 'Eye-catching cover image'),
@@ -29,8 +31,9 @@ const ArtistProfileGuide = () => {
       ]
     },
     {
-      icon: <Link className="w-6 h-6" />,
+      icon: Link,
       title: t('profileGuide.socialLinks', 'Social Media Links'),
+      color: 'from-green-500 to-emerald-500',
       items: [
         t('profileGuide.spotify', 'Link your Spotify artist profile'),
         t('profileGuide.instagram', 'Connect Instagram for updates'),
@@ -39,8 +42,9 @@ const ArtistProfileGuide = () => {
       ]
     },
     {
-      icon: <Music className="w-6 h-6" />,
+      icon: Music,
       title: t('profileGuide.musicCatalog', 'Music Catalog'),
+      color: 'from-orange-500 to-red-500',
       items: [
         t('profileGuide.discography', 'Complete discography listing'),
         t('profileGuide.featured', 'Highlight featured tracks'),
@@ -52,45 +56,41 @@ const ArtistProfileGuide = () => {
 
   const bestPractices = [
     {
-      icon: <CheckCircle className="w-5 h-5 text-green-400" />,
       text: t('profileGuide.updateRegularly', 'Update your profile regularly with new releases and achievements')
     },
     {
-      icon: <CheckCircle className="w-5 h-5 text-green-400" />,
       text: t('profileGuide.engageAudience', 'Engage with your audience through profile updates')
     },
     {
-      icon: <CheckCircle className="w-5 h-5 text-green-400" />,
       text: t('profileGuide.seoOptimize', 'Use SEO-friendly descriptions and keywords')
     },
     {
-      icon: <CheckCircle className="w-5 h-5 text-green-400" />,
       text: t('profileGuide.authentic', 'Stay authentic to your artistic identity')
     }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-6">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
+      <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
-        <div className="glass-effect rounded-2xl p-8 mb-8 animate-fade-in">
+        <div className="glass-effect rounded-2xl p-8 animate-fade-in">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             {t('common.back', 'Back')}
           </button>
           
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
               <Star className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold gradient-text mb-2">
                 {t('profileGuide.title', 'Artist Profile Guide')}
               </h1>
-              <p className="text-gray-300 mt-2">
+              <p className="text-gray-600 dark:text-gray-400">
                 {t('profileGuide.subtitle', 'Create a compelling artist profile that stands out')}
               </p>
             </div>
@@ -98,60 +98,63 @@ const ArtistProfileGuide = () => {
         </div>
 
         {/* Profile Sections */}
-        <div className="space-y-6 mb-8">
-          {sections.map((section, index) => (
-            <div
-              key={index}
-              className="glass-effect rounded-xl p-6 animate-slide-in hover-lift"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                  {React.cloneElement(section.icon, { className: 'w-6 h-6 text-purple-400' })}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-white mb-3">{section.title}</h3>
-                  <ul className="space-y-2">
-                    {section.items.map((item, itemIndex) => (
-                      <li key={itemIndex} className="flex items-start gap-2 text-gray-300">
-                        <span className="text-purple-400 mt-1">•</span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
+        <div className="space-y-6">
+          {sections.map((section, index) => {
+            const Icon = section.icon;
+            return (
+              <div
+                key={index}
+                className="card-glass p-6 hover-lift animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-xl bg-gradient-to-r ${section.color} shadow-lg flex-shrink-0`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">{section.title}</h3>
+                    <ul className="space-y-2">
+                      {section.items.map((item, itemIndex) => (
+                        <li key={itemIndex} className="flex items-start gap-2 text-gray-600 dark:text-gray-400">
+                          <span className="text-purple-500 mt-1">•</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Best Practices */}
-        <div className="glass-effect rounded-xl p-8 animate-slide-in-delayed">
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-            <AlertCircle className="w-6 h-6 text-purple-400" />
+        <div className="glass-effect rounded-2xl p-8 animate-fade-in-delay">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+            <AlertCircle className="w-6 h-6 text-purple-500" />
             {t('profileGuide.bestPractices', 'Best Practices')}
           </h2>
           <div className="space-y-4">
             {bestPractices.map((practice, index) => (
               <div key={index} className="flex items-start gap-3">
-                {practice.icon}
-                <p className="text-gray-300">{practice.text}</p>
+                <CheckCircle className="w-5 h-5 text-green-500 mt-0.5" />
+                <p className="text-gray-600 dark:text-gray-400">{practice.text}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* CTA */}
-        <div className="glass-effect rounded-xl p-8 mt-8 text-center animate-fade-in-delayed">
-          <h3 className="text-xl font-semibold text-white mb-4">
+        <div className="glass-effect rounded-2xl p-8 text-center animate-fade-in-delay">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
             {t('profileGuide.readyToStart', 'Ready to create your profile?')}
           </h3>
-          <p className="text-gray-300 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             {t('profileGuide.ctaText', 'Follow this guide to build a professional artist profile that attracts fans and industry professionals.')}
           </p>
           <button
             onClick={() => navigate('/profile')}
-            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-medium transition-all hover-lift"
+            className="btn-modern btn-primary hover-lift"
           >
             {t('profileGuide.createProfile', 'Create Your Profile')}
           </button>

@@ -9,53 +9,57 @@ const Guide = () => {
 
   const guides = [
     {
-      icon: <Upload className="w-8 h-8" />,
+      icon: Upload,
       title: t('guide.submission', 'Submission Process'),
       description: t('guide.submissionDesc', 'Learn how to submit your music to N3RVE'),
       link: '/guide/submission',
-      color: 'from-purple-500 to-blue-500'
+      color: 'from-purple-500 to-pink-500'
     },
     {
-      icon: <Music className="w-8 h-8" />,
+      icon: Music,
       title: t('guide.artistProfile', 'Artist Profile Setup'),
       description: t('guide.artistProfileDesc', 'Create a compelling artist profile'),
       link: '/guide/artist-profile',
       color: 'from-blue-500 to-cyan-500'
     },
     {
-      icon: <FileText className="w-8 h-8" />,
+      icon: FileText,
       title: t('guide.technical', 'Technical Requirements'),
       description: t('guide.technicalDesc', 'Audio specs, formats, and guidelines'),
       link: '/guide/technical',
-      color: 'from-cyan-500 to-teal-500'
+      color: 'from-green-500 to-emerald-500'
     },
     {
-      icon: <TrendingUp className="w-8 h-8" />,
+      icon: TrendingUp,
       title: t('guide.marketing', 'Marketing Best Practices'),
       description: t('guide.marketingDesc', 'Promote your music effectively'),
       link: '/guide/marketing',
-      color: 'from-teal-500 to-green-500'
+      color: 'from-orange-500 to-red-500'
     }
   ];
 
   const quickTips = [
     {
-      icon: <CheckCircle className="w-5 h-5 text-green-400" />,
+      icon: CheckCircle,
+      iconColor: 'text-green-500',
       title: t('guide.tip1Title', 'Complete Your Profile'),
       text: t('guide.tip1Text', 'A complete profile increases your chances of approval by 80%')
     },
     {
-      icon: <Zap className="w-5 h-5 text-yellow-400" />,
+      icon: Zap,
+      iconColor: 'text-yellow-500',
       title: t('guide.tip2Title', 'High-Quality Audio'),
       text: t('guide.tip2Text', 'Submit WAV files at 24-bit/48kHz or higher for best results')
     },
     {
-      icon: <Globe className="w-5 h-5 text-blue-400" />,
+      icon: Globe,
+      iconColor: 'text-blue-500',
       title: t('guide.tip3Title', 'Global Reach'),
       text: t('guide.tip3Text', 'N3RVE distributes to over 150+ streaming platforms worldwide')
     },
     {
-      icon: <Users className="w-5 h-5 text-purple-400" />,
+      icon: Users,
+      iconColor: 'text-purple-500',
       title: t('guide.tip4Title', 'Community Support'),
       text: t('guide.tip4Text', 'Join our Discord community for tips and networking')
     }
@@ -81,19 +85,19 @@ const Guide = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="glass-effect rounded-2xl p-8 mb-8 animate-fade-in">
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+        <div className="glass-effect rounded-2xl p-8 animate-fade-in">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
               <BookOpen className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold gradient-text mb-2">
                 {t('guide.title', 'N3RVE Guide Center')}
               </h1>
-              <p className="text-gray-300 mt-2">
+              <p className="text-gray-600 dark:text-gray-400">
                 {t('guide.subtitle', 'Everything you need to know about distributing your music')}
               </p>
             </div>
@@ -101,70 +105,76 @@ const Guide = () => {
         </div>
 
         {/* Guide Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {guides.map((guide, index) => (
-            <div
-              key={index}
-              className="glass-effect rounded-xl p-6 hover:bg-gray-800/30 transition-all cursor-pointer hover-lift animate-slide-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-              onClick={() => navigate(guide.link)}
-            >
-              <div className="flex items-start gap-4">
-                <div className={`w-16 h-16 rounded-lg bg-gradient-to-br ${guide.color} flex items-center justify-center flex-shrink-0`}>
-                  {guide.icon}
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-xl font-semibold text-white mb-2">{guide.title}</h3>
-                  <p className="text-gray-300">{guide.description}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {guides.map((guide, index) => {
+            const Icon = guide.icon;
+            return (
+              <div
+                key={index}
+                className="card-glass p-6 hover-lift cursor-pointer animate-fade-in"
+                style={{ animationDelay: `${index * 100}ms` }}
+                onClick={() => navigate(guide.link)}
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-xl bg-gradient-to-r ${guide.color} shadow-lg flex-shrink-0`}>
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">{guide.title}</h3>
+                    <p className="text-gray-600 dark:text-gray-400">{guide.description}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Quick Tips */}
-        <div className="glass-effect rounded-xl p-8 mb-8 animate-slide-in-delayed">
-          <h2 className="text-2xl font-bold text-white mb-6">{t('guide.quickTips', 'Quick Tips')}</h2>
+        <div className="glass-effect rounded-2xl p-8 animate-fade-in-delay">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('guide.quickTips', 'Quick Tips')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {quickTips.map((tip, index) => (
-              <div key={index} className="flex items-start gap-3">
-                {tip.icon}
-                <div>
-                  <h4 className="font-semibold text-white mb-1">{tip.title}</h4>
-                  <p className="text-gray-300 text-sm">{tip.text}</p>
+            {quickTips.map((tip, index) => {
+              const Icon = tip.icon;
+              return (
+                <div key={index} className="flex items-start gap-3">
+                  <Icon className={`w-5 h-5 ${tip.iconColor} mt-0.5`} />
+                  <div>
+                    <h4 className="font-semibold text-gray-900 dark:text-white mb-1">{tip.title}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{tip.text}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* FAQs */}
-        <div className="glass-effect rounded-xl p-8 animate-fade-in-delayed">
-          <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
-            <HelpCircle className="w-6 h-6 text-purple-400" />
+        <div className="glass-effect rounded-2xl p-8 animate-fade-in-delay">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+            <HelpCircle className="w-6 h-6 text-purple-500" />
             {t('guide.faq', 'Frequently Asked Questions')}
           </h2>
           <div className="space-y-6">
             {faqs.map((faq, index) => (
-              <div key={index} className="border-b border-gray-700 pb-6 last:border-0">
-                <h3 className="font-semibold text-white mb-2">{faq.question}</h3>
-                <p className="text-gray-300">{faq.answer}</p>
+              <div key={index} className="border-b border-gray-200 dark:border-gray-700 pb-6 last:border-0">
+                <h3 className="font-semibold text-gray-900 dark:text-white mb-2">{faq.question}</h3>
+                <p className="text-gray-600 dark:text-gray-400">{faq.answer}</p>
               </div>
             ))}
           </div>
         </div>
 
         {/* Contact Support */}
-        <div className="glass-effect rounded-xl p-8 mt-8 text-center animate-fade-in-delayed">
-          <h3 className="text-xl font-semibold text-white mb-4">
+        <div className="glass-effect rounded-2xl p-8 text-center animate-fade-in-delay">
+          <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
             {t('guide.needHelp', 'Need More Help?')}
           </h3>
-          <p className="text-gray-300 mb-6">
+          <p className="text-gray-600 dark:text-gray-400 mb-6">
             {t('guide.contactText', 'Our support team is here to assist you with any questions')}
           </p>
           <button
             onClick={() => window.location.href = 'mailto:support@n3rve.com'}
-            className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-medium transition-all hover-lift"
+            className="btn-modern btn-primary hover-lift"
           >
             {t('guide.contactSupport', 'Contact Support')}
           </button>
