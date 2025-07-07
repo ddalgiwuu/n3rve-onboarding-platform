@@ -135,8 +135,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           "border-r border-white/20 dark:border-white/10",
           !isOpen && "-translate-x-full",
           isOpen && "translate-x-0",
-          "transition-transform duration-300 ease-in-out will-change-transform"
+          "transition-transform duration-300 ease-in-out",
+          "transform-gpu" // Enable GPU acceleration
         )}
+        style={{
+          // Prevent transform flickering
+          backfaceVisibility: 'hidden',
+          perspective: 1000,
+          transformStyle: 'preserve-3d'
+        }}
       >
         <div className="h-full flex flex-col">
           {/* Header */}

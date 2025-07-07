@@ -45,26 +45,36 @@ const Submissions = () => {
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return <CheckCircle className="w-5 h-5 text-green-400" />;
+        return <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />;
       case 'REJECTED':
-        return <XCircle className="w-5 h-5 text-red-400" />;
+        return <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />;
       case 'PENDING':
-        return <Clock className="w-5 h-5 text-yellow-400" />;
       default:
-        return <AlertCircle className="w-5 h-5 text-gray-400" />;
+        return <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />;
     }
   };
 
-  const getStatusBadgeClass = (status: string) => {
+  const getStatusText = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
+        return t('submissions.approved', 'Approved');
       case 'REJECTED':
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
+        return t('submissions.rejected', 'Rejected');
       case 'PENDING':
-        return 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30';
       default:
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+        return t('submissions.pending', 'Pending');
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'APPROVED':
+        return 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30';
+      case 'REJECTED':
+        return 'bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30';
+      case 'PENDING':
+      default:
+        return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30';
     }
   };
 
@@ -76,20 +86,20 @@ const Submissions = () => {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="glass-effect rounded-2xl p-8 mb-8 animate-fade-in">
+        <div className="glass-effect rounded-2xl p-8 animate-fade-in">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent mb-4">
+              <h1 className="text-3xl font-bold gradient-text mb-2">
                 {t('submissions.myTitle', 'My Submissions')}
               </h1>
-              <p className="text-gray-300">{t('submissions.myDescription', 'Track and manage your music submissions')}</p>
+              <p className="text-gray-600 dark:text-gray-400">{t('submissions.myDescription', 'Track and manage your music submissions')}</p>
             </div>
             <button
               onClick={() => navigate('/onboarding')}
-              className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-medium transition-all hover-lift flex items-center gap-2"
+              className="btn-modern btn-primary flex items-center gap-2 hover-lift"
             >
               <Plus className="w-5 h-5" />
               {t('submissions.newSubmission', 'New Submission')}
@@ -98,55 +108,83 @@ const Submissions = () => {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="glass-effect rounded-xl p-6 animate-slide-in">
-            <div className="flex items-center justify-between mb-4">
-              <Music className="w-8 h-8 text-purple-400" />
-              <span className="text-2xl font-bold text-white">{submissions.length}</span>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="card-glass p-6 hover-lift animate-fade-in">
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
+                <Music className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-3xl font-bold text-gray-900 dark:text-white">{submissions.length}</span>
             </div>
-            <p className="text-gray-400 text-sm">{t('submissions.totalSubmissions', 'Total Submissions')}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              {t('submissions.totalSubmissions', 'Total Submissions')}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {t('등록된 음원', 'Registered music')}
+            </p>
           </div>
           
-          <div className="glass-effect rounded-xl p-6 animate-slide-in" style={{ animationDelay: '0.1s' }}>
-            <div className="flex items-center justify-between mb-4">
-              <CheckCircle className="w-8 h-8 text-green-400" />
-              <span className="text-2xl font-bold text-white">{submissions.filter(s => s.status === 'APPROVED').length}</span>
+          <div className="card-glass p-6 hover-lift animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg">
+                <CheckCircle className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-3xl font-bold text-gray-900 dark:text-white">{submissions.filter(s => s.status === 'APPROVED').length}</span>
             </div>
-            <p className="text-gray-400 text-sm">{t('submissions.approved', 'Approved')}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              {t('submissions.approved', 'Approved')}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {t('승인 완료', 'Approved releases')}
+            </p>
           </div>
           
-          <div className="glass-effect rounded-xl p-6 animate-slide-in" style={{ animationDelay: '0.2s' }}>
-            <div className="flex items-center justify-between mb-4">
-              <Clock className="w-8 h-8 text-yellow-400" />
-              <span className="text-2xl font-bold text-white">{submissions.filter(s => s.status === 'PENDING').length}</span>
+          <div className="card-glass p-6 hover-lift animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg">
+                <Clock className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-3xl font-bold text-gray-900 dark:text-white">{submissions.filter(s => s.status === 'PENDING').length}</span>
             </div>
-            <p className="text-gray-400 text-sm">{t('submissions.inReview', 'In Review')}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              {t('submissions.inReview', 'In Review')}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {t('검토 중', 'Under review')}
+            </p>
           </div>
           
-          <div className="glass-effect rounded-xl p-6 animate-slide-in" style={{ animationDelay: '0.3s' }}>
-            <div className="flex items-center justify-between mb-4">
-              <AlertCircle className="w-8 h-8 text-gray-400" />
-              <span className="text-2xl font-bold text-white">{submissions.filter(s => s.status === 'REJECTED').length}</span>
+          <div className="card-glass p-6 hover-lift animate-fade-in" style={{ animationDelay: '300ms' }}>
+            <div className="flex items-start justify-between mb-4">
+              <div className="p-3 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 shadow-lg">
+                <AlertCircle className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-3xl font-bold text-gray-900 dark:text-white">{submissions.filter(s => s.status === 'REJECTED').length}</span>
             </div>
-            <p className="text-gray-400 text-sm">{t('submissions.rejected', 'Rejected')}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+              {t('submissions.rejected', 'Rejected')}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {t('반려됨', 'Returned releases')}
+            </p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="glass-effect rounded-xl p-6 mb-8 animate-slide-in-delayed">
+        <div className="glass-effect rounded-2xl p-6 animate-fade-in-delay">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder={t('submissions.searchPlaceholder', 'Search by album or artist...')}
-                className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-white"
+                className="input-modern pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <select
-              className="px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-white"
+              className="input-modern"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -161,16 +199,16 @@ const Submissions = () => {
         {/* Submissions List */}
         <div className="space-y-4">
           {loading ? (
-            <div className="glass-effect rounded-xl p-12 text-center">
+            <div className="glass-effect rounded-2xl p-12 text-center">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
             </div>
           ) : filteredSubmissions.length === 0 ? (
-            <div className="glass-effect rounded-xl p-12 text-center">
-              <Music className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-400 mb-6">{t('submissions.noSubmissions', 'No submissions found')}</p>
+            <div className="glass-effect rounded-2xl p-12 text-center">
+              <Music className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-500 dark:text-gray-400 mb-6">{t('submissions.noSubmissions', 'No submissions found')}</p>
               <button
                 onClick={() => navigate('/onboarding')}
-                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-all hover-lift"
+                className="btn-modern btn-primary"
               >
                 {t('submissions.createFirst', 'Create Your First Submission')}
               </button>
@@ -179,41 +217,35 @@ const Submissions = () => {
             filteredSubmissions.map((submission, index) => (
               <div
                 key={submission.id}
-                className="glass-effect rounded-xl p-6 hover:bg-gray-800/30 transition-all cursor-pointer hover-lift animate-slide-in"
-                style={{ animationDelay: `${index * 0.05}s` }}
+                className="glass-effect rounded-xl p-6 hover:shadow-lg transition-all duration-300 cursor-pointer animate-slide-in-left"
+                style={{ animationDelay: `${index * 100}ms` }}
                 onClick={() => navigate(`/submission/${submission.id}`)}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center shadow-lg">
                       <Music className="w-8 h-8 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-semibold text-white mb-1">{submission.albumTitle}</h3>
-                      <p className="text-gray-300">{submission.artistName}</p>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-400">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{submission.albumTitle}</h3>
+                      <p className="text-gray-600 dark:text-gray-400">{submission.artistName}</p>
+                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
                         <span>{submission.tracks?.length || 0} {t('submissions.tracks', 'tracks')}</span>
                         <span>•</span>
                         <span>{submission.albumGenre?.join(', ') || 'N/A'}</span>
                         <span>•</span>
                         <span className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          {format(new Date(submission.releaseDate), 'MMM dd, yyyy')}
+                          <Calendar className="w-3 h-3" />
+                          {format(new Date(submission.releaseDate), 'yyyy-MM-dd')}
                         </span>
                       </div>
                     </div>
                   </div>
-                  
                   <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm border ${getStatusBadgeClass(submission.status)}`}>
-                        {getStatusIcon(submission.status)}
-                        {t(`submissions.${submission.status}`, submission.status)}
-                      </span>
-                      <p className="text-sm text-gray-400 mt-2">
-                        {t('submissions.submitted', 'Submitted')} {format(new Date(submission.createdAt), 'MMM dd')}
-                      </p>
-                    </div>
+                    <span className={`badge-glass ${getStatusColor(submission.status)} px-3 py-1 flex items-center gap-2`}>
+                      {getStatusIcon(submission.status)}
+                      {getStatusText(submission.status)}
+                    </span>
                     <Eye className="w-5 h-5 text-gray-400" />
                   </div>
                 </div>
