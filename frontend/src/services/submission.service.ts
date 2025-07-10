@@ -1,6 +1,30 @@
 import api from '@/lib/api'
 import { Submission } from '@/types/submission'
-import { SubmissionData } from '@/pages/ReleaseSubmission'
+
+export interface SubmissionData {
+  artist: any
+  album: any
+  tracks: any[]
+  release: any
+  files: {
+    coverImage?: File | string
+    coverImageUrl?: string
+    artistPhoto?: File | string
+    artistPhotoUrl?: string
+    motionArt?: File | string
+    motionArtUrl?: string
+    musicVideo?: File | string
+    musicVideoUrl?: string
+    audioFiles: Array<{
+      trackId: string
+      file?: File
+      dropboxUrl?: string
+      fileName?: string
+      fileSize?: number
+    }>
+    additionalFiles?: any[]
+  }
+}
 
 export interface SubmissionWithData extends Omit<Submission, 'tracks' | 'files'> {
   submissionData?: SubmissionData

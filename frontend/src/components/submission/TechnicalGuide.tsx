@@ -1,219 +1,297 @@
-import { useLanguageStore } from '@/store/language.store'
-import { FileAudio, AlertCircle, CheckCircle, Info, Volume2, FileType, Upload } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import React from 'react';
+import { t, useLanguageStore } from '@/store/language.store';
+import {
+  FileAudio,
+  Image,
+  Film,
+  Video,
+  CheckCircle,
+  XCircle,
+  Info,
+  AlertCircle
+} from 'lucide-react';
+import {
+  AUDIO_SPECIFICATIONS,
+  ARTWORK_SPECIFICATIONS,
+  MOTION_ART_SPECIFICATIONS,
+  DOLBY_ATMOS_SPECIFICATIONS,
+  VIDEO_SPECIFICATIONS
+} from '../../utils/technicalSpecs';
 
-export default function TechnicalGuide() {
-  const { t } = useLanguageStore()
+interface SpecificationCardProps {
+  title: string;
+  icon: React.ReactNode;
+  specs: any;
+  examples?: {
+    correct: string[];
+    incorrect: string[];
+  };
+  tips?: string[];
+}
 
-  const audioSpecs = [
-    { label: t('파일 형식', 'File Format'), value: 'WAV, FLAC', recommended: true },
-    { label: t('비트 뎁스', 'Bit Depth'), value: '24-bit', recommended: true },
-    { label: t('샘플 레이트', 'Sample Rate'), value: '44.1kHz / 48kHz', recommended: true },
-    { label: t('다이나믹 레인지', 'Dynamic Range'), value: 'DR8+', recommended: false },
-    { label: t('피크 레벨', 'Peak Level'), value: '-1dBFS max', recommended: true },
-  ]
-
-  const dolbyAtmosSpecs = [
-    { label: t('파일 형식', 'File Format'), value: 'ADM BWF (.wav)', icon: FileType },
-    { label: t('채널 구성', 'Channel Config'), value: '7.1.4 (12ch)', icon: Volume2 },
-    { label: t('샘플 레이트', 'Sample Rate'), value: '48kHz only', icon: FileAudio },
-  ]
+const SpecificationCard: React.FC<SpecificationCardProps> = ({
+  title,
+  icon,
+  specs,
+  examples,
+  tips
+}) => {
+  const language = useLanguageStore((state) => state.language);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
-      <div className="max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl font-bold gradient-text mb-4">
-            {t('기술 사양 가이드', 'Technical Specifications Guide')}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-lg">
-            {t('고품질 음원 제작을 위한 기술 가이드라인', 'Technical guidelines for high-quality audio production')}
-          </p>
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-n3rve-500/10 p-6 mb-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
+      <div className="flex items-center mb-4">
+        <div className="mr-3 p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
+          <div className="text-white">{icon}</div>
         </div>
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{title}</h3>
+      </div>
 
-        {/* Audio Specifications */}
-        <div className="card-glass p-8 mb-8 animate-fade-in">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
-              <FileAudio className="w-6 h-6 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('오디오 사양', 'Audio Specifications')}
-            </h2>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-700">
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    {t('항목', 'Parameter')}
-                  </th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    {t('사양', 'Specification')}
-                  </th>
-                  <th className="text-center py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    {t('권장', 'Recommended')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {audioSpecs.map((spec, index) => (
-                  <tr 
-                    key={index}
-                    className="border-b border-gray-100 dark:border-gray-800 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors"
-                  >
-                    <td className="py-3 px-4 text-gray-900 dark:text-white font-medium">
-                      {spec.label}
-                    </td>
-                    <td className="py-3 px-4 text-gray-600 dark:text-gray-400">
-                      {spec.value}
-                    </td>
-                    <td className="text-center py-3 px-4">
-                      {spec.recommended ? (
-                        <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                      ) : (
-                        <Info className="w-5 h-5 text-blue-500 mx-auto" />
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Dolby Atmos Requirements */}
-        <div className="card-glass p-8 mb-8 animate-fade-in-delay">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg">
-              <Volume2 className="w-6 h-6 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('Dolby Atmos 요구사항', 'Dolby Atmos Requirements')}
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {dolbyAtmosSpecs.map((spec, index) => {
-              const Icon = spec.icon
+      <div className="space-y-4">
+        {/* Main Specifications */}
+        <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <h4 className="font-medium mb-2 flex items-center text-gray-900 dark:text-white">
+            <Info className="w-4 h-4 mr-2 text-n3rve-main" />
+            {t('technicalGuide.specifications')}
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+            {Object.entries(specs).map(([key, value]) => {
+              if (key === 'requirements') return null;
               return (
-                <div 
-                  key={index}
-                  className="glass-effect p-6 rounded-xl hover:shadow-lg transition-all duration-300 animate-slide-in-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <Icon className="w-8 h-8 text-blue-600 dark:text-blue-400 mb-3" />
-                  <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
-                    {spec.label}
-                  </h3>
-                  <p className="text-lg text-gray-600 dark:text-gray-400">
-                    {spec.value}
-                  </p>
+                <div key={key} className="flex">
+                  <span className="font-medium capitalize mr-2 text-gray-700 dark:text-gray-300">
+                    {key.replace(/([A-Z])/g, ' $1').trim()}:
+                  </span>
+                  <span className="text-gray-600 dark:text-gray-400">
+                    {Array.isArray(value) ? value.join(', ') : value}
+                  </span>
                 </div>
-              )
+              );
             })}
           </div>
+        </div>
 
-          <div className="mt-6 glass-effect rounded-xl p-4 border-2 border-blue-500/30">
-            <div className="flex items-start gap-3">
-              <Info className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {t(
-                  'Dolby Atmos 마스터는 반드시 공인 스튜디오에서 제작되어야 합니다.',
-                  'Dolby Atmos masters must be created in a certified studio.'
-                )}
-              </p>
+        {/* Requirements */}
+        {specs.requirements && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+            <h4 className="font-medium mb-2 flex items-center text-gray-900 dark:text-white">
+              <CheckCircle className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" />
+              {t('technicalGuide.requirements')}
+            </h4>
+            <ul className="space-y-1 text-sm">
+              {specs.requirements.map((req: string, index: number) => (
+                <li key={index} className="flex items-start">
+                  <span className="text-green-600 dark:text-green-400 mr-2">•</span>
+                  <span className="text-gray-700 dark:text-gray-300">{req}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Examples */}
+        {examples && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
+              <h4 className="font-medium mb-2 flex items-center text-green-700 dark:text-green-300">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                {t('technicalGuide.correctExamples')}
+              </h4>
+              <ul className="space-y-1 text-sm">
+                {examples.correct.map((example, index) => (
+                  <li key={index} className="text-gray-700 dark:text-gray-300 font-mono">{example}</li>
+                ))}
+              </ul>
             </div>
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
+              <h4 className="font-medium mb-2 flex items-center text-red-700 dark:text-red-300">
+                <XCircle className="w-4 h-4 mr-2" />
+                {t('technicalGuide.incorrectExamples')}
+              </h4>
+              <ul className="space-y-1 text-sm">
+                {examples.incorrect.map((example, index) => (
+                  <li key={index} className="text-gray-700 dark:text-gray-300 font-mono">{example}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
+        {/* Pro Tips */}
+        {tips && (
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
+            <h4 className="font-medium mb-2 flex items-center text-yellow-700 dark:text-yellow-300">
+              <AlertCircle className="w-4 h-4 mr-2" />
+              {t('technicalGuide.proTips')}
+            </h4>
+            <ul className="space-y-1 text-sm">
+              {tips.map((tip, index) => (
+                <li key={index} className="text-gray-700 dark:text-gray-300 flex items-start">
+                  <span className="text-yellow-600 dark:text-yellow-400 mr-2">💡</span>
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const TechnicalGuide: React.FC = () => {
+  const language = useLanguageStore((state) => state.language);
+
+  const audioExamples = {
+    correct: [
+      'Track_01_Master.wav (48kHz/24bit)',
+      'Album_Final_Mix.flac (96kHz/24bit)',
+      'Single_Master_Stereo.aiff (44.1kHz/16bit)'
+    ],
+    incorrect: [
+      'song.mp3 (lossy format)',
+      'track_128kbps.m4a (compressed)',
+      'demo_rough.wav (8kHz/8bit)'
+    ]
+  };
+
+  const audioTips = [
+    t('technicalGuide.tips.audio1'),
+    t('technicalGuide.tips.audio2'),
+    t('technicalGuide.tips.audio3')
+  ];
+
+  const artworkExamples = {
+    correct: [
+      'AlbumCover_3000x3000.jpg',
+      'SingleArt_RGB_HighQuality.png',
+      'EP_Cover_Square_NoText.jpg'
+    ],
+    incorrect: [
+      'cover_500x500.jpg (too small)',
+      'artwork_CMYK.png (wrong color mode)',
+      'cover_with_promo_text.jpg (has text)'
+    ]
+  };
+
+  const artworkTips = [
+    t('technicalGuide.tips.artwork1'),
+    t('technicalGuide.tips.artwork2'),
+    t('technicalGuide.tips.artwork3')
+  ];
+
+  const motionArtExamples = {
+    correct: [
+      'MotionCover_1080x1080_Loop.mp4',
+      'AnimatedArt_Square_NoAudio.mp4',
+      'VisualLoop_H264_25fps.mp4'
+    ],
+    incorrect: [
+      'video_16x9.mp4 (wrong aspect ratio)',
+      'motion_with_audio.mp4 (contains audio)',
+      'animation.mov (wrong format)'
+    ]
+  };
+
+  const motionArtTips = [
+    t('technicalGuide.tips.motionArt1'),
+    t('technicalGuide.tips.motionArt2'),
+    t('technicalGuide.tips.motionArt3')
+  ];
+
+  const dolbyAtmosTips = [
+    t('technicalGuide.tips.dolbyAtmos1'),
+    t('technicalGuide.tips.dolbyAtmos2'),
+    t('technicalGuide.tips.dolbyAtmos3')
+  ];
+
+  const videoExamples = {
+    correct: [
+      'MusicVideo_1920x1080_H264.mp4',
+      'OfficialVideo_4K_30fps.mov',
+      'Visualizer_HD_Progressive.mp4'
+    ],
+    incorrect: [
+      'video_640x480.mp4 (too low resolution)',
+      'interlaced_video.mov (interlaced)',
+      'video_with_watermark.mp4 (has watermark)'
+    ]
+  };
+
+  const videoTips = [
+    t('technicalGuide.tips.video1'),
+    t('technicalGuide.tips.video2'),
+    t('technicalGuide.tips.video3')
+  ];
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="max-w-6xl mx-auto p-6">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-n3rve-main to-n3rve-accent bg-clip-text text-transparent mb-4">
+              {t('technicalGuide.title')}
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400 text-lg">{t('technicalGuide.description')}</p>
           </div>
         </div>
 
-        {/* File Naming Convention */}
-        <div className="card-glass p-8 mb-8 animate-fade-in-delay">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            {t('파일 명명 규칙', 'File Naming Convention')}
-          </h2>
+      {/* Audio Specifications */}
+      <SpecificationCard
+        title={t('technicalGuide.audio.title')}
+        icon={<FileAudio className="w-6 h-6" />}
+        specs={AUDIO_SPECIFICATIONS}
+        examples={audioExamples}
+        tips={audioTips}
+      />
 
-          <div className="space-y-4">
-            <div className="glass-effect rounded-xl p-4">
-              <code className="text-purple-600 dark:text-purple-400 font-mono">
-                [TrackNumber]_[ArtistName]_[TrackTitle]_[Version].wav
-              </code>
-            </div>
+      {/* Artwork Specifications */}
+      <SpecificationCard
+        title={t('technicalGuide.artwork.title')}
+        icon={<Image className="w-6 h-6" />}
+        specs={ARTWORK_SPECIFICATIONS}
+        examples={artworkExamples}
+        tips={artworkTips}
+      />
 
-            <div className="glass-effect rounded-xl p-4">
-              <p className="font-medium text-gray-900 dark:text-white mb-2">
-                {t('예시', 'Example')}:
-              </p>
-              <code className="text-gray-600 dark:text-gray-400 font-mono text-sm">
-                01_AURORA_Moonlight_Symphony_Master.wav
-              </code>
-            </div>
-          </div>
-        </div>
+      {/* Motion Art Specifications */}
+      <SpecificationCard
+        title={t('technicalGuide.motionArt.title')}
+        icon={<Film className="w-6 h-6" />}
+        specs={MOTION_ART_SPECIFICATIONS}
+        examples={motionArtExamples}
+        tips={motionArtTips}
+      />
 
-        {/* Common Issues */}
-        <div className="card-glass p-8 mb-8 animate-fade-in-delay">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-r from-orange-500 to-red-500 shadow-lg">
-              <AlertCircle className="w-6 h-6 text-white" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('자주 발생하는 문제', 'Common Issues')}
-            </h2>
-          </div>
+      {/* Dolby Atmos Specifications */}
+      <SpecificationCard
+        title={t('technicalGuide.dolbyAtmos.title')}
+        icon={<FileAudio className="w-6 h-6" />}
+        specs={DOLBY_ATMOS_SPECIFICATIONS}
+        tips={dolbyAtmosTips}
+      />
 
-          <div className="space-y-4">
-            <div className="glass-effect rounded-xl p-4 border-l-4 border-red-500">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                {t('클리핑', 'Clipping')}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {t(
-                  '피크 레벨이 0dBFS를 초과하면 음질 저하가 발생합니다. -1dBFS 이하로 유지하세요.',
-                  'Peak levels exceeding 0dBFS cause quality degradation. Keep below -1dBFS.'
-                )}
-              </p>
-            </div>
+      {/* Video Specifications */}
+      <SpecificationCard
+        title={t('technicalGuide.video.title')}
+        icon={<Video className="w-6 h-6" />}
+        specs={VIDEO_SPECIFICATIONS}
+        examples={videoExamples}
+        tips={videoTips}
+      />
 
-            <div className="glass-effect rounded-xl p-4 border-l-4 border-yellow-500">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                {t('낮은 샘플 레이트', 'Low Sample Rate')}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {t(
-                  'MP3를 WAV로 변환해도 음질이 향상되지 않습니다. 원본 고품질 파일을 사용하세요.',
-                  'Converting MP3 to WAV doesn\'t improve quality. Use original high-quality files.'
-                )}
-              </p>
-            </div>
-
-            <div className="glass-effect rounded-xl p-4 border-l-4 border-blue-500">
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                {t('메타데이터 누락', 'Missing Metadata')}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {t(
-                  'ISRC, 작곡가 정보 등 필수 메타데이터가 누락되면 배포가 지연될 수 있습니다.',
-                  'Missing essential metadata like ISRC, composer info can delay distribution.'
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* CTA */}
-        <div className="text-center animate-fade-in-delay">
-          <Link
-            to="/onboarding"
-            className="btn-modern btn-primary hover-lift inline-flex items-center gap-2"
-          >
-            <Upload className="w-5 h-5" />
-            {t('릴리스 시작하기', 'Start Your Release')}
-          </Link>
+        {/* Contact Support */}
+        <div className="mt-8 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 text-center border border-gray-300 dark:border-gray-600">
+          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{t('technicalGuide.needHelp')}</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">{t('technicalGuide.contactSupport')}</p>
+          <button className="bg-gradient-to-r from-gray-800 to-gray-900 dark:from-n3rve-main dark:to-n3rve-accent text-white px-8 py-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all font-medium">
+            {t('technicalGuide.contactButton')}
+          </button>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default TechnicalGuide;
