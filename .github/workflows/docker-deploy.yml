@@ -30,8 +30,8 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          ddalgiwuu/n3rve-platform:backend-latest
-          ddalgiwuu/n3rve-platform:backend-${{ github.sha }}
+          ddalgiwuu/n3rve-onboarding-platform:backend-latest
+          ddalgiwuu/n3rve-onboarding-platform:backend-${{ github.sha }}
     
     - name: Build and push Frontend
       uses: docker/build-push-action@v4
@@ -41,8 +41,8 @@ jobs:
         platforms: linux/amd64,linux/arm64
         push: true
         tags: |
-          ddalgiwuu/n3rve-platform:frontend-latest
-          ddalgiwuu/n3rve-platform:frontend-${{ github.sha }}
+          ddalgiwuu/n3rve-onboarding-platform:frontend-latest
+          ddalgiwuu/n3rve-onboarding-platform:frontend-${{ github.sha }}
     
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v0.1.5
