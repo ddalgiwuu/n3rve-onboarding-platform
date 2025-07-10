@@ -75,7 +75,8 @@ const regions: Region[] = [
 ]
 
 export default function RegionSelector({ selectedRegions, onRegionsChange, className }: RegionSelectorProps) {
-  const { language, t } = useLanguageStore()
+  const { language } = useLanguageStore()
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedContinent, setSelectedContinent] = useState<string>('All')
 

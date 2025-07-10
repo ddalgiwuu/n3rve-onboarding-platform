@@ -122,7 +122,7 @@ export default function AudioPlayer({ file, className }: AudioPlayerProps) {
         </div>
       </div>
 
-      <style jsx>{`
+      <style>{`
         .slider::-webkit-slider-thumb {
           appearance: none;
           width: 12px;
