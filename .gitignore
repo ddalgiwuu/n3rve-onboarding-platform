@@ -95,6 +95,18 @@ public/uploads/
 # Backup files
 *.bak
 *.backup
+*-backup/
+*-backup-*/
+backup-*/
+
+# Archives
+*.tar.gz
+
+# PID files
+*.pid
+
+# MongoDB data
+mongodb_data/
 
 # Lock files (keep for consistency)
 # package-lock.json
