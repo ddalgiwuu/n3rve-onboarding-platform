@@ -1,56 +1,48 @@
 version: '3.8'
 
 services:
-  # Backend Service (MongoDB Atlas 사용)
+  # MongoDB Atlas 사용 (로컬 MongoDB 컨테이너 제거)
   backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ddalgiwuu/n3rve-platform:backend-latest
     container_name: n3rve-backend
-    restart: always
-    environment:
-      NODE_ENV: production
-      PORT: 3000
-      # MongoDB Atlas connection string
-      MONGODB_URI: ${MONGODB_URI}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-${JWT_SECRET}}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-https://n3rve-onboarding.com/api/auth/google/callback}
-      CORS_ORIGIN: ${CORS_ORIGIN:-https://n3rve-onboarding.com,https://www.n3rve-onboarding.com}
-    volumes:
-      - ./backend/uploads:/app/uploads
+    restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}  # MongoDB Atlas URL
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${GOOGLE_CALLBACK_URL}
+      - CORS_ORIGIN=${CORS_ORIGIN}
+      - PORT=3001
+    volumes:
+      - backend_logs:/app/logs
+      - uploads:/app/uploads
     networks:
       - n3rve-network
 
   # Frontend Service
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        VITE_API_URL: ${VITE_API_URL:-https://n3rve-onboarding.com/api}
-        VITE_DROPBOX_CLIENT_ID: ${VITE_DROPBOX_CLIENT_ID}
-        VITE_DROPBOX_APP_KEY: ${VITE_DROPBOX_APP_KEY:-slffi4mfztfohqd}
-        VITE_DROPBOX_REDIRECT_URI: ${VITE_DROPBOX_REDIRECT_URI:-https://n3rve-onboarding.com/dropbox-callback}
-        VITE_DROPBOX_ACCESS_TOKEN: ${VITE_DROPBOX_ACCESS_TOKEN}
+    image: ddalgiwuu/n3rve-platform:frontend-latest
     container_name: n3rve-frontend
-    restart: always
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./docker/nginx/ssl:/etc/nginx/ssl:ro
-      # SSL certificates volume (for production)
-      - /etc/letsencrypt:/etc/letsencrypt:ro
+      - ./ssl:/etc/letsencrypt:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
     depends_on:
       - backend
     networks:
       - n3rve-network
+
+volumes:
+  backend_logs:
+  uploads:
 
 networks:
   n3rve-network:
