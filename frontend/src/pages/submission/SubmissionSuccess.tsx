@@ -1,120 +1,82 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { CheckCircle, Calendar, Clock, Mail, ArrowRight, Home, FileText } from 'lucide-react';
-import { useLanguageStore } from '@/store/language.store';
-import confetti from 'canvas-confetti';
+import { CheckCircle, Music, Disc, Upload, Calendar, Shield } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { t, useLanguageStore } from '@/store/language.store'
 
-const SubmissionSuccess = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { t } = useLanguageStore();
-  const submissionId = location.state?.submissionId || 'SUB-' + Date.now();
+export default function SubmissionSuccess() {
+  const navigate = useNavigate()
+  const language = useLanguageStore(state => state.language)
 
-  React.useEffect(() => {
-    // Trigger confetti animation
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 },
-      colors: ['#8B5CF6', '#3B82F6', '#10B981']
-    });
-  }, []);
-
-  const nextSteps = [
-    {
-      icon: <Clock className="w-6 h-6" />,
-      title: t('success.reviewTime', 'Review Time'),
-      description: t('success.reviewTimeDesc', 'Your submission will be reviewed within 2-3 business days')
-    },
-    {
-      icon: <Mail className="w-6 h-6" />,
-      title: t('success.emailNotification', 'Email Notification'),
-      description: t('success.emailDesc', 'You will receive an email once your submission is reviewed')
-    },
-    {
-      icon: <Calendar className="w-6 h-6" />,
-      title: t('success.releaseSchedule', 'Release Schedule'),
-      description: t('success.releaseDesc', 'If approved, your release will be scheduled according to your preferred date')
-    }
-  ];
+  const steps = [
+    { id: 1, icon: Disc, title: t('onboarding.step2').split(' ')[0], description: t('onboarding.step2') },
+    { id: 2, icon: Music, title: t('onboarding.step3').split(' ')[0], description: t('onboarding.step3') },
+    { id: 3, icon: Upload, title: t('onboarding.step4').split(' ')[0], description: t('onboarding.step4') },
+    { id: 4, icon: Calendar, title: t('onboarding.step5').split(' ')[0], description: t('onboarding.step5') },
+    { id: 5, icon: Shield, title: t('onboarding.step6').split(' ')[0], description: t('onboarding.step6') }
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-6 flex items-center justify-center">
-      <div className="max-w-2xl w-full">
-        {/* Success Card */}
-        <div className="glass-effect rounded-2xl p-8 text-center animate-scale-in">
-          <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center animate-bounce">
-            <CheckCircle className="w-12 h-12 text-white" />
+    <div className="min-h-screen bg-gradient-to-br from-n3rve-50 to-pink-50 dark:from-gray-900 dark:to-gray-800 py-12">
+      <div className="max-w-4xl mx-auto px-4">
+        {/* Success Message */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-green-900/30 rounded-full mb-6">
+            <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
           </div>
-          
-          <h1 className="text-4xl font-bold text-white mb-4">
-            {t('success.title', 'Submission Successful!')}
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
+            {t('onboarding.submitSuccess')}
           </h1>
-          
-          <p className="text-xl text-gray-300 mb-8">
-            {t('success.message', 'Your music has been successfully submitted for review.')}
+          <p className="text-lg text-gray-600 dark:text-gray-400">
+            {t('submission.success.reviewNotice')}
           </p>
-          
-          <div className="glass-effect rounded-lg p-4 mb-8 bg-purple-500/10 border border-purple-500/30">
-            <p className="text-sm text-gray-400 mb-1">{t('success.submissionId', 'Submission ID')}</p>
-            <p className="text-lg font-mono text-purple-400">{submissionId}</p>
-          </div>
         </div>
 
-        {/* Next Steps */}
-        <div className="mt-8 space-y-4">
-          <h2 className="text-2xl font-bold text-white text-center mb-6">
-            {t('success.nextSteps', 'What Happens Next?')}
+        {/* Steps Summary */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mb-8">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-6">
+            {language === 'ko' ? '제출 완료 항목' : 'Submitted Items'}
           </h2>
           
-          {nextSteps.map((step, index) => (
-            <div
-              key={index}
-              className="glass-effect rounded-xl p-6 flex items-start gap-4 animate-slide-in hover-lift"
-              style={{ animationDelay: `${index * 0.1 + 0.3}s` }}
-            >
-              <div className="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                {React.cloneElement(step.icon, { className: 'w-6 h-6 text-purple-400' })}
-              </div>
-              <div>
-                <h3 className="font-semibold text-white mb-1">{step.title}</h3>
-                <p className="text-gray-300">{step.description}</p>
-              </div>
-            </div>
-          ))}
+          <div className="space-y-4">
+            {steps.map((step) => {
+              const Icon = step.icon
+              return (
+                <div key={step.id} className="flex items-center gap-4">
+                  <div className="flex items-center justify-center w-10 h-10 bg-green-100 dark:bg-green-900/30 rounded-full">
+                    <Icon className="w-5 h-5 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-900 dark:text-white">
+                        {step.id}. {step.title}
+                      </span>
+                      <CheckCircle className="w-4 h-4 text-green-500" />
+                    </div>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
 
-        {/* Actions */}
-        <div className="mt-8 flex flex-col sm:flex-row gap-4 animate-fade-in-delayed">
-          <button
-            onClick={() => navigate('/submissions')}
-            className="flex-1 px-6 py-3 glass-effect hover:bg-gray-800/50 rounded-lg font-medium transition-all hover-lift flex items-center justify-center gap-2"
-          >
-            <FileText className="w-5 h-5" />
-            {t('success.viewSubmissions', 'View My Submissions')}
-          </button>
-          
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <button
             onClick={() => navigate('/dashboard')}
-            className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-medium transition-all hover-lift flex items-center justify-center gap-2"
+            className="px-8 py-3 bg-n3rve-main text-white rounded-lg hover:bg-n3rve-700 transition-colors font-medium"
           >
-            <Home className="w-5 h-5" />
-            {t('success.backToDashboard', 'Back to Dashboard')}
+            {language === 'ko' ? '대시보드로 이동' : 'Go to Dashboard'}
           </button>
-        </div>
-
-        {/* Additional Info */}
-        <div className="mt-8 text-center text-gray-400 text-sm animate-fade-in-delayed">
-          <p>
-            {t('success.questions', 'Have questions?')}{' '}
-            <a href="mailto:support@n3rve.com" className="text-purple-400 hover:text-purple-300 transition-colors">
-              {t('success.contactSupport', 'Contact our support team')}
-            </a>
-          </p>
+          <button
+            onClick={() => navigate('/onboarding')}
+            className="px-8 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
+          >
+            {language === 'ko' ? '새 음원 등록' : 'Register New Release'}
+          </button>
         </div>
       </div>
     </div>
-  );
-};
-
-export default SubmissionSuccess;
+  )
+}
