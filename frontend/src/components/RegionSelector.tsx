@@ -12,7 +12,9 @@ interface Region {
 
 interface RegionSelectorProps {
   selectedRegions: string[]
-  onRegionsChange: (regions: string[]) => void
+  onChange: (regions: string[]) => void
+  excludedRegions?: string[]
+  onExcludedChange?: (regions: string[]) => void
   className?: string
 }
 
@@ -74,7 +76,7 @@ const regions: Region[] = [
   { code: 'NG', nameKo: '나이지리아', nameEn: 'Nigeria', continent: 'Africa' },
 ]
 
-export default function RegionSelector({ selectedRegions, onRegionsChange, className }: RegionSelectorProps) {
+export default function RegionSelector({ selectedRegions, onChange, excludedRegions = [], onExcludedChange, className }: RegionSelectorProps) {
   const { language } = useLanguageStore()
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [searchQuery, setSearchQuery] = useState('')
@@ -95,9 +97,9 @@ export default function RegionSelector({ selectedRegions, onRegionsChange, class
 
   const toggleRegion = (code: string) => {
     if (selectedRegions.includes(code)) {
-      onRegionsChange(selectedRegions.filter(r => r !== code))
+      onChange(selectedRegions.filter(r => r !== code))
     } else {
-      onRegionsChange([...selectedRegions, code])
+      onChange([...selectedRegions, code])
     }
   }
 
@@ -107,11 +109,11 @@ export default function RegionSelector({ selectedRegions, onRegionsChange, class
     
     if (allSelected) {
       // Deselect all visible regions
-      onRegionsChange(selectedRegions.filter(code => !visibleCodes.includes(code)))
+      onChange(selectedRegions.filter(code => !visibleCodes.includes(code)))
     } else {
       // Select all visible regions
       const newSelection = [...new Set([...selectedRegions, ...visibleCodes])]
-      onRegionsChange(newSelection)
+      onChange(newSelection)
     }
   }
 
