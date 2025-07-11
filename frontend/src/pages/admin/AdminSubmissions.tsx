@@ -12,11 +12,23 @@ interface Track {
   titleKo: string;
   titleEn: string;
   artists: string[];
+  featuringArtists?: string[];
+  contributors?: Contributor[];
   composer: string;
   lyricist: string;
   isTitle: boolean;
   dolbyAtmos: boolean;
+  stereo: boolean;
   audioFileUrl?: string;
+}
+
+interface Contributor {
+  name: string;
+  translations?: { language: string; name: string; }[];
+  roles: string[];
+  instruments: string[];
+  spotifyUrl?: string;
+  appleMusicUrl?: string;
 }
 
 interface Submission {
@@ -35,6 +47,42 @@ interface Submission {
   phone?: string;
   createdAt: string;
   tracks: Track[];
+  // Artist platform IDs
+  spotifyId?: string;
+  appleMusicId?: string;
+  youtubeChannelId?: string;
+  // Marketing info
+  marketing?: {
+    genre: string;
+    subgenre?: string;
+    tags?: string[];
+    similarArtists?: string[];
+    marketingAngle?: string;
+    pressRelease?: string;
+    marketingBudget?: string;
+    socialMediaCampaign?: string;
+    spotifyPitching?: string;
+    appleMusicPitching?: string;
+    tiktokStrategy?: string;
+    youtubeStrategy?: string;
+    instagramStrategy?: string;
+    facebookStrategy?: string;
+    twitterStrategy?: string;
+    influencerOutreach?: string;
+    playlistTargets?: string[];
+    radioTargets?: string[];
+    pressTargets?: string[];
+    tourDates?: { date: string; venue: string; city: string; }[];
+    merchandising?: string;
+    specialEditions?: string;
+    musicVideoPlans?: string;
+    behindTheScenes?: string;
+    documentaryPlans?: string;
+    nftStrategy?: string;
+    metaverseActivations?: string;
+    brandPartnerships?: string;
+    syncOpportunities?: string;
+  };
   files: {
     coverImageUrl?: string;
     artistPhotoUrl?: string;
@@ -155,7 +203,9 @@ const AdminSubmissions = () => {
     const headers = [
       'Submission ID', 'Artist Name', 'Album Title', 'Album Type', 'Release Date',
       'Submitter', 'Email', 'Company', 'Phone', 'Status', 'Tracks',
-      'Has Dolby Atmos', 'Marketing Keywords', 'Target Audience'
+      'Has Dolby Atmos', 'Has Stereo', 'Spotify ID', 'Apple Music ID', 'YouTube Channel ID',
+      'Marketing Genre', 'Marketing Subgenre', 'Marketing Keywords', 'Target Audience',
+      'Similar Artists', 'Marketing Angle', 'Social Media Campaign'
     ];
     
     const rows = filteredSubmissions.map(sub => [
@@ -171,11 +221,20 @@ const AdminSubmissions = () => {
       sub.status,
       sub.tracks.length,
       sub.tracks.some(t => t.dolbyAtmos) ? 'Yes' : 'No',
-      sub.release.marketingKeywords || '',
-      sub.release.targetAudience || ''
+      sub.tracks.some(t => t.stereo) ? 'Yes' : 'No',
+      sub.spotifyId || '',
+      sub.appleMusicId || '',
+      sub.youtubeChannelId || '',
+      sub.marketing?.genre || '',
+      sub.marketing?.subgenre || '',
+      sub.release.marketingKeywords || sub.marketing?.marketingAngle || '',
+      sub.release.targetAudience || '',
+      sub.marketing?.similarArtists?.join('; ') || sub.release.similarArtists || '',
+      sub.marketing?.marketingAngle || '',
+      sub.marketing?.socialMediaCampaign || ''
     ]);
 
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+    const csv = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -253,6 +312,30 @@ const AdminSubmissions = () => {
                   <p className="text-white">{format(new Date(selectedSubmission.releaseDate), 'yyyy-MM-dd')}</p>
                 </div>
               </div>
+              
+              {/* 아티스트 플랫폼 ID */}
+              {(selectedSubmission.spotifyId || selectedSubmission.appleMusicId || selectedSubmission.youtubeChannelId) && (
+                <div className="mt-4 pt-4 border-t border-white/10">
+                  <p className="text-sm text-gray-400 mb-2">{t('아티스트 플랫폼 ID', 'Artist Platform IDs')}</p>
+                  <div className="space-y-1">
+                    {selectedSubmission.spotifyId && (
+                      <p className="text-white text-sm">
+                        <span className="text-green-400">Spotify:</span> {selectedSubmission.spotifyId}
+                      </p>
+                    )}
+                    {selectedSubmission.appleMusicId && (
+                      <p className="text-white text-sm">
+                        <span className="text-red-400">Apple Music:</span> {selectedSubmission.appleMusicId}
+                      </p>
+                    )}
+                    {selectedSubmission.youtubeChannelId && (
+                      <p className="text-white text-sm">
+                        <span className="text-red-500">YouTube:</span> {selectedSubmission.youtubeChannelId}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* 제출자 정보 */}
@@ -339,7 +422,20 @@ const AdminSubmissions = () => {
                         {track.dolbyAtmos && (
                           <span className="ml-2 text-blue-400">• Dolby Atmos</span>
                         )}
+                        {track.stereo && (
+                          <span className="ml-2 text-gray-400">• Stereo</span>
+                        )}
                       </p>
+                      {track.featuringArtists && track.featuringArtists.length > 0 && (
+                        <p className="text-gray-400 text-xs">
+                          {t('피처링', 'Featuring')}: {track.featuringArtists.join(', ')}
+                        </p>
+                      )}
+                      {track.contributors && track.contributors.length > 0 && (
+                        <p className="text-gray-400 text-xs">
+                          {t('기여자', 'Contributors')}: {track.contributors.map(c => c.name).join(', ')}
+                        </p>
+                      )}
                     </div>
                     {track.audioFileUrl && (
                       <button
@@ -355,41 +451,137 @@ const AdminSubmissions = () => {
             </div>
 
             {/* 마케팅 정보 */}
-            <div className="glassmorphism p-4">
-              <h3 className="text-lg font-semibold text-white mb-3">{t('마케팅 정보', 'Marketing Info')}</h3>
-              <div className="space-y-3">
-                {selectedSubmission.release.albumIntroduction && (
-                  <div>
-                    <p className="text-sm text-gray-400">{t('앨범 소개', 'Album Introduction')}</p>
-                    <p className="text-white text-sm mt-1">{selectedSubmission.release.albumIntroduction}</p>
-                  </div>
-                )}
-                {selectedSubmission.release.marketingKeywords && (
-                  <div>
-                    <p className="text-sm text-gray-400">{t('마케팅 키워드', 'Marketing Keywords')}</p>
-                    <p className="text-white text-sm mt-1">{selectedSubmission.release.marketingKeywords}</p>
-                  </div>
-                )}
-                {selectedSubmission.release.targetAudience && (
-                  <div>
-                    <p className="text-sm text-gray-400">{t('타겟 청중', 'Target Audience')}</p>
-                    <p className="text-white text-sm mt-1">{selectedSubmission.release.targetAudience}</p>
-                  </div>
-                )}
-                {selectedSubmission.release.moods && selectedSubmission.release.moods.length > 0 && (
-                  <div>
-                    <p className="text-sm text-gray-400">{t('무드', 'Moods')}</p>
-                    <div className="flex flex-wrap gap-2 mt-1">
-                      {selectedSubmission.release.moods.map((mood, i) => (
-                        <span key={i} className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs">
-                          {mood}
-                        </span>
-                      ))}
+            {selectedSubmission.marketing && (
+              <div className="glassmorphism p-4">
+                <h3 className="text-lg font-semibold text-white mb-3">{t('마케팅 정보', 'Marketing Info')}</h3>
+                <div className="space-y-3">
+                  {/* 장르 */}
+                  {selectedSubmission.marketing.genre && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('장르', 'Genre')}</p>
+                      <p className="text-white text-sm mt-1">
+                        {selectedSubmission.marketing.genre}
+                        {selectedSubmission.marketing.subgenre && ` - ${selectedSubmission.marketing.subgenre}`}
+                      </p>
                     </div>
-                  </div>
-                )}
+                  )}
+                  
+                  {/* 태그 */}
+                  {selectedSubmission.marketing.tags && selectedSubmission.marketing.tags.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('태그', 'Tags')}</p>
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {selectedSubmission.marketing.tags.map((tag, i) => (
+                          <span key={i} className="px-2 py-1 bg-blue-500/20 text-blue-300 rounded text-xs">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 비슷한 아티스트 */}
+                  {selectedSubmission.marketing.similarArtists && selectedSubmission.marketing.similarArtists.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('비슷한 아티스트', 'Similar Artists')}</p>
+                      <p className="text-white text-sm mt-1">{selectedSubmission.marketing.similarArtists.join(', ')}</p>
+                    </div>
+                  )}
+                  
+                  {/* 마케팅 전략 */}
+                  {selectedSubmission.marketing.marketingAngle && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('마케팅 전략', 'Marketing Strategy')}</p>
+                      <p className="text-white text-sm mt-1">{selectedSubmission.marketing.marketingAngle}</p>
+                    </div>
+                  )}
+                  
+                  {/* 소셜 미디어 캐페인 */}
+                  {selectedSubmission.marketing.socialMediaCampaign && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('소셜 미디어 캘페인', 'Social Media Campaign')}</p>
+                      <p className="text-white text-sm mt-1">{selectedSubmission.marketing.socialMediaCampaign}</p>
+                    </div>
+                  )}
+                  
+                  {/* 플레이리스트 타겟 */}
+                  {selectedSubmission.marketing.playlistTargets && selectedSubmission.marketing.playlistTargets.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('플레이리스트 타겟', 'Playlist Targets')}</p>
+                      <p className="text-white text-sm mt-1">{selectedSubmission.marketing.playlistTargets.join(', ')}</p>
+                    </div>
+                  )}
+                  
+                  {/* 투어 일정 */}
+                  {selectedSubmission.marketing.tourDates && selectedSubmission.marketing.tourDates.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('투어 일정', 'Tour Dates')}</p>
+                      <div className="space-y-1 mt-1">
+                        {selectedSubmission.marketing.tourDates.map((tour, i) => (
+                          <p key={i} className="text-white text-sm">
+                            {tour.date} - {tour.venue}, {tour.city}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 기타 중요 필드들 */}
+                  {selectedSubmission.marketing.spotifyPitching && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('Spotify 피칭', 'Spotify Pitching')}</p>
+                      <p className="text-white text-sm mt-1">{selectedSubmission.marketing.spotifyPitching}</p>
+                    </div>
+                  )}
+                  
+                  {selectedSubmission.marketing.brandPartnerships && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('브랜드 파트너십', 'Brand Partnerships')}</p>
+                      <p className="text-white text-sm mt-1">{selectedSubmission.marketing.brandPartnerships}</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
+            
+            {/* 기존 마케팅 정보 (하위 호환성) */}
+            {selectedSubmission.release && (
+              <div className="glassmorphism p-4">
+                <h3 className="text-lg font-semibold text-white mb-3">{t('기타 정보', 'Additional Info')}</h3>
+                <div className="space-y-3">
+                  {selectedSubmission.release.albumIntroduction && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('앨범 소개', 'Album Introduction')}</p>
+                      <p className="text-white text-sm mt-1">{selectedSubmission.release.albumIntroduction}</p>
+                    </div>
+                  )}
+                  {selectedSubmission.release.marketingKeywords && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('마케팅 키워드', 'Marketing Keywords')}</p>
+                      <p className="text-white text-sm mt-1">{selectedSubmission.release.marketingKeywords}</p>
+                    </div>
+                  )}
+                  {selectedSubmission.release.targetAudience && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('타겟 청중', 'Target Audience')}</p>
+                      <p className="text-white text-sm mt-1">{selectedSubmission.release.targetAudience}</p>
+                    </div>
+                  )}
+                  {selectedSubmission.release.moods && selectedSubmission.release.moods.length > 0 && (
+                    <div>
+                      <p className="text-sm text-gray-400">{t('무드', 'Moods')}</p>
+                      <div className="flex flex-wrap gap-2 mt-1">
+                        {selectedSubmission.release.moods.map((mood, i) => (
+                          <span key={i} className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs">
+                            {mood}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* 소셜 미디어 링크 */}
             {(selectedSubmission.release.spotifyArtistId || 
