@@ -81,3 +81,4 @@ GitHub Actions를 통한 자동 배포가 구성되어 있습니다.
 - SSL 인증서 자동 갱신: 매월 1일
 - 배포 시간: 약 5-10분 소요# Trigger GitHub Actions
 # Test commit to trigger workflow
+# Repository is now public
