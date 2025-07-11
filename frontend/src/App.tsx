@@ -8,7 +8,7 @@ import LoadingSpinner from './components/common/LoadingSpinner'
 const HomePage = lazy(() => import('./pages/Home'))
 const LoginPage = lazy(() => import('./pages/Login'))
 const DashboardPage = lazy(() => import('./pages/Dashboard'))
-const ReleaseSubmissionPage = lazy(() => import('./pages/ReleaseSubmission'))
+const ReleaseSubmissionPage = lazy(() => import('./pages/ReleaseSubmissionNew'))
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminSubmissionsPage = lazy(() => import('./pages/admin/AdminSubmissions'))
 const SubmissionManagementPage = lazy(() => import('./pages/admin/SubmissionManagement'))

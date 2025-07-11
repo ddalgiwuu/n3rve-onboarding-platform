@@ -6,7 +6,7 @@ import Sidebar from './Sidebar'
 export default function Layout() {
   // Start with sidebar closed by default
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const resizeTimeoutRef = useRef<NodeJS.Timeout>()
+  const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen)

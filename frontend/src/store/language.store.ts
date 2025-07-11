@@ -1912,3 +1912,23 @@ export function t(key: string, replacements?: Record<string, string | number>): 
   
   return value
 }
+
+// Hook for translations (for compatibility)
+export function useTranslation() {
+  const language = useLanguageStore(state => state.language)
+  
+  return {
+    t: (key: string, replacements?: Record<string, string | number>) => {
+      let value = translations[language][key as keyof typeof translations['ko']] || key
+      
+      if (replacements) {
+        Object.entries(replacements).forEach(([placeholder, replacement]) => {
+          value = value.replace(new RegExp(`{{${placeholder}}}`, 'g'), String(replacement))
+        })
+      }
+      
+      return value
+    },
+    language
+  }
+}
