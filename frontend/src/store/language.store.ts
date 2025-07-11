@@ -53,6 +53,10 @@ export const translations = {
     'auth.register': '회원가입',
     'auth.welcomeTitle': 'N3RVE 음원 발매 시스템',
     'auth.welcomeSubtitle': '음원 발매의 모든 것',
+    'auth.continueWithGoogle': 'Google 계정으로 시작하기',
+    'auth.signingIn': '로그인 중...',
+    'auth.secureLogin': '안전한 로그인',
+    'auth.googleLoginDescription': 'Google 계정으로 간편하게 로그인하세요',
     
     // 온보딩
     'onboarding.title': '음원 발매 신청',
@@ -990,6 +994,10 @@ export const translations = {
     'auth.register': 'Sign up',
     'auth.welcomeTitle': 'N3RVE Music Distribution',
     'auth.welcomeSubtitle': 'Everything for music release',
+    'auth.continueWithGoogle': 'Continue with Google',
+    'auth.signingIn': 'Signing in...',
+    'auth.secureLogin': 'Secure login',
+    'auth.googleLoginDescription': 'Sign in easily with your Google account',
     
     // Onboarding
     'onboarding.title': 'Music Release Application',
