@@ -69,16 +69,32 @@ docker-compose -f docker-compose.prod.yml up -d
 - Dropbox Access Token은 주기적으로 갱신하세요
 - SSL 인증서를 설정하세요
 
-## 라이선스
+## 프로덕션 환경
 
-Private Repository - All Rights Reserved
+- URL: https://n3rve-onboarding.com
+- 서버: AWS EC2 (Seoul Region)
+- 데이터베이스: MongoDB Atlas
 
 ## CI/CD
 
 GitHub Actions를 통한 자동 배포가 구성되어 있습니다.
 - Push to main: 자동 배포
-- Manual trigger: Actions 탭에서 수동 실행 가능
-- SSL 인증서 자동 갱신: 매월 1일
-- 배포 시간: 약 5-10분 소요# Trigger GitHub Actions
-# Test commit to trigger workflow
-# Repository is now public
+- Docker Hub: ddalgiwuu/n3rve-platform
+- 배포 프로세스: GitHub → Docker Hub → EC2 자동 배포
+- 배포 시간: 약 3-5분 소요
+
+## 환경 변수
+
+필수 환경 변수:
+- `NODE_ENV`: production
+- `PORT`: 3001 (백엔드)
+- `MONGODB_URI`: MongoDB Atlas 연결 문자열
+- `JWT_SECRET`: JWT 토큰 시크릿
+- `JWT_REFRESH_SECRET`: 리프레시 토큰 시크릿
+- `GOOGLE_CLIENT_ID`: Google OAuth 클라이언트 ID
+- `GOOGLE_CLIENT_SECRET`: Google OAuth 클라이언트 시크릿
+- `CORS_ORIGIN`: https://n3rve-onboarding.com
+
+## 라이선스
+
+© 2024 N3RVE. All Rights Reserved.
