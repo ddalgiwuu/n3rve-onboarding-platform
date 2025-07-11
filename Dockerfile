@@ -13,6 +13,12 @@ RUN npm install --force
 COPY frontend/ ./
 # Install rollup dependencies manually before build
 RUN npm install @rollup/rollup-linux-x64-musl --force || true
+# Set production environment variables for build
+ENV VITE_API_URL=https://n3rve-onboarding.com/api
+ENV VITE_WS_URL=wss://n3rve-onboarding.com
+ENV VITE_DROPBOX_CLIENT_ID=slffi4mfztfohqd
+ENV VITE_DROPBOX_APP_KEY=slffi4mfztfohqd
+ENV VITE_DROPBOX_REDIRECT_URI=https://n3rve-onboarding.com/dropbox-callback
 RUN npm run build
 
 # Stage 2: Build Backend
