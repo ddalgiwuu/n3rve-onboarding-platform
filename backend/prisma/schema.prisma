@@ -73,6 +73,11 @@ model Submission {
   artistType      ArtistType?
   members         Member[]
   
+  // Artist platform IDs
+  spotifyId       String?
+  appleMusicId    String?
+  youtubeChannelId String?
+  
   // Album info - 추가 필드
   albumTitle      String
   albumTitleEn    String?
@@ -97,6 +102,9 @@ model Submission {
   
   // Release info
   release         ReleaseInfo
+  
+  // Marketing info
+  marketing       MarketingInfo?
   
   // Admin fields
   adminNotes      String?
@@ -140,7 +148,9 @@ type Translation {
 // 추가: 기여자 타입
 type Contributor {
   name          String
-  role          String
+  translations  Translation[]
+  roles         String[]
+  instruments   String[]
   spotifyUrl    String?
   appleMusicUrl String?
 }
@@ -387,4 +397,73 @@ enum ReleaseFormat {
   SPECIAL
   REMASTERED
   ANNIVERSARY
+}
+
+// Marketing information type
+type MarketingInfo {
+  genre                     String
+  subgenre                  String?
+  tags                      String[]
+  similarArtists            String[]
+  marketingAngle            String?
+  pressRelease              String?
+  marketingBudget           String?
+  socialMediaCampaign       String?
+  spotifyPitching           String?
+  appleMusicPitching        String?
+  tiktokStrategy            String?
+  youtubeStrategy           String?
+  instagramStrategy         String?
+  facebookStrategy          String?
+  twitterStrategy           String?
+  influencerOutreach        String?
+  playlistTargets           String[]
+  radioTargets              String[]
+  pressTargets              String[]
+  tourDates                 TourDate[]
+  merchandising             String?
+  specialEditions           String?
+  musicVideoPlans           String?
+  behindTheScenes           String?
+  documentaryPlans          String?
+  nftStrategy               String?
+  metaverseActivations      String?
+  brandPartnerships         String?
+  syncOpportunities         String?
+  distributionPlatforms     DistributionPlatforms
+  pricing                   PricingInfo
+}
+
+type TourDate {
+  date      DateTime
+  venue     String
+  city      String
+}
+
+type DistributionPlatforms {
+  spotify       Boolean
+  appleMusic    Boolean
+  youtube       Boolean
+  amazonMusic   Boolean
+  tidal         Boolean
+  deezer        Boolean
+  soundcloud    Boolean
+  bandcamp      Boolean
+  audiomack     Boolean
+  kkbox         Boolean
+  lineMusic     Boolean
+  qq            Boolean
+  netease       Boolean
+  joox          Boolean
+  boomplay      Boolean
+  anghami       Boolean
+  yandex        Boolean
+  vk            Boolean
+  custom        String[]
+}
+
+type PricingInfo {
+  defaultPrice      String
+  currency          String
+  territoryPricing  Json?
 }
