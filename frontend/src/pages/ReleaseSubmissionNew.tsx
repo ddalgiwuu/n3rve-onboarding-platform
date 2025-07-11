@@ -23,7 +23,7 @@ import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import AudioPlayer from '@/components/AudioPlayer'
 import RegionSelector from '@/components/RegionSelector'
 import Button from '@/components/ui/Button'
-import Checkbox from '@/components/ui/Checkbox'
+import Toggle from '@/components/ui/Toggle'
 import Select from '@/components/ui/Select'
 import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
@@ -1079,19 +1079,26 @@ export default function ReleaseSubmissionNew() {
                               </Select>
                             </div>
                             
-                            <div className="flex items-center gap-4">
-                              <Checkbox
-                                id={`dolby-${track.id}`}
+                            <div className="flex items-center gap-6">
+                              <Toggle
                                 checked={track.dolbyAtmos || false}
-                                onChange={(e) => updateTrack(track.id, { dolbyAtmos: e.target.checked })}
+                                onChange={(checked) => updateTrack(track.id, { dolbyAtmos: checked })}
                                 label={tBilingual('돌비 애트모스', 'Dolby Atmos')}
+                                size="md"
                               />
                               
-                              <Checkbox
-                                id={`explicit-${track.id}`}
+                              <Toggle
                                 checked={track.explicitContent || false}
-                                onChange={(e) => updateTrack(track.id, { explicitContent: e.target.checked })}
+                                onChange={(checked) => updateTrack(track.id, { explicitContent: checked })}
                                 label={tBilingual('수위 제한 콘텐츠', 'Explicit Content')}
+                                size="md"
+                              />
+                              
+                              <Toggle
+                                checked={track.stereo || false}
+                                onChange={(checked) => updateTrack(track.id, { stereo: checked })}
+                                label={tBilingual('스테레오', 'Stereo')}
+                                size="md"
                               />
                             </div>
                             
@@ -1554,11 +1561,11 @@ export default function ReleaseSubmissionNew() {
         {/* Bottom actions */}
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
           <div className="flex items-center justify-between">
-            <Checkbox
-              id="terms"
+            <Toggle
               checked={formData.agreedToTerms}
-              onChange={(e) => setFormData(prev => ({ ...prev, agreedToTerms: e.target.checked }))}
+              onChange={(checked) => setFormData(prev => ({ ...prev, agreedToTerms: checked }))}
               label={tBilingual('이용약관 및 배포 조건에 동의합니다', 'I agree to the terms and distribution conditions')}
+              size="lg"
             />
             
             <div className="flex items-center gap-3">
