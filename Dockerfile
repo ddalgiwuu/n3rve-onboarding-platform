@@ -7,9 +7,12 @@ WORKDIR /app/frontend
 
 # Copy frontend files
 COPY frontend/package*.json ./
-RUN npm ci
+# Install with force to ensure rollup dependencies are properly installed
+RUN npm install --force
 
 COPY frontend/ ./
+# Install rollup dependencies manually before build
+RUN npm install @rollup/rollup-linux-x64-musl --force || true
 RUN npm run build
 
 # Stage 2: Build Backend
@@ -19,6 +22,8 @@ WORKDIR /app/backend
 
 # Copy backend files
 COPY backend/package*.json ./
+# Copy prisma schema before npm ci to avoid postinstall error
+COPY backend/prisma ./prisma
 RUN npm ci
 
 COPY backend/ ./
