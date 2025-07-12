@@ -152,4 +152,53 @@ export class AuthController {
     });
     return updatedUser;
   }
+
+  @Public()
+  @Get('test-login')
+  async testLogin(@Res() res: Response) {
+    try {
+      // Create or find test user
+      const testEmail = 'test@n3rve.com';
+      let user = await this.usersService.findOne(testEmail);
+      
+      if (!user) {
+        user = await this.usersService.create({
+          email: testEmail,
+          googleId: 'test-google-id',
+          name: 'Test Admin User',
+          profilePicture: '',
+          role: 'ADMIN',
+          emailVerified: true,
+          isActive: true,
+          isProfileComplete: true,
+          preferences: {
+            language: 'KO',
+            notifications: {
+              email: true,
+              sms: false,
+              push: true,
+            },
+          },
+        });
+      }
+
+      const result = await this.authService.googleLogin({
+        googleId: user.googleId,
+        email: user.email,
+        name: user.name,
+        profilePicture: user.profilePicture,
+        provider: 'google',
+        accessToken: 'test-token',
+      });
+      
+      const frontendUrl = 'https://n3rve-onboarding.com';
+      
+      res.redirect(
+        `${frontendUrl}/auth/callback?access_token=${result.access_token}&refresh_token=${result.refresh_token}&profile_complete=true`,
+      );
+    } catch (error) {
+      console.error('Test login error:', error);
+      res.status(500).json({ error: 'Test login failed' });
+    }
+  }
 }

@@ -137,6 +137,16 @@ export default function LoginPage() {
               <span>{isLoading ? t('auth.signingIn') : t('auth.continueWithGoogle')}</span>
             </button>
 
+            {/* Temporary test login button */}
+            {process.env.NODE_ENV === 'development' || window.location.hostname === 'n3rve-onboarding.com' ? (
+              <button
+                onClick={() => window.location.href = '/api/auth/test-login'}
+                className="w-full py-3 px-4 bg-gray-600 hover:bg-gray-700 text-white rounded-xl font-medium transition-all"
+              >
+                테스트 로그인 (임시)
+              </button>
+            ) : null}
+
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-gray-300 dark:border-gray-600"></span>
