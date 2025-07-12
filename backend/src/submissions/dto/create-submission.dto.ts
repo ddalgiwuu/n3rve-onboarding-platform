@@ -60,6 +60,20 @@ export class CreateSubmissionDto {
     appleMusicUrl?: string;
   }>;
 
+  // Album Contributors
+  albumContributors?: Array<{
+    id: string;
+    name: string;
+    translations: Array<{
+      language: string;
+      name: string;
+    }>;
+    roles: string[];
+    instruments: string[];
+    spotifyUrl?: string;
+    appleMusicUrl?: string;
+  }>;
+
   // Tracks
   tracks: Array<{
     id: string;
@@ -150,6 +164,10 @@ export class CreateSubmissionDto {
     consumerReleaseDate: string;
     releaseTime?: string;
     selectedTimezone?: string;
+    consumerReleaseTime?: string;
+    originalReleaseTime?: string;
+    timezone?: string;
+    isRerelease?: boolean;
     cRights: string;
     pRights: string;
     previewStart?: number;
