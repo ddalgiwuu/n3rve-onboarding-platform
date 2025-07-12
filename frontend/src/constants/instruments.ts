@@ -1,137 +1,110 @@
-// Comprehensive instrument list based on music industry standards
-export const instrumentList = [
+export interface Instrument {
+  value: string
+  label: string
+  labelEn: string
+  category: string
+}
+
+export const instrumentList: Instrument[] = [
   // String Instruments
-  'String Bass Guitar', 'String Guitar', 'String Acoustic Guitar', 'String Electric Guitar',
-  'String Fiddle', 'String Banjo', 'Accordion', 'Acoustic Baritone Guitar', 'Acoustic Bass Guitar',
-  'Acoustic Fretless Guitar', 'Acoustic Guitar', 'Autoharp', 'Balalaika', 'Bandoneon', 'Bandurria', 
-  'Banjo', 'Baritone Guitar', 'Baroque Guitar', 'Baroque Violin', 'Bass', 'Berimbau', 'Biwa', 
-  'Bouzouki', 'Cavaquinho', 'Cello', 'Chapman Stick', 'Charango', 'Cittern', 'Classical Guitar',
-  'Contrabass', 'Cuatro', 'Diddley Bow', 'Dobro Guitar', 'Double Bass', 'Dulcimer',
-  'Electric Bass Guitar', 'Electric Cello', 'Electric Fretless Guitar', 'Electric Guitar',
-  'Electric Sitar', 'Electric Upright Bass', 'Electric Viola', 'Electric Violin',
-  'Fiddle', 'Flamenco Guitar', 'Gitern', 'Gut-String-Guitar', 'Hardingfele',
-  'Harp', 'Harpsichord', 'Hurdy Gurdy', 'Kora', 'Koto', 'Lap Steel Guitar', 'Lute',
-  'Mandocello', 'Mandola', 'Mandolin', 'Nylon-String-Guitar', 'Oud', 'Parlour Guitar',
-  'Pedal Steel Guitar', 'Portuguese Guitar', 'Rebab', 'Rebec', 'Requinto Guitar',
-  'Santoor', 'Santur', 'Sarangi', 'Sarod', 'Saz', 'Shamisen', 'Sitar', 'Slide Guitar',
-  'Spanish Guitar', 'Tanpura', 'Tenor Guitar', 'Theorbo', 'Tres', 'Ukulele',
-  'Vielle', 'Viol', 'Viola', 'Viola D\'Amore', 'Viola Da Gamba', 'Violin', 'Violoncello',
-  'Violone', 'Zarb', 'Zither',
-
-  // Wind Instruments
-  'Alto Clarinet', 'Alto Flute', 'Alto Horn', 'Alto Recorder', 'Alto Saxophone', 'Alto Trombone',
-  'Bagpipes', 'Bansuri', 'Baritone Horn', 'Baritone Saxophone', 'Baroque Flute', 'Bass Clarinet',
-  'Bass Flute', 'Bass Harmonica', 'Bass Oboe', 'Bass Recorder', 'Bass Saxophone', 'Bass Trombone',
-  'Bass Trumpet', 'Basset Clarinet', 'Basset Horn', 'Bassoon', 'Bugle', 'C-Melody Sax',
-  'Clarinet', 'Contrabass Clarinet', 'Contrabass Flute', 'Contrabass Recorder',
-  'Contrabass Sarrusophone', 'Contrabass Saxophone', 'Contrabass Trombone', 'Contrabassoon',
-  'Contralto Clarinet', 'Cornet', 'Cornett', 'Crumhorn', 'Cuesophone', 'Curtal',
-  'Didgeridoo', 'Duduk', 'Dulcian', 'Electronic Wind Instrument', 'English Horn', 'Euphonium',
-  'Fife', 'Flugelhorn', 'Flute', 'French Horn', 'Harmonica', 'Horn Section', 'Horns',
-  'Kazoo', 'Low Whistle', 'Lyricon', 'Manzello', 'Mellophone', 'Mouth Organ', 'Musette',
-  'Ney', 'Oboe', 'Oboe D\'Amore', 'Ocarina', 'Pan Flute', 'Panpipes', 'Penny Whistle',
-  'Piccolo', 'Piccolo Bass', 'Piccolo Oboe', 'Piccolo Trumpet', 'Pipe Organ', 'Recorder',
-  'Reed Organ', 'Sackbut', 'Sarrusophone', 'Saxello', 'Saxophone', 'Serpent', 'Shakuhachi',
-  'Shawm', 'Shenai', 'Sheng', 'Slide Saxophone', 'Slide Trumpet', 'Slide Whistle',
-  'Sopranino Clarinet', 'Sopranino Saxophone', 'Soprano Clarinet', 'Soprano Flute',
-  'Soprano Recorder', 'Soprano Saxophone', 'Sousaphone', 'Stritch', 'Tabor Pipe',
-  'Talkbox', 'Tarogato', 'Tenor Recorder', 'Tenor Saxophone', 'Tenor Trombone',
-  'Tin Whistle', 'Traverso', 'Trombone', 'Trombonium', 'Trumpet', 'Tuba',
-  'Uilleann Pipes', 'Valve Trombone', 'Whistle', 'Wood Flute',
-
+  { value: 'acoustic-guitar', label: '어쿠스틱 기타', labelEn: 'Acoustic Guitar', category: '현악기' },
+  { value: 'electric-guitar', label: '일렉트릭 기타', labelEn: 'Electric Guitar', category: '현악기' },
+  { value: 'bass-guitar', label: '베이스 기타', labelEn: 'Bass Guitar', category: '현악기' },
+  { value: 'classical-guitar', label: '클래식 기타', labelEn: 'Classical Guitar', category: '현악기' },
+  { value: 'ukulele', label: '우쿨렐레', labelEn: 'Ukulele', category: '현악기' },
+  { value: 'banjo', label: '밴조', labelEn: 'Banjo', category: '현악기' },
+  { value: 'mandolin', label: '만돌린', labelEn: 'Mandolin', category: '현악기' },
+  { value: 'harp', label: '하프', labelEn: 'Harp', category: '현악기' },
+  { value: 'violin', label: '바이올린', labelEn: 'Violin', category: '현악기' },
+  { value: 'viola', label: '비올라', labelEn: 'Viola', category: '현악기' },
+  { value: 'cello', label: '첼로', labelEn: 'Cello', category: '현악기' },
+  { value: 'double-bass', label: '더블 베이스', labelEn: 'Double Bass', category: '현악기' },
+  { value: 'gayageum', label: '가야금', labelEn: 'Gayageum', category: '현악기' },
+  { value: 'geomungo', label: '거문고', labelEn: 'Geomungo', category: '현악기' },
+  { value: 'haegeum', label: '해금', labelEn: 'Haegeum', category: '현악기' },
+  
   // Keyboard Instruments
-  'Accordion', 'Button Accordion', 'Celeste', 'Chamber Organ', 'Chamberlin', 'Chest Organ',
-  'Clavichord', 'Clavinet', 'Concert Harp', 'Concertina', 'Electric Piano', 'Electronic Valve Instrument',
-  'Farfisa', 'Fender Rhodes', 'Fortepiano', 'Hammond Organ', 'Harmonium', 'Keyboard Bass',
-  'Keyboards', 'Keytar', 'Melodica', 'Modular Synth', 'Omnichord', 'Ondes Martenot',
-  'Organ', 'Piano', 'Prepared Piano', 'Reed Organ', 'Rhodes Piano', 'Sampler',
-  'Spinet', 'Synclavier', 'Synthesizer', 'Tack Piano', 'Theremin', 'Toy Piano',
-  'Upright Piano', 'Wurlitzer',
+  { value: 'piano', label: '피아노', labelEn: 'Piano', category: '건반악기' },
+  { value: 'grand-piano', label: '그랜드 피아노', labelEn: 'Grand Piano', category: '건반악기' },
+  { value: 'upright-piano', label: '업라이트 피아노', labelEn: 'Upright Piano', category: '건반악기' },
+  { value: 'electric-piano', label: '일렉트릭 피아노', labelEn: 'Electric Piano', category: '건반악기' },
+  { value: 'keyboard', label: '키보드', labelEn: 'Keyboard', category: '건반악기' },
+  { value: 'synthesizer', label: '신시사이저', labelEn: 'Synthesizer', category: '건반악기' },
+  { value: 'organ', label: '오르간', labelEn: 'Organ', category: '건반악기' },
+  { value: 'accordion', label: '아코디언', labelEn: 'Accordion', category: '건반악기' },
+  { value: 'harpsichord', label: '하프시코드', labelEn: 'Harpsichord', category: '건반악기' },
+  
+  // Wind Instruments
+  { value: 'flute', label: '플루트', labelEn: 'Flute', category: '관악기' },
+  { value: 'piccolo', label: '피콜로', labelEn: 'Piccolo', category: '관악기' },
+  { value: 'oboe', label: '오보에', labelEn: 'Oboe', category: '관악기' },
+  { value: 'clarinet', label: '클라리넷', labelEn: 'Clarinet', category: '관악기' },
+  { value: 'saxophone', label: '색소폰', labelEn: 'Saxophone', category: '관악기' },
+  { value: 'trumpet', label: '트럼펫', labelEn: 'Trumpet', category: '관악기' },
+  { value: 'trombone', label: '트롬본', labelEn: 'Trombone', category: '관악기' },
+  { value: 'french-horn', label: '프렌치 호른', labelEn: 'French Horn', category: '관악기' },
+  { value: 'tuba', label: '튜바', labelEn: 'Tuba', category: '관악기' },
+  { value: 'harmonica', label: '하모니카', labelEn: 'Harmonica', category: '관악기' },
+  { value: 'daegeum', label: '대금', labelEn: 'Daegeum', category: '관악기' },
+  { value: 'piri', label: '피리', labelEn: 'Piri', category: '관악기' },
+  { value: 'taepyeongso', label: '태평소', labelEn: 'Taepyeongso', category: '관악기' },
+  
+  // Percussion
+  { value: 'drums', label: '드럼', labelEn: 'Drums', category: '타악기' },
+  { value: 'drum-set', label: '드럼 세트', labelEn: 'Drum Set', category: '타악기' },
+  { value: 'snare-drum', label: '스네어 드럼', labelEn: 'Snare Drum', category: '타악기' },
+  { value: 'bass-drum', label: '베이스 드럼', labelEn: 'Bass Drum', category: '타악기' },
+  { value: 'cymbals', label: '심벌즈', labelEn: 'Cymbals', category: '타악기' },
+  { value: 'hi-hat', label: '하이햇', labelEn: 'Hi-Hat', category: '타악기' },
+  { value: 'tambourine', label: '탬버린', labelEn: 'Tambourine', category: '타악기' },
+  { value: 'maracas', label: '마라카스', labelEn: 'Maracas', category: '타악기' },
+  { value: 'bongos', label: '봉고', labelEn: 'Bongos', category: '타악기' },
+  { value: 'congas', label: '콩가', labelEn: 'Congas', category: '타악기' },
+  { value: 'timpani', label: '팀파니', labelEn: 'Timpani', category: '타악기' },
+  { value: 'xylophone', label: '실로폰', labelEn: 'Xylophone', category: '타악기' },
+  { value: 'marimba', label: '마림바', labelEn: 'Marimba', category: '타악기' },
+  { value: 'vibraphone', label: '비브라폰', labelEn: 'Vibraphone', category: '타악기' },
+  { value: 'triangle', label: '트라이앵글', labelEn: 'Triangle', category: '타악기' },
+  { value: 'janggu', label: '장구', labelEn: 'Janggu', category: '타악기' },
+  { value: 'buk', label: '북', labelEn: 'Buk', category: '타악기' },
+  { value: 'kkwaenggwari', label: '꽹과리', labelEn: 'Kkwaenggwari', category: '타악기' },
+  { value: 'jing', label: '징', labelEn: 'Jing', category: '타악기' },
+  
+  // Electronic
+  { value: 'drum-machine', label: '드럼 머신', labelEn: 'Drum Machine', category: '전자악기' },
+  { value: 'sampler', label: '샘플러', labelEn: 'Sampler', category: '전자악기' },
+  { value: 'sequencer', label: '시퀀서', labelEn: 'Sequencer', category: '전자악기' },
+  { value: 'midi-controller', label: 'MIDI 컨트롤러', labelEn: 'MIDI Controller', category: '전자악기' },
+  { value: 'turntable', label: '턴테이블', labelEn: 'Turntable', category: '전자악기' },
+  { value: 'launchpad', label: '런치패드', labelEn: 'Launchpad', category: '전자악기' },
+  
+  // Voice
+  { value: 'vocals', label: '보컬', labelEn: 'Vocals', category: '보컬' },
+  { value: 'lead-vocals', label: '리드 보컬', labelEn: 'Lead Vocals', category: '보컬' },
+  { value: 'backing-vocals', label: '백킹 보컬', labelEn: 'Backing Vocals', category: '보컬' },
+  { value: 'rap', label: '랩', labelEn: 'Rap', category: '보컬' },
+  { value: 'beatbox', label: '비트박스', labelEn: 'Beatbox', category: '보컬' }
+]
 
-  // Percussion Instruments
-  'Balafon', 'Barrel Organ', 'Bass Drum', 'Bata Drums', 'Bells', 'Bendir', 'Bongos',
-  'Cajon', 'Castanets', 'Caxixi', 'Chekere', 'Chimes', 'Cimbalom', 'Claves',
-  'Conch Shells', 'Congas', 'Cowbell', 'Crotales', 'Cymbals', 'Daf', 'Dhol',
-  'Djembe', 'Doumbek', 'Drum Machine', 'Drums', 'Finger Cymbals', 'Frame Drum',
-  'Gender', 'Ghatam', 'Glockenspiel', 'Gong', 'Guro', 'Handclaps', 'Kalimba',
-  'Karkaba', 'Kendang', 'Kenong/Kethuk', 'Maracas', 'Marimba', 'Mridangam',
-  'Peking', 'Percussion', 'Shakers', 'Shekere', 'Sleigh Bells', 'Snare Drum',
-  'Spoons', 'Steel Drums', 'Surdo', 'Tabla', 'Talking Drum', 'Tamborim',
-  'Tambourine', 'Temple Blocks', 'Tenor Drum', 'Thavil', 'Timbales', 'Timpani',
-  'Triangle', 'Tubular Bells', 'Udu', 'Vibraphone', 'Vibraslap', 'Washboard',
-  'Wood Block', 'Xylophone', 'Xyloimba',
-
-  // Brass Instruments
-  'Alto Horn', 'Alto Trombone', 'Baritone Horn', 'Bass Trombone', 'Bass Trumpet',
-  'Bugle', 'Cornet', 'Euphonium', 'Flugelhorn', 'French Horn', 'Mellophone',
-  'Piccolo Trumpet', 'Sousaphone', 'Tenor Horn', 'Tenor Trombone', 'Trombone',
-  'Trombonium', 'Trumpet', 'Tuba', 'Valve Trombone',
-
-  // Vocal Types
-  'Alto Vocals', 'Background Vocals', 'Baritone Vocals', 'Bass Vocals', 'Beat Boxing',
-  'Chant Vocals', 'Chest Voice', 'Choir', 'Chorus', 'Contralto Vocals', 'Counter Tenor',
-  'Guest Vocals', 'Harmony Vocals', 'Lead Vocals', 'Mezzo-soprano Vocals', 'Rap',
-  'Soprano Vocals', 'Spoken Word', 'Tenor Vocals', 'Vocal Effects', 'Vocals', 'Vocoder',
-
-  // Electronic/Modern
-  'Drum Machine', 'E-Bow', 'Electronic Valve Instrument', 'Electronic Wind Instrument',
-  'Modular Synth', 'Sampler', 'Synclavier', 'Synthesizer', 'Talkbox', 'Theremin',
-  'Turntable', 'Vocoder',
-
-  // Special Effects/Other
-  'Finger Snaps', 'Handclaps', 'Noises', 'Sound Effects', 'Special Effects',
-  'Tape', 'Turntable Effects'
-].sort()
-
-// Instrument categories for better organization
-export const instrumentCategories = {
-  strings: [
-    'String Bass Guitar', 'String Guitar', 'String Acoustic Guitar', 'String Electric Guitar',
-    'String Fiddle', 'String Banjo', 'Acoustic Guitar', 'Electric Guitar', 'Bass Guitar',
-    'Violin', 'Viola', 'Cello', 'Double Bass', 'Harp', 'Ukulele', 'Mandolin', 'Banjo',
-    'Sitar', 'Lute', 'Classical Guitar', 'Flamenco Guitar', 'Spanish Guitar'
-  ],
-  wind: [
-    'Flute', 'Clarinet', 'Oboe', 'Bassoon', 'Saxophone', 'Trumpet', 'Trombone',
-    'French Horn', 'Tuba', 'Piccolo', 'English Horn', 'Bass Clarinet', 'Euphonium',
-    'Flugelhorn', 'Recorder', 'Harmonica', 'Accordion'
-  ],
-  keyboards: [
-    'Piano', 'Keyboard', 'Synthesizer', 'Electric Piano', 'Hammond Organ', 'Rhodes Piano',
-    'Clavinet', 'Harpsichord', 'Accordion', 'Celeste', 'Organ'
-  ],
-  percussion: [
-    'Drums', 'Percussion', 'Timpani', 'Marimba', 'Xylophone', 'Vibraphone', 'Glockenspiel',
-    'Cymbals', 'Triangle', 'Tambourine', 'Bongos', 'Congas', 'Djembe', 'Tabla', 'Cajon'
-  ],
-  brass: [
-    'Trumpet', 'Trombone', 'French Horn', 'Tuba', 'Euphonium', 'Flugelhorn', 'Cornet',
-    'Bass Trombone', 'Piccolo Trumpet', 'Sousaphone'
-  ],
-  vocal: [
-    'Vocals', 'Lead Vocals', 'Background Vocals', 'Choir', 'Rap', 'Beatbox',
-    'Soprano Vocals', 'Alto Vocals', 'Tenor Vocals', 'Bass Vocals'
-  ],
-  electronic: [
-    'Synthesizer', 'Drum Machine', 'Sampler', 'Turntable', 'Vocoder', 'Theremin',
-    'Electronic Wind Instrument', 'Modular Synth'
-  ]
+export function getInstrumentsByCategory(category: string): Instrument[] {
+  return instrumentList.filter(instrument => instrument.category === category)
 }
 
-// Get instrument category
-export function getInstrumentCategory(instrument: string): string {
-  for (const [category, instruments] of Object.entries(instrumentCategories)) {
-    if (instruments.includes(instrument)) {
-      return category
-    }
-  }
-  return 'other'
-}
-
-// Search instruments
-export function searchInstruments(query: string): string[] {
-  const lowerQuery = query.toLowerCase()
+export function searchInstruments(query: string): Instrument[] {
+  const lowercaseQuery = query.toLowerCase()
   return instrumentList.filter(instrument => 
-    instrument.toLowerCase().includes(lowerQuery)
+    instrument.label.toLowerCase().includes(lowercaseQuery) ||
+    instrument.labelEn.toLowerCase().includes(lowercaseQuery) ||
+    instrument.value.toLowerCase().includes(lowercaseQuery)
   )
+}
+
+export function getInstrumentLabel(value: string, language: 'ko' | 'en' = 'ko'): string {
+  const instrument = instrumentList.find(i => i.value === value)
+  return instrument ? (language === 'ko' ? instrument.label : instrument.labelEn) : value
+}
+
+export function getInstrumentCategory(value: string): string {
+  const instrument = instrumentList.find(i => i.value === value)
+  return instrument?.category || ''
 }

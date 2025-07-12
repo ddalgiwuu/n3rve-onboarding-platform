@@ -93,6 +93,7 @@ model Submission {
   hasTranslation  Boolean?        // 추가
   translationLanguage String?     // 추가
   translatedTitle String?         // 추가
+  albumContributors Contributor[]  // 추가: 앨범 레벨 기여자
   
   // Tracks
   tracks          Track[]
