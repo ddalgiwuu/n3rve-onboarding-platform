@@ -49,19 +49,6 @@ export class CreateSubmissionDto {
   translationLanguage?: string;
   translatedTitle?: string;
   albumContributors?: Array<{
-    name: string;
-    translations: Array<{
-      language: string;
-      name: string;
-    }>;
-    roles: string[];
-    instruments: string[];
-    spotifyUrl?: string;
-    appleMusicUrl?: string;
-  }>;
-
-  // Album Contributors
-  albumContributors?: Array<{
     id: string;
     name: string;
     translations: Array<{
