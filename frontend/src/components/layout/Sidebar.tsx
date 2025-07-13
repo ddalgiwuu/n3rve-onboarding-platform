@@ -134,7 +134,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       <aside 
         ref={sidebarRef}
         className={cn(
-          "w-72 h-screen bg-white dark:bg-gray-900",
+          "w-64 sm:w-72 h-screen bg-white dark:bg-gray-900",
           "fixed top-0 left-0 z-50",
           "border-r border-gray-200 dark:border-gray-700",
           "shadow-xl",
@@ -159,9 +159,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               {/* Close button for mobile */}
               <button
                 onClick={onClose}
-                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="lg:hidden p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-6 h-6 text-gray-500" />
               </button>
             </div>
           </div>
@@ -202,7 +202,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   }}
                   className={({ isActive }) =>
                     cn(
-                      'group flex items-center gap-3 px-4 py-3 rounded-xl transition-colors',
+                      'group flex items-center gap-3 px-4 py-4 rounded-xl transition-colors',
                       'hover:bg-gray-100 dark:hover:bg-gray-800',
                       isActive && 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                     )
@@ -211,7 +211,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {({ isActive }) => (
                     <>
                       <div className={cn(
-                        "p-2 rounded-lg transition-colors",
+                        "p-2.5 rounded-lg transition-colors",
                         isActive 
                           ? "bg-blue-100 dark:bg-blue-800" 
                           : "group-hover:bg-gray-200 dark:group-hover:bg-gray-700"
