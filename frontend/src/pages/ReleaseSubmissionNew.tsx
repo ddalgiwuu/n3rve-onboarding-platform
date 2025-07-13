@@ -309,7 +309,7 @@ export default function ReleaseSubmissionNew() {
         tracks: (formData.tracks || []).map(track => ({
           titleKo: track.title,
           titleEn: track.translations?.find(t => t.language === 'en')?.text || '',
-          featuring: track.featuringArtists?.map(a => a.primaryName).join(', ') || '',
+          featuring: (track.featuringArtists || []).map(a => a.primaryName).join(', ') || '',
           isrc: track.isrc,
           trackVersion: track.version,
           lyricsLanguage: track.audioLanguage,
@@ -1128,7 +1128,7 @@ export default function ReleaseSubmissionNew() {
                                   </Button>
                                 </label>
                               </div>
-                              {formData.audioFiles[track.id]?.map((file, idx) => (
+                              {(formData.audioFiles[track.id] || []).map((file, idx) => (
                                 <div key={idx} className="flex items-center gap-2 mt-2">
                                   <Volume2 className="w-4 h-4 text-gray-400" />
                                   <span className="text-sm">{file.name}</span>
@@ -1579,7 +1579,7 @@ export default function ReleaseSubmissionNew() {
                 {tBilingual('QC 검증', 'QC Validation')}
                 {validationResults && !validationResults.isValid && (
                   <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                    {validationResults.errors.length}
+                    {(validationResults.errors || []).length}
                   </span>
                 )}
               </Button>
