@@ -22,7 +22,7 @@ GitHub Repository Settings → Secrets and variables → Actions에서 다음 se
 
 ### Google OAuth 관련
 - `GOOGLE_CLIENT_ID`: 845573085403-drel56srcdvhhqut0suf4i0pul28lkdl.apps.googleusercontent.com
-- `GOOGLE_CLIENT_SECRET`: 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
+- `GOOGLE_CLIENT_SECRET`: [Google Cloud Console에서 생성한 Client Secret]
 
 ## 설정 방법
 
