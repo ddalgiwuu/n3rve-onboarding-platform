@@ -2,7 +2,6 @@ import { useTranslation } from '@/store/language.store'
 import { 
   Users, 
   Music, 
-  DollarSign, 
   TrendingUp, 
   FileText, 
   Activity,
@@ -10,96 +9,126 @@ import {
   Eye,
   Calendar,
   BarChart3,
-  PieChart
+  PieChart,
+  Loader
 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { adminService } from '@/services/admin.service'
+import toast from 'react-hot-toast'
 
 export default function AdminDashboard() {
   const { t } = useTranslation()
+  const [isLoading, setIsLoading] = useState(true)
+  const [dashboardStats, setDashboardStats] = useState<any>(null)
+  const [activityLogs, setActivityLogs] = useState<any[]>([])
+  const [topArtists, setTopArtists] = useState<any[]>([])
 
-  const stats = [
+  useEffect(() => {
+    loadDashboardData()
+  }, [])
+
+  const loadDashboardData = async () => {
+    try {
+      setIsLoading(true)
+      
+      // Load dashboard stats
+      const stats = await adminService.getDashboardStats()
+      setDashboardStats(stats)
+
+      // Load activity logs
+      try {
+        const logs = await adminService.getActivityLogs({ limit: 5 })
+        setActivityLogs(logs.logs || [])
+      } catch (error) {
+        // If activity logs fail, just continue
+        console.error('Failed to load activity logs:', error)
+      }
+
+      // Load top artists - we'll use user data for now
+      try {
+        const users = await adminService.getUsers({ limit: 4 })
+        const artistData = users.users.map(user => ({
+          name: user.name || user.email,
+          releases: user.submissions || 0,
+          submissions: user.submissions || 0,
+          growth: '+0%' // We'll calculate this when we have historical data
+        }))
+        setTopArtists(artistData)
+      } catch (error) {
+        // If artist data fails, just continue
+        console.error('Failed to load artist data:', error)
+      }
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error)
+      toast.error(t('대시보드 데이터 로드 실패', 'Failed to load dashboard data'))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const stats = dashboardStats ? [
     {
       label: t('총 사용자', 'Total Users'),
-      value: '1,234',
-      change: '+12%',
+      value: dashboardStats.totalUsers?.toLocaleString() || '0',
+      change: '+0%', // We'll calculate this when we have historical data
       icon: Users,
       color: 'from-purple-500 to-pink-500',
       trend: 'up'
     },
     {
-      label: t('활성 릴리스', 'Active Releases'),
-      value: '456',
-      change: '+8%',
+      label: t('총 제출', 'Total Submissions'),
+      value: dashboardStats.totalSubmissions?.toLocaleString() || '0',
+      change: '+0%',
       icon: Music,
       color: 'from-blue-500 to-cyan-500',
       trend: 'up'
     },
     {
-      label: t('월 수익', 'Monthly Revenue'),
-      value: '₩12.5M',
-      change: '+23%',
-      icon: DollarSign,
-      color: 'from-green-500 to-emerald-500',
-      trend: 'up'
-    },
-    {
-      label: t('대기 중 승인', 'Pending Approvals'),
-      value: '23',
-      change: '-5%',
+      label: t('대기 중 검토', 'Pending Review'),
+      value: dashboardStats.pendingReview?.toLocaleString() || '0',
+      change: '+0%',
       icon: FileText,
       color: 'from-orange-500 to-red-500',
       trend: 'down'
     }
-  ]
+  ] : []
 
-  const recentActivities = [
-    {
-      id: 1,
-      type: 'submission',
-      user: 'Kim Jisoo',
-      action: t('새 릴리스 제출', 'submitted new release'),
-      item: 'Moonlight Symphony',
-      time: t('5분 전', '5 minutes ago')
-    },
-    {
-      id: 2,
-      type: 'user',
-      user: 'Park Jimin',
-      action: t('계정 생성', 'created account'),
-      item: '',
-      time: t('15분 전', '15 minutes ago')
-    },
-    {
-      id: 3,
-      type: 'approval',
-      user: 'Admin',
-      action: t('릴리스 승인', 'approved release'),
-      item: 'Digital Dreams',
-      time: t('1시간 전', '1 hour ago')
-    },
-    {
-      id: 4,
-      type: 'payment',
-      user: 'Lee Suhyun',
-      action: t('결제 완료', 'completed payment'),
-      item: '₩150,000',
-      time: t('2시간 전', '2 hours ago')
+  // Format activity logs for display
+  const recentActivities = activityLogs.map(log => ({
+    id: log.id || Math.random(),
+    type: log.action?.includes('submission') ? 'submission' : 
+          log.action?.includes('user') || log.action?.includes('login') ? 'user' :
+          log.action?.includes('approval') || log.action?.includes('approved') ? 'approval' : 'activity',
+    user: log.userName || log.userEmail || 'System',
+    action: log.action || '',
+    item: log.details || '',
+    time: formatTimeAgo(log.createdAt)
+  }))
+
+  const formatTimeAgo = (date: string) => {
+    if (!date) return t('방금 전', 'just now')
+    const now = new Date()
+    const then = new Date(date)
+    const diff = now.getTime() - then.getTime()
+    const minutes = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days = Math.floor(diff / 86400000)
+
+    if (minutes < 60) {
+      return t(`${minutes}분 전`, `${minutes} minutes ago`)
+    } else if (hours < 24) {
+      return t(`${hours}시간 전`, `${hours} hours ago`)
+    } else {
+      return t(`${days}일 전`, `${days} days ago`)
     }
-  ]
-
-  const topArtists = [
-    { name: 'AURORA', releases: 15, revenue: '₩3.2M', growth: '+18%' },
-    { name: 'SYNTHWAVE', releases: 12, revenue: '₩2.8M', growth: '+22%' },
-    { name: 'CYBER', releases: 10, revenue: '₩2.1M', growth: '+15%' },
-    { name: 'NEON', releases: 8, revenue: '₩1.9M', growth: '+12%' },
-  ]
+  }
 
   const getActivityIcon = (type: string) => {
     switch (type) {
       case 'submission': return Music
       case 'user': return Users
       case 'approval': return FileText
-      case 'payment': return DollarSign
       default: return Activity
     }
   }
@@ -109,9 +138,19 @@ export default function AdminDashboard() {
       case 'submission': return 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30'
       case 'user': return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30'
       case 'approval': return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30'
-      case 'payment': return 'text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30'
       default: return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-900/30'
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader className="w-8 h-8 animate-spin text-purple-600" />
+          <p className="text-gray-600 dark:text-gray-400">{t('로딩 중...', 'Loading...')}</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -142,7 +181,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {stats.map((stat, index) => {
             const Icon = stat.icon
             return (
@@ -175,11 +214,11 @@ export default function AdminDashboard() {
 
         {/* Charts and Activities */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Revenue Chart */}
+          {/* Submission Trend Chart */}
           <div className="lg:col-span-2 glass-effect rounded-2xl p-6 animate-fade-in-delay">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                {t('수익 추이', 'Revenue Trend')}
+                {t('제출 추이', 'Submission Trend')}
               </h2>
               <div className="flex items-center gap-2">
                 <button className="px-3 py-1 text-sm glass-effect rounded-lg hover:shadow-md transition-all">
@@ -210,26 +249,32 @@ export default function AdminDashboard() {
               </Link>
             </div>
             <div className="space-y-4 max-h-64 overflow-y-auto">
-              {recentActivities.map((activity) => {
-                const Icon = getActivityIcon(activity.type)
-                return (
-                  <div key={activity.id} className="flex items-start gap-3 animate-slide-in-right">
-                    <div className={`p-2 rounded-lg ${getActivityColor(activity.type)}`}>
-                      <Icon className="w-4 h-4" />
+              {recentActivities.length > 0 ? (
+                recentActivities.map((activity) => {
+                  const Icon = getActivityIcon(activity.type)
+                  return (
+                    <div key={activity.id} className="flex items-start gap-3 animate-slide-in-right">
+                      <div className={`p-2 rounded-lg ${getActivityColor(activity.type)}`}>
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm">
+                          <span className="font-medium text-gray-900 dark:text-white">{activity.user}</span>
+                          <span className="text-gray-600 dark:text-gray-400"> {activity.action}</span>
+                          {activity.item && (
+                            <span className="font-medium text-gray-900 dark:text-white"> {activity.item}</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{activity.time}</p>
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm">
-                        <span className="font-medium text-gray-900 dark:text-white">{activity.user}</span>
-                        <span className="text-gray-600 dark:text-gray-400"> {activity.action}</span>
-                        {activity.item && (
-                          <span className="font-medium text-gray-900 dark:text-white"> {activity.item}</span>
-                        )}
-                      </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">{activity.time}</p>
-                    </div>
-                  </div>
-                )
-              })}
+                  )
+                })
+              ) : (
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
+                  {t('최근 활동이 없습니다', 'No recent activities')}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -238,10 +283,10 @@ export default function AdminDashboard() {
         <div className="glass-effect rounded-2xl p-6 animate-fade-in-delay">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-              {t('인기 아티스트', 'Top Artists')}
+              {t('활성 사용자', 'Active Users')}
             </h2>
             <Link
-              to="/admin/artists"
+              to="/admin/customers"
               className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1"
             >
               {t('모두 보기', 'View all')}
@@ -252,13 +297,13 @@ export default function AdminDashboard() {
               <thead>
                 <tr className="border-b border-gray-200 dark:border-gray-700">
                   <th className="text-left py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    {t('아티스트', 'Artist')}
+                    {t('이름', 'Name')}
                   </th>
                   <th className="text-center py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
                     {t('릴리스', 'Releases')}
                   </th>
                   <th className="text-center py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
-                    {t('수익', 'Revenue')}
+                    {t('제출', 'Submissions')}
                   </th>
                   <th className="text-center py-3 px-4 font-medium text-gray-700 dark:text-gray-300">
                     {t('성장률', 'Growth')}
@@ -266,40 +311,48 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
-                {topArtists.map((artist, index) => (
-                  <tr 
-                    key={index} 
-                    className="border-b border-gray-100 dark:border-gray-800 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors animate-slide-in-up"
-                    style={{ animationDelay: `${index * 50}ms` }}
-                  >
-                    <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-medium">
-                          {artist.name[0]}
+                {topArtists.length > 0 ? (
+                  topArtists.map((artist, index) => (
+                    <tr 
+                      key={index} 
+                      className="border-b border-gray-100 dark:border-gray-800 hover:bg-white/50 dark:hover:bg-gray-800/50 transition-colors animate-slide-in-up"
+                      style={{ animationDelay: `${index * 50}ms` }}
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-medium">
+                            {artist.name[0]?.toUpperCase() || 'U'}
+                          </div>
+                          <span className="font-medium text-gray-900 dark:text-white">{artist.name}</span>
                         </div>
-                        <span className="font-medium text-gray-900 dark:text-white">{artist.name}</span>
-                      </div>
-                    </td>
-                    <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">
-                      {artist.releases}
-                    </td>
-                    <td className="text-center py-3 px-4 font-medium text-gray-900 dark:text-white">
-                      {artist.revenue}
-                    </td>
-                    <td className="text-center py-3 px-4">
-                      <span className="text-green-600 dark:text-green-400 font-medium">
-                        {artist.growth}
-                      </span>
+                      </td>
+                      <td className="text-center py-3 px-4 text-gray-600 dark:text-gray-400">
+                        {artist.releases}
+                      </td>
+                      <td className="text-center py-3 px-4 font-medium text-gray-900 dark:text-white">
+                        {artist.submissions}
+                      </td>
+                      <td className="text-center py-3 px-4">
+                        <span className="text-green-600 dark:text-green-400 font-medium">
+                          {artist.growth}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="text-center py-8 text-gray-500 dark:text-gray-400">
+                      {t('데이터가 없습니다', 'No data available')}
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link
             to="/admin/submissions"
             className="card-glass p-6 hover-lift text-center group animate-fade-in"
@@ -324,20 +377,6 @@ export default function AdminDashboard() {
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {t('사용자 계정 관리', 'Manage user accounts')}
-            </p>
-          </Link>
-
-          <Link
-            to="/admin/analytics"
-            className="card-glass p-6 hover-lift text-center group animate-fade-in"
-            style={{ animationDelay: '200ms' }}
-          >
-            <PieChart className="w-12 h-12 mx-auto mb-4 text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              {t('분석 및 인사이트', 'Analytics & Insights')}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('상세 통계 확인', 'View detailed statistics')}
             </p>
           </Link>
         </div>

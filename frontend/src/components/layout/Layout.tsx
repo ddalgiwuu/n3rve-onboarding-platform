@@ -4,16 +4,22 @@ import Header from './Header'
 import Sidebar from './Sidebar'
 
 export default function Layout() {
-  // Start with sidebar closed by default
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  // Start with sidebar closed by default on mobile, open on desktop
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= 1024)
   const resizeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const isFirstRender = useRef(true)
 
   const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen)
+    setSidebarOpen(prev => !prev)
   }
 
-  // Fix sidebar flickering on resize
+  // Handle initial render and resize
   useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+
     const handleResize = () => {
       // Clear existing timeout
       if (resizeTimeoutRef.current) {
@@ -22,10 +28,13 @@ export default function Layout() {
 
       // Debounce resize events
       resizeTimeoutRef.current = setTimeout(() => {
-        // Close sidebar on mobile when resizing to mobile viewport
-        if (window.innerWidth < 1024 && sidebarOpen) {
-          setSidebarOpen(false)
-        }
+        const isDesktop = window.innerWidth >= 1024
+        // Only update if crossing the breakpoint
+        setSidebarOpen(current => {
+          if (isDesktop && !current) return true
+          if (!isDesktop && current) return false
+          return current
+        })
       }, 150) // 150ms debounce
     }
 
@@ -37,7 +46,7 @@ export default function Layout() {
         clearTimeout(resizeTimeoutRef.current)
       }
     }
-  }, [sidebarOpen])
+  }, [])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-gray-50 to-pink-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 flex">

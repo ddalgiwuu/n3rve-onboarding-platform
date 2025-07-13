@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, BarChart, Shield } from 'lucide-react'
+import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { useAuthStore } from '@/store/auth.store'
 import { useLanguageStore } from '@/store/language.store'
@@ -68,7 +68,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   
   // Close sidebar when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
         // Check if the click target is the menu button in header
         const target = event.target as HTMLElement
@@ -82,11 +82,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       // Add small delay to prevent immediate close when opening
       const timer = setTimeout(() => {
         document.addEventListener('mousedown', handleClickOutside)
+        document.addEventListener('touchstart', handleClickOutside)
       }, 100)
 
       return () => {
         clearTimeout(timer)
         document.removeEventListener('mousedown', handleClickOutside)
+        document.removeEventListener('touchstart', handleClickOutside)
       }
     }
   }, [isOpen, onClose])
@@ -112,7 +114,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { icon: Shield, label: language === 'ko' ? '관리자 대시보드' : 'Admin Dashboard', path: '/admin', color: 'text-red-600' },
     { icon: ClipboardList, label: language === 'ko' ? '제출 관리' : 'Submission Management', path: '/admin/submission-management', color: 'text-blue-600' },
     { icon: Users, label: language === 'ko' ? '고객 관리' : 'Customer Management', path: '/admin/customers', color: 'text-green-600' },
-    { icon: BarChart, label: language === 'ko' ? '통계' : 'Analytics', path: '/admin/analytics', color: 'text-purple-600' },
     { icon: Settings, label: language === 'ko' ? '설정' : 'Settings', path: '/admin/settings', color: 'text-gray-600' },
   ]
   
@@ -130,24 +131,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       <aside 
         ref={sidebarRef}
         className={cn(
-          "w-72 h-screen glass-effect-strong backdrop-blur-xl",
+          "w-72 h-screen bg-white/90 dark:bg-gray-900/95",
           "fixed top-0 left-0 z-50",
           "border-r border-white/20 dark:border-white/10",
-          !isOpen && "-translate-x-full",
-          isOpen && "translate-x-0",
           "transition-transform duration-300 ease-in-out",
-          "transform-gpu" // Enable GPU acceleration
+          "shadow-xl"
         )}
         style={{
-          // Prevent transform flickering
+          transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+          WebkitTransform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+          msTransform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+          willChange: 'transform',
           backfaceVisibility: 'hidden',
-          perspective: 1000,
-          transformStyle: 'preserve-3d'
+          WebkitBackfaceVisibility: 'hidden'
         }}
       >
         <div className="h-full flex flex-col">
           {/* Header */}
-          <div className="p-6 border-b border-white/20 dark:border-white/10 animate-fade-in">
+          <div className="p-6 border-b border-white/20 dark:border-white/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-xl flex items-center justify-center shadow-lg">
@@ -170,7 +171,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* User Profile Section */}
-          <div className="px-6 py-4 border-b border-white/20 dark:border-white/10 animate-slide-in-left">
+          <div className="px-6 py-4 border-b border-white/20 dark:border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center">
                 <span className="text-gray-600 dark:text-gray-300 font-semibold">
