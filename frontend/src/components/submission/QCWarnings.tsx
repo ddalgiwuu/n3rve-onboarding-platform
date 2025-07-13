@@ -108,8 +108,8 @@ export default function QCWarnings({ results, onClose, onAutoFix }: Props) {
             {t('QC 검증 결과', 'QC Validation Results')}
           </h3>
           <QCStatusBadge 
-            errors={results.errors.length} 
-            warnings={results.warnings.length} 
+            errors={(results.errors || []).length} 
+            warnings={(results.warnings || []).length} 
           />
         </div>
         {onClose && (
@@ -132,7 +132,7 @@ export default function QCWarnings({ results, onClose, onAutoFix }: Props) {
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
           }`}
         >
-          {t('오류', 'Errors')} ({results.errors.length})
+          {t('오류', 'Errors')} ({(results.errors || []).length})
         </button>
         <button
           onClick={() => setActiveTab('warnings')}
@@ -142,7 +142,7 @@ export default function QCWarnings({ results, onClose, onAutoFix }: Props) {
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
           }`}
         >
-          {t('경고', 'Warnings')} ({results.warnings.length})
+          {t('경고', 'Warnings')} ({(results.warnings || []).length})
         </button>
         <button
           onClick={() => setActiveTab('info')}
@@ -152,7 +152,7 @@ export default function QCWarnings({ results, onClose, onAutoFix }: Props) {
               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
           }`}
         >
-          {t('정보', 'Info')} ({results.info.length})
+          {t('정보', 'Info')} ({(results.info || []).length})
         </button>
       </div>
 
@@ -160,36 +160,36 @@ export default function QCWarnings({ results, onClose, onAutoFix }: Props) {
       <div className="p-6 max-h-96 overflow-y-auto">
         {activeTab === 'errors' && (
           <div className="space-y-3">
-            {results.errors.length === 0 ? (
+            {(results.errors || []).length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-8">
                 {t('오류가 없습니다', 'No errors found')}
               </p>
             ) : (
-              results.errors.map((error, index) => renderValidationItem(error, index))
+              (results.errors || []).map((error, index) => renderValidationItem(error, index))
             )}
           </div>
         )}
         
         {activeTab === 'warnings' && (
           <div className="space-y-3">
-            {results.warnings.length === 0 ? (
+            {(results.warnings || []).length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-8">
                 {t('경고가 없습니다', 'No warnings found')}
               </p>
             ) : (
-              results.warnings.map((warning, index) => renderValidationItem(warning, index))
+              (results.warnings || []).map((warning, index) => renderValidationItem(warning, index))
             )}
           </div>
         )}
         
         {activeTab === 'info' && (
           <div className="space-y-3">
-            {results.info.length === 0 ? (
+            {(results.info || []).length === 0 ? (
               <p className="text-gray-500 dark:text-gray-400 text-sm text-center py-8">
                 {t('정보가 없습니다', 'No info messages')}
               </p>
             ) : (
-              results.info.map((info, index) => renderValidationItem(info, index))
+              (results.info || []).map((info, index) => renderValidationItem(info, index))
             )}
           </div>
         )}

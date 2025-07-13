@@ -101,12 +101,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     }
   }, [isOpen, onClose])
 
-  // Close sidebar on route change on mobile
-  useEffect(() => {
-    if (window.innerWidth < 1024) {
-      onClose()
-    }
-  }, [location.pathname, onClose])
+  // Remove automatic sidebar closing on route change - now handled by onClick
   
   // Make menu items reactive to language changes
   const customerMenuItems = [
@@ -197,6 +192,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  onClick={(e) => {
+                    // On mobile, close sidebar after navigation with a delay
+                    if (window.innerWidth < 1024) {
+                      setTimeout(() => {
+                        onClose()
+                      }, 150)
+                    }
+                  }}
                   className={({ isActive }) =>
                     cn(
                       'group flex items-center gap-3 px-4 py-3 rounded-xl transition-colors',
@@ -243,6 +246,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <NavLink
                   to={isInAdminConsole ? '/dashboard' : '/admin'}
+                  onClick={(e) => {
+                    // On mobile, close sidebar after navigation with a delay
+                    if (window.innerWidth < 1024) {
+                      setTimeout(() => {
+                        onClose()
+                      }, 150)
+                    }
+                  }}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
