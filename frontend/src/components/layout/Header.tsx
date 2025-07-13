@@ -1,4 +1,4 @@
-import { Bell, User, LogOut, SwitchCamera, Shield, Users, Menu } from 'lucide-react'
+import { Bell, User, LogOut, Menu } from 'lucide-react'
 import { useAuthStore } from '@/store/auth.store'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
@@ -25,13 +25,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
     navigate('/login')
   }
 
-  const handleConsoleSwitch = () => {
-    if (isInAdminConsole) {
-      navigate('/dashboard')
-    } else {
-      navigate('/admin')
-    }
-  }
 
   return (
     <header className="min-h-[56px] sm:h-16 glass-effect border-b border-white/20 dark:border-white/10 sticky top-0 z-20 flex-shrink-0 backdrop-blur-xl animate-slide-in-down">
@@ -71,32 +64,6 @@ export default function Header({ onMenuClick }: HeaderProps) {
         </div>
         
         <div className="flex items-center gap-2 sm:gap-4">
-          {/* Admin Console Switcher */}
-          {isAdmin && (
-            <button
-              onClick={handleConsoleSwitch}
-              className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 sm:py-2 btn-primary rounded-lg text-white font-medium transform transition-all duration-300 hover:scale-105"
-              title={isInAdminConsole ? (language === 'ko' ? '소비자 콘솔로 전환' : 'Switch to Consumer Console') : (language === 'ko' ? '관리자 콘솔로 전환' : 'Switch to Admin Console')}
-            >
-              {isInAdminConsole ? (
-                <>
-                  <Users className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-                  <span className="hidden sm:inline text-sm font-medium">
-                    {language === 'ko' ? '소비자 콘솔' : 'Consumer'}
-                  </span>
-                </>
-              ) : (
-                <>
-                  <Shield className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
-                  <span className="hidden sm:inline text-sm font-medium">
-                    {language === 'ko' ? '관리자 콘솔' : 'Admin'}
-                  </span>
-                </>
-              )}
-              <SwitchCamera className="w-3.5 sm:w-4 h-3.5 sm:h-4 hidden sm:block" />
-            </button>
-          )}
-          
           <LanguageToggle />
           
           <DarkModeToggle />
