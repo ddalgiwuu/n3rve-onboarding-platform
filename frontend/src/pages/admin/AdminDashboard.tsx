@@ -1,4 +1,4 @@
-import { useLanguageStore } from '@/store/language.store'
+import { useTranslation } from '@/store/language.store'
 import { 
   Users, 
   Music, 
@@ -15,7 +15,7 @@ import {
 import { Link } from 'react-router-dom'
 
 export default function AdminDashboard() {
-  const { t } = useLanguageStore()
+  const { t } = useTranslation()
 
   const stats = [
     {

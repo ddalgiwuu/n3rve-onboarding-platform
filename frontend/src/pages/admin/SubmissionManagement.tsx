@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, Play, Pause, CheckCircle, XCircle, MessageSquare, FileText, Music, Image, Clock, User, Calendar, Tag } from 'lucide-react';
-import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/store/language.store';
 import { format } from 'date-fns';
 
 interface Track {
@@ -31,7 +31,7 @@ interface SubmissionDetail {
 const SubmissionManagement = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { t } = useLanguageStore();
+  const { t } = useTranslation();
   const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [playingTrack, setPlayingTrack] = useState<string | null>(null);

@@ -4,7 +4,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import LanguageToggle from '@/components/common/LanguageToggle'
 import DarkModeToggle from '@/components/common/DarkModeToggle'
-import { useLanguageStore } from '@/store/language.store'
+import { useLanguageStore, useTranslation } from '@/store/language.store'
 
 interface HeaderProps {
   onMenuClick?: () => void
@@ -14,7 +14,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const { user, clearAuth } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
-  const { language, t } = useLanguageStore() // Get t function from store
+  const { language } = useLanguageStore()
+  const { t } = useTranslation()
   const isAdmin = user?.role === 'ADMIN'
   const isInAdminConsole = location.pathname.startsWith('/admin')
 

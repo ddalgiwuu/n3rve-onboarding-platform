@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Upload, X, File, Image, Music } from 'lucide-react'
 import { cn } from '@/utils/cn'
-import { useLanguageStore } from '@/store/language.store'
+import { useTranslation } from '@/store/language.store'
 
 interface FileUploadProps {
   accept?: string
@@ -24,7 +24,7 @@ export default function FileUpload({
   required = false,
   className
 }: FileUploadProps) {
-  const { t } = useLanguageStore()
+  const { t } = useTranslation()
   const [dragActive, setDragActive] = useState(false)
   const [error, setError] = useState('')
 
