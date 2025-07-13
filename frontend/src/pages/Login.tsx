@@ -66,7 +66,7 @@ export default function LoginPage() {
     // Store returnUrl in sessionStorage to persist across OAuth redirect
     sessionStorage.setItem('returnUrl', returnUrl)
     
-    const googleAuthUrl = `/api/auth/google`
+    const googleAuthUrl = `${import.meta.env.VITE_API_URL}/auth/google`
     console.log('[LoginPage] Redirecting to:', googleAuthUrl)
     
     // Safari-friendly approach: Use popup window for OAuth
