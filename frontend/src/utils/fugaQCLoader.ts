@@ -1,9 +1,9 @@
 // FUGA QC Configuration Loader
 // This module loads QC rules and help content from JSON files
 
-import validationRulesJSON from '../../../fuga-qc-config/validation-rules.json'
-import helpContentJSON from '../../../fuga-qc-config/help-content.json'
-import versionJSON from '../../../fuga-qc-config/version.json'
+import validationRulesJSON from '../data/fuga-qc/validation-rules.json'
+import helpContentJSON from '../data/fuga-qc/help-content.json'
+import versionJSON from '../data/fuga-qc/version.json'
 
 export interface QCVersion {
   version: string
@@ -111,13 +111,49 @@ let qcConfigInstance: {
 // Load configuration
 export function loadQCConfig() {
   if (!qcConfigInstance) {
-    qcConfigInstance = {
-      version: versionJSON as QCVersion,
-      rules: validationRulesJSON as QCValidationRules,
-      help: helpContentJSON as QCHelpContent
+    try {
+      qcConfigInstance = {
+        version: versionJSON as QCVersion,
+        rules: validationRulesJSON as QCValidationRules,
+        help: helpContentJSON as QCHelpContent
+      }
+      
+      console.log(`[QC Config] Loaded version ${qcConfigInstance.version?.version || 'unknown'}`)
+    } catch (error) {
+      console.error('[QC Config] Failed to load configuration:', error)
+      // Fallback configuration to prevent crashes
+      qcConfigInstance = {
+        version: { version: "1.0.0", lastUpdated: "2025-07-13", updatedBy: "System", description: "Fallback config" },
+        rules: {
+          patterns: {},
+          terms: { promotional: [], genericArtistNames: [], misleadingArtistTerms: [], forbiddenVersionTerms: [], versionKeywords: [] },
+          languageSpecific: { articles: {}, sentenceCaseLanguages: [], germanWords: {} },
+          formatting: { titleCaseSkipWords: [], featuringFormats: { valid: [], incorrect: [] }, abbreviations: {}, versionCapitalization: {} },
+          rules: { 
+            artist: { maxLength: 100, requireBothLanguages: false, allowSpecialChars: "", preventDoubleSpaces: true, preventLeadingTrailingSpaces: true, preventPromotionalText: true, preventGenericNames: true, preventMisleadingTerms: true, preventEmojis: true },
+            title: { maxLength: 100, requireBothLanguages: false, allowSpecialChars: "", preventDoubleSpaces: true, preventLeadingTrailingSpaces: true, preventPromotionalText: true, preventEmojis: true, enforceProperCapitalization: true },
+            genre: { maxCount: 3, required: true },
+            release: { minDaysNotice: 14, allowPastDates: false },
+            version: { allowedFormats: [] }
+          },
+          messages: { errors: {}, warnings: {}, info: {} }
+        },
+        help: {
+          overview: { title: "FUGA QC", description: "Quality Control process", importance: [] },
+          process: { title: "QC Process", steps: [] },
+          commonErrors: { title: "Common Errors", errors: [] },
+          languageRules: { title: "Language Rules", korean: { title: "Korean", rules: [] }, english: { title: "English", rules: [], examples: [] }, japanese: { title: "Japanese", rules: [] } },
+          genres: { title: "Genres", tips: [], mapping: {} },
+          metadata: { title: "Metadata", required: { title: "Required", fields: [] }, optional: { title: "Optional", fields: [] } },
+          audioSpecs: { title: "Audio Specs", required: { format: "", bitDepth: "", sampleRate: "", channels: "" }, dolbyAtmos: { title: "", requirements: [] } },
+          albumArt: { title: "Album Art", requirements: [], forbidden: [] },
+          timeline: { title: "Timeline", stages: [] },
+          tips: { title: "Tips", items: [] },
+          faq: [],
+          resultGuide: {},
+        }
+      }
     }
-    
-    console.log(`[QC Config] Loaded version ${qcConfigInstance.version.version}`)
   }
   
   return qcConfigInstance
@@ -142,47 +178,47 @@ export function getQCHelp(): QCHelpContent {
 // Helper functions to get specific rule sets
 export function getPromotionalTerms(): string[] {
   const rules = getQCRules()
-  return rules.terms.promotional
+  return rules.terms?.promotional || []
 }
 
 export function getGenericArtistNames(): string[] {
   const rules = getQCRules()
-  return rules.terms.genericArtistNames
+  return rules.terms?.genericArtistNames || []
 }
 
 export function getMisleadingArtistTerms(): string[] {
   const rules = getQCRules()
-  return rules.terms.misleadingArtistTerms
+  return rules.terms?.misleadingArtistTerms || []
 }
 
 export function getForbiddenVersionTerms(): string[] {
   const rules = getQCRules()
-  return rules.terms.forbiddenVersionTerms
+  return rules.terms?.forbiddenVersionTerms || []
 }
 
 export function getVersionKeywords(): string[] {
   const rules = getQCRules()
-  return rules.terms.versionKeywords
+  return rules.terms?.versionKeywords || []
 }
 
 export function getLanguageArticles(language: string): string[] {
   const rules = getQCRules()
-  return rules.languageSpecific.articles[language.toLowerCase()] || []
+  return rules.languageSpecific?.articles?.[language.toLowerCase()] || []
 }
 
 export function getSentenceCaseLanguages(): string[] {
   const rules = getQCRules()
-  return rules.languageSpecific.sentenceCaseLanguages
+  return rules.languageSpecific?.sentenceCaseLanguages || []
 }
 
 export function getGermanWords(): Record<string, string> {
   const rules = getQCRules()
-  return rules.languageSpecific.germanWords
+  return rules.languageSpecific?.germanWords || {}
 }
 
 export function getTitleCaseSkipWords(): string[] {
   const rules = getQCRules()
-  return rules.formatting.titleCaseSkipWords
+  return rules.formatting?.titleCaseSkipWords || []
 }
 
 export function getFeaturingFormats(): { valid: string[]; incorrect: string[] } {
