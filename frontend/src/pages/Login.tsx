@@ -58,7 +58,7 @@ export default function LoginPage() {
     // Store returnUrl in sessionStorage to persist across OAuth redirect
     sessionStorage.setItem('returnUrl', returnUrl)
     
-    const googleAuthUrl = `/auth/google`
+    const googleAuthUrl = `/api/auth/google`
     
     // Safari-friendly approach: Use popup window for OAuth
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
