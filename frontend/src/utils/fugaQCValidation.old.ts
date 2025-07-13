@@ -1,5 +1,5 @@
 // FUGA QC Validation Rules
-// This file uses configuration from JSON files
+// This file now uses configuration from JSON files
 
 import {
   getQCRules,
@@ -37,52 +37,57 @@ export interface QCValidationResults {
   isValid: boolean
 }
 
+// Compile patterns from configuration
+const getPatterns = () => ({
+  DOUBLE_SPACE_REGEX: compilePattern('doubleSpace'),
+  LEADING_TRAILING_SPACE_REGEX: compilePattern('leadingTrailingSpace'),
+  SPECIAL_CHARS_REGEX: compilePattern('specialChars'),
+  EMOJI_REGEX: compilePattern('emoji'),
+  ISRC_REGEX: compilePattern('isrc'),
+  COPYRIGHT_YEAR_REGEX: compilePattern('copyrightYear'),
+  INVALID_CHARS_ARTIST_REGEX: compilePattern('invalidCharsArtist')
+})
+
+// Create promotional terms regex from configuration
+const getPromotionalTermsRegex = () => {
+  const terms = getPromotionalTerms()
+  return new RegExp(`\\b(${terms.join('|')})\\b`, 'i')
+}
+
 // Artist name validation
 export function validateArtistName(nameKo: string, nameEn: string): QCValidationResult[] {
   const results: QCValidationResult[] = []
-  
-  // Compile patterns
-  const patterns = {
-    doubleSpace: compilePattern('doubleSpace'),
-    leadingTrailingSpace: compilePattern('leadingTrailingSpace'),
-    invalidCharsArtist: compilePattern('invalidCharsArtist'),
-    emoji: compilePattern('emoji')
-  }
-  
-  // Create promotional terms regex
-  const promotionalTerms = getPromotionalTerms()
-  const promotionalRegex = new RegExp(`\\b(${promotionalTerms.join('|')})\\b`, 'i')
-  
+
   // Check Korean name
   if (nameKo) {
     // Double spaces
-    if (patterns.doubleSpace.test(nameKo)) {
+    if (DOUBLE_SPACE_REGEX.test(nameKo)) {
       results.push({
         isValid: false,
         severity: 'error',
         message: getErrorMessage('doubleSpaces'),
         field: 'artist.nameKo',
-        suggestion: nameKo.replace(patterns.doubleSpace, ' ')
+        suggestion: nameKo.replace(patterns.DOUBLE_SPACE_REGEX, ' ')
       })
     }
 
     // Leading/trailing spaces
-    if (patterns.leadingTrailingSpace.test(nameKo)) {
+    if (LEADING_TRAILING_SPACE_REGEX.test(nameKo)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('leadingTrailingSpaces'),
+        message: 'qc.error.leadingTrailingSpaces',
         field: 'artist.nameKo',
         suggestion: nameKo.trim()
       })
     }
 
     // Promotional text
-    if (promotionalRegex.test(nameKo)) {
+    if (PROMOTIONAL_TERMS_REGEX.test(nameKo)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('promotionalText'),
+        message: 'qc.error.promotionalText',
         field: 'artist.nameKo'
       })
     }
@@ -91,63 +96,61 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
   // Check English name
   if (nameEn) {
     // Double spaces
-    if (patterns.doubleSpace.test(nameEn)) {
+    if (DOUBLE_SPACE_REGEX.test(nameEn)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('doubleSpaces'),
+        message: 'qc.error.doubleSpaces',
         field: 'artist.nameEn',
-        suggestion: nameEn.replace(patterns.doubleSpace, ' ')
+        suggestion: nameEn.replace(DOUBLE_SPACE_REGEX, ' ')
       })
     }
 
     // Leading/trailing spaces
-    if (patterns.leadingTrailingSpace.test(nameEn)) {
+    if (LEADING_TRAILING_SPACE_REGEX.test(nameEn)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('leadingTrailingSpaces'),
+        message: 'qc.error.leadingTrailingSpaces',
         field: 'artist.nameEn',
         suggestion: nameEn.trim()
       })
     }
 
-    // Special characters
-    const invalidChars = nameEn.match(patterns.invalidCharsArtist)
+    // Special characters (allow more for artist names)
+    const invalidChars = nameEn.match(/[<>{}[\]\\|^`~]/g)
     if (invalidChars) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('invalidCharacters'),
+        message: 'qc.error.invalidCharacters',
         field: 'artist.nameEn',
-        suggestion: nameEn.replace(patterns.invalidCharsArtist, '')
+        suggestion: nameEn.replace(/[<>{}[\]\\|^`~]/g, '')
       })
     }
 
     // Promotional text
-    if (promotionalRegex.test(nameEn)) {
+    if (PROMOTIONAL_TERMS_REGEX.test(nameEn)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('promotionalText'),
+        message: 'qc.error.promotionalText',
         field: 'artist.nameEn'
       })
     }
 
     // Generic artist names check
-    const genericNames = getGenericArtistNames()
-    if (genericNames.some(generic => nameEn.toLowerCase() === generic.toLowerCase())) {
+    if (GENERIC_ARTIST_NAMES.some(generic => nameEn.toLowerCase() === generic.toLowerCase())) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('genericArtistName'),
+        message: 'qc.error.genericArtistName',
         field: 'artist.nameEn'
       })
     }
 
     // Misleading artist terms check
-    const misleadingTerms = getMisleadingArtistTerms()
-    const hasMisleadingTerms = misleadingTerms.some(term => 
+    const hasMisleadingTerms = MISLEADING_ARTIST_TERMS.some(term => 
       nameEn.toLowerCase().includes(term.toLowerCase()) && 
       !nameEn.match(/^[A-Za-z0-9\s]+\s(&|and)\s[A-Za-z0-9\s]+$/) // Allow legitimate "X & Y" or "X and Y" collaborations
     )
@@ -156,7 +159,7 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('misleadingArtistName'),
+        message: 'qc.error.misleadingArtistName',
         field: 'artist.nameEn'
       })
     }
@@ -166,20 +169,25 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
       results.push({
         isValid: false,
         severity: 'warning',
-        message: getWarningMessage('akaInArtistName'),
+        message: 'qc.warning.akaInArtistName',
         field: 'artist.nameEn'
       })
     }
 
     // Check for abbreviations that should be full words
-    const abbreviations = getAbbreviations()
+    const abbreviations = {
+      'ft.': 'featuring',
+      'feat.': 'featuring',
+      'vs.': 'versus',
+      'pres.': 'presents'
+    }
     
     Object.entries(abbreviations).forEach(([abbr, full]) => {
       if (nameEn.toLowerCase().includes(abbr)) {
         results.push({
           isValid: false,
           severity: 'error',
-          message: getErrorMessage('abbreviationInArtistName'),
+          message: 'qc.error.abbreviationInArtistName',
           field: 'artist.nameEn',
           suggestion: nameEn.replace(new RegExp(abbr, 'gi'), full)
         })
@@ -194,58 +202,47 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
 export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: boolean = false): QCValidationResult[] {
   const results: QCValidationResult[] = []
   const fieldPrefix = isAlbum ? 'album' : 'track'
-  
-  // Compile patterns
-  const patterns = {
-    doubleSpace: compilePattern('doubleSpace'),
-    leadingTrailingSpace: compilePattern('leadingTrailingSpace'),
-    emoji: compilePattern('emoji')
-  }
-  
-  // Create promotional terms regex
-  const promotionalTerms = getPromotionalTerms()
-  const promotionalRegex = new RegExp(`\\b(${promotionalTerms.join('|')})\\b`, 'i')
 
   // Korean title validation
   if (titleKo) {
     // Double spaces
-    if (patterns.doubleSpace.test(titleKo)) {
+    if (DOUBLE_SPACE_REGEX.test(titleKo)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('doubleSpaces'),
+        message: 'qc.error.doubleSpaces',
         field: `${fieldPrefix}.titleKo`,
-        suggestion: titleKo.replace(patterns.doubleSpace, ' ')
+        suggestion: titleKo.replace(DOUBLE_SPACE_REGEX, ' ')
       })
     }
 
     // Leading/trailing spaces
-    if (patterns.leadingTrailingSpace.test(titleKo)) {
+    if (LEADING_TRAILING_SPACE_REGEX.test(titleKo)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('leadingTrailingSpaces'),
+        message: 'qc.error.leadingTrailingSpaces',
         field: `${fieldPrefix}.titleKo`,
         suggestion: titleKo.trim()
       })
     }
 
     // Emojis in titles
-    if (patterns.emoji.test(titleKo)) {
+    if (EMOJI_REGEX.test(titleKo)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('emojisInTitle'),
+        message: 'qc.error.emojisInTitle',
         field: `${fieldPrefix}.titleKo`
       })
     }
 
     // Promotional text
-    if (promotionalRegex.test(titleKo)) {
+    if (PROMOTIONAL_TERMS_REGEX.test(titleKo)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('promotionalText'),
+        message: 'qc.error.promotionalText',
         field: `${fieldPrefix}.titleKo`
       })
     }
@@ -254,22 +251,22 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
   // English title validation
   if (titleEn) {
     // Double spaces
-    if (patterns.doubleSpace.test(titleEn)) {
+    if (DOUBLE_SPACE_REGEX.test(titleEn)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('doubleSpaces'),
+        message: 'qc.error.doubleSpaces',
         field: `${fieldPrefix}.titleEn`,
-        suggestion: titleEn.replace(patterns.doubleSpace, ' ')
+        suggestion: titleEn.replace(DOUBLE_SPACE_REGEX, ' ')
       })
     }
 
     // Leading/trailing spaces
-    if (patterns.leadingTrailingSpace.test(titleEn)) {
+    if (LEADING_TRAILING_SPACE_REGEX.test(titleEn)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('leadingTrailingSpaces'),
+        message: 'qc.error.leadingTrailingSpaces',
         field: `${fieldPrefix}.titleEn`,
         suggestion: titleEn.trim()
       })
@@ -277,9 +274,9 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
 
     // Title case validation
     const words = titleEn.split(' ')
-    const skipWords = getTitleCaseSkipWords()
     const titleCaseIssues = words.filter((word, index) => {
       // Skip articles, prepositions, conjunctions unless first word
+      const skipWords = ['a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with']
       if (index > 0 && skipWords.includes(word.toLowerCase())) return false
       
       // Check if first letter is lowercase (when it should be uppercase)
@@ -290,9 +287,10 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
       results.push({
         isValid: false,
         severity: 'warning',
-        message: getWarningMessage('titleCase'),
+        message: 'qc.warning.titleCase',
         field: `${fieldPrefix}.titleEn`,
         suggestion: titleEn.split(' ').map((word, index) => {
+          const skipWords = ['a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with']
           if (index > 0 && skipWords.includes(word.toLowerCase())) return word.toLowerCase()
           return word.charAt(0).toUpperCase() + word.slice(1)
         }).join(' ')
@@ -314,18 +312,18 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
         results.push({
           isValid: false,
           severity: 'error',
-          message: getErrorMessage('unmatchedBrackets'),
+          message: 'qc.error.unmatchedBrackets',
           field: `${fieldPrefix}.titleEn`
         })
       }
     })
 
     // Promotional text
-    if (promotionalRegex.test(titleEn)) {
+    if (PROMOTIONAL_TERMS_REGEX.test(titleEn)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('promotionalText'),
+        message: 'qc.error.promotionalText',
         field: `${fieldPrefix}.titleEn`
       })
     }
@@ -340,20 +338,18 @@ export function validateVersionNaming(title: string, version: string): QCValidat
 
   if (version) {
     // Check for forbidden version terms
-    const forbiddenTerms = getForbiddenVersionTerms()
-    if (forbiddenTerms.some(term => version.toLowerCase() === term.toLowerCase())) {
+    if (FORBIDDEN_VERSION_TERMS.some(term => version.toLowerCase() === term.toLowerCase())) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('forbiddenVersionTerm'),
+        message: 'qc.error.forbiddenVersionTerm',
         field: 'track.version',
         suggestion: 'Remove version designation for standard/original versions'
       })
     }
 
     // Check if version is already in the title
-    const versionKeywords = getVersionKeywords()
-    const versionInTitle = versionKeywords.some(keyword => 
+    const versionInTitle = VERSION_KEYWORDS.some(keyword => 
       title.toLowerCase().includes(keyword.toLowerCase())
     )
 
@@ -361,7 +357,7 @@ export function validateVersionNaming(title: string, version: string): QCValidat
       results.push({
         isValid: false,
         severity: 'warning',
-        message: getWarningMessage('versionDuplicate'),
+        message: 'qc.warning.versionDuplicate',
         field: 'track.version'
       })
     }
@@ -369,14 +365,27 @@ export function validateVersionNaming(title: string, version: string): QCValidat
     // Version format validation
     if (version !== 'original') {
       // Check proper capitalization for common versions
-      const properVersions = getVersionCapitalization()
+      const properVersions = {
+        'remix': 'Remix',
+        'acoustic': 'Acoustic',
+        'live': 'Live',
+        'instrumental': 'Instrumental',
+        'demo': 'Demo',
+        'radio edit': 'Radio Edit',
+        'extended': 'Extended Mix',
+        'extended mix': 'Extended Mix',
+        'clean': 'Clean',
+        'explicit': 'Explicit',
+        'remastered': 'Remastered',
+        'unplugged': 'Unplugged'
+      }
 
       const lowerVersion = version.toLowerCase()
       if (properVersions[lowerVersion] && version !== properVersions[lowerVersion]) {
         results.push({
           isValid: false,
           severity: 'warning',
-          message: getWarningMessage('versionCapitalization'),
+          message: 'qc.warning.versionCapitalization',
           field: 'track.version',
           suggestion: properVersions[lowerVersion]
         })
@@ -388,7 +397,7 @@ export function validateVersionNaming(title: string, version: string): QCValidat
         results.push({
           isValid: false,
           severity: 'info',
-          message: getInfoMessage('versionFormat'),
+          message: 'qc.info.versionFormat',
           field: 'track.version',
           suggestion: `${title.trim()} (${version})`
         })
@@ -405,8 +414,8 @@ export function validateFeaturingFormat(featuring: string): QCValidationResult[]
 
   if (featuring) {
     // Check for correct format
-    const formats = getFeaturingFormats()
-    const hasValidFormat = formats.valid.some(format => featuring.includes(format))
+    const validFormats = ['feat.', 'Feat.', 'ft.', 'Ft.', 'featuring', 'Featuring']
+    const hasValidFormat = validFormats.some(format => featuring.includes(format))
 
     if (!hasValidFormat) {
       // Check if it's just the artist name without prefix
@@ -414,7 +423,7 @@ export function validateFeaturingFormat(featuring: string): QCValidationResult[]
         results.push({
           isValid: false,
           severity: 'warning',
-          message: getWarningMessage('featuringFormat'),
+          message: 'qc.warning.featuringFormat',
           field: 'track.featuring',
           suggestion: `feat. ${featuring}`
         })
@@ -422,12 +431,13 @@ export function validateFeaturingFormat(featuring: string): QCValidationResult[]
     }
 
     // Check for inconsistent formatting
-    formats.incorrect.forEach(format => {
+    const incorrectFormats = ['Feat', 'feat', 'FT', 'ft', 'Featuring.', 'featuring.']
+    incorrectFormats.forEach(format => {
       if (featuring.includes(format)) {
         results.push({
           isValid: false,
           severity: 'warning',
-          message: getWarningMessage('featuringInconsistent'),
+          message: 'qc.warning.featuringInconsistent',
           field: 'track.featuring',
           suggestion: featuring.replace(format, 'feat.')
         })
@@ -441,17 +451,15 @@ export function validateFeaturingFormat(featuring: string): QCValidationResult[]
 // ISRC format validation
 export function validateISRC(isrc: string): QCValidationResult[] {
   const results: QCValidationResult[] = []
-  const isrcPattern = compilePattern('isrc')
 
   if (isrc) {
-    if (!isrcPattern.test(isrc)) {
-      const rules = getQCRules()
+    if (!ISRC_REGEX.test(isrc)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('invalidISRC'),
+        message: 'qc.error.invalidISRC',
         field: 'track.isrc',
-        suggestion: `Format: ${rules.rules.isrc.format} (e.g., ${rules.rules.isrc.example})`
+        suggestion: 'Format: CCXXXYYNNNNNNN (e.g., USKRE2400001)'
       })
     }
   }
@@ -462,15 +470,14 @@ export function validateISRC(isrc: string): QCValidationResult[] {
 // Copyright validation
 export function validateCopyright(year: string, cRights: string, pRights: string): QCValidationResult[] {
   const results: QCValidationResult[] = []
-  const yearPattern = compilePattern('copyrightYear')
 
   // Validate year
   if (year) {
-    if (!yearPattern.test(year)) {
+    if (!COPYRIGHT_YEAR_REGEX.test(year)) {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('invalidCopyrightYear'),
+        message: 'qc.error.invalidCopyrightYear',
         field: 'release.copyrightYear'
       })
     }
@@ -482,7 +489,7 @@ export function validateCopyright(year: string, cRights: string, pRights: string
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('futureCopyrightYear'),
+        message: 'qc.error.futureCopyrightYear',
         field: 'release.copyrightYear'
       })
     }
@@ -494,7 +501,7 @@ export function validateCopyright(year: string, cRights: string, pRights: string
       results.push({
         isValid: false,
         severity: 'warning',
-        message: getWarningMessage('copyrightSymbolIncluded'),
+        message: 'qc.warning.copyrightSymbolIncluded',
         field: 'release.cRights',
         suggestion: cRights.replace(/©|\(C\)|\(c\)/g, '').trim()
       })
@@ -507,7 +514,7 @@ export function validateCopyright(year: string, cRights: string, pRights: string
       results.push({
         isValid: false,
         severity: 'warning',
-        message: getWarningMessage('copyrightSymbolIncluded'),
+        message: 'qc.warning.copyrightSymbolIncluded',
         field: 'release.pRights',
         suggestion: pRights.replace(/℗|\(P\)|\(p\)/g, '').trim()
       })
@@ -520,15 +527,28 @@ export function validateCopyright(year: string, cRights: string, pRights: string
 // Format classification validation
 export function validateFormatClassification(format: string, trackCount: number): QCValidationResult[] {
   const results: QCValidationResult[] = []
-  const expectedFormat = getFormatClassification(trackCount)
 
-  if (format && expectedFormat && format.toLowerCase() !== expectedFormat) {
+  // FUGA format rules:
+  // Single: 1-3 tracks (same title)
+  // EP: 4-6 tracks  
+  // Album: 7+ tracks
+  let expectedFormat = ''
+  
+  if (trackCount >= 1 && trackCount <= 3) {
+    expectedFormat = 'Single'
+  } else if (trackCount >= 4 && trackCount <= 6) {
+    expectedFormat = 'EP'
+  } else if (trackCount >= 7) {
+    expectedFormat = 'Album'
+  }
+
+  if (format && expectedFormat && format !== expectedFormat) {
     results.push({
       isValid: false,
       severity: 'error',
-      message: getErrorMessage('incorrectFormat'),
+      message: 'qc.error.incorrectFormat',
       field: 'album.format',
-      suggestion: `Based on ${trackCount} tracks, format should be "${expectedFormat.charAt(0).toUpperCase() + expectedFormat.slice(1)}"`
+      suggestion: `Based on ${trackCount} tracks, format should be "${expectedFormat}"`
     })
   }
 
@@ -541,7 +561,7 @@ export function validateLanguageCasing(title: string, language: string): QCValid
 
   if (!title || !language) return results
 
-  const sentenceCaseLanguages = getSentenceCaseLanguages()
+  const sentenceCaseLanguages = ['french', 'italian', 'spanish', 'swedish', 'norwegian', 'danish']
   
   if (sentenceCaseLanguages.includes(language.toLowerCase())) {
     // Check if title uses sentence case (only first word and proper nouns capitalized)
@@ -552,7 +572,7 @@ export function validateLanguageCasing(title: string, language: string): QCValid
       // Skip first word, proper nouns, and language-specific articles
       if (index === 0) return
       
-      const articles = getLanguageArticles(language)
+      const articles = LANGUAGE_SPECIFIC_ARTICLES[language.toLowerCase()] || []
       if (articles.includes(word.toLowerCase())) return
       
       // Check if word is improperly capitalized (excluding all-caps abbreviations)
@@ -565,7 +585,7 @@ export function validateLanguageCasing(title: string, language: string): QCValid
       results.push({
         isValid: false,
         severity: 'warning',
-        message: getWarningMessage('sentenceCaseRequired'),
+        message: 'qc.warning.sentenceCaseRequired',
         field: 'title',
         suggestion: `${language} titles should use sentence case. Check: ${incorrectWords.join(', ')}`
       })
@@ -581,15 +601,31 @@ export function validateGermanOrthography(text: string): QCValidationResult[] {
 
   if (!text) return results
 
+  // Check for incorrect German character replacements
+  const incorrectReplacements = [
+    { incorrect: 'ae', correct: 'ä', pattern: /\b\w*ae\w*\b/gi },
+    { incorrect: 'oe', correct: 'ö', pattern: /\b\w*oe\w*\b/gi },
+    { incorrect: 'ue', correct: 'ü', pattern: /\b\w*ue\w*\b/gi },
+    { incorrect: 'ss', correct: 'ß', pattern: /\b\w*ss\w*\b/gi }
+  ]
+
   // Common German words that should use proper characters
-  const germanWords = getGermanWords()
+  const germanWords = {
+    'fuer': 'für',
+    'ueber': 'über',
+    'koennen': 'können',
+    'moechte': 'möchte',
+    'waehrend': 'während',
+    'grosse': 'große',
+    'strasse': 'straße'
+  }
 
   Object.entries(germanWords).forEach(([incorrect, correct]) => {
     if (text.toLowerCase().includes(incorrect)) {
       results.push({
         isValid: false,
         severity: 'warning',
-        message: getWarningMessage('germanOrthography'),
+        message: 'qc.warning.germanOrthography',
         field: 'text',
         suggestion: text.replace(new RegExp(incorrect, 'gi'), correct)
       })
@@ -620,7 +656,7 @@ export function validateParentalAdvisory(tracks: any[], hasExplicitContent: bool
     results.push({
       isValid: false,
       severity: 'error',
-      message: getErrorMessage('parentalAdvisoryMissing'),
+      message: 'qc.error.parentalAdvisoryMissing',
       field: 'album.parentalAdvisory'
     })
   }
@@ -629,7 +665,7 @@ export function validateParentalAdvisory(tracks: any[], hasExplicitContent: bool
     results.push({
       isValid: false,
       severity: 'warning',
-      message: getWarningMessage('parentalAdvisoryUnnecessary'),
+      message: 'qc.warning.parentalAdvisoryUnnecessary',
       field: 'album.parentalAdvisory'
     })
   }
@@ -638,7 +674,7 @@ export function validateParentalAdvisory(tracks: any[], hasExplicitContent: bool
     results.push({
       isValid: false,
       severity: 'warning',
-      message: getWarningMessage('cleanVersionWithoutExplicit'),
+      message: 'qc.warning.cleanVersionWithoutExplicit',
       field: 'tracks'
     })
   }
@@ -658,7 +694,7 @@ export function validateLanguageConsistency(tracks: any[]): QCValidationResult[]
     results.push({
       isValid: false,
       severity: 'warning',
-      message: getWarningMessage('mixedLanguages'),
+      message: 'qc.warning.mixedLanguages',
       field: 'tracks'
     })
   }
@@ -669,7 +705,6 @@ export function validateLanguageConsistency(tracks: any[]): QCValidationResult[]
 // Release date validation
 export function validateReleaseDate(releaseDate: string): QCValidationResult[] {
   const results: QCValidationResult[] = []
-  const rules = getQCRules()
 
   if (releaseDate) {
     const today = new Date()
@@ -680,14 +715,14 @@ export function validateReleaseDate(releaseDate: string): QCValidationResult[] {
       results.push({
         isValid: false,
         severity: 'error',
-        message: getErrorMessage('pastReleaseDate'),
+        message: 'qc.error.pastReleaseDate',
         field: 'release.consumerReleaseDate'
       })
-    } else if (daysDiff < rules.rules.release.minDaysNotice) {
+    } else if (daysDiff < 14) {
       results.push({
         isValid: false,
         severity: 'warning',
-        message: getWarningMessage('shortReleaseNotice'),
+        message: 'qc.warning.shortReleaseNotice',
         field: 'release.consumerReleaseDate'
       })
     }
@@ -699,22 +734,21 @@ export function validateReleaseDate(releaseDate: string): QCValidationResult[] {
 // Genre validation
 export function validateGenre(genres: string[]): QCValidationResult[] {
   const results: QCValidationResult[] = []
-  const rules = getQCRules()
 
   if (genres.length === 0) {
     results.push({
       isValid: false,
       severity: 'error',
-      message: getErrorMessage('noGenre'),
+      message: 'qc.error.noGenre',
       field: 'artist.genre'
     })
   }
 
-  if (genres.length > rules.rules.genre.maxCount) {
+  if (genres.length > 3) {
     results.push({
       isValid: false,
       severity: 'warning',
-      message: getWarningMessage('tooManyGenres'),
+      message: 'qc.warning.tooManyGenres',
       field: 'artist.genre'
     })
   }
@@ -725,10 +759,9 @@ export function validateGenre(genres: string[]): QCValidationResult[] {
 // Single title consistency validation
 export function validateSingleTitleConsistency(albumTitle: string, tracks: any[]): QCValidationResult[] {
   const results: QCValidationResult[] = []
-  const format = getFormatClassification(tracks.length)
 
-  // For singles, all tracks should have the same base title as the album
-  if (format === 'single') {
+  // For singles (1-3 tracks), all tracks should have the same base title as the album
+  if (tracks.length >= 1 && tracks.length <= 3) {
     const albumTitleBase = albumTitle.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase()
     
     tracks.forEach((track, index) => {
@@ -741,7 +774,7 @@ export function validateSingleTitleConsistency(albumTitle: string, tracks: any[]
         results.push({
           isValid: false,
           severity: 'error',
-          message: getErrorMessage('singleTitleMismatch'),
+          message: 'qc.error.singleTitleMismatch',
           field: `track[${index}].title`,
           suggestion: 'Single format requires all tracks to have the same title as the album'
         })
