@@ -95,12 +95,24 @@ public/uploads/
 # Backup files
 *.bak
 *.backup
+*.old
 *-backup/
 *-backup-*/
 backup-*/
+*.bak.*
+*.backup.*
 
 # Archives
 *.tar.gz
+*.zip
+*.tar
+*.rar
+*.7z
+
+# Old/temporary component versions
+*.old.tsx
+*.backup.tsx
+*.current.tsx
 
 # PID files
 *.pid
