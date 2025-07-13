@@ -11,8 +11,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const clientSecret = configService.get<string>('GOOGLE_CLIENT_SECRET');
     const callbackURL = configService.get<string>('GOOGLE_CALLBACK_URL') ||
       (configService.get<string>('NODE_ENV') === 'production' 
-        ? 'https://n3rve-onboarding.com/auth/google/callback'
-        : 'http://localhost:5001/auth/google/callback');
+        ? 'https://n3rve-onboarding.com/api/auth/google/callback'
+        : 'http://localhost:5001/api/auth/google/callback');
     
     console.log('Google Strategy Configuration:', {
       clientID: clientID ? 'configured' : 'missing',
