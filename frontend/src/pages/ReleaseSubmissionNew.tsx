@@ -8,6 +8,7 @@ import {
   Music2, Mic, UserCheck, GripVertical, Edit3, Volume2, BookOpen, Megaphone,
   Tag, Heart, Link as LinkIcon, Video, Download, Eye, Clock, Check
 } from 'lucide-react'
+import Checkbox from '@/components/ui/Checkbox'
 import toast from 'react-hot-toast'
 import { submissionService } from '@/services/submission.service'
 import { dropboxService } from '@/services/dropbox.service'

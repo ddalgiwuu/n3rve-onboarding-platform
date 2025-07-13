@@ -10,12 +10,10 @@ export default function Layout() {
   const isFirstRender = useRef(true)
 
   const toggleSidebar = () => {
-    console.log('Toggle sidebar:', !sidebarOpen)
     setSidebarOpen(prev => !prev)
   }
 
   const closeSidebar = () => {
-    console.log('Close sidebar')
     setSidebarOpen(false)
   }
 
