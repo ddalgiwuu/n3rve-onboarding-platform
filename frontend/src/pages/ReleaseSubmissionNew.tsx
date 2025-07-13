@@ -297,19 +297,19 @@ export default function ReleaseSubmissionNew() {
       const validationData = {
         artist: {
           nameKo: formData.artists[0]?.primaryName || '',
-          nameEn: formData.artists[0]?.translations.find(t => t.language === 'en')?.text || '',
+          nameEn: formData.artists[0]?.translations?.find(t => t.language === 'en')?.text || '',
           genre: formData.marketingGenre ? [formData.marketingGenre] : []
         },
         album: {
           titleKo: formData.albumTitle,
-          titleEn: formData.albumTranslations.find(t => t.language === 'en')?.text || '',
+          titleEn: formData.albumTranslations?.find(t => t.language === 'en')?.text || '',
           format: formData.albumType,
           parentalAdvisory: formData.parentalAdvisory
         },
-        tracks: formData.tracks.map(track => ({
+        tracks: (formData.tracks || []).map(track => ({
           titleKo: track.title,
-          titleEn: track.translations.find(t => t.language === 'en')?.text || '',
-          featuring: track.featuringArtists.map(a => a.primaryName).join(', '),
+          titleEn: track.translations?.find(t => t.language === 'en')?.text || '',
+          featuring: track.featuringArtists?.map(a => a.primaryName).join(', ') || '',
           isrc: track.isrc,
           trackVersion: track.version,
           lyricsLanguage: track.audioLanguage,
@@ -381,7 +381,7 @@ export default function ReleaseSubmissionNew() {
           track.id === parentId
             ? {
                 ...track,
-                translations: track.translations.map(t =>
+                translations: (track.translations || []).map(t =>
                   t.id === translationId ? { ...t, ...updates } : t
                 )
               }
@@ -407,7 +407,7 @@ export default function ReleaseSubmissionNew() {
         ...prev,
         tracks: prev.tracks.map(track => 
           track.id === parentId
-            ? { ...track, translations: track.translations.filter(t => t.id !== translationId) }
+            ? { ...track, translations: (track.translations || []).filter(t => t.id !== translationId) }
             : track
         )
       }))
@@ -549,7 +549,7 @@ export default function ReleaseSubmissionNew() {
   const getSectionValidation = (section: 'album' | 'asset' | 'marketing') => {
     if (!validationResults) return { hasErrors: false, errorCount: 0 }
     
-    const sectionErrors = validationResults.errors.filter(error => {
+    const sectionErrors = (validationResults.errors || []).filter(error => {
       if (!error.field) return false
       
       switch (section) {
@@ -584,7 +584,7 @@ export default function ReleaseSubmissionNew() {
         </h3>
         
         <div className="space-y-4">
-          {formData.artists.map((artist, index) => (
+          {(formData.artists || []).map((artist, index) => (
             <div key={artist.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-start justify-between mb-3">
                 <h4 className="font-medium">
@@ -622,12 +622,12 @@ export default function ReleaseSubmissionNew() {
                 <label className="block text-sm font-medium mb-2">
                   {tBilingual('번역', 'Translations')}
                 </label>
-                {artist.translations.map((trans) => (
+                {(artist.translations || []).map((trans) => (
                   <div key={trans.id} className="flex items-center gap-2 mb-2">
                     <Select
                       value={trans.language}
                       onChange={(e) => updateArtist(artist.id, {
-                        translations: artist.translations.map(t =>
+                        translations: (artist.translations || []).map(t =>
                           t.id === trans.id ? { ...t, language: e.target.value } : t
                         )
                       })}
@@ -641,7 +641,7 @@ export default function ReleaseSubmissionNew() {
                     <Input
                       value={trans.text}
                       onChange={(e) => updateArtist(artist.id, {
-                        translations: artist.translations.map(t =>
+                        translations: (artist.translations || []).map(t =>
                           t.id === trans.id ? { ...t, text: e.target.value } : t
                         )
                       })}
@@ -650,7 +650,7 @@ export default function ReleaseSubmissionNew() {
                     />
                     <button
                       onClick={() => updateArtist(artist.id, {
-                        translations: artist.translations.filter(t => t.id !== trans.id)
+                        translations: (artist.translations || []).filter(t => t.id !== trans.id)
                       })}
                       className="text-red-500 hover:text-red-600"
                     >
@@ -660,7 +660,7 @@ export default function ReleaseSubmissionNew() {
                 ))}
                 <Button
                   onClick={() => updateArtist(artist.id, {
-                    translations: [...artist.translations, {
+                    translations: [...(artist.translations || []), {
                       id: uuidv4(),
                       language: '',
                       text: ''
@@ -716,7 +716,7 @@ export default function ReleaseSubmissionNew() {
             <label className="block text-sm font-medium mb-2">
               {tBilingual('앨범명 번역', 'Album Title Translations')}
             </label>
-            {formData.albumTranslations.map((trans) => (
+            {(formData.albumTranslations || []).map((trans) => (
               <div key={trans.id} className="flex items-center gap-2 mb-2">
                 <Select
                   value={trans.language}
@@ -942,7 +942,7 @@ export default function ReleaseSubmissionNew() {
           <Droppable droppableId="tracks">
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                {formData.tracks.map((track, index) => (
+                {(formData.tracks || []).map((track, index) => (
                   <Draggable key={track.id} draggableId={track.id} index={index}>
                     {(provided, snapshot) => (
                       <div
@@ -1010,7 +1010,7 @@ export default function ReleaseSubmissionNew() {
                               <label className="block text-sm font-medium mb-2">
                                 {tBilingual('트랙명 번역', 'Track Title Translations')}
                               </label>
-                              {track.translations.map((trans) => (
+                              {(track.translations || []).map((trans) => (
                                 <div key={trans.id} className="flex items-center gap-2 mb-2">
                                   <Select
                                     value={trans.language}
@@ -1201,7 +1201,7 @@ export default function ReleaseSubmissionNew() {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {formData.marketingTags.map((tag, index) => (
+              {(formData.marketingTags || []).map((tag, index) => (
                 <span
                   key={index}
                   className="bg-purple-500/20 text-purple-600 dark:text-purple-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
@@ -1357,7 +1357,7 @@ export default function ReleaseSubmissionNew() {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {formData.similarArtists.map((artist, index) => (
+              {(formData.similarArtists || []).map((artist, index) => (
                 <span
                   key={index}
                   className="bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
