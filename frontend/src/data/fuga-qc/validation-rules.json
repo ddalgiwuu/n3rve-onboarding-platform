@@ -1,0 +1,191 @@
+{
+  "patterns": {
+    "doubleSpace": "  +",
+    "leadingTrailingSpace": "^\\s+|\\s+$",
+    "specialChars": "[^\\p{L}\\p{N}\\s\\-.,!?&()'+/]",
+    "invalidCharsArtist": "[<>{}[\\]\\\\|^`~]",
+    "emoji": "[\\u{1F600}-\\u{1F64F}]|[\\u{1F300}-\\u{1F5FF}]|[\\u{1F680}-\\u{1F6FF}]|[\\u{1F1E0}-\\u{1F1FF}]|[\\u{2600}-\\u{26FF}]|[\\u{2700}-\\u{27BF}]",
+    "isrc": "^[A-Z]{2}[A-Z0-9]{3}\\d{7}$",
+    "copyrightYear": "^(19|20)\\d{2}$"
+  },
+  
+  "terms": {
+    "promotional": [
+      "NEW", "HOT", "EXCLUSIVE", "FRESH", "LATEST", "BEST", "TOP", "SALE", 
+      "FREE", "DOWNLOAD", "CLICK", "STREAM NOW", "OUT NOW", "AVAILABLE NOW", 
+      "LIMITED EDITION", "SPECIAL EDITION", "DELUXE", "BONUS", "PRE-ORDER", 
+      "DIGITAL DOWNLOAD", "STREAMING", "MUST HAVE", "HIT", "CHART"
+    ],
+    "genericArtistNames": [
+      "Various Artists", "Various", "Unknown Artist", "Unknown", 
+      "Artist", "TBD", "TBA", "N/A", "None", "Untitled"
+    ],
+    "misleadingArtistTerms": [
+      "feat.", "featuring", "with", "vs", "versus", 
+      "presents", "pres.", "&", "and"
+    ],
+    "forbiddenVersionTerms": [
+      "Original", "Original Mix", "Original Version", 
+      "Studio Version", "Album Version"
+    ],
+    "versionKeywords": [
+      "Remix", "Acoustic", "Live", "Instrumental", "Demo", 
+      "Radio Edit", "Extended", "Clean", "Explicit", "Remastered", 
+      "Unplugged", "Mix", "Version", "Special Edition", 
+      "Deluxe Edition", "Anniversary Edition"
+    ]
+  },
+  
+  "languageSpecific": {
+    "articles": {
+      "french": ["le", "la", "les", "un", "une", "des", "du", "de"],
+      "italian": ["il", "lo", "la", "i", "gli", "le", "un", "uno", "una", "del", "dello", "della", "dei", "degli", "delle"],
+      "spanish": ["el", "la", "los", "las", "un", "una", "unos", "unas", "del", "al"],
+      "german": ["der", "die", "das", "den", "dem", "des", "ein", "eine", "einer", "einem", "eines"]
+    },
+    "sentenceCaseLanguages": ["french", "italian", "spanish", "swedish", "norwegian", "danish"],
+    "germanWords": {
+      "fuer": "für",
+      "ueber": "über",
+      "koennen": "können",
+      "moechte": "möchte",
+      "waehrend": "während",
+      "grosse": "große",
+      "strasse": "straße"
+    }
+  },
+  
+  "formatting": {
+    "titleCaseSkipWords": ["a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with"],
+    "featuringFormats": {
+      "valid": ["feat.", "Feat.", "ft.", "Ft.", "featuring", "Featuring"],
+      "incorrect": ["Feat", "feat", "FT", "ft", "Featuring.", "featuring."]
+    },
+    "abbreviations": {
+      "ft.": "featuring",
+      "feat.": "featuring",
+      "vs.": "versus",
+      "pres.": "presents"
+    },
+    "versionCapitalization": {
+      "remix": "Remix",
+      "acoustic": "Acoustic",
+      "live": "Live",
+      "instrumental": "Instrumental",
+      "demo": "Demo",
+      "radio edit": "Radio Edit",
+      "extended": "Extended Mix",
+      "extended mix": "Extended Mix",
+      "clean": "Clean",
+      "explicit": "Explicit",
+      "remastered": "Remastered",
+      "unplugged": "Unplugged"
+    }
+  },
+  
+  "rules": {
+    "artist": {
+      "maxLength": 100,
+      "requireBothLanguages": false,
+      "allowSpecialChars": "-.,!?&()'+/",
+      "preventDoubleSpaces": true,
+      "preventLeadingTrailingSpaces": true,
+      "preventPromotionalText": true,
+      "preventGenericNames": true,
+      "preventMisleadingTerms": true,
+      "preventEmojis": true
+    },
+    
+    "title": {
+      "maxLength": 200,
+      "requireTitleCase": true,
+      "preventDoubleSpaces": true,
+      "preventLeadingTrailingSpaces": true,
+      "preventPromotionalText": true,
+      "preventEmojis": true,
+      "checkBracketMatching": true,
+      "enforceSentenceCaseForLanguages": true
+    },
+    
+    "format": {
+      "single": {
+        "minTracks": 1,
+        "maxTracks": 3,
+        "requireSameTitle": true
+      },
+      "ep": {
+        "minTracks": 4,
+        "maxTracks": 6,
+        "requireSameTitle": false
+      },
+      "album": {
+        "minTracks": 7,
+        "maxTracks": null,
+        "requireSameTitle": false
+      }
+    },
+    
+    "release": {
+      "minDaysNotice": 14,
+      "preventPastDates": true,
+      "requireCopyrightYear": true,
+      "preventCopyrightSymbols": true
+    },
+    
+    "genre": {
+      "minCount": 1,
+      "maxCount": 3,
+      "requireSelection": true
+    },
+    
+    "isrc": {
+      "format": "CCXXXYYNNNNNNN",
+      "example": "USKRE2400001",
+      "required": false
+    }
+  },
+  
+  "messages": {
+    "error": {
+      "doubleSpaces": "연속된 공백이 발견되었습니다 (Double spaces detected)",
+      "leadingTrailingSpaces": "앞뒤 공백을 제거해주세요 (Remove leading/trailing spaces)",
+      "invalidCharacters": "사용할 수 없는 특수문자가 포함되어 있습니다 (Invalid special characters)",
+      "promotionalText": "홍보성 문구는 사용할 수 없습니다 (Promotional text not allowed)",
+      "genericArtistName": "일반적인 아티스트명은 사용할 수 없습니다 (Generic artist names not allowed)",
+      "misleadingArtistName": "피처링 관련 용어는 아티스트명에 포함할 수 없습니다 (Featuring terms not allowed in artist name)",
+      "emojisInTitle": "이모지는 사용할 수 없습니다 (Emojis not allowed)",
+      "unmatchedBrackets": "괄호가 올바르게 닫히지 않았습니다 (Unmatched brackets)",
+      "forbiddenVersionTerm": "Original/Original Mix는 버전명으로 사용할 수 없습니다 (Original versions should not have version designation)",
+      "invalidISRC": "ISRC 형식이 올바르지 않습니다 (Invalid ISRC format)",
+      "invalidCopyrightYear": "저작권 연도 형식이 올바르지 않습니다 (Invalid copyright year format)",
+      "futureCopyrightYear": "미래 날짜는 사용할 수 없습니다 (Future dates not allowed)",
+      "parentalAdvisoryMissing": "명시적 콘텐츠가 있지만 자녀 지도 경고가 설정되지 않았습니다 (Explicit content requires parental advisory)",
+      "incorrectFormat": "트랙 수에 맞는 포맷을 선택해주세요 (Format doesn't match track count)",
+      "singleTitleMismatch": "싱글 포맷에서는 모든 트랙 제목이 앨범 제목과 동일해야 합니다 (Single format requires matching titles)",
+      "pastReleaseDate": "과거 날짜는 선택할 수 없습니다 (Past dates not allowed)",
+      "noGenre": "장르를 선택해주세요 (Genre selection required)",
+      "abbreviationInArtistName": "약어 대신 전체 단어를 사용해주세요 (Use full words instead of abbreviations)"
+    },
+    
+    "warning": {
+      "titleCase": "영문 제목은 Title Case를 사용해주세요 (Use Title Case for English titles)",
+      "akaInArtistName": "AKA는 아티스트명에 사용하지 않는 것이 좋습니다 (AKA not recommended in artist name)",
+      "featuringFormat": "피처링 형식을 확인해주세요 (Check featuring format)",
+      "featuringInconsistent": "피처링 형식이 일관되지 않습니다 (Inconsistent featuring format)",
+      "copyrightSymbolIncluded": "저작권 기호는 자동으로 추가되므로 입력하지 마세요 (Copyright symbols added automatically)",
+      "versionCapitalization": "버전명 대소문자를 확인해주세요 (Check version capitalization)",
+      "versionDuplicate": "버전 정보가 중복됩니다 (Version information duplicated)",
+      "sentenceCaseRequired": "이 언어는 Sentence Case를 사용해야 합니다 (This language requires sentence case)",
+      "germanOrthography": "독일어 철자법을 확인해주세요 (Check German orthography)",
+      "parentalAdvisoryUnnecessary": "명시적 콘텐츠가 없는데 자녀 지도 경고가 설정되어 있습니다 (Parental advisory set without explicit content)",
+      "cleanVersionWithoutExplicit": "Clean 버전이 있지만 Explicit 버전이 없습니다 (Clean version without explicit version)",
+      "mixedLanguages": "여러 언어가 혼재되어 있습니다 (Multiple languages detected)",
+      "shortReleaseNotice": "출시일까지 14일 미만입니다. 처리가 지연될 수 있습니다 (Less than 14 days notice)",
+      "tooManyGenres": "장르는 최대 3개까지 선택 가능합니다 (Maximum 3 genres allowed)"
+    },
+    
+    "info": {
+      "versionFormat": "버전 정보는 제목 끝에 괄호로 표시하는 것이 좋습니다 (Version should be in parentheses at end of title)"
+    }
+  }
+}
