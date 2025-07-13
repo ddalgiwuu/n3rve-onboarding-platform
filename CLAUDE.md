@@ -6,10 +6,10 @@ npm run type-check: Verify types
 
 ## 📊 Current Platform Status
 
-### 🚀 Production Deployment (v1.3.7)
-- **EC2 Server**: ec2-52-79-97-228.ap-northeast-2.compute.amazonaws.com
-- **Latest Commit**: fccc828b (JSON-based FUGA QC configuration management)
-- **Deployment Date**: 2025-07-13
+### 🚀 Production Deployment (v1.3.8)
+- **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com
+- **Latest Commit**: 502b2c62 (Auth debugging and OAuth URL fixes)
+- **Deployment Date**: 2025-07-14
 - **Status**: ✅ LIVE and Running
 
 ### 🏗️ Major Features Deployed
@@ -203,12 +203,12 @@ When simulation is absolutely necessary, I will always ask for permission first 
 - Korean/English bilingual support
 
 ### AWS EC2 Instance Connection Details
-- **Instance ID**: `i-09fbb092824c73cc5` (n3rve_onboarding)
+- **Instance ID**: `i-0fd6de9be4fa199a9` (N3RVE)
 - **SSH Client Steps**:
-  - Find private key file: `n3rve_onboarding_amazon_key.pem`
-  - Set key permissions: `chmod 400 "n3rve_onboarding_amazon_key.pem"`
-  - Public DNS: `ec2-52-79-97-228.ap-northeast-2.compute.amazonaws.com`
-  - Connection Command: `ssh -i "n3rve_onboarding_amazon_key.pem" ubuntu@ec2-52-79-97-228.ap-northeast-2.compute.amazonaws.com`
+  - Find private key file: `N3RVE_AWS.pem`
+  - Set key permissions: `chmod 400 "N3RVE_AWS.pem"`
+  - Public DNS: `ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com`
+  - Connection Command: `ssh -i "N3RVE_AWS.pem" ubuntu@ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com`
 
 ### 🚀 Automated Deployment Process
 1. **Local Development**: Code changes in working directory
