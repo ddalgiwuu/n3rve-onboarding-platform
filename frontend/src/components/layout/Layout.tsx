@@ -10,7 +10,13 @@ export default function Layout() {
   const isFirstRender = useRef(true)
 
   const toggleSidebar = () => {
+    console.log('Toggle sidebar:', !sidebarOpen)
     setSidebarOpen(prev => !prev)
+  }
+
+  const closeSidebar = () => {
+    console.log('Close sidebar')
+    setSidebarOpen(false)
   }
 
   // Handle initial render and resize
@@ -58,7 +64,7 @@ export default function Layout() {
       </div>
       
       {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} onClose={toggleSidebar} />
+      <Sidebar isOpen={sidebarOpen} onClose={closeSidebar} />
       
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-h-screen relative">
