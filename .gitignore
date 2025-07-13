@@ -9,6 +9,9 @@ node_modules/
 .env.development
 *.env
 
+# Sensitive documentation
+API_KEYS.md
+
 # Build outputs
 dist/
 build/
