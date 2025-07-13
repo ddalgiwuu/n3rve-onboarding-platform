@@ -73,7 +73,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         // Check if the click target is the menu button in header
         const target = event.target as HTMLElement
         if (!target.closest('[data-menu-button]')) {
-          console.log('Closing sidebar - clicked outside')
           onClose()
         }
       }
@@ -81,7 +80,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
-        console.log('Closing sidebar - escape key')
         onClose()
       }
     }
@@ -89,10 +87,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     if (isOpen) {
       // Add small delay to prevent immediate close when opening
       const timer = setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside)
-        document.addEventListener('touchstart', handleClickOutside)
+        document.addEventListener('mousedown', handleClickOutside, { passive: true })
+        document.addEventListener('touchstart', handleClickOutside, { passive: true })
         document.addEventListener('keydown', handleEscapeKey)
-      }, 100)
+      }, 200)
 
       return () => {
         clearTimeout(timer)
