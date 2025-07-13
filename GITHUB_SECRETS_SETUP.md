@@ -11,6 +11,7 @@ GitHub Repository Settings → Secrets and variables → Actions에서 다음 se
 ### EC2 관련
 - `EC2_HOST`: 52.78.81.116
 - `EC2_SSH_KEY`: N3RVE_AWS.pem 파일의 전체 내용 (-----BEGIN RSA PRIVATE KEY----- 부터 끝까지)
+- `EC2_INSTANCE_ID`: i-0fd6de9be4fa199a9
 
 ### MongoDB 관련
 - `MONGODB_URI`: mongodb+srv://ryan:7xojrRbDc6zK37Hr@n3rve-db.ie22loh.mongodb.net/n3rve-platform?retryWrites=true&w=majority&appName=N3RVE-DB

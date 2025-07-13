@@ -108,11 +108,11 @@ echo -e "${GREEN}✓ Docker image built and pushed${NC}"
 # 6. Check EC2 instance status
 echo -e "\n${YELLOW}[6/7] Checking EC2 instance...${NC}"
 INSTANCE_STATE=$(aws ec2 describe-instances --instance-ids i-0fd6de9be4fa199a9 \
-    --query 'Reservations[0].Instances[0].State.Name' --output text 2>/dev/null || echo "error")
+    --query 'Reservations[0].Instances[0].State.Name' --output text --region ap-northeast-2 2>/dev/null || echo "error")
 
 if [ "$INSTANCE_STATE" != "running" ]; then
     echo -e "${YELLOW}EC2 instance is $INSTANCE_STATE. Starting...${NC}"
-    aws ec2 start-instances --instance-ids i-0fd6de9be4fa199a9
+    aws ec2 start-instances --instance-ids i-0fd6de9be4fa199a9 --region ap-northeast-2
     echo "Waiting for instance to start..."
     sleep 30
 fi
