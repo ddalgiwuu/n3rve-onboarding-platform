@@ -1,11 +1,11 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Music, Upload, FileText, CheckCircle, Users, TrendingUp, HelpCircle, Zap, Globe } from 'lucide-react';
-import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/store/language.store';
 
 const Guide = () => {
   const navigate = useNavigate();
-  const { t } = useLanguageStore();
+  const { t } = useTranslation();
 
   const guides = [
     {

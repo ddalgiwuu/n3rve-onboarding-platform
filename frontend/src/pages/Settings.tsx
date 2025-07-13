@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { User, Bell, Shield, Globe, CreditCard, Key, Save, ChevronRight, ToggleLeft, ToggleRight, CheckCircle } from 'lucide-react';
-import { useLanguageStore } from '@/store/language.store';
+import { useLanguageStore, useTranslation } from '@/store/language.store';
 import { useAuthStore } from '@/store/auth.store';
 
 const Settings = () => {
-  const { t, language, setLanguage } = useLanguageStore();
+  const { language, setLanguage } = useLanguageStore();
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState('profile');
   const [notifications, setNotifications] = useState({

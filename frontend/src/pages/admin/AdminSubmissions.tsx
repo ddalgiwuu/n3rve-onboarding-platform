@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Download, Calendar, Music, Eye, CheckCircle, XCircle, Clock, Play, Image as ImageIcon, FileAudio, Globe, Target } from 'lucide-react';
-import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/store/language.store';
 import { submissionService } from '@/services/submission.service';
 import { dropboxService } from '@/services/dropbox.service';
 import { format } from 'date-fns';
@@ -111,7 +111,7 @@ interface Submission {
 
 const AdminSubmissions = () => {
   const navigate = useNavigate();
-  const { t } = useLanguageStore();
+  const { t } = useTranslation();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
