@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
-import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/store/language.store';
 import { UserCog, Users } from 'lucide-react';
 import { useEffect } from 'react';
 
 export default function RoleSelect() {
   const navigate = useNavigate();
-  const { t } = useLanguageStore();
+  const { t } = useTranslation();
   const setAuth = useAuthStore(state => state.setAuth);
 
   useEffect(() => {
