@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Filter, Clock, CheckCircle, XCircle, AlertCircle, Music, Calendar, Eye } from 'lucide-react';
-import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/store/language.store';
 import { format } from 'date-fns';
 import { submissionService } from '@/services/submission.service';
 import toast from 'react-hot-toast';
@@ -19,7 +19,7 @@ interface Submission {
 
 const Submissions = () => {
   const navigate = useNavigate();
-  const { t } = useLanguageStore();
+  const { t } = useTranslation();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useLanguageStore } from '@/store/language.store'
+import { useLanguageStore, useTranslation } from '@/store/language.store'
 import { 
   Upload, Music, FileText, Image, CheckCircle, AlertCircle, X, Plus, Trash2, 
   Globe, Target, Sparkles, Users, MapPin, Calendar, Shield, Languages, Disc, 
@@ -167,7 +167,8 @@ const marketingFields = {
 }
 
 export default function ReleaseSubmission() {
-  const { t, language } = useLanguageStore()
+  const { t } = useTranslation()
+  const { language } = useLanguageStore()
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const [currentSection, setCurrentSection] = useState<'album' | 'asset' | 'marketing'>('album')

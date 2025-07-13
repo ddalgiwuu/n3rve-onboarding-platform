@@ -1,11 +1,11 @@
 import { useAuthStore } from '@/store/auth.store'
-import { useLanguageStore } from '@/store/language.store'
+import { useTranslation } from '@/store/language.store'
 import { LayoutDashboard, Music, FileText, Users, TrendingUp, Upload, ChevronRight, Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
 
 export default function Dashboard() {
   const user = useAuthStore(state => state.user)
-  const { t } = useLanguageStore()
+  const { t } = useTranslation()
 
   const stats = [
     {

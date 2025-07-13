@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, UserPlus, Mail, Phone, Calendar, Music, TrendingUp, Download } from 'lucide-react';
-import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/store/language.store';
 import { format } from 'date-fns';
 import { adminService } from '@/services/admin.service';
 import toast from 'react-hot-toast';
@@ -20,7 +20,7 @@ interface Customer {
 }
 
 const AdminCustomers = () => {
-  const { t } = useLanguageStore();
+  const { t } = useTranslation();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');

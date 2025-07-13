@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, User, Music, Globe, Star, ArrowRight } from 'lucide-react';
-import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/store/language.store';
 import confetti from 'canvas-confetti';
 
 const ProfileComplete = () => {
   const navigate = useNavigate();
-  const { t } = useLanguageStore();
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Trigger confetti animation

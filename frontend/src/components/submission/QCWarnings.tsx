@@ -1,5 +1,5 @@
 import { AlertTriangle, AlertCircle, Info, CheckCircle, X, Zap } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
+import { useTranslation } from '@/store/language.store'
 import type { QCValidationResults, QCValidationResult } from '@/utils/fugaQCValidation'
 import { useState } from 'react'
 import Button from '@/components/ui/Button'
@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function QCWarnings({ results, onClose, onAutoFix }: Props) {
-  const { t } = useLanguageStore()
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'errors' | 'warnings' | 'info'>('errors')
 
   const getIcon = (severity: QCValidationResult['severity']) => {
@@ -224,7 +224,7 @@ export default function QCWarnings({ results, onClose, onAutoFix }: Props) {
 
 // QC Status Badge Component
 export function QCStatusBadge({ errors, warnings }: { errors: number; warnings: number }) {
-  const { t } = useLanguageStore()
+  const { t } = useTranslation()
   
   if (errors === 0 && warnings === 0) {
     return (
