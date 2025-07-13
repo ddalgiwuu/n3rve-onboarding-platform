@@ -26,8 +26,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
 
   return (
-    <header className="min-h-[56px] sm:h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-20 flex-shrink-0 animate-slide-in-down">
-      <div className="h-full px-3 sm:px-6 flex items-center justify-between py-2 sm:py-0">
+    <header className="min-h-[64px] sm:h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-20 flex-shrink-0 animate-slide-in-down">
+      <div className="h-full px-4 sm:px-6 flex items-center justify-between py-2 sm:py-0">
         <div className="flex items-center gap-4">
           {/* Hamburger Menu Button */}
           <button
@@ -35,7 +35,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
             data-menu-button
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           >
-            <Menu className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Menu className="w-6 h-6 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
           </button>
           
           <div className="flex items-center gap-3">
@@ -46,12 +46,12 @@ export default function Header({ onMenuClick }: HeaderProps) {
               <img 
                 src="/assets/logos/n3rve-logo.svg" 
                 alt="N3RVE" 
-                className="h-6 sm:h-8 w-auto cursor-pointer hover:opacity-80 transition-opacity dark:hidden"
+                className="h-8 sm:h-8 w-auto cursor-pointer hover:opacity-80 transition-opacity dark:hidden"
               />
               <img 
                 src="/assets/logos/n3rve-logo-white.svg" 
                 alt="N3RVE" 
-                className="h-6 sm:h-8 w-auto cursor-pointer hover:opacity-80 transition-opacity hidden dark:block"
+                className="h-8 sm:h-8 w-auto cursor-pointer hover:opacity-80 transition-opacity hidden dark:block"
               />
               <div className="hidden sm:block border-l border-gray-300 dark:border-gray-700 pl-3">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -68,7 +68,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           <DarkModeToggle />
           
           <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors hidden sm:block">
-            <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+            <Bell className="w-6 h-6 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
           </button>
           
           <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-gray-200 dark:border-gray-700">
@@ -98,7 +98,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                     className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
                   />
                 ) : (
-                  <User className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  <User className="w-6 h-6 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
                 )}
               </button>
               
