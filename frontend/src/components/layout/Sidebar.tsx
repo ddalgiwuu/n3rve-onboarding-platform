@@ -134,17 +134,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
       <aside 
         ref={sidebarRef}
         className={cn(
-          "w-64 sm:w-72 h-screen bg-white dark:bg-gray-900",
+          "w-64 sm:w-72 h-screen",
           "fixed top-0 left-0 z-50",
-          "border-r border-gray-200 dark:border-gray-700",
-          "shadow-xl",
+          "glass-effect-strong backdrop-blur-xl",
+          "border-r border-gray-200/50 dark:border-gray-700/50",
+          "shadow-2xl",
           isOpen ? "translate-x-0" : "-translate-x-full",
-          "transition-transform duration-300 ease-in-out"
+          "transition-all duration-300 ease-in-out",
+          "will-change-transform"
         )}
       >
         <div className="h-full flex flex-col">
           {/* Header */}
-          <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+          <div className="p-6 border-b border-gray-200/30 dark:border-gray-700/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-xl flex items-center justify-center shadow-lg">
@@ -167,7 +169,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* User Profile Section */}
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div className="px-6 py-4 border-b border-gray-200/30 dark:border-gray-700/30">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center">
                 <span className="text-gray-600 dark:text-gray-300 font-semibold">
@@ -202,19 +204,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   }}
                   className={({ isActive }) =>
                     cn(
-                      'group flex items-center gap-3 px-4 py-4 rounded-xl transition-colors',
-                      'hover:bg-gray-100 dark:hover:bg-gray-800',
-                      isActive && 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                      'group flex items-center gap-3 px-4 py-4 rounded-xl transition-all duration-200',
+                      'hover:bg-gray-100/50 dark:hover:bg-gray-800/50 hover:shadow-lg',
+                      isActive && 'bg-blue-50/70 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shadow-lg'
                     )
                   }
                 >
                   {({ isActive }) => (
                     <>
                       <div className={cn(
-                        "p-2.5 rounded-lg transition-colors",
+                        "p-2.5 rounded-lg transition-all duration-200",
                         isActive 
-                          ? "bg-blue-100 dark:bg-blue-800" 
-                          : "group-hover:bg-gray-200 dark:group-hover:bg-gray-700"
+                          ? "bg-blue-100/70 dark:bg-blue-800/50 shadow-inner" 
+                          : "group-hover:bg-gray-200/50 dark:group-hover:bg-gray-700/50"
                       )}>
                         <item.icon className={cn(
                           "w-5 h-5 transition-colors duration-150",
@@ -243,7 +245,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             {/* Admin Toggle */}
             {isAdmin && (
-              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <div className="mt-6 pt-6 border-t border-gray-200/30 dark:border-gray-700/30">
                 <NavLink
                   to={isInAdminConsole ? '/dashboard' : '/admin'}
                   onClick={(e) => {
@@ -254,9 +256,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       }, 150)
                     }
                   }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/50 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-all duration-200 hover:shadow-lg"
                 >
-                  <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+                  <div className="p-2 bg-red-100/70 dark:bg-red-900/40 rounded-lg">
                     <Shield className="w-5 h-5 text-red-600" />
                   </div>
                   <span className="font-medium text-gray-700 dark:text-gray-300">
@@ -271,12 +273,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-4 border-t border-gray-200/30 dark:border-gray-700/30">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-200 group hover:shadow-lg"
             >
-              <div className="p-2 rounded-lg group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+              <div className="p-2 rounded-lg group-hover:bg-gray-200/50 dark:group-hover:bg-gray-700/50 transition-all duration-200">
                 <LogOut className="w-5 h-5 text-gray-500 group-hover:text-red-600" />
               </div>
               <span className="font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white">
