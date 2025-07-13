@@ -186,7 +186,7 @@ export class AuthController {
         googleId: user.googleId,
         email: user.email,
         name: user.name,
-        profilePicture: user.profilePicture,
+        profilePicture: user.profilePicture || '',
         provider: 'google',
         accessToken: 'test-token',
       });
