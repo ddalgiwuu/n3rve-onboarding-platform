@@ -23,6 +23,7 @@ const DropboxCallbackPage = lazy(() => import('./pages/DropboxCallback'))
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallback'))
 const ProfileCompletePage = lazy(() => import('./pages/ProfileComplete'))
 const RoleSelectPage = lazy(() => import('./pages/RoleSelect'))
+const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
 
 function App() {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
@@ -66,6 +67,7 @@ function App() {
           isAuthenticated ? <ProfileCompletePage /> : <Navigate to="/login" />
         } />
         <Route path="/role-select" element={<RoleSelectPage />} />
+        <Route path="/debug-auth" element={<DebugAuthPage />} />
 
         {/* Protected routes */}
         <Route element={<Layout />}>
