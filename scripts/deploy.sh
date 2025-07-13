@@ -144,6 +144,22 @@ docker rm n3rve-platform 2>/dev/null || true
 echo "Pulling new image..."
 docker pull $DOCKER_REPO:$NEW_VERSION
 
+# Ensure .env file exists and has MONGODB_URI
+if [ ! -f .env ]; then
+    echo "Creating .env file from example..."
+    cp .env.example .env
+fi
+
+# Check if MONGODB_URI exists in .env
+if ! grep -q "MONGODB_URI=" .env; then
+    echo "Adding MONGODB_URI to .env..."
+    # Copy DATABASE_URL to MONGODB_URI if it exists
+    if grep -q "DATABASE_URL=" .env; then
+        DB_URL=$(grep "DATABASE_URL=" .env | cut -d '"' -f 2)
+        echo "MONGODB_URI=\"\$DB_URL\"" >> .env
+    fi
+fi
+
 # Run new container
 echo "Starting new container..."
 docker run -d \
