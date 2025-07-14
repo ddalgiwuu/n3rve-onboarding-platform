@@ -307,13 +307,13 @@ export default function ReleaseSubmissionNew() {
           parentalAdvisory: formData.parentalAdvisory
         },
         tracks: (formData.tracks || []).map(track => ({
-          titleKo: track.title,
-          titleEn: track.translations?.find(t => t.language === 'en')?.text || '',
-          featuring: (track.featuringArtists || []).map(a => a.primaryName).join(', ') || '',
-          isrc: track.isrc,
-          trackVersion: track.version,
-          lyricsLanguage: track.audioLanguage,
-          lyricsExplicit: track.explicitContent
+          titleKo: track.title || '',
+          titleEn: (track.translations || []).find(t => t.language === 'en')?.text || '',
+          featuring: ((track.featuringArtists || []).map(a => a?.primaryName || '').filter(Boolean).join(', ')) || '',
+          isrc: track.isrc || '',
+          trackVersion: track.version || '',
+          lyricsLanguage: track.audioLanguage || 'ko',
+          lyricsExplicit: track.explicitContent || false
         })),
         release: {
           consumerReleaseDate: formData.releaseDate,
@@ -534,11 +534,80 @@ export default function ReleaseSubmissionNew() {
 
     setIsSubmitting(true)
     try {
-      // Here you would submit to your backend
-      await submissionService.createSubmission(formData)
+      // Transform formData to match SubmissionData interface
+      const submissionData = {
+        artist: {
+          nameKo: formData.artists[0]?.primaryName || '',
+          nameEn: formData.artists[0]?.translations?.find(t => t.language === 'en')?.text || '',
+          genre: formData.marketingGenre ? [formData.marketingGenre] : [],
+          spotifyId: formData.artists[0]?.spotifyId,
+          appleMusicId: formData.artists[0]?.appleMusicId,
+          youtubeChannelId: formData.artists[0]?.youtubeChannelId,
+          bookingAgent: formData.artists[0]?.bookingAgent,
+          countryOfOrigin: formData.artists[0]?.countryOfOrigin
+        },
+        album: {
+          titleKo: formData.albumTitle,
+          titleEn: formData.albumTranslations?.find(t => t.language === 'en')?.text || '',
+          format: formData.albumType,
+          parentalAdvisory: formData.parentalAdvisory,
+          description: formData.albumDescription,
+          descriptionTranslations: formData.albumDescriptionTranslations,
+          recordLabel: formData.recordLabel,
+          catalogNumber: formData.catalogNumber,
+          upc: formData.upc
+        },
+        tracks: (formData.tracks || []).map(track => ({
+          titleKo: track.title || '',
+          titleEn: (track.translations || []).find(t => t.language === 'en')?.title || '',
+          featuring: ((track.featuringArtists || []).map(a => a?.primaryName || '').filter(Boolean).join(', ')) || '',
+          isrc: track.isrc || '',
+          trackVersion: track.version || '',
+          lyricsLanguage: track.audioLanguage || 'ko',
+          lyricsExplicit: track.explicitContent || false,
+          isTitle: track.isTitle || false,
+          dolbyAtmos: track.dolbyAtmos || false,
+          stereo: track.stereo || true,
+          genre: track.genre || formData.marketingGenre || '',
+          metadataLanguage: track.metadataLanguage || 'ko',
+          previewStartTime: track.previewStartTime || 0,
+          previewLength: track.previewLength || 30,
+          consumerReleaseDate: track.hasCustomReleaseDate ? track.consumerReleaseDate : formData.releaseDate,
+          releaseTime: track.hasCustomReleaseDate ? track.releaseTime : formData.releaseTime,
+          contributors: track.contributors || [],
+          artists: track.artists || []
+        })),
+        release: {
+          consumerReleaseDate: formData.releaseDate,
+          copyrightYear: formData.copyrightYear,
+          cRights: formData.copyrightOwner,
+          pRights: formData.masterRights,
+          territories: formData.territories,
+          excludedTerritories: formData.excludedTerritories,
+          digitalReleaseDate: formData.digitalReleaseDate,
+          physicalReleaseDate: formData.physicalReleaseDate,
+          preOrderDate: formData.preOrderDate,
+          timezone: formData.timezone,
+          releaseTime: formData.releaseTime
+        },
+        files: {
+          coverImage: formData.albumCoverArt,
+          coverImageUrl: formData.albumCoverArtUrl,
+          audioFiles: Object.entries(formData.audioFiles || {}).flatMap(([trackId, files]) =>
+            (files || []).map(file => ({
+              trackId,
+              file
+            }))
+          ),
+          additionalFiles: []
+        }
+      }
+
+      await submissionService.createSubmission(submissionData)
       toast.success(tBilingual('제출 완료!', 'Submission complete!'))
       navigate('/submission-success')
     } catch (error) {
+      console.error('Submission error:', error)
       toast.error(tBilingual('제출 실패', 'Submission failed'))
     } finally {
       setIsSubmitting(false)
