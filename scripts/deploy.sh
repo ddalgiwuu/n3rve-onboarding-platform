@@ -160,25 +160,22 @@ if ! grep -q "MONGODB_URI=" .env; then
     fi
 fi
 
-# Run new container
-echo "Starting new container..."
-docker run -d \
-    --name n3rve-platform \
-    --restart unless-stopped \
-    -p 80:80 \
-    -p 443:443 \
-    -p 3001:3001 \
-    -v /etc/letsencrypt:/etc/letsencrypt:ro \
-    --env-file .env \
-    $DOCKER_REPO:$NEW_VERSION
+# Update docker-compose.prod.yml with new image tag
+echo "Updating docker-compose.prod.yml..."
+sed -i "s|image: ddalgiwuu/n3rve-platform:.*|image: $DOCKER_REPO:$NEW_VERSION|g" docker-compose.prod.yml
+
+# Start services with docker-compose
+echo "Starting services with docker-compose..."
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d
 
 # Verify deployment
 sleep 5
 echo "Container status:"
-docker ps --filter name=n3rve-platform --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+docker-compose -f docker-compose.prod.yml ps
 
 echo "Recent logs:"
-docker logs n3rve-platform --tail 20
+docker logs n3rve-app --tail 20
 
 echo "=== Deployment complete ==="
 EOF
