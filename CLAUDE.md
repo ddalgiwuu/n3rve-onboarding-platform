@@ -10,7 +10,7 @@ npm run type-check: Verify types
 - **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com  
 - **EC2 Instance ID**: i-0fd6de9be4fa199a9
 - **Docker Hub**: ddalgiwuu/n3rve-platform:latest
-- **Latest Version**: v1.3.22
+- **Latest Version**: v1.3.23
 - **Deployment Date**: 2025-07-14
 - **Status**: ✅ LIVE and Running
 - **GitHub Actions**: ✅ Auto-deployment enabled
@@ -63,7 +63,14 @@ npm run type-check: Verify types
    - Removed complex useSyncExternalStore logic that was causing hook order issues
    - **Solution**: Simple 100ms delay to allow hydration without React hook violations
 
-6. **Infrastructure Fixes**
+6. **Complete Hook Order Fix (v1.3.23)**
+   - Created HydratedReleaseSubmission wrapper component
+   - Removed all conditional hook calls from ReleaseSubmissionNew
+   - Moved hydration logic to wrapper component to prevent hook order violations
+   - **Root Cause**: Conditional rendering before hook calls violated React hook rules
+   - **Solution**: Component separation with wrapper handling hydration timing
+
+7. **Infrastructure Fixes**
    - Nginx proxy port correction: 5001 → 3001
    - MongoDB Atlas migration (no local MongoDB)
    - docker-compose.prod.yml for production deployments
