@@ -29,17 +29,21 @@ npm run type-check: Verify types
 6. **Mobile-responsive Design**
 
 ### 🐛 Recent Fixes (2025-07-14)
-1. **Map Undefined Error Fix**
+1. **Map Undefined Error Fix (v1.3.18)**
    - Added comprehensive defensive programming in ReleaseSubmissionNew
-   - Used `useMemo` for sections initialization
-   - Added null checks for all array operations
-   - Fixed language store initialization issues
+   - Used `useMemo` for sections initialization with proper fallbacks
+   - Added null checks for all array operations (31 locations)
+   - Fixed language store initialization to always have valid state
+   - **Browser Cache Issue Fixed**: Added nginx cache-control headers to prevent aggressive caching
+   - Added loading state when sections is not ready
+   - **User Action Required**: Clear browser cache (Ctrl+Shift+R or Cmd+Shift+R) to get latest fixes
 
 2. **Infrastructure Fixes**
    - Nginx proxy port correction: 5001 → 3001
    - MongoDB Atlas migration (no local MongoDB)
    - docker-compose.prod.yml for production deployments
    - EC2 SSH connectivity improvements
+   - **Nginx Cache Headers**: Disabled caching for JS/CSS files to ensure users get latest code
 
 ### 📁 Reference Implementation
 - **Complete Form**: `/Users/ryansong/Downloads/n3rve-onboarding-platform`
@@ -256,5 +260,23 @@ When simulation is absolutely necessary, I will always ask for permission first 
 - **Backup**: Dropbox provides automatic file backup
 - **Troubleshooting**:
   - EC2 SSH timeout: Reboot instance via AWS Console
-  - Map undefined errors: Check browser console, all arrays have defensive checks
+  - Map undefined errors: 
+    - Ask user to clear browser cache (Ctrl+Shift+R or Cmd+Shift+R)
+    - Open in incognito/private window to bypass cache
+    - All arrays now have defensive checks (v1.3.18+)
   - MongoDB connection: Ensure MONGODB_URI points to Atlas, not local
+  - Browser caching issues: Nginx now sends no-cache headers for JS/CSS files
+
+### 🔥 Common Issues & Solutions
+1. **"Cannot read properties of undefined (reading 'map')" Error**
+   - **Cause**: Browser cached old JavaScript bundle
+   - **Solution**: Clear browser cache or use incognito mode
+   - **Prevention**: Nginx cache headers added in v1.3.18
+
+2. **502 Bad Gateway**
+   - **Cause**: Backend port mismatch
+   - **Solution**: Ensure nginx proxy_pass uses port 3001
+
+3. **EC2 Connection Timeout**
+   - **Cause**: Instance instability
+   - **Solution**: Reboot instance from AWS Console
