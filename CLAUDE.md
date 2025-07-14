@@ -10,7 +10,7 @@ npm run type-check: Verify types
 - **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com  
 - **EC2 Instance ID**: i-0fd6de9be4fa199a9
 - **Docker Hub**: ddalgiwuu/n3rve-platform:latest
-- **Latest Version**: v1.3.21
+- **Latest Version**: v1.3.22
 - **Deployment Date**: 2025-07-14
 - **Status**: ✅ LIVE and Running
 - **GitHub Actions**: ✅ Auto-deployment enabled
@@ -57,7 +57,13 @@ npm run type-check: Verify types
    - **Root Cause**: Components were trying to render before store data loaded from localStorage
    - **Solution**: Prevent rendering until all stores are fully hydrated
 
-5. **Infrastructure Fixes**
+5. **React Error #310 Fix (v1.3.22)**
+   - Fixed "Rendered more hooks than during the previous render" error
+   - Simplified useHydration hook to use timeout-based approach
+   - Removed complex useSyncExternalStore logic that was causing hook order issues
+   - **Solution**: Simple 100ms delay to allow hydration without React hook violations
+
+6. **Infrastructure Fixes**
    - Nginx proxy port correction: 5001 → 3001
    - MongoDB Atlas migration (no local MongoDB)
    - docker-compose.prod.yml for production deployments
