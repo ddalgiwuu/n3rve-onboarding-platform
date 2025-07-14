@@ -19,6 +19,8 @@ import Toggle from '@/components/ui/Toggle'
 import Select from '@/components/ui/Select'
 import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
+import { useHydration } from '@/hooks/useHydration'
+import LoadingSpinner from '@/components/common/LoadingSpinner'
 
 // Types
 interface Translation {
@@ -148,6 +150,14 @@ const albumFormats = [
 ]
 
 export default function ReleaseSubmissionNew() {
+  // Check if stores are hydrated before rendering
+  const isHydrated = useHydration()
+  
+  // Show loading until hydration is complete
+  if (!isHydrated) {
+    return <LoadingSpinner fullScreen />
+  }
+
   try {
     // Fix for React error #321: Use store hooks properly with selector functions
     const language = useLanguageStore(state => state.language) || 'ko'
