@@ -3,6 +3,7 @@ import { Suspense, lazy, useEffect } from 'react'
 import { useAuthStore } from './store/auth.store'
 import Layout from './components/layout/Layout'
 import LoadingSpinner from './components/common/LoadingSpinner'
+import ErrorBoundary from './components/ErrorBoundary'
 
 // Lazy load pages
 const HomePage = lazy(() => import('./pages/Home'))
@@ -75,7 +76,11 @@ function App() {
             isAuthenticated ? <DashboardPage /> : <Navigate to="/login" state={{ from: '/dashboard' }} />
           } />
           <Route path="/onboarding" element={
-            isAuthenticated ? <ReleaseSubmissionPage /> : <Navigate to="/login" state={{ from: '/onboarding' }} />
+            isAuthenticated ? (
+              <ErrorBoundary>
+                <ReleaseSubmissionPage />
+              </ErrorBoundary>
+            ) : <Navigate to="/login" state={{ from: '/onboarding' }} />
           } />
           <Route path="/artist-profile-guide" element={
             isAuthenticated ? <ArtistProfileGuidePage /> : <Navigate to="/login" state={{ from: '/artist-profile-guide' }} />
