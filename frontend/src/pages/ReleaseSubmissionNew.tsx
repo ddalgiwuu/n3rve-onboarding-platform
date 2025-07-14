@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguageStore, t } from '@/store/language.store'
 import { 
@@ -162,7 +162,10 @@ export default function ReleaseSubmissionNew() {
   const { user } = useAuthStore()
   
   // Helper function for bilingual text
-  const tBilingual = (ko: string, en: string) => language === 'ko' ? ko : en
+  const tBilingual = (ko: string, en: string) => {
+    if (!language) return en // Default to English if language is undefined
+    return language === 'ko' ? ko : en
+  }
   
   // Debug: Check if initial values are defined
   console.log('Component mounting, language:', language, 'user:', user)
@@ -272,7 +275,7 @@ export default function ReleaseSubmissionNew() {
   const lastValidatedDataRef = useRef<string>('')
 
   // Section configuration
-  const sections = {
+  const sections = useMemo(() => ({
     album: {
       label: tBilingual('앨범 (프로덕트 레벨)', 'Album (Product Level)'),
       icon: Disc,
@@ -288,7 +291,7 @@ export default function ReleaseSubmissionNew() {
       icon: Megaphone,
       description: tBilingual('장르, 배포, 프로모션 전략', 'Genre, distribution, promotion')
     }
-  }
+  }), [language])
 
   // Validation
   useEffect(() => {
@@ -1580,8 +1583,8 @@ export default function ReleaseSubmissionNew() {
         {/* Section tabs */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6">
           <div className="flex">
-            {sections && Object.entries(sections).map(([key, section]) => {
-              const Icon = section.icon
+            {sections && Object.entries(sections || {}).map(([key, section]) => {
+              const Icon = section?.icon || Disc
               const validation = getSectionValidation(key as 'album' | 'asset' | 'marketing')
               
               return (
@@ -1596,8 +1599,8 @@ export default function ReleaseSubmissionNew() {
                 >
                   <Icon className="w-5 h-5" />
                   <div className="text-left">
-                    <div className="font-medium">{section.label}</div>
-                    <div className="text-xs opacity-75">{section.description}</div>
+                    <div className="font-medium">{section?.label || ''}</div>
+                    <div className="text-xs opacity-75">{section?.description || ''}</div>
                   </div>
                   {validation.hasErrors && (
                     <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
