@@ -163,6 +163,9 @@ export default function ReleaseSubmissionNew() {
   
   // Helper function for bilingual text
   const tBilingual = (ko: string, en: string) => language === 'ko' ? ko : en
+  
+  // Debug: Check if initial values are defined
+  console.log('Component mounting, language:', language, 'user:', user)
   const [activeSection, setActiveSection] = useState<'album' | 'asset' | 'marketing'>('album')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null)
@@ -1323,7 +1326,7 @@ export default function ReleaseSubmissionNew() {
             <Checkbox
               key={key}
               id={`platform-${key}`}
-              checked={(formData.distributionPlatforms && formData.distributionPlatforms[key as keyof typeof formData.distributionPlatforms]) as boolean || false}
+              checked={Boolean(formData?.distributionPlatforms?.[key as keyof typeof formData.distributionPlatforms])}
               onChange={(e) => setFormData(prev => ({
                 ...prev,
                 distributionPlatforms: {
@@ -1577,7 +1580,7 @@ export default function ReleaseSubmissionNew() {
         {/* Section tabs */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6">
           <div className="flex">
-            {Object.entries(sections).map(([key, section]) => {
+            {sections && Object.entries(sections).map(([key, section]) => {
               const Icon = section.icon
               const validation = getSectionValidation(key as 'album' | 'asset' | 'marketing')
               
