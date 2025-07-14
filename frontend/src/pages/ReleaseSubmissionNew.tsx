@@ -1,28 +1,19 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useLanguageStore, t } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 import { 
-  Upload, Music, FileText, Image, CheckCircle, AlertCircle, X, Plus, Trash2, 
-  Globe, Target, Sparkles, Users, MapPin, Calendar, Shield, Languages, Disc, 
-  Building2, Radio, ListMusic, ChevronRight, ChevronLeft, Info, Search,
-  Music2, Mic, UserCheck, GripVertical, Edit3, Volume2, BookOpen, Megaphone,
-  Tag, Heart, Link as LinkIcon, Video, Download, Eye, Clock, Check
+  Upload, Music, FileText, CheckCircle, AlertCircle, X, Plus, Trash2, 
+  Globe, Target, Sparkles, Users, Calendar, Shield, Disc, 
+  GripVertical, Volume2, Megaphone, Tag
 } from 'lucide-react'
 import Checkbox from '@/components/ui/Checkbox'
 import toast from 'react-hot-toast'
 import { submissionService } from '@/services/submission.service'
-import { dropboxService } from '@/services/dropbox.service'
 import { useAuthStore } from '@/store/auth.store'
-import { validateSubmission, validateField, type QCValidationResult, type QCValidationResults } from '@/utils/fugaQCValidation'
+import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
-import ArtistModal from '@/components/submission/ArtistModal'
-import { DatePicker } from '@/components/DatePicker'
 import { v4 as uuidv4 } from 'uuid'
-import { contributorRoles, getRolesByCategory, searchRoles } from '@/constants/contributorRoles'
-import { instrumentList, searchInstruments, getInstrumentCategory } from '@/constants/instruments'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
-import AudioPlayer from '@/components/AudioPlayer'
-import RegionSelector from '@/components/RegionSelector'
 import Button from '@/components/ui/Button'
 import Toggle from '@/components/ui/Toggle'
 import Select from '@/components/ui/Select'
@@ -182,7 +173,7 @@ export default function ReleaseSubmissionNew() {
     albumTitle: '',
     albumTranslations: [] as Translation[],
     albumType: 'single' as 'single' | 'ep' | 'album',
-    releaseDate: new Date().toISOString().split('T')[0],
+    releaseDate: new Date().toISOString().split('T')?.[0] || '',
     releaseTime: '00:00',
     timezone: 'Asia/Seoul',
     albumCoverArt: null as File | null,
@@ -303,7 +294,7 @@ export default function ReleaseSubmissionNew() {
       const validationData = {
         artist: {
           nameKo: formData.artists[0]?.primaryName || '',
-          nameEn: formData.artists[0]?.translations?.find(t => t.language === 'en')?.text || '',
+          nameEn: (formData.artists[0]?.translations || []).find(t => t.language === 'en')?.text || '',
           genre: formData.marketingGenre ? [formData.marketingGenre] : []
         },
         album: {
@@ -314,7 +305,7 @@ export default function ReleaseSubmissionNew() {
         },
         tracks: (formData.tracks || []).map(track => ({
           titleKo: track.title || '',
-          titleEn: (track.translations || []).find(t => t.language === 'en')?.text || '',
+          titleEn: (track.translations || []).find(t => t.language === 'en')?.title || '',
           featuring: ((track.featuringArtists || []).map(a => a?.primaryName || '').filter(Boolean).join(', ')) || '',
           isrc: track.isrc || '',
           trackVersion: track.version || '',
@@ -354,11 +345,16 @@ export default function ReleaseSubmissionNew() {
         albumDescriptionTranslations: [...(prev.albumDescriptionTranslations || []), newTranslation]
       }))
     } else if (field === 'track' && parentId) {
+      const trackTranslation: TrackTranslation = {
+        id: newTranslation.id,
+        language: newTranslation.language,
+        title: newTranslation.text
+      }
       setFormData(prev => ({
         ...prev,
         tracks: prev.tracks.map(track => 
           track.id === parentId
-            ? { ...track, translations: [...(track.translations || []), newTranslation] }
+            ? { ...track, translations: [...(track.translations || []), trackTranslation] }
             : track
         )
       }))
@@ -544,7 +540,7 @@ export default function ReleaseSubmissionNew() {
       const submissionData = {
         artist: {
           nameKo: formData.artists[0]?.primaryName || '',
-          nameEn: formData.artists[0]?.translations?.find(t => t.language === 'en')?.text || '',
+          nameEn: (formData.artists[0]?.translations || []).find(t => t.language === 'en')?.text || '',
           genre: formData.marketingGenre ? [formData.marketingGenre] : [],
           spotifyId: formData.artists[0]?.spotifyId,
           appleMusicId: formData.artists[0]?.appleMusicId,
@@ -1203,7 +1199,7 @@ export default function ReleaseSubmissionNew() {
                                   </Button>
                                 </label>
                               </div>
-                              {(formData.audioFiles[track.id] || []).map((file, idx) => (
+                              {(formData.audioFiles?.[track.id] || []).map((file, idx) => (
                                 <div key={idx} className="flex items-center gap-2 mt-2">
                                   <Volume2 className="w-4 h-4 text-gray-400" />
                                   <span className="text-sm">{file.name}</span>
