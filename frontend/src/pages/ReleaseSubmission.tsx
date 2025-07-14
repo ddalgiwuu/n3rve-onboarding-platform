@@ -1,27 +1,27 @@
-import { useState, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useLanguageStore, useTranslation } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 import { 
   Upload, Music, FileText, Image, CheckCircle, AlertCircle, X, Plus, Trash2, 
   Globe, Target, Sparkles, Users, MapPin, Calendar, Shield, Languages, Disc, 
   Building2, Radio, ListMusic, ChevronRight, ChevronLeft, Info, Search,
   Music2, Mic, UserCheck, GripVertical, Edit3, Volume2, BookOpen, Megaphone,
-  Tag, Heart, Link as LinkIcon, Video, Download, Eye, Clock, Package,
-  HelpCircle, ChevronDown, ChevronUp, ExternalLink
+  Tag, Heart, Link as LinkIcon, Video, Download, Eye, Clock
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { submissionService } from '@/services/submission.service'
 import { dropboxService } from '@/services/dropbox.service'
 import { useAuthStore } from '@/store/auth.store'
-import Button from '@/components/ui/Button'
-import Checkbox from '@/components/ui/Checkbox'
+import { validateSubmission, validateField, type QCValidationResult, type QCValidationResults } from '@/utils/fugaQCValidation'
+import QCWarnings from '@/components/submission/QCWarnings'
+import ArtistModal from '@/components/submission/ArtistModal'
+import { DatePicker } from '@/components/DatePicker'
 import { v4 as uuidv4 } from 'uuid'
 import { contributorRoles, getRolesByCategory, searchRoles } from '@/constants/contributorRoles'
 import { instrumentList, searchInstruments, getInstrumentCategory } from '@/constants/instruments'
-import { helpTexts, tooltips, errorExplanations } from '@/constants/helpTexts'
-import { fugaQCHelp, qcResultGuide, qcFAQ } from '@/constants/fugaQCHelp'
-import { timezones, convertToUTC, formatUTCInTimezone, getCurrentTimezone, releaseTimeHelp } from '@/constants/timezones'
-import FugaQCHelpModal from '@/components/modals/FugaQCHelpModal'
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
+import AudioPlayer from '@/components/AudioPlayer'
+import RegionSelector from '@/components/RegionSelector'
 
 // Types
 interface Translation {
@@ -143,109 +143,50 @@ const genreOptions = [
   'Reggae', 'Rock', 'Soundtrack', 'World', 'Dance', 'Indie', 'Gospel'
 ]
 
-// Album type options
-const albumTypeOptions = [
-  { value: 'single', label: '싱글', description: '1-3곡' },
-  { value: 'ep', label: 'EP', description: '4-6곡' },
-  { value: 'album', label: '정규 앨범', description: '7곡 이상' }
-]
-
-// Marketing fields based on the 31 fields mentioned
-const marketingFields = {
-  genre: ['marketingGenre', 'marketingSubgenre'],
-  tags: ['marketingTags', 'similarArtists'],
-  pitch: ['marketingAngle', 'pressRelease'],
-  budget: ['marketingBudget'],
-  social: ['socialMediaCampaign', 'spotifyPitching', 'appleMusicPitching', 'tiktokStrategy', 
-           'youtubeStrategy', 'instagramStrategy', 'facebookStrategy', 'twitterStrategy'],
-  outreach: ['influencerOutreach', 'playlistTargets', 'radioTargets', 'pressTargets'],
-  events: ['tourDates'],
-  products: ['merchandising', 'specialEditions'],
-  content: ['musicVideoPlans', 'behindTheScenes', 'documentaryPlans'],
-  digital: ['nftStrategy', 'metaverseActivations'],
-  partnerships: ['brandPartnerships', 'syncOpportunities']
-}
-
 export default function ReleaseSubmission() {
-  const { t } = useTranslation()
-  const { language } = useLanguageStore()
+  const { t, language } = useLanguageStore()
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const [currentSection, setCurrentSection] = useState<'album' | 'asset' | 'marketing'>('album')
+  const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showQCWarnings, setShowQCWarnings] = useState(false)
-  const [showQCHelp, setShowQCHelp] = useState(false)
-  const [showArtistHelp, setShowArtistHelp] = useState(false)
-  const [showSpotifyHelp, setShowSpotifyHelp] = useState(false)
-  const [showAppleHelp, setShowAppleHelp] = useState(false)
+  const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null)
   
   // Form state
   const [formData, setFormData] = useState({
-    // Album (Product Level) Section
+    // Step 0: Artist Info
+    artists: [] as Artist[],
+    bandMembers: [] as Member[],
+    
+    // Step 1: Album Basic Info
     albumTitle: '',
     albumTranslations: [] as Translation[],
     albumType: 'single' as 'single' | 'ep' | 'album',
-    // Release dates and times
-    consumerReleaseDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 2 weeks from now
-    consumerReleaseTime: '00:00',
-    originalReleaseDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Same as consumer for new releases
-    originalReleaseTime: '00:00',
-    timezone: getCurrentTimezone(),
-    isRerelease: false, // Track if this is a re-release/remix
+    releaseDate: new Date().toISOString().split('T')[0],
+    releaseTime: '00:00',
+    timezone: 'Asia/Seoul',
+    
+    // Step 2: Track Info
+    tracks: [] as Track[],
+    
+    // Step 3: Contributors
+    albumContributors: [] as Contributor[],
+    
+    // Step 4: Album Details
     albumCoverArt: null as File | null,
     albumCoverArtUrl: '',
     albumDescription: '',
     albumDescriptionTranslations: [] as Translation[],
     recordLabel: '',
     catalogNumber: '',
+    
+    // Step 5: Release Settings
     territories: [] as string[],
     excludedTerritories: [] as string[],
     digitalReleaseDate: '',
     physicalReleaseDate: '',
     preOrderDate: '',
-    copyrightYear: new Date().getFullYear().toString(),
-    copyrightOwner: '',
-    publishingRights: '',
-    masterRights: '',
-    upc: '',
-    licenses: [] as { type: string; territory: string; details: string }[],
-    parentalAdvisory: false,
-    distributionPlatforms: {
-      spotify: true,
-      appleMusic: true,
-      youtube: true,
-      amazonMusic: true,
-      tidal: false,
-      deezer: false,
-      soundcloud: false,
-      bandcamp: false,
-      audiomack: false,
-      kkbox: false,
-      lineMusic: false,
-      qq: false,
-      netease: false,
-      joox: false,
-      boomplay: false,
-      anghami: false,
-      yandex: false,
-      vk: false,
-      custom: [] as string[]
-    },
-    pricing: {
-      defaultPrice: '9.99',
-      currency: 'USD',
-      territoryPricing: {} as Record<string, { price: string; currency: string }>
-    },
     
-    // Asset Level Section
-    artists: [] as Artist[],
-    bandMembers: [] as Member[],
-    tracks: [] as Track[],
-    albumContributors: [] as Contributor[],
-    audioFiles: {} as Record<string, File[]>,
-    isrcCodes: {} as Record<string, string>,
-    
-    // Marketing Section
+    // Step 6: Marketing Info
     marketingGenre: '',
     marketingSubgenre: '',
     marketingTags: [] as string[],
@@ -276,1140 +217,1399 @@ export default function ReleaseSubmission() {
     brandPartnerships: '',
     syncOpportunities: '',
     
-    // Submission
+    // Step 7: Distribution
+    distributionPlatforms: {
+      spotify: true,
+      appleMusic: true,
+      youtube: true,
+      amazonMusic: true,
+      tidal: false,
+      deezer: false,
+      soundcloud: false,
+      bandcamp: false,
+      audiomack: false,
+      kkbox: false,
+      lineMusic: false,
+      qq: false,
+      netease: false,
+      joox: false,
+      boomplay: false,
+      anghami: false,
+      yandex: false,
+      vk: false,
+      custom: [] as string[]
+    },
+    pricing: {
+      defaultPrice: '9.99',
+      currency: 'USD',
+      territoryPricing: {} as Record<string, { price: string; currency: string }>
+    },
+    
+    // Step 8: Rights & Legal
+    copyrightYear: new Date().getFullYear().toString(),
+    copyrightOwner: '',
+    publishingRights: '',
+    masterRights: '',
+    isrcCodes: {} as Record<string, string>,
+    upc: '',
+    licenses: [] as { type: string; territory: string; details: string }[],
+    parentalAdvisory: false,
+    
+    // Step 9: Review & QC
     qcNotes: '',
     internalNotes: '',
+    
+    // Step 10: File Upload
+    audioFiles: {} as Record<string, File[]>,
+    
+    // Step 11: Final Submission
     agreedToTerms: false,
     submissionNotes: ''
   })
 
-  // Section configuration
-  const sections = [
-    { 
-      id: 'album', 
-      label: t('앨범 (제품 레벨)', 'Album (Product Level)'), 
-      icon: Package,
-      description: t('앨범 기본 정보, 배포 설정, 권리 관리', 'Album info, distribution settings, rights management')
-    },
-    { 
-      id: 'asset', 
-      label: t('에셋 레벨', 'Asset Level'), 
-      icon: Music2,
-      description: t('아티스트, 트랙, 기여자 정보', 'Artists, tracks, contributors')
-    },
-    { 
-      id: 'marketing', 
-      label: t('마케팅', 'Marketing'), 
-      icon: Megaphone,
-      description: t('31개 마케팅 필드', '31 marketing fields')
-    }
+  // Refs for preventing duplicates
+  const isValidatingRef = useRef(false)
+  const lastValidatedDataRef = useRef<string>('')
+
+  // Steps configuration
+  const steps = [
+    { id: 0, label: t('아티스트 정보', 'Artist Info'), icon: Users },
+    { id: 1, label: t('앨범 기본 정보', 'Album Basic Info'), icon: FileText },
+    { id: 2, label: t('트랙 정보', 'Track Info'), icon: Music },
+    { id: 3, label: t('기여자', 'Contributors'), icon: UserCheck },
+    { id: 4, label: t('앨범 상세', 'Album Details'), icon: Image },
+    { id: 5, label: t('릴리즈 설정', 'Release Settings'), icon: Calendar },
+    { id: 6, label: t('마케팅 정보', 'Marketing Info'), icon: Megaphone },
+    { id: 7, label: t('배포', 'Distribution'), icon: Globe },
+    { id: 8, label: t('권리 및 법적 사항', 'Rights & Legal'), icon: Shield },
+    { id: 9, label: t('검토 및 QC', 'Review & QC'), icon: CheckCircle },
+    { id: 10, label: t('파일 업로드', 'File Upload'), icon: Upload },
+    { id: 11, label: t('최종 제출', 'Final Submission'), icon: CheckCircle }
   ]
 
-  // Validation state
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
-
-  const validateSection = (section: string) => {
-    const errors: Record<string, string> = {}
-    
-    if (section === 'album') {
-      if (!formData.albumTitle.trim()) {
-        errors.albumTitle = t('앨범명은 필수입니다', 'Album title is required')
-      }
-      if (!formData.releaseDate) {
-        errors.releaseDate = t('발매일은 필수입니다', 'Release date is required')
-      }
-      if (!formData.copyrightOwner.trim()) {
-        errors.copyrightOwner = t('저작권 소유자는 필수입니다', 'Copyright owner is required')
-      }
-    } else if (section === 'asset') {
-      if (formData.artists.length === 0) {
-        errors.artists = t('최소 1명의 아티스트가 필요합니다', 'At least one artist is required')
-      }
-      if (formData.tracks.length === 0) {
-        errors.tracks = t('최소 1개의 트랙이 필요합니다', 'At least one track is required')
-      }
-    } else if (section === 'marketing') {
-      if (!formData.marketingGenre) {
-        errors.marketingGenre = t('마케팅 장르는 필수입니다', 'Marketing genre is required')
-      }
+  // Translation management functions
+  const addTranslation = (field: string, parentId?: string) => {
+    const newTranslation: Translation = {
+      id: uuidv4(),
+      language: '',
+      text: ''
     }
-    
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
+
+    if (field === 'albumTitle') {
+      setFormData(prev => ({
+        ...prev,
+        albumTranslations: [...prev.albumTranslations, newTranslation]
+      }))
+    } else if (field === 'albumDescription') {
+      setFormData(prev => ({
+        ...prev,
+        albumDescriptionTranslations: [...prev.albumDescriptionTranslations, newTranslation]
+      }))
+    } else if (field === 'track' && parentId) {
+      setFormData(prev => ({
+        ...prev,
+        tracks: prev.tracks.map(track => 
+          track.id === parentId
+            ? { ...track, translations: [...(track.translations || []), newTranslation] }
+            : track
+        )
+      }))
+    }
   }
 
-  const handleSectionChange = (newSection: 'album' | 'asset' | 'marketing') => {
-    if (validateSection(currentSection)) {
-      setCurrentSection(newSection)
+  const updateTranslation = (field: string, translationId: string, updates: Partial<Translation>, parentId?: string) => {
+    if (field === 'albumTitle') {
+      setFormData(prev => ({
+        ...prev,
+        albumTranslations: prev.albumTranslations.map(t =>
+          t.id === translationId ? { ...t, ...updates } : t
+        )
+      }))
+    } else if (field === 'albumDescription') {
+      setFormData(prev => ({
+        ...prev,
+        albumDescriptionTranslations: prev.albumDescriptionTranslations.map(t =>
+          t.id === translationId ? { ...t, ...updates } : t
+        )
+      }))
+    } else if (field === 'track' && parentId) {
+      setFormData(prev => ({
+        ...prev,
+        tracks: prev.tracks.map(track => 
+          track.id === parentId
+            ? {
+                ...track,
+                translations: track.translations.map(t =>
+                  t.id === translationId ? { ...t, ...updates } : t
+                )
+              }
+            : track
+        )
+      }))
+    }
+  }
+
+  const removeTranslation = (field: string, translationId: string, parentId?: string) => {
+    if (field === 'albumTitle') {
+      setFormData(prev => ({
+        ...prev,
+        albumTranslations: prev.albumTranslations.filter(t => t.id !== translationId)
+      }))
+    } else if (field === 'albumDescription') {
+      setFormData(prev => ({
+        ...prev,
+        albumDescriptionTranslations: prev.albumDescriptionTranslations.filter(t => t.id !== translationId)
+      }))
+    } else if (field === 'track' && parentId) {
+      setFormData(prev => ({
+        ...prev,
+        tracks: prev.tracks.map(track => 
+          track.id === parentId
+            ? { ...track, translations: track.translations.filter(t => t.id !== translationId) }
+            : track
+        )
+      }))
+    }
+  }
+
+  // Artist management
+  const addArtist = () => {
+    const newArtist: Artist = {
+      id: uuidv4(),
+      primaryName: '',
+      translations: [],
+      isNewArtist: true,
+      customIdentifiers: [],
+      role: 'main'
+    }
+    setFormData(prev => ({ ...prev, artists: [...prev.artists, newArtist] }))
+  }
+
+  const updateArtist = (id: string, updates: Partial<Artist>) => {
+    setFormData(prev => ({
+      ...prev,
+      artists: prev.artists.map(artist =>
+        artist.id === id ? { ...artist, ...updates } : artist
+      )
+    }))
+  }
+
+  const removeArtist = (id: string) => {
+    setFormData(prev => ({
+      ...prev,
+      artists: prev.artists.filter(artist => artist.id !== id)
+    }))
+  }
+
+  // Track management
+  const addTrack = () => {
+    const newTrack: Track = {
+      id: uuidv4(),
+      title: '',
+      translations: [],
+      artists: [...formData.artists],
+      featuringArtists: [],
+      contributors: [],
+      isTitle: formData.tracks.length === 0,
+      stereo: true,
+      dolbyAtmos: false,
+      genre: formData.marketingGenre,
+      audioLanguage: 'ko',
+      metadataLanguage: 'ko',
+      explicitContent: false,
+      previewLength: 30
+    }
+    setFormData(prev => ({ ...prev, tracks: [...prev.tracks, newTrack] }))
+  }
+
+  const updateTrack = (id: string, updates: Partial<Track>) => {
+    setFormData(prev => ({
+      ...prev,
+      tracks: prev.tracks.map(track =>
+        track.id === id ? { ...track, ...updates } : track
+      )
+    }))
+  }
+
+  const removeTrack = (id: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tracks: prev.tracks.filter(track => track.id !== id)
+    }))
+  }
+
+  // Contributor management
+  const addContributor = (trackId?: string) => {
+    const newContributor: Contributor = {
+      id: uuidv4(),
+      name: '',
+      translations: [],
+      roles: [],
+      instruments: []
+    }
+
+    if (trackId) {
+      setFormData(prev => ({
+        ...prev,
+        tracks: prev.tracks.map(track =>
+          track.id === trackId
+            ? { ...track, contributors: [...track.contributors, newContributor] }
+            : track
+        )
+      }))
     } else {
-      toast.error(t('현재 섹션의 필수 항목을 모두 입력해주세요', 'Please fill in all required fields in the current section'))
+      setFormData(prev => ({
+        ...prev,
+        albumContributors: [...prev.albumContributors, newContributor]
+      }))
     }
   }
 
-  const handleSubmit = async () => {
-    // Validate all sections
-    const albumValid = validateSection('album')
-    const assetValid = validateSection('asset')
-    const marketingValid = validateSection('marketing')
-    
-    if (!albumValid || !assetValid || !marketingValid) {
-      toast.error(t('모든 필수 항목을 입력해주세요', 'Please fill in all required fields'))
-      return
+  const updateContributor = (id: string, updates: Partial<Contributor>, trackId?: string) => {
+    if (trackId) {
+      setFormData(prev => ({
+        ...prev,
+        tracks: prev.tracks.map(track =>
+          track.id === trackId
+            ? {
+                ...track,
+                contributors: track.contributors.map(c =>
+                  c.id === id ? { ...c, ...updates } : c
+                )
+              }
+            : track
+        )
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        albumContributors: prev.albumContributors.map(c =>
+          c.id === id ? { ...c, ...updates } : c
+        )
+      }))
     }
-    
-    if (!formData.agreedToTerms) {
-      toast.error(t('이용약관에 동의해주세요', 'Please agree to the terms and conditions'))
-      return
+  }
+
+  const removeContributor = (id: string, trackId?: string) => {
+    if (trackId) {
+      setFormData(prev => ({
+        ...prev,
+        tracks: prev.tracks.map(track =>
+          track.id === trackId
+            ? { ...track, contributors: track.contributors.filter(c => c.id !== id) }
+            : track
+        )
+      }))
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        albumContributors: prev.albumContributors.filter(c => c.id !== id)
+      }))
     }
-    
-    setIsSubmitting(true)
-    
+  }
+
+  // Track reordering
+  const onDragEnd = (result: any) => {
+    if (!result.destination) return
+
+    const items = Array.from(formData.tracks)
+    const [reorderedItem] = items.splice(result.source.index, 1)
+    items.splice(result.destination.index, 0, reorderedItem)
+
+    setFormData(prev => ({ ...prev, tracks: items }))
+  }
+
+  // File upload
+  const handleFileUpload = async (files: File[], trackId: string) => {
     try {
-      // Submit logic here
-      const submission = await submissionService.createSubmission({
-        ...formData,
-        userId: user?.id || '',
-        status: 'pending'
-      })
-      
-      toast.success(t('음원 발매 신청이 완료되었습니다!', 'Release submission completed!'))
-      navigate('/dashboard')
+      // Here you would integrate with Dropbox upload
+      setFormData(prev => ({
+        ...prev,
+        audioFiles: {
+          ...prev.audioFiles,
+          [trackId]: files
+        }
+      }))
+      toast.success(t('파일 업로드 성공', 'Files uploaded successfully'))
     } catch (error) {
-      console.error('Submission error:', error)
-      toast.error(t('제출 중 오류가 발생했습니다', 'An error occurred during submission'))
-    } finally {
-      setIsSubmitting(false)
+      toast.error(t('파일 업로드 실패', 'File upload failed'))
     }
   }
 
-  const renderAlbumSection = () => (
-    <div className="space-y-8">
-      {/* Album Basic Info */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+  // Validation
+  useEffect(() => {
+    const dataString = JSON.stringify(formData)
+    if (!isValidatingRef.current && dataString !== lastValidatedDataRef.current) {
+      isValidatingRef.current = true
+      lastValidatedDataRef.current = dataString
+      
+      const validationData = {
+        artist: {
+          nameKo: formData.artists[0]?.primaryName || '',
+          nameEn: formData.artists[0]?.translations.find(t => t.language === 'en')?.text || '',
+          genre: formData.marketingGenre ? [formData.marketingGenre] : []
+        },
+        album: {
+          titleKo: formData.albumTitle,
+          titleEn: formData.albumTranslations.find(t => t.language === 'en')?.text || '',
+          format: formData.albumType,
+          parentalAdvisory: formData.parentalAdvisory
+        },
+        tracks: formData.tracks.map(track => ({
+          titleKo: track.title,
+          titleEn: track.translations.find(t => t.language === 'en')?.text || '',
+          featuring: track.featuringArtists.map(a => a.primaryName).join(', '),
+          isrc: track.isrc,
+          trackVersion: track.version,
+          lyricsLanguage: track.audioLanguage,
+          lyricsExplicit: track.explicitContent
+        })),
+        release: {
+          consumerReleaseDate: formData.releaseDate,
+          copyrightYear: formData.copyrightYear,
+          cRights: formData.copyrightOwner,
+          pRights: formData.masterRights
+        }
+      }
+
+      const results = validateSubmission(validationData)
+      setValidationResults(results)
+      isValidatingRef.current = false
+    }
+  }, [formData])
+
+  // Step renderer
+  const renderStep = () => {
+    switch (currentStep) {
+      case 0: // Artist Info
+        return renderArtistInfo()
+      case 1: // Album Basic Info
+        return renderAlbumBasicInfo()
+      case 2: // Track Info
+        return renderTrackInfo()
+      case 3: // Contributors
+        return renderContributors()
+      case 4: // Album Details
+        return renderAlbumDetails()
+      case 5: // Release Settings
+        return renderReleaseSettings()
+      case 6: // Marketing Info
+        return renderMarketingInfo()
+      case 7: // Distribution
+        return renderDistribution()
+      case 8: // Rights & Legal
+        return renderRightsLegal()
+      case 9: // Review & QC
+        return renderReviewQC()
+      case 10: // File Upload
+        return renderFileUpload()
+      case 11: // Final Submission
+        return renderFinalSubmission()
+      default:
+        return null
+    }
+  }
+
+  // Step 0: Artist Info
+  const renderArtistInfo = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <FileText className="w-5 h-5 text-purple-500" />
-          {t('앨범 기본 정보', 'Album Basic Info')}
+          <Users className="w-5 h-5" />
+          {t('아티스트 정보', 'Artist Information')}
         </h3>
-        
-        <div className="space-y-6">
-          {/* Album Title */}
+
+        <div className="space-y-4">
+          {formData.artists.map((artist, index) => (
+            <div key={artist.id} className="bg-white/10 dark:bg-white/5 rounded-lg p-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <h4 className="font-medium">
+                  {t('아티스트', 'Artist')} {index + 1}
+                </h4>
+                {formData.artists.length > 1 && (
+                  <button
+                    onClick={() => removeArtist(artist.id)}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t('기본 이름', 'Primary Name')} *
+                  </label>
+                  <input
+                    type="text"
+                    value={artist.primaryName}
+                    onChange={(e) => updateArtist(artist.id, { primaryName: e.target.value })}
+                    className="input"
+                    placeholder={t('아티스트 이름 입력', 'Enter artist name')}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">
+                      {t('번역', 'Translations')}
+                    </label>
+                    <button
+                      onClick={() => {
+                        const newTranslation: Translation = {
+                          id: uuidv4(),
+                          language: '',
+                          text: ''
+                        }
+                        updateArtist(artist.id, {
+                          translations: [...artist.translations, newTranslation]
+                        })
+                      }}
+                      className="btn-ghost text-sm"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      {t('번역 추가', 'Add Translation')}
+                    </button>
+                  </div>
+
+                  {artist.translations.map((translation) => (
+                    <div key={translation.id} className="flex items-center gap-2">
+                      <select
+                        value={translation.language}
+                        onChange={(e) => {
+                          updateArtist(artist.id, {
+                            translations: artist.translations.map(t =>
+                              t.id === translation.id
+                                ? { ...t, language: e.target.value }
+                                : t
+                            )
+                          })
+                        }}
+                        className="input flex-none w-32"
+                      >
+                        <option value="">{t('언어 선택', 'Select language')}</option>
+                        {languageOptions.map(lang => (
+                          <option key={lang.value} value={lang.value}>
+                            {lang.label}
+                          </option>
+                        ))}
+                      </select>
+                      <input
+                        type="text"
+                        value={translation.text}
+                        onChange={(e) => {
+                          updateArtist(artist.id, {
+                            translations: artist.translations.map(t =>
+                              t.id === translation.id
+                                ? { ...t, text: e.target.value }
+                                : t
+                            )
+                          })
+                        }}
+                        className="input flex-1"
+                        placeholder={t('번역된 이름', 'Translated name')}
+                      />
+                      <button
+                        onClick={() => {
+                          updateArtist(artist.id, {
+                            translations: artist.translations.filter(t => t.id !== translation.id)
+                          })
+                        }}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      {t('출신 국가', 'Country of Origin')}
+                    </label>
+                    <input
+                      type="text"
+                      value={artist.countryOfOrigin || ''}
+                      onChange={(e) => updateArtist(artist.id, { countryOfOrigin: e.target.value })}
+                      className="input"
+                      placeholder="KR"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      {t('역할', 'Role')}
+                    </label>
+                    <select
+                      value={artist.role}
+                      onChange={(e) => updateArtist(artist.id, { role: e.target.value as 'main' | 'featuring' })}
+                      className="input"
+                    >
+                      <option value="main">{t('메인 아티스트', 'Main Artist')}</option>
+                      <option value="featuring">{t('피처링 아티스트', 'Featuring Artist')}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h5 className="text-sm font-medium">{t('소셜 미디어 링크', 'Social Media Links')}</h5>
+                  
+                  <div>
+                    <label className="block text-sm mb-1">YouTube Channel ID</label>
+                    <input
+                      type="text"
+                      value={artist.youtubeChannelId || ''}
+                      onChange={(e) => updateArtist(artist.id, { youtubeChannelId: e.target.value })}
+                      className="input"
+                      placeholder="UCxxxxxxxxxxxxxxxxxxxxxx"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm mb-1">Spotify Artist ID</label>
+                    <input
+                      type="text"
+                      value={artist.spotifyId || ''}
+                      onChange={(e) => updateArtist(artist.id, { spotifyId: e.target.value })}
+                      className="input"
+                      placeholder="xxxxxxxxxxxxxxxxxx"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm mb-1">Apple Music Artist ID</label>
+                    <input
+                      type="text"
+                      value={artist.appleMusicId || ''}
+                      onChange={(e) => updateArtist(artist.id, { appleMusicId: e.target.value })}
+                      className="input"
+                      placeholder="xxxxxxxxxx"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <button
+            onClick={addArtist}
+            className="btn-secondary w-full"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {t('아티스트 추가', 'Add Artist')}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Step 1: Album Basic Info
+  const renderAlbumBasicInfo = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <FileText className="w-5 h-5" />
+          {t('앨범 기본 정보', 'Album Basic Information')}
+        </h3>
+
+        <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('앨범명', 'Album Title')} <span className="text-red-500">*</span>
+            <label className="block text-sm font-medium mb-1">
+              {t('앨범 제목', 'Album Title')} *
             </label>
             <input
               type="text"
               value={formData.albumTitle}
               onChange={(e) => setFormData(prev => ({ ...prev, albumTitle: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder={t('앨범명을 입력하세요', 'Enter album title')}
+              className="input"
+              placeholder={t('앨범 제목 입력', 'Enter album title')}
             />
-            {validationErrors.albumTitle && (
-              <p className="mt-1 text-sm text-red-500">{validationErrors.albumTitle}</p>
-            )}
           </div>
 
-          {/* Album Type */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('앨범 유형', 'Album Type')} <span className="text-red-500">*</span>
-            </label>
-            <div className="grid grid-cols-3 gap-4">
-              {albumTypeOptions.map((type) => (
-                <button
-                  key={type.value}
-                  onClick={() => setFormData(prev => ({ ...prev, albumType: type.value as any }))}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    formData.albumType === type.value
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-purple-300'
-                  }`}
-                >
-                  <div className="font-medium">{type.label}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">{type.description}</div>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Release Date and Time Section */}
-          <div className="space-y-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-purple-500" />
-                {t('발매 일정', 'Release Schedule')}
-              </h4>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">
+                {t('앨범 제목 번역', 'Album Title Translations')}
+              </label>
               <button
-                onClick={() => setShowReleaseHelp(!showReleaseHelp)}
-                className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
-                title={t('도움말', 'Help')}
+                onClick={() => addTranslation('albumTitle')}
+                className="btn-ghost text-sm"
               >
-                <HelpCircle className="w-3 h-3 text-gray-400" />
+                <Plus className="w-4 h-4 mr-1" />
+                {t('번역 추가', 'Add Translation')}
               </button>
             </div>
 
-            {showReleaseHelp && (
-              <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm">
-                <p className="text-blue-800 dark:text-blue-200 mb-2">
-                  <strong>{releaseTimeHelp.consumerRelease.title}</strong>: {releaseTimeHelp.consumerRelease.description}
-                </p>
-                <p className="text-blue-800 dark:text-blue-200">
-                  <strong>{releaseTimeHelp.originalRelease.title}</strong>: {releaseTimeHelp.originalRelease.description}
-                </p>
+            {formData.albumTranslations.map((translation) => (
+              <div key={translation.id} className="flex items-center gap-2">
+                <select
+                  value={translation.language}
+                  onChange={(e) => updateTranslation('albumTitle', translation.id, { language: e.target.value })}
+                  className="input flex-none w-32"
+                >
+                  <option value="">{t('언어 선택', 'Select language')}</option>
+                  {languageOptions.map(lang => (
+                    <option key={lang.value} value={lang.value}>
+                      {lang.label}
+                    </option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={translation.text}
+                  onChange={(e) => updateTranslation('albumTitle', translation.id, { text: e.target.value })}
+                  className="input flex-1"
+                  placeholder={t('번역된 제목', 'Translated title')}
+                />
+                <button
+                  onClick={() => removeTranslation('albumTitle', translation.id)}
+                  className="text-red-500 hover:text-red-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
               </div>
-            )}
+            ))}
+          </div>
 
-            {/* Timezone Selection */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-1">
+                {t('앨범 유형', 'Album Type')} *
+              </label>
+              <select
+                value={formData.albumType}
+                onChange={(e) => setFormData(prev => ({ 
+                  ...prev, 
+                  albumType: e.target.value as 'single' | 'ep' | 'album'
+                }))}
+                className="input"
+              >
+                <option value="single">{t('싱글', 'Single')}</option>
+                <option value="ep">{t('EP', 'EP')}</option>
+                <option value="album">{t('정규', 'Album')}</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('발매일', 'Release Date')} *
+              </label>
+              <DatePicker
+                selected={new Date(formData.releaseDate)}
+                onChange={(date) => setFormData(prev => ({ 
+                  ...prev, 
+                  releaseDate: date?.toISOString().split('T')[0] || ''
+                }))}
+                className="input w-full"
+                placeholderText={t('발매일 선택', 'Select release date')}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('발매 시간', 'Release Time')}
+              </label>
+              <input
+                type="time"
+                value={formData.releaseTime}
+                onChange={(e) => setFormData(prev => ({ ...prev, releaseTime: e.target.value }))}
+                className="input"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
                 {t('시간대', 'Timezone')}
               </label>
               <select
                 value={formData.timezone}
                 onChange={(e) => setFormData(prev => ({ ...prev, timezone: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="input"
               >
-                {timezones.map(tz => (
-                  <option key={tz.value} value={tz.value}>{tz.label}</option>
-                ))}
+                <option value="Asia/Seoul">Asia/Seoul (KST)</option>
+                <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
+                <option value="Asia/Shanghai">Asia/Shanghai (CST)</option>
+                <option value="America/New_York">America/New_York (EST)</option>
+                <option value="America/Los_Angeles">America/Los_Angeles (PST)</option>
+                <option value="Europe/London">Europe/London (GMT)</option>
+                <option value="Europe/Paris">Europe/Paris (CET)</option>
               </select>
             </div>
-
-            {/* Consumer Release Date */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  {t('일반 발매일', 'Consumer Release Date')} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="date"
-                  value={formData.consumerReleaseDate}
-                  onChange={(e) => {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      consumerReleaseDate: e.target.value,
-                      // Auto-update original release date if not a re-release
-                      originalReleaseDate: prev.isRerelease ? prev.originalReleaseDate : e.target.value
-                    }))
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                           focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  {t('발매 시간', 'Release Time')}
-                </label>
-                <input
-                  type="time"
-                  value={formData.consumerReleaseTime}
-                  onChange={(e) => {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      consumerReleaseTime: e.target.value,
-                      // Auto-update original release time if not a re-release
-                      originalReleaseTime: prev.isRerelease ? prev.originalReleaseTime : e.target.value
-                    }))
-                  }}
-                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                           bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                           focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            {/* UTC Display */}
-            {formData.consumerReleaseDate && formData.consumerReleaseTime && (
-              <div className="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm">
-                <p className="text-gray-600 dark:text-gray-300">
-                  <strong>UTC:</strong> {(() => {
-                    try {
-                      const utcDate = convertToUTC(formData.consumerReleaseDate, formData.consumerReleaseTime, formData.timezone)
-                      return utcDate.toISOString().replace('T', ' ').slice(0, 16)
-                    } catch {
-                      return 'Invalid date/time'
-                    }
-                  })()}
-                </p>
-                <div className="mt-1 grid grid-cols-2 gap-2 text-xs text-gray-500 dark:text-gray-400">
-                  <div>🇰🇷 서울: {(() => {
-                    try {
-                      const utcDate = convertToUTC(formData.consumerReleaseDate, formData.consumerReleaseTime, formData.timezone)
-                      return formatUTCInTimezone(utcDate, 'Asia/Seoul')
-                    } catch {
-                      return '-'
-                    }
-                  })()}</div>
-                  <div>🇺🇸 LA: {(() => {
-                    try {
-                      const utcDate = convertToUTC(formData.consumerReleaseDate, formData.consumerReleaseTime, formData.timezone)
-                      return formatUTCInTimezone(utcDate, 'America/Los_Angeles')
-                    } catch {
-                      return '-'
-                    }
-                  })()}</div>
-                  <div>🇬🇧 런던: {(() => {
-                    try {
-                      const utcDate = convertToUTC(formData.consumerReleaseDate, formData.consumerReleaseTime, formData.timezone)
-                      return formatUTCInTimezone(utcDate, 'Europe/London')
-                    } catch {
-                      return '-'
-                    }
-                  })()}</div>
-                  <div>🇯🇵 도쿄: {(() => {
-                    try {
-                      const utcDate = convertToUTC(formData.consumerReleaseDate, formData.consumerReleaseTime, formData.timezone)
-                      return formatUTCInTimezone(utcDate, 'Asia/Tokyo')
-                    } catch {
-                      return '-'
-                    }
-                  })()}</div>
-                </div>
-              </div>
-            )}
-
-            {/* Re-release Toggle */}
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
-              <Checkbox
-                label={t('재발매/리믹스/커버곡입니다', 'This is a re-release/remix/cover')}
-                checked={formData.isRerelease}
-                onChange={(e) => {
-                  const isRerelease = e.target.checked
-                  setFormData(prev => ({ 
-                    ...prev, 
-                    isRerelease,
-                    // Reset original release date if unchecked
-                    originalReleaseDate: isRerelease ? prev.originalReleaseDate : prev.consumerReleaseDate,
-                    originalReleaseTime: isRerelease ? prev.originalReleaseTime : prev.consumerReleaseTime
-                  }))
-                }}
-              />
-            </div>
-
-            {/* Original Release Date (shown only for re-releases) */}
-            {formData.isRerelease && (
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    {t('원곡 발매일', 'Original Release Date')} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={formData.originalReleaseDate}
-                    onChange={(e) => setFormData(prev => ({ ...prev, originalReleaseDate: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                             focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    {t('원곡이 처음 발매된 날짜를 입력하세요', 'Enter the date when the original was first released')}
-                  </p>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    {t('원곡 발매 시간', 'Original Release Time')}
-                  </label>
-                  <input
-                    type="time"
-                    value={formData.originalReleaseTime}
-                    onChange={(e) => setFormData(prev => ({ ...prev, originalReleaseTime: e.target.value }))}
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                             focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-            )}
           </div>
-
-          {/* Copyright Info */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('저작권 연도', 'Copyright Year')} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.copyrightYear}
-                onChange={(e) => setFormData(prev => ({ ...prev, copyrightYear: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder="2024"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('저작권 소유자', 'Copyright Owner')} <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.copyrightOwner}
-                onChange={(e) => setFormData(prev => ({ ...prev, copyrightOwner: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder={t('저작권 소유자명', 'Copyright owner name')}
-              />
-            </div>
-          </div>
-
-          {/* Record Label */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('레코드 레이블', 'Record Label')}
-            </label>
-            <input
-              type="text"
-              value={formData.recordLabel}
-              onChange={(e) => setFormData(prev => ({ ...prev, recordLabel: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder={t('레코드 레이블명', 'Record label name')}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Album Cover */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Image className="w-5 h-5 text-purple-500" />
-          {t('앨범 커버', 'Album Cover')}
-        </h3>
-        
-        <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center">
-          {formData.albumCoverArtUrl ? (
-            <div className="relative inline-block">
-              <img 
-                src={formData.albumCoverArtUrl} 
-                alt="Album cover" 
-                className="w-64 h-64 object-cover rounded-lg"
-              />
-              <button
-                onClick={() => setFormData(prev => ({ ...prev, albumCoverArtUrl: '', albumCoverArt: null }))}
-                className="absolute top-2 right-2 p-2 bg-red-500 text-white rounded-full hover:bg-red-600"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div>
-              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600 dark:text-gray-400 mb-2">
-                {t('앨범 커버를 업로드하세요', 'Upload album cover')}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-500 mb-4">
-                {t('최소 3000x3000px, JPG 또는 PNG', 'Minimum 3000x3000px, JPG or PNG')}
-              </p>
-              <input
-                type="file"
-                accept="image/jpeg,image/png"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) {
-                    setFormData(prev => ({ 
-                      ...prev, 
-                      albumCoverArt: file,
-                      albumCoverArtUrl: URL.createObjectURL(file)
-                    }))
-                  }
-                }}
-                className="hidden"
-                id="album-cover-upload"
-              />
-              <label htmlFor="album-cover-upload">
-                <Button variant="primary">
-                  {t('파일 선택', 'Choose File')}
-                </Button>
-              </label>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Distribution Platforms */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Globe className="w-5 h-5 text-purple-500" />
-          {t('배포 플랫폼', 'Distribution Platforms')}
-        </h3>
-        
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {formData.distributionPlatforms && Object.entries(formData.distributionPlatforms).map(([platform, enabled]) => {
-            if (platform === 'custom') return null
-            return (
-              <Checkbox
-                key={platform}
-                label={platform.charAt(0).toUpperCase() + platform.slice(1)}
-                checked={enabled as boolean}
-                onChange={(e) => {
-                  setFormData(prev => ({
-                    ...prev,
-                    distributionPlatforms: {
-                      ...prev.distributionPlatforms,
-                      [platform]: e.target.checked
-                    }
-                  }))
-                }}
-              />
-            )
-          })}
         </div>
       </div>
     </div>
   )
 
-  const renderAssetSection = () => (
-    <div className="space-y-8">
-      {/* FUGA QC Info Banner */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-        <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-blue-500 mt-0.5" />
-          <div className="flex-1">
-            <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
-              {t('FUGA QC 검증 안내', 'FUGA QC Validation Guide')}
-            </h4>
-            <p className="text-sm text-blue-700 dark:text-blue-300 mb-3">
-              {t(
-                '입력하신 정보는 실시간으로 FUGA QC 기준에 따라 검증됩니다. 빨간색 오류는 반드시 수정해야 하며, 노란색 경고는 권장사항입니다.',
-                'Your input is validated in real-time according to FUGA QC standards. Red errors must be fixed, yellow warnings are recommendations.'
-              )}
-            </p>
-            <button
-              onClick={() => setShowQCHelp(true)}
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-            >
-              {t('FUGA QC 가이드 보기', 'View FUGA QC Guide')}
-              <ExternalLink className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Artist Level Section */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Users className="w-6 h-6 text-purple-500" />
-          <h2 className="text-xl font-semibold">{t('아티스트 레벨', 'Artist Level')}</h2>
-        </div>
-
-        {/* Main Artists */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">{t('아티스트 정보', 'Artist Information')}</h3>
-            <button
-              onClick={() => setShowArtistHelp(!showArtistHelp)}
-              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-              title={t('도움말', 'Help')}
-            >
-              <HelpCircle className="w-5 h-5 text-gray-400" />
-            </button>
-          </div>
-
-          {showArtistHelp && (
-            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                {t(
-                  '아티스트 정보는 모든 음원 플랫폼에서 가장 중요한 정보입니다. 정확한 정보를 입력해주세요.',
-                  'Artist information is the most important data across all music platforms. Please enter accurate information.'
-                )}
-              </p>
-              <ul className="text-sm text-gray-600 dark:text-gray-300 space-y-1 list-disc list-inside">
-                <li>{t('실명 또는 활동명을 정확히 입력하세요', 'Enter real name or stage name accurately')}</li>
-                <li>{t('특수문자나 이모지는 사용할 수 없습니다', 'Special characters and emojis are not allowed')}</li>
-                <li>{t('feat. 표기는 피처링 아티스트로 별도 등록하세요', 'Register featuring artists separately')}</li>
-              </ul>
-            </div>
-          )}
-          
-          <div className="space-y-4">
-            {formData.artists && formData.artists.map((artist, index) => (
-              <div key={artist.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <input
-                        type="text"
-                        value={artist.primaryName}
-                        onChange={(e) => {
-                          const newArtists = [...formData.artists]
-                          newArtists[index].primaryName = e.target.value
-                          setFormData(prev => ({ ...prev, artists: newArtists }))
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                                 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder={t('아티스트 이름', 'Artist name')}
-                      />
-                      <select
-                        value={artist.role}
-                        onChange={(e) => {
-                          const newArtists = [...formData.artists]
-                          newArtists[index].role = e.target.value as 'main' | 'featuring'
-                          setFormData(prev => ({ ...prev, artists: newArtists }))
-                        }}
-                        className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
-                      >
-                        <option value="main">{t('메인', 'Main')}</option>
-                        <option value="featuring">{t('피처링', 'Featuring')}</option>
-                      </select>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setFormData(prev => ({
-                        ...prev,
-                        artists: prev.artists.filter(a => a.id !== artist.id)
-                      }))
-                    }}
-                    className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                {/* Platform IDs Section */}
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2">
-                    <LinkIcon className="w-4 h-4 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t('플랫폼 연동', 'Platform Integration')}
-                    </span>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <label className="block text-sm font-medium">
-                          Spotify ID
-                        </label>
-                        <button
-                          onClick={() => setShowSpotifyHelp(!showSpotifyHelp)}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                          title={tooltips.spotifyId}
-                        >
-                          <HelpCircle className="w-3 h-3 text-gray-400" />
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={artist.spotifyId || ''}
-                        onChange={(e) => {
-                          const newArtists = [...formData.artists]
-                          newArtists[index].spotifyId = e.target.value
-                          setFormData(prev => ({ ...prev, artists: newArtists }))
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm
-                                 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="3Nrfpe0tUJi4K4DXYWgMUX"
-                      />
-                      {showSpotifyHelp && (
-                        <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-xs">
-                          <p className="font-medium text-green-800 dark:text-green-200 mb-1">
-                            {helpTexts.spotifyId.title}
-                          </p>
-                          <ol className="list-decimal list-inside space-y-1 text-green-700 dark:text-green-300">
-                            {helpTexts.spotifyId.content.split('\n').filter(line => line.trim()).map((line, i) => (
-                              <li key={i}>{line.trim()}</li>
-                            ))}
-                          </ol>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <label className="block text-sm font-medium">
-                          Apple Music ID
-                        </label>
-                        <button
-                          onClick={() => setShowAppleHelp(!showAppleHelp)}
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
-                          title={tooltips.appleMusicId}
-                        >
-                          <HelpCircle className="w-3 h-3 text-gray-400" />
-                        </button>
-                      </div>
-                      <input
-                        type="text"
-                        value={artist.appleMusicId || ''}
-                        onChange={(e) => {
-                          const newArtists = [...formData.artists]
-                          newArtists[index].appleMusicId = e.target.value
-                          setFormData(prev => ({ ...prev, artists: newArtists }))
-                        }}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm
-                                 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                        placeholder="1419227"
-                      />
-                      {showAppleHelp && (
-                        <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg text-xs">
-                          <p className="font-medium text-red-800 dark:text-red-200 mb-1">
-                            {helpTexts.appleMusicId.title}
-                          </p>
-                          <ol className="list-decimal list-inside space-y-1 text-red-700 dark:text-red-300">
-                            {helpTexts.appleMusicId.content.split('\n').filter(line => line.trim()).map((line, i) => (
-                              <li key={i}>{line.trim()}</li>
-                            ))}
-                          </ol>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            
-            <Button
-              variant="secondary"
-              onClick={() => {
-                const newArtist: Artist = {
-                  id: uuidv4(),
-                  primaryName: '',
-                  translations: [],
-                  isNewArtist: true,
-                  role: 'main',
-                  customIdentifiers: [],
-                  spotifyId: '',
-                  appleMusicId: ''
-                }
-                setFormData(prev => ({
-                  ...prev,
-                  artists: [...prev.artists, newArtist]
-                }))
-              }}
-              className="w-full"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              {t('아티스트 추가', 'Add Artist')}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Tracks */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Music className="w-5 h-5 text-purple-500" />
-          {t('트랙 정보', 'Track Information')}
-        </h3>
-        
-        <div className="space-y-4">
-          {formData.tracks && formData.tracks.map((track, index) => (
-            <div key={track.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={track.title}
-                    onChange={(e) => {
-                      const newTracks = [...formData.tracks]
-                      newTracks[index].title = e.target.value
-                      setFormData(prev => ({ ...prev, tracks: newTracks }))
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                             focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder={t('트랙 제목', 'Track title')}
-                  />
-                </div>
-                <button
-                  onClick={() => {
-                    setFormData(prev => ({
-                      ...prev,
-                      tracks: prev.tracks.filter(t => t.id !== track.id)
-                    }))
-                  }}
-                  className="ml-2 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {t('장르', 'Genre')}
-                  </label>
-                  <select
-                    value={track.genre || ''}
-                    onChange={(e) => {
-                      const newTracks = [...formData.tracks]
-                      newTracks[index].genre = e.target.value
-                      setFormData(prev => ({ ...prev, tracks: newTracks }))
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                             focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  >
-                    <option value="">{t('장르 선택', 'Select genre')}</option>
-                    {genreOptions.map(genre => (
-                      <option key={genre} value={genre}>{genre}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {t('포맷', 'Format')}
-                  </label>
-                  <div className="flex gap-4">
-                    <Checkbox
-                      label="Dolby Atmos"
-                      checked={track.dolbyAtmos || false}
-                      onChange={(e) => {
-                        const newTracks = [...formData.tracks]
-                        newTracks[index].dolbyAtmos = e.target.checked
-                        setFormData(prev => ({ ...prev, tracks: newTracks }))
-                      }}
-                    />
-                    <Checkbox
-                      label="Stereo"
-                      checked={track.stereo || true}
-                      onChange={(e) => {
-                        const newTracks = [...formData.tracks]
-                        newTracks[index].stereo = e.target.checked
-                        setFormData(prev => ({ ...prev, tracks: newTracks }))
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4 grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    ISRC
-                  </label>
-                  <input
-                    type="text"
-                    value={track.isrc || ''}
-                    onChange={(e) => {
-                      const newTracks = [...formData.tracks]
-                      newTracks[index].isrc = e.target.value
-                      setFormData(prev => ({ ...prev, tracks: newTracks }))
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm
-                             focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder="KR-XXX-XX-XXXXX"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {t('악곡 구성', 'Song Credits')}
-                  </label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      value={track.composer || ''}
-                      onChange={(e) => {
-                        const newTracks = [...formData.tracks]
-                        newTracks[index].composer = e.target.value
-                        setFormData(prev => ({ ...prev, tracks: newTracks }))
-                      }}
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded 
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm
-                               focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder={t('작곡가', 'Composer')}
-                    />
-                    <input
-                      type="text"
-                      value={track.lyricist || ''}
-                      onChange={(e) => {
-                        const newTracks = [...formData.tracks]
-                        newTracks[index].lyricist = e.target.value
-                        setFormData(prev => ({ ...prev, tracks: newTracks }))
-                      }}
-                      className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 rounded 
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm
-                               focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder={t('작사가', 'Lyricist')}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-          
-          <Button
-            variant="secondary"
-            onClick={() => {
-              const newTrack: Track = {
-                id: uuidv4(),
-                title: '',
-                translations: [],
-                artists: [...formData.artists],
-                featuringArtists: [],
-                contributors: [],
-                isTitle: formData.tracks.length === 0,
-                stereo: true,
-                dolbyAtmos: false,
-                genre: formData.marketingGenre || '',
-                audioLanguage: 'ko',
-                metadataLanguage: 'ko',
-                explicitContent: false
-              }
-              setFormData(prev => ({
-                ...prev,
-                tracks: [...prev.tracks, newTrack]
-              }))
-            }}
-            className="w-full"
+  // Step 2: Track Info
+  const renderTrackInfo = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Music className="w-5 h-5" />
+            {t('트랙 정보', 'Track Information')}
+          </h3>
+          <button
+            onClick={addTrack}
+            className="btn-primary"
           >
             <Plus className="w-4 h-4 mr-2" />
             {t('트랙 추가', 'Add Track')}
-          </Button>
+          </button>
         </div>
+
+        <DragDropContext onDragEnd={onDragEnd}>
+          <Droppable droppableId="tracks">
+            {(provided) => (
+              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
+                {formData.tracks.map((track, index) => (
+                  <Draggable key={track.id} draggableId={track.id} index={index}>
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        className="bg-white/10 dark:bg-white/5 rounded-lg p-4 space-y-4"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div {...provided.dragHandleProps}>
+                              <GripVertical className="w-5 h-5 text-gray-400" />
+                            </div>
+                            <h4 className="font-medium">
+                              {t('트랙', 'Track')} {index + 1}
+                            </h4>
+                            {track.isTitle && (
+                              <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded">
+                                {t('타이틀', 'Title')}
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => removeTrack(track.id)}
+                            className="text-red-500 hover:text-red-600"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium mb-1">
+                              {t('트랙 제목', 'Track Title')} *
+                            </label>
+                            <input
+                              type="text"
+                              value={track.title}
+                              onChange={(e) => updateTrack(track.id, { title: e.target.value })}
+                              className="input"
+                              placeholder={t('트랙 제목 입력', 'Enter track title')}
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <label className="text-sm font-medium">
+                                {t('트랙 제목 번역', 'Track Title Translations')}
+                              </label>
+                              <button
+                                onClick={() => addTranslation('track', track.id)}
+                                className="btn-ghost text-sm"
+                              >
+                                <Plus className="w-4 h-4 mr-1" />
+                                {t('번역 추가', 'Add Translation')}
+                              </button>
+                            </div>
+
+                            {track.translations.map((translation) => (
+                              <div key={translation.id} className="flex items-center gap-2">
+                                <select
+                                  value={translation.language}
+                                  onChange={(e) => updateTranslation('track', translation.id, { language: e.target.value }, track.id)}
+                                  className="input flex-none w-32"
+                                >
+                                  <option value="">{t('언어 선택', 'Select language')}</option>
+                                  {languageOptions.map(lang => (
+                                    <option key={lang.value} value={lang.value}>
+                                      {lang.label}
+                                    </option>
+                                  ))}
+                                </select>
+                                <input
+                                  type="text"
+                                  value={translation.text}
+                                  onChange={(e) => updateTranslation('track', translation.id, { text: e.target.value }, track.id)}
+                                  className="input flex-1"
+                                  placeholder={t('번역된 제목', 'Translated title')}
+                                />
+                                <button
+                                  onClick={() => removeTranslation('track', translation.id, track.id)}
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">
+                                {t('장르', 'Genre')}
+                              </label>
+                              <select
+                                value={track.genre || ''}
+                                onChange={(e) => updateTrack(track.id, { genre: e.target.value })}
+                                className="input"
+                              >
+                                <option value="">{t('장르 선택', 'Select genre')}</option>
+                                {genreOptions.map(genre => (
+                                  <option key={genre} value={genre}>{genre}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium mb-1">ISRC</label>
+                              <input
+                                type="text"
+                                value={track.isrc || ''}
+                                onChange={(e) => updateTrack(track.id, { isrc: e.target.value })}
+                                className="input"
+                                placeholder="USKRE2400001"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">
+                                {t('작곡가', 'Composer')}
+                              </label>
+                              <input
+                                type="text"
+                                value={track.composer || ''}
+                                onChange={(e) => updateTrack(track.id, { composer: e.target.value })}
+                                className="input"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium mb-1">
+                                {t('작사가', 'Lyricist')}
+                              </label>
+                              <input
+                                type="text"
+                                value={track.lyricist || ''}
+                                onChange={(e) => updateTrack(track.id, { lyricist: e.target.value })}
+                                className="input"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium mb-1">
+                                {t('편곡자', 'Arranger')}
+                              </label>
+                              <input
+                                type="text"
+                                value={track.arranger || ''}
+                                onChange={(e) => updateTrack(track.id, { arranger: e.target.value })}
+                                className="input"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={track.isTitle}
+                                onChange={(e) => {
+                                  // Only one title track allowed
+                                  setFormData(prev => ({
+                                    ...prev,
+                                    tracks: prev.tracks.map(t => ({
+                                      ...t,
+                                      isTitle: t.id === track.id ? e.target.checked : false
+                                    }))
+                                  }))
+                                }}
+                                className="rounded"
+                              />
+                              <span className="text-sm">{t('타이틀 트랙', 'Title Track')}</span>
+                            </label>
+
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={track.explicitContent || false}
+                                onChange={(e) => updateTrack(track.id, { explicitContent: e.target.checked })}
+                                className="rounded"
+                              />
+                              <span className="text-sm">{t('19금 콘텐츠', 'Explicit Content')}</span>
+                            </label>
+
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={track.dolbyAtmos || false}
+                                onChange={(e) => updateTrack(track.id, { dolbyAtmos: e.target.checked })}
+                                className="rounded"
+                              />
+                              <span className="text-sm">Dolby Atmos</span>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
       </div>
-      
-      {/* Contributors */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+    </div>
+  )
+
+  // Step 3: Contributors
+  const renderContributors = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <UserCheck className="w-5 h-5 text-purple-500" />
+          <UserCheck className="w-5 h-5" />
           {t('기여자 정보', 'Contributor Information')}
         </h3>
-        
-        <div className="space-y-4">
-          {formData.albumContributors && formData.albumContributors.map((contributor, index) => (
-            <div key={contributor.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex-1">
-                  <input
-                    type="text"
-                    value={contributor.name}
-                    onChange={(e) => {
-                      const newContributors = [...formData.albumContributors]
-                      newContributors[index].name = e.target.value
-                      setFormData(prev => ({ ...prev, albumContributors: newContributors }))
-                    }}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                             bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                             focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                    placeholder={t('기여자 이름', 'Contributor name')}
-                  />
-                </div>
-                <button
-                  onClick={() => {
-                    setFormData(prev => ({
-                      ...prev,
-                      albumContributors: prev.albumContributors.filter(c => c.id !== contributor.id)
-                    }))
-                  }}
-                  className="ml-2 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-              
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {t('역할', 'Roles')}
-                  </label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {contributorRoles && Object.entries(contributorRoles.reduce((acc, role) => {
-                      if (!acc[role.category]) acc[role.category] = []
-                      acc[role.category].push(role)
-                      return acc
-                    }, {} as Record<string, typeof contributorRoles>)).map(([category, roles]) => (
-                      <select
-                        key={category}
-                        className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg 
-                                 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm"
-                        onChange={(e) => {
-                          const role = e.target.value
-                          if (role && !contributor.roles.includes(role)) {
-                            const newContributors = [...formData.albumContributors]
-                            newContributors[index].roles = [...contributor.roles, role]
-                            setFormData(prev => ({ ...prev, albumContributors: newContributors }))
-                          }
-                        }}
-                      >
-                        <option value="">{t(category, category)}</option>
-                        {roles.map(role => (
-                          <option key={role.value} value={role.value}>
-                            {language === 'ko' ? role.label : role.labelEn}
-                          </option>
-                        ))}
-                      </select>
-                    ))}
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {contributor.roles && contributor.roles.map(roleValue => {
-                      const role = contributorRoles.find(r => r.value === roleValue)
-                      return role ? (
-                        <span
-                          key={roleValue}
-                          className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded flex items-center gap-1"
-                        >
-                          {language === 'ko' ? role.label : role.labelEn}
-                          <button
-                            onClick={() => {
-                              const newContributors = [...formData.albumContributors]
-                              newContributors[index].roles = contributor.roles.filter(r => r !== roleValue)
-                              setFormData(prev => ({ ...prev, albumContributors: newContributors }))
-                            }}
-                            className="hover:text-purple-100"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
-                      ) : null
-                    })}
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {t('악기', 'Instruments')}
-                  </label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+        <div className="space-y-6">
+          {/* Album Contributors */}
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium">{t('앨범 기여자', 'Album Contributors')}</h4>
+              <button
+                onClick={() => addContributor()}
+                className="btn-ghost text-sm"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                {t('기여자 추가', 'Add Contributor')}
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {formData.albumContributors.map((contributor) => (
+                <div key={contributor.id} className="bg-white/10 dark:bg-white/5 rounded-lg p-3 space-y-3">
+                  <div className="flex items-center justify-between">
                     <input
                       type="text"
-                      className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm
-                               focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder={t('악기 검색...', 'Search instruments...')}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && e.currentTarget.value) {
-                          const results = searchInstruments(e.currentTarget.value)
-                          if (results.length > 0 && !contributor.instruments.includes(results[0].value)) {
-                            const newContributors = [...formData.albumContributors]
-                            newContributors[index].instruments = [...contributor.instruments, results[0].value]
-                            setFormData(prev => ({ ...prev, albumContributors: newContributors }))
-                            e.currentTarget.value = ''
-                          }
-                        }
-                      }}
+                      value={contributor.name}
+                      onChange={(e) => updateContributor(contributor.id, { name: e.target.value })}
+                      className="input flex-1 mr-2"
+                      placeholder={t('기여자 이름', 'Contributor name')}
                     />
+                    <button
+                      onClick={() => removeContributor(contributor.id)}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                  <div className="flex flex-wrap gap-1 mt-2">
-                    {contributor.instruments?.map(instrument => {
-                      const inst = instrumentList.find(i => i.value === instrument)
-                      return (
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      {t('역할', 'Roles')}
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(contributorRoles.reduce((acc, role) => {
+                        if (!acc[role.category]) acc[role.category] = []
+                        acc[role.category].push(role)
+                        return acc
+                      }, {} as Record<string, typeof contributorRoles>)).map(([category, roles]) => (
+                        <select
+                          key={category}
+                          className="input text-sm"
+                          onChange={(e) => {
+                            const role = e.target.value
+                            if (role && !contributor.roles.includes(role)) {
+                              updateContributor(contributor.id, {
+                                roles: [...contributor.roles, role]
+                              })
+                            }
+                          }}
+                        >
+                          <option value="">{t(category, category)}</option>
+                          {roles.map(role => (
+                            <option key={role.value} value={role.value}>
+                              {language === 'ko' ? role.label : role.labelEn}
+                            </option>
+                          ))}
+                        </select>
+                      ))}
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {contributor.roles.map(roleValue => {
+                        const role = contributorRoles.find(r => r.value === roleValue)
+                        return role ? (
+                          <span
+                            key={roleValue}
+                            className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded flex items-center gap-1"
+                          >
+                            {language === 'ko' ? role.label : role.labelEn}
+                            <button
+                              onClick={() => updateContributor(contributor.id, {
+                                roles: contributor.roles.filter(r => r !== roleValue)
+                              })}
+                              className="hover:text-purple-100"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ) : null
+                      })}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      {t('악기', 'Instruments')}
+                    </label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        className="input pl-10 text-sm"
+                        placeholder={t('악기 검색...', 'Search instruments...')}
+                        onChange={(e) => {
+                          const results = searchInstruments(e.target.value)
+                          // Show results in dropdown (implement dropdown UI)
+                        }}
+                      />
+                    </div>
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {contributor.instruments?.map(instrument => (
                         <span
                           key={instrument}
                           className="text-xs bg-blue-500/20 text-blue-300 px-2 py-1 rounded flex items-center gap-1"
                         >
-                          {inst ? (language === 'ko' ? inst.label : inst.labelEn) : instrument}
+                          {instrument}
                           <button
-                            onClick={() => {
-                              const newContributors = [...formData.albumContributors]
-                              newContributors[index].instruments = contributor.instruments?.filter(i => i !== instrument) || []
-                              setFormData(prev => ({ ...prev, albumContributors: newContributors }))
-                            }}
+                            onClick={() => updateContributor(contributor.id, {
+                              instruments: contributor.instruments?.filter(i => i !== instrument) || []
+                            })}
                             className="hover:text-blue-100"
                           >
                             <X className="w-3 h-3" />
                           </button>
                         </span>
-                      )
-                    })}
+                      ))}
+                    </div>
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Spotify URL
-                    </label>
-                    <input
-                      type="text"
-                      value={contributor.spotifyUrl || ''}
-                      onChange={(e) => {
-                        const newContributors = [...formData.albumContributors]
-                        newContributors[index].spotifyUrl = e.target.value
-                        setFormData(prev => ({ ...prev, albumContributors: newContributors }))
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm
-                               focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="https://open.spotify.com/artist/..."
-                    />
+              ))}
+            </div>
+          </div>
+
+          {/* Track Contributors */}
+          {formData.tracks.map((track, trackIndex) => (
+            <div key={track.id}>
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-medium">
+                  {t('트랙', 'Track')} {trackIndex + 1} {t('기여자', 'Contributors')}
+                </h4>
+                <button
+                  onClick={() => addContributor(track.id)}
+                  className="btn-ghost text-sm"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  {t('기여자 추가', 'Add Contributor')}
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {track.contributors.map((contributor) => (
+                  <div key={contributor.id} className="bg-white/10 dark:bg-white/5 rounded-lg p-3 space-y-3">
+                    {/* Similar contributor UI as album contributors */}
+                    <div className="flex items-center justify-between">
+                      <input
+                        type="text"
+                        value={contributor.name}
+                        onChange={(e) => updateContributor(contributor.id, { name: e.target.value }, track.id)}
+                        className="input flex-1 mr-2"
+                        placeholder={t('기여자 이름', 'Contributor name')}
+                      />
+                      <button
+                        onClick={() => removeContributor(contributor.id, track.id)}
+                        className="text-red-500 hover:text-red-600"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">
-                      Apple Music URL
-                    </label>
-                    <input
-                      type="text"
-                      value={contributor.appleMusicUrl || ''}
-                      onChange={(e) => {
-                        const newContributors = [...formData.albumContributors]
-                        newContributors[index].appleMusicUrl = e.target.value
-                        setFormData(prev => ({ ...prev, albumContributors: newContributors }))
-                      }}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                               bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-sm
-                               focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                      placeholder="https://music.apple.com/artist/..."
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
             </div>
           ))}
-          
-          <Button
-            variant="secondary"
-            onClick={() => {
-              const newContributor: Contributor = {
-                id: uuidv4(),
-                name: '',
-                translations: [],
-                roles: [],
-                instruments: [],
-                appleMusicUrl: '',
-                spotifyUrl: ''
-              }
-              setFormData(prev => ({
-                ...prev,
-                albumContributors: [...prev.albumContributors, newContributor]
-              }))
-            }}
-            className="w-full"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {t('기여자 추가', 'Add Contributor')}
-          </Button>
         </div>
       </div>
     </div>
   )
 
-  const renderMarketingSection = () => (
-    <div className="space-y-8">
-      {/* Genre & Tags */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+  // Step 4: Album Details
+  const renderAlbumDetails = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Tag className="w-5 h-5 text-purple-500" />
-          {t('장르 및 태그', 'Genre & Tags')}
+          <Image className="w-5 h-5" />
+          {t('앨범 상세 정보', 'Album Details')}
         </h3>
-        
+
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              {t('앨범 커버', 'Album Cover')} *
+            </label>
+            <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center">
+              {formData.albumCoverArtUrl ? (
+                <div className="space-y-3">
+                  <img
+                    src={formData.albumCoverArtUrl}
+                    alt="Album cover"
+                    className="mx-auto w-48 h-48 object-cover rounded-lg"
+                  />
+                  <button
+                    onClick={() => setFormData(prev => ({ 
+                      ...prev, 
+                      albumCoverArt: null,
+                      albumCoverArtUrl: ''
+                    }))}
+                    className="btn-ghost text-sm"
+                  >
+                    {t('변경', 'Change')}
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <Upload className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                  <p className="text-sm text-gray-500 mb-2">
+                    {t('이미지를 드래그하거나 클릭하여 업로드', 'Drag image or click to upload')}
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0]
+                      if (file) {
+                        setFormData(prev => ({
+                          ...prev,
+                          albumCoverArt: file,
+                          albumCoverArtUrl: URL.createObjectURL(file)
+                        }))
+                      }
+                    }}
+                    className="hidden"
+                    id="album-cover-upload"
+                  />
+                  <label
+                    htmlFor="album-cover-upload"
+                    className="btn-primary cursor-pointer"
+                  >
+                    {t('파일 선택', 'Choose File')}
+                  </label>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              {t('최소 3000x3000px, JPG 또는 PNG', 'Minimum 3000x3000px, JPG or PNG')}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('앨범 설명', 'Album Description')}
+            </label>
+            <textarea
+              value={formData.albumDescription}
+              onChange={(e) => setFormData(prev => ({ ...prev, albumDescription: e.target.value }))}
+              className="input min-h-[100px]"
+              placeholder={t('앨범에 대한 설명을 입력하세요', 'Enter album description')}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">
+                {t('앨범 설명 번역', 'Album Description Translations')}
+              </label>
+              <button
+                onClick={() => addTranslation('albumDescription')}
+                className="btn-ghost text-sm"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                {t('번역 추가', 'Add Translation')}
+              </button>
+            </div>
+
+            {formData.albumDescriptionTranslations.map((translation) => (
+              <div key={translation.id} className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <select
+                    value={translation.language}
+                    onChange={(e) => updateTranslation('albumDescription', translation.id, { language: e.target.value })}
+                    className="input flex-none w-32"
+                  >
+                    <option value="">{t('언어 선택', 'Select language')}</option>
+                    {languageOptions.map(lang => (
+                      <option key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => removeTranslation('albumDescription', translation.id)}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <textarea
+                  value={translation.text}
+                  onChange={(e) => updateTranslation('albumDescription', translation.id, { text: e.target.value })}
+                  className="input min-h-[80px]"
+                  placeholder={t('번역된 설명', 'Translated description')}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('마케팅 장르', 'Marketing Genre')} <span className="text-red-500">*</span>
+              <label className="block text-sm font-medium mb-1">
+                {t('레이블', 'Record Label')}
+              </label>
+              <input
+                type="text"
+                value={formData.recordLabel}
+                onChange={(e) => setFormData(prev => ({ ...prev, recordLabel: e.target.value }))}
+                className="input"
+                placeholder={t('레이블명', 'Label name')}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('카탈로그 번호', 'Catalog Number')}
+              </label>
+              <input
+                type="text"
+                value={formData.catalogNumber}
+                onChange={(e) => setFormData(prev => ({ ...prev, catalogNumber: e.target.value }))}
+                className="input"
+                placeholder="CAT-001"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Step 5: Release Settings
+  const renderReleaseSettings = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Calendar className="w-5 h-5" />
+          {t('릴리즈 설정', 'Release Settings')}
+        </h3>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              {t('배포 지역', 'Distribution Territories')}
+            </label>
+            <RegionSelector
+              selectedRegions={formData.territories}
+              onChange={(regions) => setFormData(prev => ({ ...prev, territories: regions }))}
+              excludedRegions={formData.excludedTerritories}
+              onExcludedChange={(regions) => setFormData(prev => ({ ...prev, excludedTerritories: regions }))}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('디지털 발매일', 'Digital Release Date')}
+              </label>
+              <DatePicker
+                selected={formData.digitalReleaseDate ? new Date(formData.digitalReleaseDate) : null}
+                onChange={(date) => setFormData(prev => ({ 
+                  ...prev, 
+                  digitalReleaseDate: date?.toISOString().split('T')[0] || ''
+                }))}
+                className="input w-full"
+                placeholderText={t('디지털 발매일', 'Digital release date')}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('피지컬 발매일', 'Physical Release Date')}
+              </label>
+              <DatePicker
+                selected={formData.physicalReleaseDate ? new Date(formData.physicalReleaseDate) : null}
+                onChange={(date) => setFormData(prev => ({ 
+                  ...prev, 
+                  physicalReleaseDate: date?.toISOString().split('T')[0] || ''
+                }))}
+                className="input w-full"
+                placeholderText={t('피지컬 발매일', 'Physical release date')}
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('예약 판매 시작일', 'Pre-order Date')}
+              </label>
+              <DatePicker
+                selected={formData.preOrderDate ? new Date(formData.preOrderDate) : null}
+                onChange={(date) => setFormData(prev => ({ 
+                  ...prev, 
+                  preOrderDate: date?.toISOString().split('T')[0] || ''
+                }))}
+                className="input w-full"
+                placeholderText={t('예약 판매 시작일', 'Pre-order date')}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Step 6: Marketing Info
+  const renderMarketingInfo = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Megaphone className="w-5 h-5" />
+          {t('마케팅 정보', 'Marketing Information')}
+        </h3>
+
+        <div className="space-y-6">
+          {/* Genre & Tags */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('마케팅 장르', 'Marketing Genre')}
               </label>
               <select
                 value={formData.marketingGenre}
                 onChange={(e) => setFormData(prev => ({ ...prev, marketingGenre: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="input"
               >
                 <option value="">{t('장르 선택', 'Select genre')}</option>
                 {genreOptions.map(genre => (
@@ -1417,33 +1617,29 @@ export default function ReleaseSubmission() {
                 ))}
               </select>
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label className="block text-sm font-medium mb-1">
                 {t('서브 장르', 'Sub-genre')}
               </label>
               <input
                 type="text"
                 value={formData.marketingSubgenre}
                 onChange={(e) => setFormData(prev => ({ ...prev, marketingSubgenre: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="input"
                 placeholder={t('서브 장르 입력', 'Enter sub-genre')}
               />
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-1">
               {t('마케팅 태그', 'Marketing Tags')}
             </label>
             <div className="flex items-center gap-2 mb-2">
               <input
                 type="text"
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="input flex-1"
                 placeholder={t('태그 입력 후 Enter', 'Enter tag and press Enter')}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && e.currentTarget.value) {
@@ -1457,7 +1653,7 @@ export default function ReleaseSubmission() {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {formData.marketingTags && formData.marketingTags.map((tag, index) => (
+              {formData.marketingTags.map((tag, index) => (
                 <span
                   key={index}
                   className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
@@ -1476,630 +1672,458 @@ export default function ReleaseSubmission() {
               ))}
             </div>
           </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('유사 아티스트', 'Similar Artists')}
-            </label>
-            <input
-              type="text"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder={t('유사 아티스트 입력 후 Enter', 'Enter similar artist and press Enter')}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && e.currentTarget.value) {
-                  setFormData(prev => ({
-                    ...prev,
-                    similarArtists: [...prev.similarArtists, e.currentTarget.value]
-                  }))
-                  e.currentTarget.value = ''
-                }
-              }}
-            />
-            <div className="flex flex-wrap gap-2 mt-2">
-              {formData.similarArtists && formData.similarArtists.map((artist, index) => (
-                <span
-                  key={index}
-                  className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
-                >
-                  {artist}
-                  <button
-                    onClick={() => setFormData(prev => ({
-                      ...prev,
-                      similarArtists: prev.similarArtists.filter((_, i) => i !== index)
-                    }))}
-                    className="hover:text-blue-100"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Marketing Strategy */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Target className="w-5 h-5 text-purple-500" />
-          {t('마케팅 전략', 'Marketing Strategy')}
-        </h3>
-        
-        <div className="space-y-4">
+          {/* Social Media Strategy */}
           <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('마케팅 앵글', 'Marketing Angle')}
-            </label>
-            <textarea
-              value={formData.marketingAngle}
-              onChange={(e) => setFormData(prev => ({ ...prev, marketingAngle: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              rows={3}
-              placeholder={t('이 앨범의 독특한 포인트나 스토리를 설명해주세요', 'Describe the unique points or story of this album')}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('프레스 릴리스', 'Press Release')}
-            </label>
-            <textarea
-              value={formData.pressRelease}
-              onChange={(e) => setFormData(prev => ({ ...prev, pressRelease: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              rows={3}
-              placeholder={t('프레스 릴리스 내용', 'Press release content')}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('마케팅 예산', 'Marketing Budget')}
-            </label>
-            <input
-              type="text"
-              value={formData.marketingBudget}
-              onChange={(e) => setFormData(prev => ({ ...prev, marketingBudget: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder={t('예: $10,000', 'e.g. $10,000')}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Social Media Strategy */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Heart className="w-5 h-5 text-purple-500" />
-          {t('소셜 미디어 전략', 'Social Media Strategy')}
-        </h3>
-        
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('Spotify 피칭', 'Spotify Pitching')}
-              </label>
-              <textarea
-                value={formData.spotifyPitching}
-                onChange={(e) => setFormData(prev => ({ ...prev, spotifyPitching: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('Spotify 플레이리스트 피칭 전략', 'Spotify playlist pitching strategy')}
-              />
-            </div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              {t('소셜 미디어 전략', 'Social Media Strategy')}
+            </h4>
             
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('Apple Music 피칭', 'Apple Music Pitching')}
-              </label>
-              <textarea
-                value={formData.appleMusicPitching}
-                onChange={(e) => setFormData(prev => ({ ...prev, appleMusicPitching: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('Apple Music 플레이리스트 피칭 전략', 'Apple Music playlist pitching strategy')}
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('TikTok 전략', 'TikTok Strategy')}
-              </label>
-              <textarea
-                value={formData.tiktokStrategy}
-                onChange={(e) => setFormData(prev => ({ ...prev, tiktokStrategy: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('TikTok 바이럴 전략', 'TikTok viral strategy')}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('YouTube 전략', 'YouTube Strategy')}
-              </label>
-              <textarea
-                value={formData.youtubeStrategy}
-                onChange={(e) => setFormData(prev => ({ ...prev, youtubeStrategy: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('YouTube 마케팅 전략', 'YouTube marketing strategy')}
-              />
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('Instagram 전략', 'Instagram Strategy')}
-              </label>
-              <textarea
-                value={formData.instagramStrategy}
-                onChange={(e) => setFormData(prev => ({ ...prev, instagramStrategy: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('Instagram 마케팅 전략', 'Instagram marketing strategy')}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('Facebook 전략', 'Facebook Strategy')}
-              </label>
-              <textarea
-                value={formData.facebookStrategy}
-                onChange={(e) => setFormData(prev => ({ ...prev, facebookStrategy: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('Facebook 마케팅 전략', 'Facebook marketing strategy')}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('Twitter 전략', 'Twitter Strategy')}
-              </label>
-              <textarea
-                value={formData.twitterStrategy}
-                onChange={(e) => setFormData(prev => ({ ...prev, twitterStrategy: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('Twitter 마케팅 전략', 'Twitter marketing strategy')}
-              />
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('소셜 미디어 캔페인', 'Social Media Campaign')}
-            </label>
-            <textarea
-              value={formData.socialMediaCampaign}
-              onChange={(e) => setFormData(prev => ({ ...prev, socialMediaCampaign: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              rows={3}
-              placeholder={t('전체 소셜 미디어 캔페인 계획', 'Overall social media campaign plan')}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Outreach & Targeting */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Megaphone className="w-5 h-5 text-purple-500" />
-          {t('아웃리치 및 타겟팅', 'Outreach & Targeting')}
-        </h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('인플루언서 아웃리치', 'Influencer Outreach')}
-            </label>
-            <textarea
-              value={formData.influencerOutreach}
-              onChange={(e) => setFormData(prev => ({ ...prev, influencerOutreach: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              rows={2}
-              placeholder={t('인플루언서 협업 계획', 'Influencer collaboration plans')}
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('플레이리스트 타겟', 'Playlist Targets')}
-            </label>
-            <input
-              type="text"
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              placeholder={t('타겟 플레이리스트 입력 후 Enter', 'Enter target playlist and press Enter')}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && e.currentTarget.value) {
-                  setFormData(prev => ({
-                    ...prev,
-                    playlistTargets: [...prev.playlistTargets, e.currentTarget.value]
-                  }))
-                  e.currentTarget.value = ''
-                }
-              }}
-            />
-            <div className="flex flex-wrap gap-2 mt-2">
-              {formData.playlistTargets && formData.playlistTargets.map((playlist, index) => (
-                <span
-                  key={index}
-                  className="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
-                >
-                  {playlist}
-                  <button
-                    onClick={() => setFormData(prev => ({
-                      ...prev,
-                      playlistTargets: prev.playlistTargets.filter((_, i) => i !== index)
-                    }))}
-                    className="hover:text-green-100"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('라디오 타겟', 'Radio Targets')}
-              </label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder={t('라디오 방송국 입력 후 Enter', 'Enter radio station and press Enter')}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.currentTarget.value) {
-                    setFormData(prev => ({
-                      ...prev,
-                      radioTargets: [...prev.radioTargets, e.currentTarget.value]
-                    }))
-                    e.currentTarget.value = ''
-                  }
-                }}
-              />
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.radioTargets && formData.radioTargets.map((radio, index) => (
-                  <span
-                    key={index}
-                    className="bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
-                  >
-                    {radio}
-                    <button
-                      onClick={() => setFormData(prev => ({
-                        ...prev,
-                        radioTargets: prev.radioTargets.filter((_, i) => i !== index)
-                      }))}
-                      className="hover:text-yellow-100"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">Spotify {t('피칭', 'Pitching')}</label>
+                <textarea
+                  value={formData.spotifyPitching}
+                  onChange={(e) => setFormData(prev => ({ ...prev, spotifyPitching: e.target.value }))}
+                  className="input min-h-[80px]"
+                  placeholder={t('Spotify 플레이리스트 피칭 전략', 'Spotify playlist pitching strategy')}
+                />
               </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('프레스 타겟', 'Press Targets')}
-              </label>
-              <input
-                type="text"
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                placeholder={t('언론사 입력 후 Enter', 'Enter press outlet and press Enter')}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.currentTarget.value) {
-                    setFormData(prev => ({
-                      ...prev,
-                      pressTargets: [...prev.pressTargets, e.currentTarget.value]
-                    }))
-                    e.currentTarget.value = ''
-                  }
-                }}
-              />
-              <div className="flex flex-wrap gap-2 mt-2">
-                {formData.pressTargets && formData.pressTargets.map((press, index) => (
-                  <span
-                    key={index}
-                    className="bg-red-500/20 text-red-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
-                  >
-                    {press}
-                    <button
-                      onClick={() => setFormData(prev => ({
-                        ...prev,
-                        pressTargets: prev.pressTargets.filter((_, i) => i !== index)
-                      }))}
-                      className="hover:text-red-100"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Apple Music {t('피칭', 'Pitching')}</label>
+                <textarea
+                  value={formData.appleMusicPitching}
+                  onChange={(e) => setFormData(prev => ({ ...prev, appleMusicPitching: e.target.value }))}
+                  className="input min-h-[80px]"
+                  placeholder={t('Apple Music 피칭 전략', 'Apple Music pitching strategy')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">TikTok {t('전략', 'Strategy')}</label>
+                <textarea
+                  value={formData.tiktokStrategy}
+                  onChange={(e) => setFormData(prev => ({ ...prev, tiktokStrategy: e.target.value }))}
+                  className="input min-h-[80px]"
+                  placeholder={t('TikTok 마케팅 전략', 'TikTok marketing strategy')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">YouTube {t('전략', 'Strategy')}</label>
+                <textarea
+                  value={formData.youtubeStrategy}
+                  onChange={(e) => setFormData(prev => ({ ...prev, youtubeStrategy: e.target.value }))}
+                  className="input min-h-[80px]"
+                  placeholder={t('YouTube 마케팅 전략', 'YouTube marketing strategy')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Instagram {t('전략', 'Strategy')}</label>
+                <textarea
+                  value={formData.instagramStrategy}
+                  onChange={(e) => setFormData(prev => ({ ...prev, instagramStrategy: e.target.value }))}
+                  className="input min-h-[80px]"
+                  placeholder={t('Instagram 마케팅 전략', 'Instagram marketing strategy')}
+                />
               </div>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Content & Media */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Video className="w-5 h-5 text-purple-500" />
-          {t('콘텐츠 및 미디어', 'Content & Media')}
-        </h3>
-        
-        <div className="space-y-4">
+          {/* Additional Marketing Fields */}
           <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('뮤직비디오 계획', 'Music Video Plans')}
-            </label>
-            <textarea
-              value={formData.musicVideoPlans}
-              onChange={(e) => setFormData(prev => ({ ...prev, musicVideoPlans: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              rows={3}
-              placeholder={t('뮤직비디오 제작 계획', 'Music video production plans')}
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('비하인드 더 신', 'Behind The Scenes')}
-              </label>
-              <textarea
-                value={formData.behindTheScenes}
-                onChange={(e) => setFormData(prev => ({ ...prev, behindTheScenes: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('메이킹 콘텐츠 계획', 'Making-of content plans')}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('다큐멘터리 계획', 'Documentary Plans')}
-              </label>
-              <textarea
-                value={formData.documentaryPlans}
-                onChange={(e) => setFormData(prev => ({ ...prev, documentaryPlans: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('다큐멘터리 제작 계획', 'Documentary production plans')}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              {t('추가 마케팅 정보', 'Additional Marketing Info')}
+            </h4>
 
-      {/* Events & Products */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Calendar className="w-5 h-5 text-purple-500" />
-          {t('이벤트 및 상품', 'Events & Products')}
-        </h3>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('투어 날짜', 'Tour Dates')}
-            </label>
-            <div className="flex gap-2 mb-2">
-              <input
-                type="date"
-                id="tourDate"
-                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-              <input
-                type="text"
-                id="tourVenue"
-                placeholder={t('장소', 'Venue')}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-              <input
-                type="text"
-                id="tourCity"
-                placeholder={t('도시', 'City')}
-                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              />
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  const dateInput = document.getElementById('tourDate') as HTMLInputElement
-                  const venueInput = document.getElementById('tourVenue') as HTMLInputElement
-                  const cityInput = document.getElementById('tourCity') as HTMLInputElement
-                  
-                  if (dateInput.value && venueInput.value && cityInput.value) {
-                    setFormData(prev => ({
-                      ...prev,
-                      tourDates: [...prev.tourDates, {
-                        date: dateInput.value,
-                        venue: venueInput.value,
-                        city: cityInput.value
-                      }]
-                    }))
-                    dateInput.value = ''
-                    venueInput.value = ''
-                    cityInput.value = ''
-                  }
-                }}
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {formData.tourDates && formData.tourDates.map((tour, index) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-700 rounded">
-                  <span className="text-sm">
-                    {tour.date} - {tour.venue}, {tour.city}
-                  </span>
-                  <button
-                    onClick={() => setFormData(prev => ({
-                      ...prev,
-                      tourDates: prev.tourDates.filter((_, i) => i !== index)
-                    }))}
-                    className="text-red-500 hover:text-red-600"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('마케팅 앵글', 'Marketing Angle')}
+                </label>
+                <textarea
+                  value={formData.marketingAngle}
+                  onChange={(e) => setFormData(prev => ({ ...prev, marketingAngle: e.target.value }))}
+                  className="input min-h-[80px]"
+                  placeholder={t('주요 마케팅 포인트', 'Key marketing points')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('유사 아티스트', 'Similar Artists')}
+                </label>
+                <input
+                  type="text"
+                  className="input"
+                  placeholder={t('유사 아티스트 입력 후 Enter', 'Enter similar artist and press Enter')}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.currentTarget.value) {
+                      setFormData(prev => ({
+                        ...prev,
+                        similarArtists: [...prev.similarArtists, e.currentTarget.value]
+                      }))
+                      e.currentTarget.value = ''
+                    }
+                  }}
+                />
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {formData.similarArtists.map((artist, index) => (
+                    <span
+                      key={index}
+                      className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                    >
+                      {artist}
+                      <button
+                        onClick={() => setFormData(prev => ({
+                          ...prev,
+                          similarArtists: prev.similarArtists.filter((_, i) => i !== index)
+                        }))}
+                        className="hover:text-blue-100"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('머쳐다이징', 'Merchandising')}
-              </label>
-              <textarea
-                value={formData.merchandising}
-                onChange={(e) => setFormData(prev => ({ ...prev, merchandising: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('굳즈 및 머쳐다이징 계획', 'Goods and merchandising plans')}
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('특별판', 'Special Editions')}
-              </label>
-              <textarea
-                value={formData.specialEditions}
-                onChange={(e) => setFormData(prev => ({ ...prev, specialEditions: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('한정판 및 특별판 계획', 'Limited and special edition plans')}
-              />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('뮤직비디오 계획', 'Music Video Plans')}
+                </label>
+                <textarea
+                  value={formData.musicVideoPlans}
+                  onChange={(e) => setFormData(prev => ({ ...prev, musicVideoPlans: e.target.value }))}
+                  className="input min-h-[80px]"
+                  placeholder={t('뮤직비디오 제작 계획', 'Music video production plans')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('브랜드 파트너십', 'Brand Partnerships')}
+                </label>
+                <textarea
+                  value={formData.brandPartnerships}
+                  onChange={(e) => setFormData(prev => ({ ...prev, brandPartnerships: e.target.value }))}
+                  className="input min-h-[80px]"
+                  placeholder={t('브랜드 협업 계획', 'Brand collaboration plans')}
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  )
 
-      {/* Digital & Partnerships */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
+  // Step 7: Distribution
+  const renderDistribution = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-purple-500" />
-          {t('디지털 및 파트너십', 'Digital & Partnerships')}
+          <Globe className="w-5 h-5" />
+          {t('배포 설정', 'Distribution Settings')}
         </h3>
-        
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('NFT 전략', 'NFT Strategy')}
+
+        <div className="space-y-6">
+          {/* Distribution Platforms */}
+          <div>
+            <h4 className="font-medium mb-3">{t('배포 플랫폼', 'Distribution Platforms')}</h4>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+              {Object.entries({
+                spotify: 'Spotify',
+                appleMusic: 'Apple Music',
+                youtube: 'YouTube Music',
+                amazonMusic: 'Amazon Music',
+                tidal: 'TIDAL',
+                deezer: 'Deezer',
+                soundcloud: 'SoundCloud',
+                bandcamp: 'Bandcamp',
+                audiomack: 'Audiomack',
+                kkbox: 'KKBOX',
+                lineMusic: 'LINE Music',
+                qq: 'QQ Music',
+                netease: 'NetEase Cloud Music',
+                joox: 'JOOX',
+                boomplay: 'Boomplay',
+                anghami: 'Anghami',
+                yandex: 'Yandex Music',
+                vk: 'VK Music'
+              }).map(([key, name]) => (
+                <label key={key} className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={formData.distributionPlatforms[key as keyof typeof formData.distributionPlatforms] as boolean}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      distributionPlatforms: {
+                        ...prev.distributionPlatforms,
+                        [key]: e.target.checked
+                      }
+                    }))}
+                    className="rounded"
+                  />
+                  <span className="text-sm">{name}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* Custom Platforms */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium mb-1">
+                {t('기타 플랫폼', 'Other Platforms')}
               </label>
-              <textarea
-                value={formData.nftStrategy}
-                onChange={(e) => setFormData(prev => ({ ...prev, nftStrategy: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('NFT 활용 계획', 'NFT utilization plans')}
+              <input
+                type="text"
+                className="input"
+                placeholder={t('플랫폼 이름 입력 후 Enter', 'Enter platform name and press Enter')}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && e.currentTarget.value) {
+                    setFormData(prev => ({
+                      ...prev,
+                      distributionPlatforms: {
+                        ...prev.distributionPlatforms,
+                        custom: [...(prev.distributionPlatforms.custom || []), e.currentTarget.value]
+                      }
+                    }))
+                    e.currentTarget.value = ''
+                  }
+                }}
+              />
+              <div className="flex flex-wrap gap-2 mt-2">
+                {(formData.distributionPlatforms.custom || []).map((platform, index) => (
+                  <span
+                    key={index}
+                    className="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
+                  >
+                    {platform}
+                    <button
+                      onClick={() => setFormData(prev => ({
+                        ...prev,
+                        distributionPlatforms: {
+                          ...prev.distributionPlatforms,
+                          custom: prev.distributionPlatforms.custom?.filter((_, i) => i !== index) || []
+                        }
+                      }))}
+                      className="hover:text-green-100"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Pricing */}
+          <div>
+            <h4 className="font-medium mb-3">{t('가격 설정', 'Pricing Settings')}</h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('기본 가격', 'Default Price')}
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={formData.pricing.defaultPrice}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      pricing: { ...prev.pricing, defaultPrice: e.target.value }
+                    }))}
+                    className="input flex-1"
+                    step="0.01"
+                    min="0"
+                  />
+                  <select
+                    value={formData.pricing.currency}
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
+                      pricing: { ...prev.pricing, currency: e.target.value }
+                    }))}
+                    className="input w-24"
+                  >
+                    <option value="USD">USD</option>
+                    <option value="EUR">EUR</option>
+                    <option value="KRW">KRW</option>
+                    <option value="JPY">JPY</option>
+                    <option value="CNY">CNY</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Step 8: Rights & Legal
+  const renderRightsLegal = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Shield className="w-5 h-5" />
+          {t('권리 및 법적 사항', 'Rights & Legal')}
+        </h3>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('저작권 연도', 'Copyright Year')} *
+              </label>
+              <input
+                type="text"
+                value={formData.copyrightYear}
+                onChange={(e) => setFormData(prev => ({ ...prev, copyrightYear: e.target.value }))}
+                className="input"
+                placeholder={new Date().getFullYear().toString()}
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium mb-2">
-                {t('메타버스 활성화', 'Metaverse Activations')}
+              <label className="block text-sm font-medium mb-1">
+                {t('저작권 소유자', 'Copyright Owner')} *
               </label>
-              <textarea
-                value={formData.metaverseActivations}
-                onChange={(e) => setFormData(prev => ({ ...prev, metaverseActivations: e.target.value }))}
-                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                         bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                         focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                rows={2}
-                placeholder={t('메타버스 플랫폼 활용 계획', 'Metaverse platform utilization plans')}
+              <input
+                type="text"
+                value={formData.copyrightOwner}
+                onChange={(e) => setFormData(prev => ({ ...prev, copyrightOwner: e.target.value }))}
+                className="input"
+                placeholder={t('저작권 소유자명', 'Copyright owner name')}
               />
             </div>
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('브랜드 파트너십', 'Brand Partnerships')}
+            <label className="block text-sm font-medium mb-1">
+              {t('출판권', 'Publishing Rights')}
             </label>
             <textarea
-              value={formData.brandPartnerships}
-              onChange={(e) => setFormData(prev => ({ ...prev, brandPartnerships: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              rows={2}
-              placeholder={t('브랜드 협업 계획', 'Brand collaboration plans')}
+              value={formData.publishingRights}
+              onChange={(e) => setFormData(prev => ({ ...prev, publishingRights: e.target.value }))}
+              className="input min-h-[80px]"
+              placeholder={t('출판권 정보', 'Publishing rights information')}
             />
           </div>
-          
+
           <div>
-            <label className="block text-sm font-medium mb-2">
-              {t('싱크 기회', 'Sync Opportunities')}
+            <label className="block text-sm font-medium mb-1">
+              {t('마스터 권리', 'Master Rights')}
             </label>
             <textarea
-              value={formData.syncOpportunities}
-              onChange={(e) => setFormData(prev => ({ ...prev, syncOpportunities: e.target.value }))}
-              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg 
-                       bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100
-                       focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-              rows={2}
-              placeholder={t('영화, 드라마, 광고 등 싱크 기회', 'Film, drama, advertising sync opportunities')}
+              value={formData.masterRights}
+              onChange={(e) => setFormData(prev => ({ ...prev, masterRights: e.target.value }))}
+              className="input min-h-[80px]"
+              placeholder={t('마스터 권리 정보', 'Master rights information')}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">UPC</label>
+            <input
+              type="text"
+              value={formData.upc}
+              onChange={(e) => setFormData(prev => ({ ...prev, upc: e.target.value }))}
+              className="input"
+              placeholder="123456789012"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="parental-advisory"
+              checked={formData.parentalAdvisory}
+              onChange={(e) => setFormData(prev => ({ ...prev, parentalAdvisory: e.target.checked }))}
+              className="rounded"
+            />
+            <label htmlFor="parental-advisory" className="text-sm">
+              {t('19금 콘텐츠 포함', 'Contains Explicit Content')}
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Step 9: Review & QC
+  const renderReviewQC = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <CheckCircle className="w-5 h-5" />
+          {t('검토 및 품질 확인', 'Review & Quality Check')}
+        </h3>
+
+        {/* QC Warnings */}
+        {validationResults && (
+          <div className="mb-6">
+            <QCWarnings results={validationResults} />
+          </div>
+        )}
+
+        {/* Summary */}
+        <div className="space-y-4">
+          <div className="bg-white/10 dark:bg-white/5 rounded-lg p-4">
+            <h4 className="font-medium mb-3">{t('제출 요약', 'Submission Summary')}</h4>
+            
+            <dl className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <dt className="text-gray-400">{t('아티스트', 'Artists')}:</dt>
+                <dd>{formData.artists.map(a => a.primaryName).join(', ')}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-400">{t('앨범명', 'Album')}:</dt>
+                <dd>{formData.albumTitle}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-400">{t('트랙 수', 'Tracks')}:</dt>
+                <dd>{formData.tracks.length}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-400">{t('발매일', 'Release Date')}:</dt>
+                <dd>{formData.releaseDate}</dd>
+              </div>
+              <div className="flex justify-between">
+                <dt className="text-gray-400">{t('배포 플랫폼', 'Platforms')}:</dt>
+                <dd>{Object.entries(formData.distributionPlatforms)
+                  .filter(([key, value]) => key !== 'custom' && value)
+                  .length + (formData.distributionPlatforms.custom?.length || 0)}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('QC 노트', 'QC Notes')}
+            </label>
+            <textarea
+              value={formData.qcNotes}
+              onChange={(e) => setFormData(prev => ({ ...prev, qcNotes: e.target.value }))}
+              className="input min-h-[100px]"
+              placeholder={t('품질 확인 관련 메모', 'Quality check related notes')}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('내부 메모', 'Internal Notes')}
+            </label>
+            <textarea
+              value={formData.internalNotes}
+              onChange={(e) => setFormData(prev => ({ ...prev, internalNotes: e.target.value }))}
+              className="input min-h-[100px]"
+              placeholder={t('내부 검토용 메모', 'Internal review notes')}
             />
           </div>
         </div>
@@ -2107,117 +2131,293 @@ export default function ReleaseSubmission() {
     </div>
   )
 
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            {t('음원 발매 신청', 'Release Submission')}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            {t('N3RVE를 통해 전 세계에 당신의 음악을 들려주세요', 'Share your music with the world through N3RVE')}
-          </p>
-        </div>
+  // Step 10: File Upload
+  const renderFileUpload = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Upload className="w-5 h-5" />
+          {t('파일 업로드', 'File Upload')}
+        </h3>
 
-        {/* Progress Section Navigation */}
-        <div className="mb-8">
-          <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700">
-            {sections.map((section) => {
-              const Icon = section.icon
-              return (
-                <button
-                  key={section.id}
-                  onClick={() => handleSectionChange(section.id as any)}
-                  className={`flex items-center gap-2 px-4 py-3 border-b-2 transition-all ${
-                    currentSection === section.id
-                      ? 'border-purple-500 text-purple-600 dark:text-purple-400'
-                      : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{section.label}</span>
-                </button>
-              )
-            })}
-          </div>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            {sections.find(s => s.id === currentSection)?.description}
-          </p>
-        </div>
+        <div className="space-y-6">
+          {formData.tracks.map((track, index) => (
+            <div key={track.id} className="bg-white/10 dark:bg-white/5 rounded-lg p-4">
+              <h4 className="font-medium mb-3">
+                {t('트랙', 'Track')} {index + 1}: {track.title}
+              </h4>
 
-        {/* Content */}
-        <div className="mb-8">
-          {currentSection === 'album' && renderAlbumSection()}
-          {currentSection === 'asset' && renderAssetSection()}
-          {currentSection === 'marketing' && renderMarketingSection()}
-        </div>
+              <div className="space-y-3">
+                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center">
+                  {formData.audioFiles[track.id]?.length > 0 ? (
+                    <div className="space-y-2">
+                      {formData.audioFiles[track.id].map((file, fileIndex) => (
+                        <div key={fileIndex} className="flex items-center justify-between bg-white/10 dark:bg-white/5 rounded p-2">
+                          <div className="flex items-center gap-2">
+                            <Music className="w-4 h-4" />
+                            <span className="text-sm">{file.name}</span>
+                            <span className="text-xs text-gray-400">
+                              ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                audioFiles: {
+                                  ...prev.audioFiles,
+                                  [track.id]: prev.audioFiles[track.id].filter((_, i) => i !== fileIndex)
+                                }
+                              }))
+                            }}
+                            className="text-red-500 hover:text-red-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div>
+                      <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
+                      <p className="text-sm text-gray-500 mb-2">
+                        {t('오디오 파일을 드래그하거나 클릭하여 업로드', 'Drag audio files or click to upload')}
+                      </p>
+                    </div>
+                  )}
+                  
+                  <input
+                    type="file"
+                    accept="audio/*"
+                    multiple
+                    onChange={(e) => {
+                      const files = Array.from(e.target.files || [])
+                      if (files.length > 0) {
+                        handleFileUpload(files, track.id)
+                      }
+                    }}
+                    className="hidden"
+                    id={`audio-upload-${track.id}`}
+                  />
+                  <label
+                    htmlFor={`audio-upload-${track.id}`}
+                    className="btn-primary cursor-pointer inline-block mt-2"
+                  >
+                    {t('파일 선택', 'Choose Files')}
+                  </label>
+                </div>
 
-        {/* Bottom Navigation */}
-        <div className="flex items-center justify-between border-t border-gray-200 dark:border-gray-700 pt-6">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              onClick={() => setShowQCWarnings(!showQCWarnings)}
-              className="flex items-center gap-2"
-            >
-              <AlertCircle className="w-4 h-4" />
-              {t('QC 검증', 'QC Validation')}
-            </Button>
-          </div>
-          
-          <div className="flex gap-4">
-            {currentSection !== 'album' && (
-              <Button
-                variant="secondary"
-                onClick={() => {
-                  const sectionIndex = sections.findIndex(s => s.id === currentSection)
-                  setCurrentSection(sections[sectionIndex - 1].id as any)
-                }}
-              >
-                <ChevronLeft className="w-4 h-4 mr-2" />
-                {t('이전', 'Previous')}
-              </Button>
-            )}
-            
-            {currentSection !== 'marketing' ? (
-              <Button
-                variant="primary"
-                onClick={() => {
-                  const sectionIndex = sections.findIndex(s => s.id === currentSection)
-                  handleSectionChange(sections[sectionIndex + 1].id as any)
-                }}
-              >
-                {t('다음', 'Next')}
-                <ChevronRight className="w-4 h-4 ml-2" />
-              </Button>
-            ) : (
-              <div className="flex items-center gap-4">
-                <Checkbox
-                  label={t('이용약관에 동의합니다', 'I agree to the terms and conditions')}
-                  checked={formData.agreedToTerms}
-                  onChange={(e) => setFormData(prev => ({ ...prev, agreedToTerms: e.target.checked }))}
-                />
-                <Button
-                  variant="primary"
-                  onClick={handleSubmit}
-                  loading={isSubmitting}
-                  disabled={!formData.agreedToTerms}
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  {t('제출하기', 'Submit')}
-                </Button>
+                <div className="flex items-center gap-4 text-sm text-gray-400">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={track.stereo}
+                      onChange={(e) => updateTrack(track.id, { stereo: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span>Stereo</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={track.dolbyAtmos}
+                      onChange={(e) => updateTrack(track.id, { dolbyAtmos: e.target.checked })}
+                      className="rounded"
+                    />
+                    <span>Dolby Atmos</span>
+                  </label>
+                </div>
+
+                <p className="text-xs text-gray-500">
+                  {t('지원 형식: WAV, FLAC, MP3 (최소 16bit/44.1kHz)', 'Supported formats: WAV, FLAC, MP3 (minimum 16bit/44.1kHz)')}
+                </p>
               </div>
-            )}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
-      
-      {/* FUGA QC Help Modal */}
-      <FugaQCHelpModal 
-        isOpen={showQCHelp} 
-        onClose={() => setShowQCHelp(false)} 
-      />
+    </div>
+  )
+
+  // Step 11: Final Submission
+  const renderFinalSubmission = () => (
+    <div className="space-y-6">
+      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <CheckCircle className="w-5 h-5" />
+          {t('최종 제출', 'Final Submission')}
+        </h3>
+
+        <div className="space-y-4">
+          <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-4">
+            <p className="text-sm">
+              {t(
+                '제출 전 모든 정보를 다시 한 번 확인해주세요. 제출 후에는 수정이 제한될 수 있습니다.',
+                'Please review all information once more before submission. Modifications may be limited after submission.'
+              )}
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('제출 메모', 'Submission Notes')}
+            </label>
+            <textarea
+              value={formData.submissionNotes}
+              onChange={(e) => setFormData(prev => ({ ...prev, submissionNotes: e.target.value }))}
+              className="input min-h-[100px]"
+              placeholder={t('추가 요청사항이나 메모', 'Additional requests or notes')}
+            />
+          </div>
+
+          <div className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              id="agree-terms"
+              checked={formData.agreedToTerms}
+              onChange={(e) => setFormData(prev => ({ ...prev, agreedToTerms: e.target.checked }))}
+              className="rounded mt-1"
+            />
+            <label htmlFor="agree-terms" className="text-sm">
+              {t(
+                '본인은 제출한 모든 정보가 정확하며, N3RVE의 이용약관 및 배포 정책에 동의합니다.',
+                'I confirm that all submitted information is accurate and agree to N3RVE\'s terms of service and distribution policies.'
+              )}
+            </label>
+          </div>
+
+          {validationResults && !validationResults.isValid && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
+              <p className="text-sm text-red-300">
+                {t(
+                  '검증 오류가 있습니다. 제출 전에 모든 오류를 수정해주세요.',
+                  'There are validation errors. Please fix all errors before submission.'
+                )}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+
+  // Submit handler
+  const handleSubmit = async () => {
+    if (!formData.agreedToTerms) {
+      toast.error(t('이용약관에 동의해주세요', 'Please agree to the terms'))
+      return
+    }
+
+    if (validationResults && !validationResults.isValid) {
+      toast.error(t('검증 오류를 수정해주세요', 'Please fix validation errors'))
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      // Submit the form data
+      await submissionService.createSubmission(formData)
+      toast.success(t('제출이 완료되었습니다', 'Submission completed'))
+      navigate('/submissions')
+    } catch (error) {
+      toast.error(t('제출 중 오류가 발생했습니다', 'Error during submission'))
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-black to-purple-900/20">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Progress Bar */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-3xl font-bold text-white">
+              {t('릴리즈 신청', 'Release Submission')}
+            </h1>
+            <div className="text-sm text-gray-400">
+              {t('단계', 'Step')} {currentStep + 1} / {steps.length}
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 bg-white/10 rounded-full" />
+            <div
+              className="relative h-2 bg-purple-500 rounded-full transition-all duration-300"
+              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+            />
+          </div>
+
+          <div className="flex items-center justify-between mt-4">
+            {steps.map((step) => (
+              <button
+                key={step.id}
+                onClick={() => setCurrentStep(step.id)}
+                className={`flex items-center gap-2 text-sm transition-colors ${
+                  currentStep === step.id
+                    ? 'text-purple-400'
+                    : currentStep > step.id
+                    ? 'text-green-400'
+                    : 'text-gray-500'
+                }`}
+                disabled={currentStep < step.id}
+              >
+                {currentStep > step.id ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <step.icon className="w-5 h-5" />
+                )}
+                <span className="hidden md:inline">{step.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Step Content */}
+        <div className="mb-8">
+          {renderStep()}
+        </div>
+
+        {/* Navigation */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+            disabled={currentStep === 0}
+            className="btn-secondary disabled:opacity-50"
+          >
+            <ChevronLeft className="w-4 h-4 mr-2" />
+            {t('이전', 'Previous')}
+          </button>
+
+          {currentStep === steps.length - 1 ? (
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting || !formData.agreedToTerms}
+              className="btn-primary disabled:opacity-50"
+            >
+              {isSubmitting ? (
+                <>
+                  <Clock className="w-4 h-4 mr-2 animate-spin" />
+                  {t('제출 중...', 'Submitting...')}
+                </>
+              ) : (
+                <>
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  {t('제출하기', 'Submit')}
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={() => setCurrentStep(prev => Math.min(steps.length - 1, prev + 1))}
+              className="btn-primary"
+            >
+              {t('다음', 'Next')}
+              <ChevronRight className="w-4 h-4 ml-2" />
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }
