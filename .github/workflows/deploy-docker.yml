@@ -49,31 +49,29 @@ jobs:
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # Stop and remove existing container
-          docker stop n3rve-app || true
-          docker rm n3rve-app || true
+          # Navigate to project directory
+          cd /home/ubuntu/n3rve-onboarding-platform
+          
+          # Pull latest code
+          git pull origin main
+          
+          # Update Docker image tag in docker-compose.yml
+          sed -i "s|image: ddalgiwuu/n3rve-platform:.*|image: ${{ env.DOCKER_IMAGE }}:latest|g" docker-compose.yml
+          
+          # Stop and remove all containers
+          docker-compose down
           
           # Pull latest image
           docker pull ${{ env.DOCKER_IMAGE }}:latest
           
-          # Run new container with all environment variables
-          docker run -d \
-            --name n3rve-app \
-            -p 80:80 \
-            -p 443:443 \
-            -v /etc/letsencrypt:/etc/letsencrypt:ro \
-            -e NODE_ENV=production \
-            -e PORT=3001 \
-            -e MONGODB_URI='${{ secrets.MONGODB_URI }}' \
-            -e DATABASE_URL='${{ secrets.MONGODB_URI }}' \
-            -e JWT_SECRET='${{ secrets.JWT_SECRET }}' \
-            -e JWT_REFRESH_SECRET='${{ secrets.JWT_REFRESH_SECRET }}' \
-            -e GOOGLE_CLIENT_ID='${{ secrets.GOOGLE_CLIENT_ID }}' \
-            -e GOOGLE_CLIENT_SECRET='${{ secrets.GOOGLE_CLIENT_SECRET }}' \
-            -e GOOGLE_CALLBACK_URL='https://n3rve-onboarding.com/api/auth/google/callback' \
-            -e CORS_ORIGIN='https://n3rve-onboarding.com' \
-            --restart unless-stopped \
-            ${{ env.DOCKER_IMAGE }}:latest
+          # Start all services with docker-compose
+          docker-compose up -d
+          
+          # Wait for services to be ready
+          sleep 10
+          
+          # Check container status
+          docker-compose ps
           
           # Clean up old images
           docker image prune -f
