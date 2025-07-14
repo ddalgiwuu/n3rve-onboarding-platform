@@ -10,7 +10,7 @@ npm run type-check: Verify types
 - **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com  
 - **EC2 Instance ID**: i-0fd6de9be4fa199a9
 - **Docker Hub**: ddalgiwuu/n3rve-platform:latest
-- **Latest Version**: v1.3.17
+- **Latest Version**: v1.3.19
 - **Deployment Date**: 2025-07-14
 - **Status**: ✅ LIVE and Running
 - **GitHub Actions**: ✅ Auto-deployment enabled
@@ -38,7 +38,13 @@ npm run type-check: Verify types
    - Added loading state when sections is not ready
    - **User Action Required**: Clear browser cache (Ctrl+Shift+R or Cmd+Shift+R) to get latest fixes
 
-2. **Infrastructure Fixes**
+2. **React Error #321 Fix (v1.3.19)**
+   - Fixed `useSyncExternalStore` error caused by improper zustand store usage
+   - Updated store hooks to use selector functions: `useLanguageStore(state => state.language)`
+   - This prevents React 18 hydration issues with zustand v5
+   - Fixed TypeScript import errors in ErrorBoundary component
+
+3. **Infrastructure Fixes**
    - Nginx proxy port correction: 5001 → 3001
    - MongoDB Atlas migration (no local MongoDB)
    - docker-compose.prod.yml for production deployments
@@ -269,9 +275,14 @@ When simulation is absolutely necessary, I will always ask for permission first 
 
 ### 🔥 Common Issues & Solutions
 1. **"Cannot read properties of undefined (reading 'map')" Error**
-   - **Cause**: Browser cached old JavaScript bundle
-   - **Solution**: Clear browser cache or use incognito mode
-   - **Prevention**: Nginx cache headers added in v1.3.18
+   - **Cause**: Browser cached old JavaScript bundle OR improper zustand store usage
+   - **Solution**: 
+     - Clear browser cache (Ctrl+Shift+R or Cmd+Shift+R) 
+     - Use incognito/private window
+     - Ensure store hooks use selector functions
+   - **Prevention**: 
+     - Nginx cache headers added in v1.3.18
+     - Store hooks fixed in v1.3.19 to use proper selectors
 
 2. **502 Bad Gateway**
    - **Cause**: Backend port mismatch
