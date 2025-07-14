@@ -148,13 +148,12 @@ const albumFormats = [
 ]
 
 export default function ReleaseSubmissionNew() {
-  const { language } = useLanguageStore()
+  const { language = 'ko' } = useLanguageStore() // Default to 'ko' if undefined
   const navigate = useNavigate()
   const { user } = useAuthStore()
   
   // Helper function for bilingual text
   const tBilingual = (ko: string, en: string) => {
-    if (!language) return en // Default to English if language is undefined
     return language === 'ko' ? ko : en
   }
   
@@ -305,7 +304,7 @@ export default function ReleaseSubmissionNew() {
         },
         album: {
           titleKo: formData.albumTitle,
-          titleEn: formData.albumTranslations?.find(t => t.language === 'en')?.text || '',
+          titleEn: (formData.albumTranslations || []).find(t => t.language === 'en')?.text || '',
           format: formData.albumType,
           parentalAdvisory: formData.parentalAdvisory
         },
@@ -556,7 +555,7 @@ export default function ReleaseSubmissionNew() {
         },
         album: {
           titleKo: formData.albumTitle,
-          titleEn: formData.albumTranslations?.find(t => t.language === 'en')?.text || '',
+          titleEn: (formData.albumTranslations || []).find(t => t.language === 'en')?.text || '',
           format: formData.albumType,
           parentalAdvisory: formData.parentalAdvisory,
           description: formData.albumDescription,
@@ -1335,7 +1334,7 @@ export default function ReleaseSubmissionNew() {
               onChange={(e) => setFormData(prev => ({
                 ...prev,
                 distributionPlatforms: {
-                  ...prev.distributionPlatforms,
+                  ...(prev.distributionPlatforms || {}),
                   [key]: e.target.checked
                 }
               }))}
@@ -1569,6 +1568,13 @@ export default function ReleaseSubmissionNew() {
     </div>
   )
 
+  // Ensure sections is always an object
+  const safeSections = sections || {
+    album: { label: 'Album', icon: Disc, description: 'Album basics' },
+    asset: { label: 'Asset', icon: Music, description: 'Track info' },
+    marketing: { label: 'Marketing', icon: Megaphone, description: 'Marketing' }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -1585,40 +1591,64 @@ export default function ReleaseSubmissionNew() {
         {/* Section tabs */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6">
           <div className="flex">
-            {sections && Object.keys(sections).length > 0 ? (
-              Object.entries(sections).map(([key, section]) => {
-                if (!section || typeof section !== 'object') return null
-                const Icon = section.icon || Disc
-                const validation = getSectionValidation(key as 'album' | 'asset' | 'marketing')
-                
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setActiveSection(key as 'album' | 'asset' | 'marketing')}
-                    className={`flex-1 px-6 py-4 flex items-center justify-center gap-3 border-b-2 transition-colors ${
-                      activeSection === key
-                        ? 'border-purple-500 text-purple-600 dark:text-purple-400'
-                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-                    }`}
-                  >
-                    <Icon className="w-5 h-5" />
-                    <div className="text-left">
-                      <div className="font-medium">{section.label || ''}</div>
-                      <div className="text-xs opacity-75">{section.description || ''}</div>
+            {(() => {
+              try {
+                if (!safeSections || typeof safeSections !== 'object') {
+                  console.error('safeSections is not an object:', safeSections)
+                  return (
+                    <div className="flex-1 px-6 py-4 text-center text-gray-500">
+                      {tBilingual('로딩 중...', 'Loading...')}
                     </div>
-                    {validation.hasErrors && (
-                      <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                        {validation.errorCount}
-                      </span>
-                    )}
-                  </button>
+                  )
+                }
+                
+                const entries = Object.entries(safeSections)
+                if (!entries || entries.length === 0) {
+                  console.error('No entries in safeSections')
+                  return (
+                    <div className="flex-1 px-6 py-4 text-center text-gray-500">
+                      {tBilingual('로딩 중...', 'Loading...')}
+                    </div>
+                  )
+                }
+                
+                return entries.map(([key, section]) => {
+                  if (!section || typeof section !== 'object') return null
+                  const Icon = section.icon || Disc
+                  const validation = getSectionValidation(key as 'album' | 'asset' | 'marketing')
+                  
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setActiveSection(key as 'album' | 'asset' | 'marketing')}
+                      className={`flex-1 px-6 py-4 flex items-center justify-center gap-3 border-b-2 transition-colors ${
+                        activeSection === key
+                          ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                          : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                      }`}
+                    >
+                      <Icon className="w-5 h-5" />
+                      <div className="text-left">
+                        <div className="font-medium">{section.label || ''}</div>
+                        <div className="text-xs opacity-75">{section.description || ''}</div>
+                      </div>
+                      {validation.hasErrors && (
+                        <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                          {validation.errorCount}
+                        </span>
+                      )}
+                    </button>
+                  )
+                })
+              } catch (error) {
+                console.error('Error rendering section tabs:', error)
+                return (
+                  <div className="flex-1 px-6 py-4 text-center text-gray-500">
+                    {tBilingual('로딩 중...', 'Loading...')}
+                  </div>
                 )
-              })
-            ) : (
-              <div className="flex-1 px-6 py-4 text-center text-gray-500">
-                {tBilingual('로딩 중...', 'Loading...')}
-              </div>
-            )}
+              }
+            })()}
           </div>
         </div>
 
