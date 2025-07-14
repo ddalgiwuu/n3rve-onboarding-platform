@@ -1227,7 +1227,7 @@ export default function ReleaseSubmission() {
                       {t('역할', 'Roles')}
                     </label>
                     <div className="flex flex-wrap gap-2">
-                      {Object.entries(contributorRoles.reduce((acc, role) => {
+                      {Object.entries((contributorRoles || []).reduce((acc, role) => {
                         if (!acc[role.category]) acc[role.category] = []
                         acc[role.category].push(role)
                         return acc
@@ -1237,9 +1237,9 @@ export default function ReleaseSubmission() {
                           className="input text-sm"
                           onChange={(e) => {
                             const role = e.target.value
-                            if (role && !contributor.roles.includes(role)) {
+                            if (role && !(contributor.roles || []).includes(role)) {
                               updateContributor(contributor.id, {
-                                roles: [...contributor.roles, role]
+                                roles: [...(contributor.roles || []), role]
                               })
                             }
                           }}
@@ -1254,8 +1254,8 @@ export default function ReleaseSubmission() {
                       ))}
                     </div>
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {contributor.roles.map(roleValue => {
-                        const role = contributorRoles.find(r => r.value === roleValue)
+                      {(contributor.roles || []).map(roleValue => {
+                        const role = (contributorRoles || []).find(r => r.value === roleValue)
                         return role ? (
                           <span
                             key={roleValue}
@@ -1264,7 +1264,7 @@ export default function ReleaseSubmission() {
                             {language === 'ko' ? role.label : role.labelEn}
                             <button
                               onClick={() => updateContributor(contributor.id, {
-                                roles: contributor.roles.filter(r => r !== roleValue)
+                                roles: (contributor.roles || []).filter(r => r !== roleValue)
                               })}
                               className="hover:text-purple-100"
                             >
