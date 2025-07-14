@@ -42,36 +42,57 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+    - name: Check EC2 connectivity
+      run: |
+        echo "Testing connection to EC2..."
+        echo "Host: ${{ secrets.EC2_HOST }}"
+        
     - name: Deploy to EC2
-      uses: appleboy/ssh-action@v0.1.5
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ubuntu
         key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        timeout: 60s
+        command_timeout: 30m
         script: |
+          set -e
+          echo "=== Starting deployment ==="
+          
           # Navigate to project directory
           cd /home/ubuntu/n3rve-onboarding-platform
           
           # Pull latest code
+          echo "Pulling latest code..."
           git pull origin main
           
-          # Update Docker image tag in docker-compose.yml
-          sed -i "s|image: ddalgiwuu/n3rve-platform:.*|image: ${{ env.DOCKER_IMAGE }}:latest|g" docker-compose.yml
-          
-          # Stop and remove all containers
-          docker-compose down
+          # Stop all containers
+          echo "Stopping containers..."
+          docker-compose -f docker-compose.prod.yml down || true
           
           # Pull latest image
+          echo "Pulling latest Docker image..."
           docker pull ${{ env.DOCKER_IMAGE }}:latest
           
-          # Start all services with docker-compose
-          docker-compose up -d
+          # Start all services with production docker-compose
+          echo "Starting services..."
+          docker-compose -f docker-compose.prod.yml up -d
           
           # Wait for services to be ready
-          sleep 10
+          echo "Waiting for services to be ready..."
+          sleep 15
           
           # Check container status
-          docker-compose ps
+          echo "Container status:"
+          docker-compose -f docker-compose.prod.yml ps
+          
+          # Check logs
+          echo "App logs:"
+          docker logs n3rve-app --tail 20 || true
           
           # Clean up old images
+          echo "Cleaning up old images..."
           docker image prune -f
+          
+          echo "=== Deployment completed ==="
