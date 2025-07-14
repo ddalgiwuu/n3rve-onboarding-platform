@@ -1,30 +1,7 @@
 version: '3.8'
 
 services:
-  # MongoDB Service
-  mongodb:
-    image: mongo:8.0
-    container_name: n3rve-mongodb
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USERNAME:-admin}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:-changeThisPassword}
-      MONGO_INITDB_DATABASE: n3rve_platform
-    volumes:
-      - mongodb_data:/data/db
-      - ./docker/mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-    ports:
-      - "27018:27017"
-    networks:
-      - n3rve-network
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    command: mongod --setParameter diagnosticDataCollectionEnabled=false
-
-  # Production App (Frontend + Backend)
+  # Production App (Frontend + Backend) - MongoDB Atlas 사용
   app:
     image: ddalgiwuu/n3rve-platform:latest
     container_name: n3rve-app
@@ -32,7 +9,7 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-production}
       PORT: 3001
-      MONGODB_URI: ${MONGODB_URI:-mongodb://admin:changeThisPassword@mongodb:27017/n3rve_platform?authSource=admin}
+      MONGODB_URI: ${MONGODB_URI}
       DATABASE_URL: ${DATABASE_URL:-${MONGODB_URI}}
       JWT_SECRET: ${JWT_SECRET:-changeThisJWTSecret}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-${JWT_SECRET:-changeThisJWTSecret}}
@@ -40,6 +17,7 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-https://n3rve-onboarding.com/api/auth/google/callback}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://n3rve-onboarding.com}
+      VITE_DROPBOX_ACCESS_TOKEN: ${VITE_DROPBOX_ACCESS_TOKEN}
     volumes:
       - ./backend/uploads:/app/backend/uploads
       - /etc/letsencrypt:/etc/letsencrypt:ro
@@ -47,14 +25,8 @@ services:
       - "80:80"
       - "443:443"
       - "3001:3001"
-    depends_on:
-      mongodb:
-        condition: service_healthy
     networks:
       - n3rve-network
-
-volumes:
-  mongodb_data:
 
 networks:
   n3rve-network:
