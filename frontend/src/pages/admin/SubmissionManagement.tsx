@@ -1,314 +1,743 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Download, Play, Pause, CheckCircle, XCircle, MessageSquare, FileText, Music, Image, Clock, User, Calendar, Tag } from 'lucide-react';
-import { useTranslation } from '@/store/language.store';
-import { format } from 'date-fns';
+import React, { useState, useEffect, useMemo } from 'react'
+import { 
+  Search, Filter, Eye, Check, X, Download, ChevronLeft, ChevronRight, 
+  FileSpreadsheet, Calendar, BarChart3, Clock, CheckSquare, XSquare,
+  Music, FileText, Info, History, Printer, FileDown, TrendingUp,
+  Users, Album, AlertCircle, Package, Loader2
+} from 'lucide-react'
+import { useLanguageStore } from '../../store/language.store'
+import { cn } from '../../utils/cn'
+import { exportSubmissionsToExcel, exportSubmissionReport } from '../../utils/excelExport'
+import { submissionService } from '../../services/submission.service'
+import SubmissionDetailView from '../../components/admin/SubmissionDetailView'
+import toast from 'react-hot-toast'
 
-interface Track {
-  id: string;
-  title: string;
-  duration: string;
-  hasAtmos: boolean;
-  audioUrl?: string;
-}
-
-interface SubmissionDetail {
-  id: string;
-  artistName: string;
-  albumName: string;
-  status: 'pending' | 'reviewing' | 'approved' | 'rejected';
-  submittedAt: string;
-  genre: string;
-  releaseDate: string;
-  label: string;
-  upc: string;
-  coverArtUrl: string;
-  tracks: Track[];
-  marketingInfo: Record<string, any>;
-  notes: string;
-}
-
-const SubmissionManagement = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-  const [submission, setSubmission] = useState<SubmissionDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [playingTrack, setPlayingTrack] = useState<string | null>(null);
-  const [reviewNotes, setReviewNotes] = useState('');
-  const [activeTab, setActiveTab] = useState('overview');
-
-  useEffect(() => {
-    fetchSubmissionDetail();
-  }, [id]);
-
-  const fetchSubmissionDetail = async () => {
-    try {
-      setLoading(true);
-      // Mock data for now
-      const mockData: SubmissionDetail = {
-        id: id || '1',
-        artistName: 'Artist One',
-        albumName: 'First Album',
-        status: 'pending',
-        submittedAt: new Date().toISOString(),
-        genre: 'Pop',
-        releaseDate: new Date(Date.now() + 30 * 86400000).toISOString(),
-        label: 'N3RVE Records',
-        upc: '123456789012',
-        coverArtUrl: 'https://via.placeholder.com/300',
-        tracks: [
-          { id: '1', title: 'Track 1', duration: '3:24', hasAtmos: true },
-          { id: '2', title: 'Track 2', duration: '4:12', hasAtmos: false },
-          { id: '3', title: 'Track 3', duration: '3:45', hasAtmos: true },
-        ],
-        marketingInfo: {
-          targetAudience: '18-34 years old',
-          marketingBudget: '$50,000',
-          promotionStrategy: 'Social media campaign'
-        },
-        notes: 'This is a promising submission with great production quality.'
-      };
-      setSubmission(mockData);
-    } catch (error) {
-      console.error('Error fetching submission:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStatusUpdate = async (newStatus: string) => {
-    try {
-      // API call to update status
-      console.log('Updating status to:', newStatus);
-    } catch (error) {
-      console.error('Error updating status:', error);
-    }
-  };
-
-  const togglePlayTrack = (trackId: string) => {
-    setPlayingTrack(playingTrack === trackId ? null : trackId);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
+// Stats Card Component
+const StatsCard: React.FC<{
+  title: string
+  value: string | number
+  icon: React.ReactNode
+  trend?: number
+  color: string
+}> = ({ title, value, icon, trend, color }) => (
+  <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+    <div className="flex items-center justify-between">
+      <div>
+        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+        {trend !== undefined && (
+          <div className="flex items-center mt-2">
+            <TrendingUp className={cn(
+              "w-4 h-4 mr-1",
+              trend >= 0 ? "text-green-500" : "text-red-500 rotate-180"
+            )} />
+            <span className={cn(
+              "text-sm font-medium",
+              trend >= 0 ? "text-green-600" : "text-red-600"
+            )}>
+              {Math.abs(trend)}%
+            </span>
+          </div>
+        )}
       </div>
-    );
+      <div className={cn("p-3 rounded-full", color)}>
+        {icon}
+      </div>
+    </div>
+  </div>
+)
+
+// Tab Component
+const Tab: React.FC<{
+  active: boolean
+  onClick: () => void
+  icon: React.ReactNode
+  label: string
+}> = ({ active, onClick, icon, label }) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "flex items-center gap-2 px-4 py-2 font-medium rounded-lg transition-colors",
+      active
+        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+    )}
+  >
+    {icon}
+    {label}
+  </button>
+)
+
+const SubmissionManagement: React.FC = () => {
+  const { language, t } = useLanguageStore()
+  const [submissions, setSubmissions] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null)
+  const [showDetailModal, setShowDetailModal] = useState(false)
+  const [adminNotes, setAdminNotes] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(new Set())
+  const [dateRange, setDateRange] = useState({ start: '', end: '' })
+  const [activeTab, setActiveTab] = useState<'details' | 'overview' | 'history'>('details')
+  const [stats, setStats] = useState({
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0
+  })
+  const itemsPerPage = 10
+
+  // Fetch submissions from API
+  useEffect(() => {
+    fetchSubmissions()
+  }, [selectedStatus, searchQuery, dateRange, currentPage])
+
+  const fetchSubmissions = async () => {
+    try {
+      setLoading(true)
+      const response = await submissionService.getAllSubmissions({
+        status: selectedStatus,
+        searchQuery,
+        dateRange: dateRange.start && dateRange.end ? dateRange : undefined,
+        page: currentPage,
+        limit: itemsPerPage
+      })
+      
+      setSubmissions(response.submissions || [])
+      
+      // Update stats
+      if (response.stats) {
+        setStats(response.stats)
+      }
+    } catch (error) {
+      console.error('Failed to fetch submissions:', error)
+      toast.error(t('제출 목록을 불러오는데 실패했습니다', 'Failed to load submissions'))
+    } finally {
+      setLoading(false)
+    }
   }
 
-  if (!submission) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-6">
-        <div className="text-center">
-          <p className="text-gray-400">{t('submission.notFound', 'Submission not found')}</p>
-        </div>
-      </div>
-    );
+  // Filter submissions
+  const filteredSubmissions = useMemo(() => {
+    return submissions.filter(submission => {
+      const matchesStatus = selectedStatus === 'all' || submission.status === selectedStatus
+      const matchesSearch = !searchQuery || 
+        submission.artist?.primaryName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        submission.album?.titleKo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        submission.album?.titleEn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        submission.id.toLowerCase().includes(searchQuery.toLowerCase())
+      
+      return matchesStatus && matchesSearch
+    })
+  }, [submissions, selectedStatus, searchQuery])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage)
+  const paginatedSubmissions = filteredSubmissions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  )
+
+  // Handle status update
+  const handleStatusUpdate = async (submissionId: string, newStatus: 'approved' | 'rejected') => {
+    try {
+      await submissionService.updateSubmissionStatus(submissionId, newStatus, adminNotes)
+      toast.success(t('상태가 업데이트되었습니다', 'Status updated successfully'))
+      
+      // Refresh submissions
+      await fetchSubmissions()
+      
+      // Reset
+      setAdminNotes('')
+      setShowDetailModal(false)
+      setSelectedSubmission(null)
+    } catch (error) {
+      console.error('Failed to update status:', error)
+      toast.error(t('상태 업데이트에 실패했습니다', 'Failed to update status'))
+    }
+  }
+
+  // Handle bulk actions
+  const handleBulkAction = async (action: 'approve' | 'reject') => {
+    if (selectedSubmissions.size === 0) {
+      toast.error(t('선택된 제출이 없습니다', 'No submissions selected'))
+      return
+    }
+
+    try {
+      await submissionService.bulkUpdateStatus(
+        Array.from(selectedSubmissions),
+        action === 'approve' ? 'approved' : 'rejected',
+        adminNotes
+      )
+      
+      toast.success(
+        t(
+          `${selectedSubmissions.size}개의 제출이 ${action === 'approve' ? '승인' : '거절'}되었습니다`,
+          `${selectedSubmissions.size} submissions ${action === 'approve' ? 'approved' : 'rejected'}`
+        )
+      )
+      
+      // Reset and refresh
+      setSelectedSubmissions(new Set())
+      await fetchSubmissions()
+    } catch (error) {
+      console.error('Failed to perform bulk action:', error)
+      toast.error(t('일괄 작업에 실패했습니다', 'Failed to perform bulk action'))
+    }
+  }
+
+  // Export functions
+  const handleExportToExcel = async () => {
+    try {
+      await submissionService.exportSubmissions({
+        status: selectedStatus,
+        searchQuery,
+        dateRange: dateRange.start && dateRange.end ? dateRange : undefined
+      })
+      toast.success(t('Excel 파일이 다운로드되었습니다', 'Excel file downloaded'))
+    } catch (error) {
+      console.error('Failed to export:', error)
+      toast.error(t('Excel 내보내기에 실패했습니다', 'Failed to export to Excel'))
+    }
+  }
+
+  const handleExportSelected = () => {
+    if (selectedSubmissions.size === 0) {
+      toast.error(t('선택된 제출이 없습니다', 'No submissions selected'))
+      return
+    }
+
+    const selected = submissions.filter(s => selectedSubmissions.has(s.id))
+    exportSubmissionsToExcel(selected)
+    toast.success(t('선택된 제출이 내보내기되었습니다', 'Selected submissions exported'))
+  }
+
+  const handleSelectAll = () => {
+    if (selectedSubmissions.size === paginatedSubmissions.length) {
+      setSelectedSubmissions(new Set())
+    } else {
+      setSelectedSubmissions(new Set(paginatedSubmissions.map(s => s.id)))
+    }
+  }
+
+  const toggleSelection = (id: string) => {
+    const newSelection = new Set(selectedSubmissions)
+    if (newSelection.has(id)) {
+      newSelection.delete(id)
+    } else {
+      newSelection.add(id)
+    }
+    setSelectedSubmissions(newSelection)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="glass-effect rounded-2xl p-8 mb-8 animate-fade-in">
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            {t('제출 관리', 'Submission Management')}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            {t('아티스트 제출을 검토하고 관리합니다', 'Review and manage artist submissions')}
+          </p>
+        </div>
+        <div className="flex gap-3">
           <button
-            onClick={() => navigate('/admin/submissions')}
-            className="flex items-center gap-2 text-gray-400 hover:text-white mb-6 transition-colors"
+            onClick={handleExportToExcel}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
-            {t('submission.backToList', 'Back to Submissions')}
+            <FileSpreadsheet className="w-5 h-5" />
+            {t('Excel 내보내기', 'Export Excel')}
           </button>
-          
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-6">
-              <img
-                src={submission.coverArtUrl}
-                alt={submission.albumName}
-                className="w-32 h-32 rounded-xl object-cover"
+          <button
+            onClick={handleExportSelected}
+            disabled={selectedSubmissions.size === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <Download className="w-5 h-5" />
+            {t('선택 내보내기', 'Export Selected')} ({selectedSubmissions.size})
+          </button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <StatsCard
+          title={t('전체 제출', 'Total Submissions')}
+          value={stats.total}
+          icon={<FileText className="w-6 h-6 text-white" />}
+          color="bg-blue-500"
+        />
+        <StatsCard
+          title={t('검토 대기중', 'Pending Review')}
+          value={stats.pending}
+          icon={<Clock className="w-6 h-6 text-white" />}
+          color="bg-yellow-500"
+        />
+        <StatsCard
+          title={t('승인됨', 'Approved')}
+          value={stats.approved}
+          icon={<CheckSquare className="w-6 h-6 text-white" />}
+          color="bg-green-500"
+        />
+        <StatsCard
+          title={t('거절됨', 'Rejected')}
+          value={stats.rejected}
+          icon={<XSquare className="w-6 h-6 text-white" />}
+          color="bg-red-500"
+        />
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+        <div className="flex flex-wrap gap-4 items-center">
+          {/* Search */}
+          <div className="flex-1 min-w-[300px]">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={t('아티스트, 앨범, ID로 검색...', 'Search by artist, album, ID...')}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
               />
-              <div>
-                <h1 className="text-3xl font-bold text-white mb-2">{submission.albumName}</h1>
-                <p className="text-xl text-gray-300 mb-4">{submission.artistName}</p>
-                <div className="flex items-center gap-4 text-sm text-gray-400">
-                  <span className="flex items-center gap-1">
-                    <Music className="w-4 h-4" />
-                    {submission.tracks.length} {t('submission.tracks', 'tracks')}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Tag className="w-4 h-4" />
-                    {submission.genre}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    {format(new Date(submission.releaseDate), 'MMM dd, yyyy')}
-                  </span>
-                </div>
-              </div>
             </div>
-            
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => handleStatusUpdate('approved')}
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-lg font-medium transition-all hover-lift flex items-center gap-2"
-              >
-                <CheckCircle className="w-5 h-5" />
-                {t('submission.approve', 'Approve')}
-              </button>
-              <button
-                onClick={() => handleStatusUpdate('rejected')}
-                className="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-lg font-medium transition-all hover-lift flex items-center gap-2"
-              >
-                <XCircle className="w-5 h-5" />
-                {t('submission.reject', 'Reject')}
-              </button>
-            </div>
+          </div>
+
+          {/* Status Filter */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setSelectedStatus('all')}
+              className={cn(
+                "px-4 py-2 rounded-lg font-medium transition-colors",
+                selectedStatus === 'all'
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+              )}
+            >
+              {t('전체', 'All')}
+            </button>
+            <button
+              onClick={() => setSelectedStatus('pending')}
+              className={cn(
+                "px-4 py-2 rounded-lg font-medium transition-colors",
+                selectedStatus === 'pending'
+                  ? "bg-yellow-500 text-white"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+              )}
+            >
+              {t('대기중', 'Pending')}
+            </button>
+            <button
+              onClick={() => setSelectedStatus('approved')}
+              className={cn(
+                "px-4 py-2 rounded-lg font-medium transition-colors",
+                selectedStatus === 'approved'
+                  ? "bg-green-600 text-white"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+              )}
+            >
+              {t('승인됨', 'Approved')}
+            </button>
+            <button
+              onClick={() => setSelectedStatus('rejected')}
+              className={cn(
+                "px-4 py-2 rounded-lg font-medium transition-colors",
+                selectedStatus === 'rejected'
+                  ? "bg-red-600 text-white"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+              )}
+            >
+              {t('거절됨', 'Rejected')}
+            </button>
+          </div>
+
+          {/* Date Range */}
+          <div className="flex gap-2 items-center">
+            <Calendar className="w-5 h-5 text-gray-400" />
+            <input
+              type="date"
+              value={dateRange.start}
+              onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+            />
+            <span className="text-gray-500">-</span>
+            <input
+              type="date"
+              value={dateRange.end}
+              onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+            />
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 mb-6">
-          {['overview', 'tracks', 'marketing', 'files'].map((tab) => (
+        {/* Bulk Actions */}
+        {selectedSubmissions.size > 0 && (
+          <div className="mt-4 flex items-center gap-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
+            <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+              {t(`${selectedSubmissions.size}개 선택됨`, `${selectedSubmissions.size} selected`)}
+            </span>
             <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 rounded-lg font-medium transition-all ${
-                activeTab === tab
-                  ? 'bg-purple-600 text-white'
-                  : 'glass-effect text-gray-300 hover:text-white'
-              }`}
+              onClick={() => handleBulkAction('approve')}
+              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
             >
-              {t(`submission.tab.${tab}`, tab.charAt(0).toUpperCase() + tab.slice(1))}
+              <Check className="w-4 h-4" />
+              {t('일괄 승인', 'Bulk Approve')}
             </button>
-          ))}
-        </div>
-
-        {/* Content */}
-        <div className="glass-effect rounded-xl p-8 animate-slide-in">
-          {activeTab === 'overview' && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-xl font-semibold text-white mb-4">{t('submission.details', 'Submission Details')}</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-gray-400 text-sm">{t('submission.upc', 'UPC')}</p>
-                    <p className="text-white">{submission.upc}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm">{t('submission.label', 'Label')}</p>
-                    <p className="text-white">{submission.label}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm">{t('submission.submittedAt', 'Submitted')}</p>
-                    <p className="text-white">{format(new Date(submission.submittedAt), 'MMM dd, yyyy HH:mm')}</p>
-                  </div>
-                  <div>
-                    <p className="text-gray-400 text-sm">{t('submission.status', 'Status')}</p>
-                    <p className="text-white capitalize">{submission.status}</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-xl font-semibold text-white mb-4">{t('submission.notes', 'Review Notes')}</h3>
-                <textarea
-                  className="w-full px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-white"
-                  rows={4}
-                  placeholder={t('submission.notesPlaceholder', 'Add your review notes here...')}
-                  value={reviewNotes}
-                  onChange={(e) => setReviewNotes(e.target.value)}
-                />
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'tracks' && (
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-4">{t('submission.trackList', 'Track List')}</h3>
-              <div className="space-y-3">
-                {submission.tracks && submission.tracks.map((track, index) => (
-                  <div key={track.id} className="flex items-center justify-between p-4 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <span className="text-gray-400 w-8">{index + 1}</span>
-                      <div>
-                        <p className="text-white font-medium">{track.title}</p>
-                        {track.hasAtmos && (
-                          <span className="text-xs text-purple-400">{t('submission.dolbyAtmos', 'Dolby Atmos')}</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-gray-400">{track.duration}</span>
-                      <button
-                        onClick={() => togglePlayTrack(track.id)}
-                        className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-                      >
-                        {playingTrack === track.id ? (
-                          <Pause className="w-5 h-5 text-purple-400" />
-                        ) : (
-                          <Play className="w-5 h-5 text-gray-400" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'marketing' && (
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-4">{t('submission.marketingInfo', 'Marketing Information')}</h3>
-              <div className="space-y-4">
-                {submission.marketingInfo && Object.entries(submission.marketingInfo).map(([key, value]) => (
-                  <div key={key}>
-                    <p className="text-gray-400 text-sm capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
-                    <p className="text-white">{value}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'files' && (
-            <div>
-              <h3 className="text-xl font-semibold text-white mb-4">{t('submission.files', 'Files')}</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Image className="w-8 h-8 text-purple-400" />
-                    <div>
-                      <p className="text-white font-medium">{t('submission.coverArt', 'Cover Art')}</p>
-                      <p className="text-gray-400 text-sm">cover.jpg</p>
-                    </div>
-                  </div>
-                  <button className="text-purple-400 hover:text-purple-300 text-sm flex items-center gap-1">
-                    <Download className="w-4 h-4" />
-                    {t('submission.download', 'Download')}
-                  </button>
-                </div>
-                
-                <div className="p-4 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-pointer">
-                  <div className="flex items-center gap-3 mb-2">
-                    <FileText className="w-8 h-8 text-purple-400" />
-                    <div>
-                      <p className="text-white font-medium">{t('submission.metadata', 'Metadata')}</p>
-                      <p className="text-gray-400 text-sm">metadata.xlsx</p>
-                    </div>
-                  </div>
-                  <button className="text-purple-400 hover:text-purple-300 text-sm flex items-center gap-1">
-                    <Download className="w-4 h-4" />
-                    {t('submission.download', 'Download')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+            <button
+              onClick={() => handleBulkAction('reject')}
+              className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+            >
+              <X className="w-4 h-4" />
+              {t('일괄 거절', 'Bulk Reject')}
+            </button>
+            <input
+              type="text"
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              placeholder={t('관리자 노트 (선택사항)', 'Admin notes (optional)')}
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+        )}
       </div>
-    </div>
-  );
-};
 
-export default SubmissionManagement;
+      {/* Submissions Table */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+          </div>
+        ) : (
+          <>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th className="px-6 py-3 text-left">
+                      <input
+                        type="checkbox"
+                        checked={selectedSubmissions.size === paginatedSubmissions.length && paginatedSubmissions.length > 0}
+                        onChange={handleSelectAll}
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      />
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      {t('ID', 'ID')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      {t('아티스트', 'Artist')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      {t('앨범', 'Album')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      {t('제출일', 'Submitted')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      {t('상태', 'Status')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      {t('파일', 'Files')}
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      {t('작업', 'Actions')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  {paginatedSubmissions.map((submission) => (
+                    <tr key={submission.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedSubmissions.has(submission.id)}
+                          onChange={() => toggleSelection(submission.id)}
+                          className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                        {submission.id}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {submission.artist?.primaryName || '-'}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {submission.artist?.labelName || '-'}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900 dark:text-white">
+                            {submission.album?.titleKo || submission.album?.titleEn || '-'}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">
+                            {submission.tracks?.length || 0} {t('트랙', 'tracks')}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {new Date(submission.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={cn(
+                          "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
+                          submission.status === 'pending' && "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+                          submission.status === 'approved' && "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+                          submission.status === 'rejected' && "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                        )}>
+                          {submission.status === 'pending' && t('대기중', 'Pending')}
+                          {submission.status === 'approved' && t('승인됨', 'Approved')}
+                          {submission.status === 'rejected' && t('거절됨', 'Rejected')}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2 text-sm">
+                          {submission.files?.coverImageUrl && (
+                            <span className="text-green-600 dark:text-green-400" title={t('커버 이미지', 'Cover Image')}>
+                              <FileText className="w-4 h-4" />
+                            </span>
+                          )}
+                          {submission.files?.audioFiles?.length > 0 && (
+                            <span className="text-blue-600 dark:text-blue-400" title={t('오디오 파일', 'Audio Files')}>
+                              <Music className="w-4 h-4" />
+                            </span>
+                          )}
+                          {submission.files?.motionArtUrl && (
+                            <span className="text-purple-600 dark:text-purple-400" title={t('모션 아트', 'Motion Art')}>
+                              <Package className="w-4 h-4" />
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => {
+                              setSelectedSubmission(submission)
+                              setShowDetailModal(true)
+                            }}
+                            className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
+                          >
+                            <Eye className="w-5 h-5" />
+                          </button>
+                          {submission.status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => handleStatusUpdate(submission.id, 'approved')}
+                                className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                              >
+                                <Check className="w-5 h-5" />
+                              </button>
+                              <button
+                                onClick={() => handleStatusUpdate(submission.id, 'rejected')}
+                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between">
+                  <div className="text-sm text-gray-700 dark:text-gray-300">
+                    {t(
+                      `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredSubmissions.length)} / ${filteredSubmissions.length}개`,
+                      `Showing ${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredSubmissions.length)} of ${filteredSubmissions.length}`
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      disabled={currentPage === 1}
+                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className={cn(
+                          "px-3 py-1 rounded-lg",
+                          currentPage === page
+                            ? "bg-purple-600 text-white"
+                            : "border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                        )}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <button
+                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      disabled={currentPage === totalPages}
+                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Detail Modal */}
+      {showDetailModal && selectedSubmission && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-6xl max-h-[90vh] overflow-y-auto p-6 w-full">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {t('제출 상세 정보', 'Submission Details')}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowDetailModal(false)
+                  setSelectedSubmission(null)
+                }}
+                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Tabs */}
+            <div className="flex gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
+              <Tab
+                active={activeTab === 'details'}
+                onClick={() => setActiveTab('details')}
+                icon={<FileText className="w-4 h-4" />}
+                label={t('상세 정보', 'Details')}
+              />
+              <Tab
+                active={activeTab === 'overview'}
+                onClick={() => setActiveTab('overview')}
+                icon={<Info className="w-4 h-4" />}
+                label={t('개요', 'Overview')}
+              />
+              <Tab
+                active={activeTab === 'history'}
+                onClick={() => setActiveTab('history')}
+                icon={<History className="w-4 h-4" />}
+                label={t('이력', 'History')}
+              />
+            </div>
+
+            {/* Tab Content */}
+            {activeTab === 'details' && (
+              <SubmissionDetailView submission={selectedSubmission} />
+            )}
+
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <h3 className="font-semibold mb-3">{t('제출 정보', 'Submission Info')}</h3>
+                    <dl className="space-y-2">
+                      <div>
+                        <dt className="text-sm text-gray-500 dark:text-gray-400">ID</dt>
+                        <dd className="font-mono text-sm">{selectedSubmission.id}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500 dark:text-gray-400">{t('제출일', 'Submitted')}</dt>
+                        <dd className="text-sm">{new Date(selectedSubmission.createdAt).toLocaleString()}</dd>
+                      </div>
+                      <div>
+                        <dt className="text-sm text-gray-500 dark:text-gray-400">{t('마지막 수정', 'Last Updated')}</dt>
+                        <dd className="text-sm">{new Date(selectedSubmission.updatedAt).toLocaleString()}</dd>
+                      </div>
+                    </dl>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <h3 className="font-semibold mb-3">{t('검증 상태', 'Validation Status')}</h3>
+                    <ul className="space-y-2">
+                      <li className="flex items-center gap-2 text-sm">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        {t('메타데이터 완료', 'Metadata Complete')}
+                      </li>
+                      <li className="flex items-center gap-2 text-sm">
+                        {selectedSubmission.files?.coverImageUrl ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-yellow-500" />
+                        )}
+                        {t('커버 아트', 'Cover Art')}
+                      </li>
+                      <li className="flex items-center gap-2 text-sm">
+                        {selectedSubmission.files?.audioFiles?.length === selectedSubmission.tracks?.length ? (
+                          <CheckCircle className="w-4 h-4 text-green-500" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 text-yellow-500" />
+                        )}
+                        {t('오디오 파일', 'Audio Files')}
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'history' && (
+              <div className="space-y-4">
+                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('이력 기능은 곧 추가됩니다', 'History feature coming soon')}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            {selectedSubmission.status === 'pending' && (
+              <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-4">
+                  <input
+                    type="text"
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    placeholder={t('관리자 노트 (선택사항)', 'Admin notes (optional)')}
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 dark:text-white"
+                  />
+                  <button
+                    onClick={() => handleStatusUpdate(selectedSubmission.id, 'approved')}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <Check className="w-5 h-5" />
+                    {t('승인', 'Approve')}
+                  </button>
+                  <button
+                    onClick={() => handleStatusUpdate(selectedSubmission.id, 'rejected')}
+                    className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                    {t('거절', 'Reject')}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default SubmissionManagement
