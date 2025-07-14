@@ -22,6 +22,16 @@ import { instrumentList, searchInstruments, getInstrumentCategory } from '@/cons
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import AudioPlayer from '@/components/AudioPlayer'
 import RegionSelector from '@/components/RegionSelector'
+import MultiSelect from '@/components/ui/MultiSelect'
+import { 
+  moodOptions, 
+  genderOptions, 
+  socialMovementOptions, 
+  ugcPriorityOptions, 
+  instrumentOptions,
+  subgenreOptions 
+} from '@/constants/marketingOptions'
+import { countries } from '@/constants/countries'
 
 // Types
 interface Translation {
@@ -190,6 +200,15 @@ export default function ReleaseSubmission() {
     preOrderDate: '',
     
     // Step 6: Marketing Info
+    privateListeningLink: '',
+    mainGenre: '',
+    moods: [] as string[],
+    youtubeShortsPreviews: false,
+    thisIsPlaylist: false,
+    dolbyAtmosSpatialAudio: false,
+    motionArtwork: false,
+    soundtrackScore: '',
+    instruments: [] as string[],
     marketingGenre: '',
     marketingSubgenre: '',
     marketingTags: [] as string[],
@@ -197,6 +216,38 @@ export default function ReleaseSubmission() {
     marketingAngle: '',
     pressRelease: '',
     marketingBudget: '',
+    marketingDrivers: '',
+    socialMediaPoliticalPlan: '',
+    // Artist Profile fields
+    artistCurrentCity: '',
+    artistHometown: '',
+    artistGender: '',
+    socialMovements: [] as string[],
+    artistBio: '',
+    artistSyncHistory: '',
+    artistSyncHistoryDetails: '',
+    spotifyArtistId: '',
+    appleMusicArtistId: '',
+    soundcloudArtistId: '',
+    ugcPriorities: [] as string[],
+    youtubeUrl: '',
+    tiktokUrl: '',
+    facebookUrl: '',
+    instagramUrl: '',
+    twitterUrl: '',
+    trillerUrl: '',
+    snapchatUrl: '',
+    twitchUrl: '',
+    pinterestUrl: '',
+    tumblrUrl: '',
+    // Artist images
+    artistImageFile: null as File | null,
+    artistLogoFile: null as File | null,
+    pressShotUrl: '',
+    pressShotCredits: '',
+    tourdatesUrl: '',
+    artistCountry: '',
+    subgenres: [] as string[],
     socialMediaCampaign: '',
     spotifyPitching: '',
     appleMusicPitching: '',
@@ -616,7 +667,7 @@ export default function ReleaseSubmission() {
   // Step 0: Artist Info
   const renderArtistInfo = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Users className="w-5 h-5" />
           {t('아티스트 정보', 'Artist Information')}
@@ -811,7 +862,7 @@ export default function ReleaseSubmission() {
   // Step 1: Album Basic Info
   const renderAlbumBasicInfo = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <FileText className="w-5 h-5" />
           {t('앨범 기본 정보', 'Album Basic Information')}
@@ -951,7 +1002,7 @@ export default function ReleaseSubmission() {
   // Step 2: Track Info
   const renderTrackInfo = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold flex items-center gap-2">
             <Music className="w-5 h-5" />
@@ -1183,7 +1234,7 @@ export default function ReleaseSubmission() {
   // Step 3: Contributors
   const renderContributors = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <UserCheck className="w-5 h-5" />
           {t('기여자 정보', 'Contributor Information')}
@@ -1364,7 +1415,7 @@ export default function ReleaseSubmission() {
   // Step 4: Album Details
   const renderAlbumDetails = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Image className="w-5 h-5" />
           {t('앨범 상세 정보', 'Album Details')}
@@ -1523,7 +1574,7 @@ export default function ReleaseSubmission() {
   // Step 5: Release Settings
   const renderReleaseSettings = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5" />
           {t('릴리즈 설정', 'Release Settings')}
@@ -1596,23 +1647,42 @@ export default function ReleaseSubmission() {
   // Step 6: Marketing Info
   const renderMarketingInfo = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Megaphone className="w-5 h-5" />
           {t('마케팅 정보', 'Marketing Information')}
         </h3>
 
         <div className="space-y-6">
-          {/* Genre & Tags */}
+          {/* Private Listening Link */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('프라이빗 리스닝 링크', 'Private Listening Link')} *
+            </label>
+            <input
+              type="url"
+              value={formData.privateListeningLink || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, privateListeningLink: e.target.value }))}
+              className="input"
+              placeholder={t('프라이빗 스트리밍 링크 입력', 'Enter private streaming link')}
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {t('릴리즈 전 음원을 들을 수 있는 프라이빗 링크', 'Private link to listen to the release before launch')}
+            </p>
+          </div>
+
+          {/* Main Genre */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">
-                {t('마케팅 장르', 'Marketing Genre')}
+                {t('메인 장르', 'Main Genre')} *
               </label>
               <select
-                value={formData.marketingGenre}
-                onChange={(e) => setFormData(prev => ({ ...prev, marketingGenre: e.target.value }))}
+                value={formData.mainGenre || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, mainGenre: e.target.value }))}
                 className="input"
+                required
               >
                 <option value="">{t('장르 선택', 'Select genre')}</option>
                 {genreOptions.map(genre => (
@@ -1621,144 +1691,342 @@ export default function ReleaseSubmission() {
               </select>
             </div>
 
+            {/* Mood(s) */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                {t('서브 장르', 'Sub-genre')}
+                {t('분위기', 'Mood(s)')}
+              </label>
+              <MultiSelect
+                options={moodOptions}
+                value={formData.moods}
+                onChange={(value) => setFormData(prev => ({ ...prev, moods: value }))}
+                placeholder={t('분위기 선택 (최대 3개)', 'Select moods (max 3)')}
+                max={3}
+              />
+            </div>
+          </div>
+
+          {/* YouTube Shorts & This Is Playlist */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                {t('YouTube Shorts 프리뷰', 'YouTube Shorts Previews')}
+                <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">
+                  {formData.youtubeShortsPreviews ? 'Yes' : 'No'}
+                </span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, youtubeShortsPreviews: !prev.youtubeShortsPreviews }))}
+                className={`w-full py-2 rounded-lg transition-colors ${
+                  formData.youtubeShortsPreviews 
+                    ? 'bg-purple-500 text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                }`}
+              >
+                {formData.youtubeShortsPreviews ? t('활성화됨', 'Enabled') : t('비활성화됨', 'Disabled')}
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                {t('"This Is" 플레이리스트', '"This Is" Playlist')}
+                <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">
+                  {formData.thisIsPlaylist ? 'Yes' : 'No'}
+                </span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, thisIsPlaylist: !prev.thisIsPlaylist }))}
+                className={`w-full py-2 rounded-lg transition-colors ${
+                  formData.thisIsPlaylist 
+                    ? 'bg-purple-500 text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                }`}
+              >
+                {formData.thisIsPlaylist ? t('포함', 'Include') : t('미포함', 'Exclude')}
+              </button>
+            </div>
+          </div>
+
+          {/* Dolby Atmos & Motion Artwork */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                {t('Dolby Atmos 공간 음향', 'Dolby Atmos Spatial Audio')}
+                <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">
+                  {formData.dolbyAtmosSpatialAudio ? 'Yes' : 'No'}
+                </span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, dolbyAtmosSpatialAudio: !prev.dolbyAtmosSpatialAudio }))}
+                className={`w-full py-2 rounded-lg transition-colors ${
+                  formData.dolbyAtmosSpatialAudio 
+                    ? 'bg-purple-500 text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                }`}
+              >
+                {formData.dolbyAtmosSpatialAudio ? t('지원', 'Supported') : t('미지원', 'Not Supported')}
+              </button>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1 flex items-center gap-2">
+                {t('모션 아트워크', 'Motion Artwork')}
+                <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">
+                  {formData.motionArtwork ? 'Yes' : 'No'}
+                </span>
+              </label>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, motionArtwork: !prev.motionArtwork }))}
+                className={`w-full py-2 rounded-lg transition-colors ${
+                  formData.motionArtwork 
+                    ? 'bg-purple-500 text-white' 
+                    : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                }`}
+              >
+                {formData.motionArtwork ? t('있음', 'Available') : t('없음', 'Not Available')}
+              </button>
+            </div>
+          </div>
+
+          {/* Soundtrack/Score */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('사운드트랙/스코어 정보', 'Soundtrack/Score Information')}
+            </label>
+            <textarea
+              value={formData.soundtrackScore || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, soundtrackScore: e.target.value }))}
+              className="input min-h-[80px]"
+              placeholder={t('영화, TV, 게임 등의 사운드트랙 정보', 'Information about movie, TV, game soundtracks')}
+            />
+          </div>
+
+          {/* Instruments */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('사용된 악기', 'Instruments Used')}
+            </label>
+            <MultiSelect
+              options={instrumentOptions}
+              value={formData.instruments}
+              onChange={(value) => setFormData(prev => ({ ...prev, instruments: value }))}
+              placeholder={t('악기 선택', 'Select instruments')}
+            />
+          </div>
+
+          {/* Subgenres */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('서브장르', 'Subgenre(s)')}
+            </label>
+            <MultiSelect
+              options={subgenreOptions}
+              value={formData.subgenres}
+              onChange={(value) => setFormData(prev => ({ ...prev, subgenres: value }))}
+              placeholder={t('서브장르 선택', 'Select subgenres')}
+            />
+          </div>
+
+          {/* Marketing Spend & Drivers */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('마케팅 예산', 'Marketing Spend')}
               </label>
               <input
                 type="text"
-                value={formData.marketingSubgenre}
-                onChange={(e) => setFormData(prev => ({ ...prev, marketingSubgenre: e.target.value }))}
+                value={formData.marketingBudget || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, marketingBudget: e.target.value }))}
                 className="input"
-                placeholder={t('서브 장르 입력', 'Enter sub-genre')}
+                placeholder={t('예: $10,000 USD', 'e.g., $10,000 USD')}
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-1">
-              {t('마케팅 태그', 'Marketing Tags')}
-            </label>
-            <div className="flex items-center gap-2 mb-2">
+            <div>
+              <label className="block text-sm font-medium mb-1">
+                {t('마케팅 드라이버', 'Marketing Drivers')}
+              </label>
               <input
                 type="text"
-                className="input flex-1"
-                placeholder={t('태그 입력 후 Enter', 'Enter tag and press Enter')}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && e.currentTarget.value) {
-                    setFormData(prev => ({
-                      ...prev,
-                      marketingTags: [...prev.marketingTags, e.currentTarget.value]
-                    }))
-                    e.currentTarget.value = ''
-                  }
-                }}
+                value={formData.marketingDrivers || ''}
+                onChange={(e) => setFormData(prev => ({ ...prev, marketingDrivers: e.target.value }))}
+                className="input"
+                placeholder={t('예: Radio, Playlist, Social Media', 'e.g., Radio, Playlist, Social Media')}
               />
             </div>
-            <div className="flex flex-wrap gap-2">
-              {formData.marketingTags.map((tag, index) => (
-                <span
-                  key={index}
-                  className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
-                >
-                  {tag}
-                  <button
-                    onClick={() => setFormData(prev => ({
-                      ...prev,
-                      marketingTags: prev.marketingTags.filter((_, i) => i !== index)
-                    }))}
-                    className="hover:text-purple-100"
+          </div>
+
+          {/* Social Media/Political Plan */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('소셜 미디어/정치적 계획', 'Social Media/Political Plan')}
+            </label>
+            <textarea
+              value={formData.socialMediaPoliticalPlan || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, socialMediaPoliticalPlan: e.target.value }))}
+              className="input min-h-[100px]"
+              placeholder={t('소셜 미디어 캠페인 및 관련 전략 설명', 'Describe social media campaigns and related strategies')}
+            />
+          </div>
+
+          {/* Artist Profile for Marketing */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              {t('아티스트 프로필', 'Artist Profile')}
+            </h4>
+
+            <div className="space-y-4">
+              {/* Artist Basic Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t('아티스트 국가', "Artist's Country")} *
+                  </label>
+                  <select
+                    value={formData.artistCountry || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, artistCountry: e.target.value }))}
+                    className="input"
+                    required
                   >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Social Media Strategy */}
-          <div>
-            <h4 className="font-medium mb-3 flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              {t('소셜 미디어 전략', 'Social Media Strategy')}
-            </h4>
-            
-            <div className="space-y-3">
-              <div>
-                <label className="block text-sm font-medium mb-1">Spotify {t('피칭', 'Pitching')}</label>
-                <textarea
-                  value={formData.spotifyPitching}
-                  onChange={(e) => setFormData(prev => ({ ...prev, spotifyPitching: e.target.value }))}
-                  className="input min-h-[80px]"
-                  placeholder={t('Spotify 플레이리스트 피칭 전략', 'Spotify playlist pitching strategy')}
-                />
+                    <option value="">{t('국가 선택', 'Select country')}</option>
+                    {countries.map(country => (
+                      <option key={country.code} value={country.name}>
+                        {country.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t('아티스트 성별', 'Artist Gender')}
+                  </label>
+                  <select
+                    value={formData.artistGender || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, artistGender: e.target.value }))}
+                    className="input"
+                  >
+                    <option value="">{t('선택', 'Select')}</option>
+                    {genderOptions.map(gender => (
+                      <option key={gender} value={gender}>{gender}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Apple Music {t('피칭', 'Pitching')}</label>
-                <textarea
-                  value={formData.appleMusicPitching}
-                  onChange={(e) => setFormData(prev => ({ ...prev, appleMusicPitching: e.target.value }))}
-                  className="input min-h-[80px]"
-                  placeholder={t('Apple Music 피칭 전략', 'Apple Music pitching strategy')}
-                />
+              {/* Artist Location Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t('현재 거주 도시', "Artist's Current City")}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.artistCurrentCity || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, artistCurrentCity: e.target.value }))}
+                    className="input"
+                    placeholder={t('예: Seoul, Los Angeles', 'e.g., Seoul, Los Angeles')}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t('고향', "Artist's Hometown")}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.artistHometown || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, artistHometown: e.target.value }))}
+                    className="input"
+                    placeholder={t('예: Busan, Tokyo', 'e.g., Busan, Tokyo')}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">TikTok {t('전략', 'Strategy')}</label>
-                <textarea
-                  value={formData.tiktokStrategy}
-                  onChange={(e) => setFormData(prev => ({ ...prev, tiktokStrategy: e.target.value }))}
-                  className="input min-h-[80px]"
-                  placeholder={t('TikTok 마케팅 전략', 'TikTok marketing strategy')}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">YouTube {t('전략', 'Strategy')}</label>
-                <textarea
-                  value={formData.youtubeStrategy}
-                  onChange={(e) => setFormData(prev => ({ ...prev, youtubeStrategy: e.target.value }))}
-                  className="input min-h-[80px]"
-                  placeholder={t('YouTube 마케팅 전략', 'YouTube marketing strategy')}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium mb-1">Instagram {t('전략', 'Strategy')}</label>
-                <textarea
-                  value={formData.instagramStrategy}
-                  onChange={(e) => setFormData(prev => ({ ...prev, instagramStrategy: e.target.value }))}
-                  className="input min-h-[80px]"
-                  placeholder={t('Instagram 마케팅 전략', 'Instagram marketing strategy')}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Additional Marketing Fields */}
-          <div>
-            <h4 className="font-medium mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4" />
-              {t('추가 마케팅 정보', 'Additional Marketing Info')}
-            </h4>
-
-            <div className="space-y-3">
+              {/* Artist Gender */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('마케팅 앵글', 'Marketing Angle')}
+                  {t('아티스트 성별', 'Artist Gender')}
+                </label>
+                <select
+                  value={formData.artistGender || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, artistGender: e.target.value }))}
+                  className="input"
+                >
+                  <option value="">{t('선택하세요', 'Select')}</option>
+                  <option value="male">{t('남성', 'Male')}</option>
+                  <option value="female">{t('여성', 'Female')}</option>
+                  <option value="mixed-band">{t('혼성 밴드', 'Mixed (band)')}</option>
+                  <option value="non-binary">{t('논바이너리', 'Non-Binary')}</option>
+                  <option value="trans">{t('트랜스젠더', 'Trans')}</option>
+                  <option value="prefer-not-to-say">{t('밝히고 싶지 않음', 'Prefer Not To Say')}</option>
+                  <option value="other">{t('기타', 'Other')}</option>
+                </select>
+              </div>
+
+              {/* Social Movements */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('사회 운동 / 인식 개선', 'Social Movements / Awareness-Raising')}
+                </label>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                  {[
+                    { value: 'aapi', label: 'AAPI' },
+                    { value: 'blm', label: 'Black History Month / BLM' },
+                    { value: 'climate', label: 'Climate Action' },
+                    { value: 'democracy', label: 'Democracy & Peace' },
+                    { value: 'gender-equality', label: 'Gender Equality' },
+                    { value: 'lgbtq', label: 'LGBTQ+ Rights' },
+                    { value: 'mental-health', label: 'Mental Health' },
+                    { value: 'indigenous', label: 'Indigenous Heritage' },
+                    { value: 'humanitarian', label: 'Humanitarian Aid' }
+                  ].map(movement => (
+                    <label key={movement.value} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.socialMovements?.includes(movement.value) || false}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setFormData(prev => ({
+                              ...prev,
+                              socialMovements: [...(prev.socialMovements || []), movement.value]
+                            }))
+                          } else {
+                            setFormData(prev => ({
+                              ...prev,
+                              socialMovements: (prev.socialMovements || []).filter(m => m !== movement.value)
+                            }))
+                          }
+                        }}
+                        className="rounded text-purple-500"
+                      />
+                      <span className="text-sm">{movement.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Artist Bio */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('아티스트 바이오', 'Artist Bio')}
                 </label>
                 <textarea
-                  value={formData.marketingAngle}
-                  onChange={(e) => setFormData(prev => ({ ...prev, marketingAngle: e.target.value }))}
-                  className="input min-h-[80px]"
-                  placeholder={t('주요 마케팅 포인트', 'Key marketing points')}
+                  value={formData.artistBio || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, artistBio: e.target.value }))}
+                  className="input min-h-[120px]"
+                  placeholder={t('아티스트 소개 및 배경 정보', 'Artist introduction and background information')}
                 />
               </div>
 
+              {/* Similar Artists */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('유사 아티스트', 'Similar Artists')}
+                  {t('유사 아티스트 (사운드)', 'Similar Artists (Sounds Like)')}
                 </label>
                 <input
                   type="text"
@@ -1795,6 +2063,256 @@ export default function ReleaseSubmission() {
                 </div>
               </div>
 
+              {/* Sync History */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">
+                    {t('싱크 히스토리 여부', 'Artist Sync History Y/N')}
+                  </label>
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="syncHistory"
+                        value="yes"
+                        checked={formData.artistSyncHistory === 'yes'}
+                        onChange={(e) => setFormData(prev => ({ ...prev, artistSyncHistory: e.target.value }))}
+                        className="text-purple-500"
+                      />
+                      <span>{t('예', 'Yes')}</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        name="syncHistory"
+                        value="no"
+                        checked={formData.artistSyncHistory === 'no'}
+                        onChange={(e) => setFormData(prev => ({ ...prev, artistSyncHistory: e.target.value }))}
+                        className="text-purple-500"
+                      />
+                      <span>{t('아니오', 'No')}</span>
+                    </label>
+                  </div>
+                </div>
+
+                {formData.artistSyncHistory === 'yes' && (
+                  <div>
+                    <label className="block text-sm font-medium mb-1">
+                      {t('싱크 히스토리 상세', 'Artist Sync History Details')}
+                    </label>
+                    <textarea
+                      value={formData.artistSyncHistoryDetails || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, artistSyncHistoryDetails: e.target.value }))}
+                      className="input min-h-[60px]"
+                      placeholder={t('싱크 사용 이력 설명', 'Describe sync usage history')}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* DSP Artist Profile IDs */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Music className="w-4 h-4" />
+              {t('DSP 아티스트 프로필 ID', 'DSP Artist Profile IDs')}
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Spotify Identifier (URI)
+                </label>
+                <input
+                  type="text"
+                  value={formData.spotifyArtistId || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, spotifyArtistId: e.target.value }))}
+                  className="input"
+                  placeholder="spotify:artist:..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Apple Music Artist ID
+                </label>
+                <input
+                  type="text"
+                  value={formData.appleMusicArtistId || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, appleMusicArtistId: e.target.value }))}
+                  className="input"
+                  placeholder="123456789"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  SoundCloud Artist ID
+                </label>
+                <input
+                  type="text"
+                  value={formData.soundcloudArtistId || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, soundcloudArtistId: e.target.value }))}
+                  className="input"
+                  placeholder="artist-name"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Social Media & UGC Details */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <LinkIcon className="w-4 h-4" />
+              {t('소셜 미디어 & UGC 상세', 'Social Media & UGC Details')}
+            </h4>
+
+            <div className="space-y-4">
+              {/* UGC Priorities */}
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('UGC / 소셜 DSP 우선순위', "Artist's UGC / Social DSP Priorities")}
+                </label>
+                <MultiSelect
+                  options={ugcPriorityOptions}
+                  value={formData.ugcPriorities}
+                  onChange={(value) => setFormData(prev => ({ ...prev, ugcPriorities: value }))}
+                  placeholder={t('플랫폼 선택', 'Select platforms')}
+                />
+              </div>
+
+              {/* Social Media URLs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">YouTube URL</label>
+                  <input
+                    type="url"
+                    value={formData.youtubeUrl || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, youtubeUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://www.youtube.com/channel/..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">TikTok URL</label>
+                  <input
+                    type="url"
+                    value={formData.tiktokUrl || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, tiktokUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://www.tiktok.com/@..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Facebook URL</label>
+                  <input
+                    type="url"
+                    value={formData.facebookUrl || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, facebookUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://www.facebook.com/..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Instagram URL</label>
+                  <input
+                    type="url"
+                    value={formData.instagramUrl || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, instagramUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://www.instagram.com/..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">X/Twitter URL</label>
+                  <input
+                    type="url"
+                    value={formData.twitterUrl || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, twitterUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://x.com/..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-1">Triller URL</label>
+                  <input
+                    type="url"
+                    value={formData.trillerUrl || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, trillerUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://triller.co/@..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Snapchat URL</label>
+                  <input
+                    type="url"
+                    value={formData.snapchatUrl || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, snapchatUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://snapchat.com/add/..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Twitch URL</label>
+                  <input
+                    type="url"
+                    value={formData.twitchUrl || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, twitchUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://twitch.tv/..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Pinterest URL</label>
+                  <input
+                    type="url"
+                    value={formData.pinterestUrl || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, pinterestUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://pinterest.com/..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tumblr URL</label>
+                  <input
+                    type="url"
+                    value={formData.tumblrUrl || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, tumblrUrl: e.target.value }))}
+                    className="input"
+                    placeholder="https://tumblr.com/..."
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Marketing Fields */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Sparkles className="w-4 h-4" />
+              {t('추가 마케팅 정보', 'Additional Marketing Info')}
+            </h4>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('마케팅 앵글', 'Marketing Angle')}
+                </label>
+                <textarea
+                  value={formData.marketingAngle}
+                  onChange={(e) => setFormData(prev => ({ ...prev, marketingAngle: e.target.value }))}
+                  className="input min-h-[80px]"
+                  placeholder={t('주요 마케팅 포인트', 'Key marketing points')}
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-1">
                   {t('뮤직비디오 계획', 'Music Video Plans')}
@@ -1828,7 +2346,7 @@ export default function ReleaseSubmission() {
   // Step 7: Distribution
   const renderDistribution = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Globe className="w-5 h-5" />
           {t('배포 설정', 'Distribution Settings')}
@@ -1972,7 +2490,7 @@ export default function ReleaseSubmission() {
   // Step 8: Rights & Legal
   const renderRightsLegal = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Shield className="w-5 h-5" />
           {t('권리 및 법적 사항', 'Rights & Legal')}
@@ -2062,7 +2580,7 @@ export default function ReleaseSubmission() {
   // Step 9: Review & QC
   const renderReviewQC = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <CheckCircle className="w-5 h-5" />
           {t('검토 및 품질 확인', 'Review & Quality Check')}
@@ -2137,7 +2655,7 @@ export default function ReleaseSubmission() {
   // Step 10: File Upload
   const renderFileUpload = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Upload className="w-5 h-5" />
           {t('파일 업로드', 'File Upload')}
@@ -2245,7 +2763,7 @@ export default function ReleaseSubmission() {
   // Step 11: Final Submission
   const renderFinalSubmission = () => (
     <div className="space-y-6">
-      <div className="bg-glass-light dark:bg-glass-dark backdrop-blur-md rounded-xl p-6 border border-glass-lighter dark:border-glass-darker">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <CheckCircle className="w-5 h-5" />
           {t('최종 제출', 'Final Submission')}
