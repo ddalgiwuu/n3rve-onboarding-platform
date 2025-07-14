@@ -6,11 +6,12 @@ npm run type-check: Verify types
 
 ## 📊 Current Platform Status
 
-### 🚀 Production Deployment (v1.3.8)
+### 🚀 Production Deployment (Latest)
 - **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com
-- **Latest Commit**: 502b2c62 (Auth debugging and OAuth URL fixes)
+- **Latest Commit**: 86db752 (Add additional safety checks for undefined errors)
 - **Deployment Date**: 2025-07-14
 - **Status**: ✅ LIVE and Running
+- **GitHub Actions**: ✅ Auto-deployment enabled
 
 ### 🏗️ Major Features Deployed
 1. **JSON-based FUGA QC Management System** 
@@ -210,15 +211,22 @@ When simulation is absolutely necessary, I will always ask for permission first 
   - Public DNS: `ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com`
   - Connection Command: `ssh -i "N3RVE_AWS.pem" ubuntu@ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com`
 
-### 🚀 Automated Deployment Process
-1. **Local Development**: Code changes in working directory
-2. **Version Control**: Automatic Git tagging (v1.3.x)
-3. **GitHub Sync**: Push to `main` branch
-4. **EC2 Deployment**: Automated via `./scripts/deploy.sh`
-   - Pulls latest code
-   - Rebuilds Docker containers  
-   - Zero-downtime deployment
-5. **Platform Compatibility**: Multi-arch builds (linux/amd64)
+### 🚀 Automated Deployment Process (GitHub Actions)
+#### 자동 배포 (권장)
+1. **Local Development**: 코드 수정 및 테스트
+2. **Git Commit**: `git add .` → `git commit -m "commit message"`
+3. **GitHub Push**: `git push origin main`
+4. **자동 실행**: GitHub Actions가 자동으로:
+   - Docker 이미지 빌드 (linux/amd64)
+   - Docker Hub 푸시 (ddalgiwuu/n3rve-platform)
+   - EC2 자동 배포 (컨테이너 재시작)
+   - 상태: Actions 탭에서 확인 가능
+
+#### 수동 배포 (필요시)
+1. **Docker Desktop 실행 필요**
+2. **배포 스크립트**: `./scripts/deploy.sh`
+3. **버전 입력**: v1.3.x 형식으로 입력
+4. **자동 처리**: 빌드, 푸시, 배포 전체 과정
 
 ### 📋 Key Management Tasks
 - **QC Rules**: Update JSON files in `/fuga-qc-config/`
