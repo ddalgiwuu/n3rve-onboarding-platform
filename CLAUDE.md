@@ -10,7 +10,7 @@ npm run type-check: Verify types
 - **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com  
 - **EC2 Instance ID**: i-0fd6de9be4fa199a9
 - **Docker Hub**: ddalgiwuu/n3rve-platform:latest
-- **Latest Version**: v1.3.20
+- **Latest Version**: v1.3.21
 - **Deployment Date**: 2025-07-14
 - **Status**: ✅ LIVE and Running
 - **GitHub Actions**: ✅ Auto-deployment enabled
@@ -50,7 +50,14 @@ npm run type-check: Verify types
    - Fixed useTranslation hook usage in QCWarnings component
    - This completely resolves React error #321 and hydration mismatches
 
-4. **Infrastructure Fixes**
+4. **Complete Hydration Solution (v1.3.21)**
+   - Created `useHydration` hook to check store hydration status
+   - Updated ReleaseSubmissionNew to wait for hydration before rendering
+   - Added LoadingSpinner during hydration phase
+   - **Root Cause**: Components were trying to render before store data loaded from localStorage
+   - **Solution**: Prevent rendering until all stores are fully hydrated
+
+5. **Infrastructure Fixes**
    - Nginx proxy port correction: 5001 → 3001
    - MongoDB Atlas migration (no local MongoDB)
    - docker-compose.prod.yml for production deployments
