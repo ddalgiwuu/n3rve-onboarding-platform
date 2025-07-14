@@ -340,12 +340,12 @@ export default function ReleaseSubmissionNew() {
     if (field === 'albumTitle') {
       setFormData(prev => ({
         ...prev,
-        albumTranslations: [...prev.albumTranslations, newTranslation]
+        albumTranslations: [...(prev.albumTranslations || []), newTranslation]
       }))
     } else if (field === 'albumDescription') {
       setFormData(prev => ({
         ...prev,
-        albumDescriptionTranslations: [...prev.albumDescriptionTranslations, newTranslation]
+        albumDescriptionTranslations: [...(prev.albumDescriptionTranslations || []), newTranslation]
       }))
     } else if (field === 'track' && parentId) {
       setFormData(prev => ({
@@ -424,7 +424,7 @@ export default function ReleaseSubmissionNew() {
       customIdentifiers: [],
       role: 'main'
     }
-    setFormData(prev => ({ ...prev, artists: [...prev.artists, newArtist] }))
+    setFormData(prev => ({ ...prev, artists: [...(prev.artists || []), newArtist] }))
   }
 
   const updateArtist = (id: string, updates: Partial<Artist>) => {
@@ -439,7 +439,7 @@ export default function ReleaseSubmissionNew() {
   const removeArtist = (id: string) => {
     setFormData(prev => ({
       ...prev,
-      artists: prev.artists.filter(artist => artist.id !== id)
+      artists: (prev.artists || []).filter(artist => artist.id !== id)
     }))
   }
 
@@ -449,7 +449,7 @@ export default function ReleaseSubmissionNew() {
       id: uuidv4(),
       title: '',
       translations: [],
-      artists: [...formData.artists],
+      artists: [...(formData.artists || [])],
       featuringArtists: [],
       contributors: [],
       isTitle: formData.tracks.length === 0,
@@ -461,7 +461,7 @@ export default function ReleaseSubmissionNew() {
       explicitContent: false,
       previewLength: 30
     }
-    setFormData(prev => ({ ...prev, tracks: [...prev.tracks, newTrack] }))
+    setFormData(prev => ({ ...prev, tracks: [...(prev.tracks || []), newTrack] }))
   }
 
   const updateTrack = (id: string, updates: Partial<Track>) => {
@@ -476,7 +476,7 @@ export default function ReleaseSubmissionNew() {
   const removeTrack = (id: string) => {
     setFormData(prev => ({
       ...prev,
-      tracks: prev.tracks.filter(track => track.id !== id)
+      tracks: (prev.tracks || []).filter(track => track.id !== id)
     }))
   }
 
@@ -1262,7 +1262,7 @@ export default function ReleaseSubmissionNew() {
                   if (e.key === 'Enter' && e.currentTarget.value) {
                     setFormData(prev => ({
                       ...prev,
-                      marketingTags: [...prev.marketingTags, e.currentTarget.value]
+                      marketingTags: [...(prev.marketingTags || []), e.currentTarget.value]
                     }))
                     e.currentTarget.value = ''
                   }
@@ -1279,7 +1279,7 @@ export default function ReleaseSubmissionNew() {
                   <button
                     onClick={() => setFormData(prev => ({
                       ...prev,
-                      marketingTags: prev.marketingTags.filter((_, i) => i !== index)
+                      marketingTags: (prev.marketingTags || []).filter((_, i) => i !== index)
                     }))}
                     className="hover:text-purple-800 dark:hover:text-purple-100"
                   >
@@ -1323,7 +1323,7 @@ export default function ReleaseSubmissionNew() {
             <Checkbox
               key={key}
               id={`platform-${key}`}
-              checked={formData.distributionPlatforms[key as keyof typeof formData.distributionPlatforms] as boolean}
+              checked={(formData.distributionPlatforms && formData.distributionPlatforms[key as keyof typeof formData.distributionPlatforms]) as boolean || false}
               onChange={(e) => setFormData(prev => ({
                 ...prev,
                 distributionPlatforms: {
@@ -1418,7 +1418,7 @@ export default function ReleaseSubmissionNew() {
                   if (e.key === 'Enter' && e.currentTarget.value) {
                     setFormData(prev => ({
                       ...prev,
-                      similarArtists: [...prev.similarArtists, e.currentTarget.value]
+                      similarArtists: [...(prev.similarArtists || []), e.currentTarget.value]
                     }))
                     e.currentTarget.value = ''
                   }
@@ -1435,7 +1435,7 @@ export default function ReleaseSubmissionNew() {
                   <button
                     onClick={() => setFormData(prev => ({
                       ...prev,
-                      similarArtists: prev.similarArtists.filter((_, i) => i !== index)
+                      similarArtists: (prev.similarArtists || []).filter((_, i) => i !== index)
                     }))}
                     className="hover:text-blue-800 dark:hover:text-blue-100"
                   >
