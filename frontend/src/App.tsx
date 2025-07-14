@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Suspense, lazy, useEffect } from 'react'
 import { useAuthStore } from './store/auth.store'
+import { useLanguageStore } from './store/language.store'
 import Layout from './components/layout/Layout'
 import LoadingSpinner from './components/common/LoadingSpinner'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -30,8 +31,13 @@ function App() {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
   const userRole = useAuthStore(state => state.user?.role)
 
-  // Initialize dark mode on app load (for pages without Header/DarkModeToggle)
+  // Initialize stores and dark mode on app load
   useEffect(() => {
+    // Manually hydrate stores to prevent React 18 SSR issues
+    useAuthStore.persist.rehydrate()
+    useLanguageStore.persist.rehydrate()
+    
+    // Initialize dark mode
     const theme = localStorage.getItem('theme')
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
     

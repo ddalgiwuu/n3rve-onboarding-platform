@@ -10,7 +10,7 @@ npm run type-check: Verify types
 - **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com  
 - **EC2 Instance ID**: i-0fd6de9be4fa199a9
 - **Docker Hub**: ddalgiwuu/n3rve-platform:latest
-- **Latest Version**: v1.3.19
+- **Latest Version**: v1.3.20
 - **Deployment Date**: 2025-07-14
 - **Status**: ✅ LIVE and Running
 - **GitHub Actions**: ✅ Auto-deployment enabled
@@ -44,7 +44,13 @@ npm run type-check: Verify types
    - This prevents React 18 hydration issues with zustand v5
    - Fixed TypeScript import errors in ErrorBoundary component
 
-3. **Infrastructure Fixes**
+3. **Zustand Hydration Fix (v1.3.20)**
+   - Added `skipHydration: true` to both language and auth stores
+   - Implemented manual hydration in App.tsx to prevent SSR-like issues
+   - Fixed useTranslation hook usage in QCWarnings component
+   - This completely resolves React error #321 and hydration mismatches
+
+4. **Infrastructure Fixes**
    - Nginx proxy port correction: 5001 → 3001
    - MongoDB Atlas migration (no local MongoDB)
    - docker-compose.prod.yml for production deployments

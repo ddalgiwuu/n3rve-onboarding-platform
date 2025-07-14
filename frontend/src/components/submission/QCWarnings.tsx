@@ -1,5 +1,5 @@
 import { AlertTriangle, AlertCircle, Info, CheckCircle, X, Zap } from 'lucide-react'
-import { useTranslation } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 import type { QCValidationResults, QCValidationResult } from '@/utils/fugaQCValidation'
 import { useState } from 'react'
 import Button from '@/components/ui/Button'
@@ -11,7 +11,31 @@ interface Props {
 }
 
 export default function QCWarnings({ results, onClose, onAutoFix }: Props) {
-  const { t } = useTranslation()
+  const language = useLanguageStore(state => state.language) || 'ko'
+  const t = (key: string, fallback?: string) => {
+    // Simple translation function
+    if (language === 'ko') {
+      const translations: Record<string, string> = {
+        '필드': '필드',
+        '제안': '제안',
+        '자동 수정': '자동 수정',
+        'QC 검증 결과': 'QC 검증 결과',
+        '오류': '오류',
+        '경고': '경고',
+        '정보': '정보',
+        '오류가 없습니다': '오류가 없습니다',
+        '경고가 없습니다': '경고가 없습니다',
+        '정보가 없습니다': '정보가 없습니다',
+        '모든 검증을 통과했습니다': '모든 검증을 통과했습니다',
+        '검증 오류를 수정해주세요': '검증 오류를 수정해주세요',
+        '닫기': '닫기',
+        '통과': '통과',
+        '실패': '실패'
+      }
+      return translations[key] || fallback || key
+    }
+    return fallback || key
+  }
   const [activeTab, setActiveTab] = useState<'errors' | 'warnings' | 'info'>('errors')
 
   const getIcon = (severity: QCValidationResult['severity']) => {
@@ -224,7 +248,18 @@ export default function QCWarnings({ results, onClose, onAutoFix }: Props) {
 
 // QC Status Badge Component
 export function QCStatusBadge({ errors, warnings }: { errors: number; warnings: number }) {
-  const { t } = useTranslation()
+  const language = useLanguageStore(state => state.language) || 'ko'
+  const t = (key: string, fallback?: string) => {
+    if (language === 'ko') {
+      const translations: Record<string, string> = {
+        '통과': '통과',
+        '실패': '실패',
+        '경고': '경고'
+      }
+      return translations[key] || fallback || key
+    }
+    return fallback || key
+  }
   
   if (errors === 0 && warnings === 0) {
     return (
