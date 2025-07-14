@@ -109,6 +109,14 @@ npm run type-check: Verify types
    - **Solution**: Complete form replacement with proven working implementation
    - **Result**: Professional-grade release submission system with all advanced features
 
+12. **Translation Function Fix (v1.3.29)**
+   - Fixed "TypeError: e is not a function" error in ReleaseSubmission.tsx:276
+   - Added inline translation function since t function missing from useLanguageStore
+   - Replaced destructuring from store with direct language access and local t function
+   - **Root Cause**: useLanguageStore doesn't export t function, only language state
+   - **Solution**: const t = (ko: string, en: string) => language === 'ko' ? ko : en
+   - **Location**: /pages/ReleaseSubmission.tsx line 152
+
 8. **Infrastructure Fixes**
    - Nginx proxy port correction: 5001 → 3001
    - MongoDB Atlas migration (no local MongoDB)
