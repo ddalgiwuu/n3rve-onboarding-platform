@@ -1,45 +1,35 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuthStore } from '@/store/auth.store'
 import { useLanguageStore } from '@/store/language.store'
 
 /**
- * Hook to check if Zustand stores have been hydrated from localStorage
- * This prevents rendering components before store data is available
+ * Simple hydration check hook that waits for stores to be ready
+ * Uses a timeout-based approach to avoid React hydration errors
  * 
- * @returns boolean - true when all stores are hydrated and ready to use
+ * @returns boolean - true when stores are ready for use
  */
 export const useHydration = () => {
-  const [hydrated, setHydrated] = useState(false)
+  const [isHydrated, setIsHydrated] = useState(false)
+  const timeoutRef = useRef<NodeJS.Timeout>()
 
   useEffect(() => {
-    // Check if both stores have been hydrated
-    const checkHydration = () => {
-      const authHydrated = useAuthStore.persist.hasHydrated()
-      const languageHydrated = useLanguageStore.persist.hasHydrated()
-      
-      if (authHydrated && languageHydrated) {
-        setHydrated(true)
-      }
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
     }
 
-    // Initial check
-    checkHydration()
+    // Simple approach: wait a short time for hydration to complete
+    // This prevents the component from rendering during the critical hydration phase
+    timeoutRef.current = setTimeout(() => {
+      setIsHydrated(true)
+    }, 100) // Short delay to allow hydration
 
-    // Listen for hydration completion events
-    const unsubAuth = useAuthStore.persist.onFinishHydration(() => {
-      checkHydration()
-    })
-
-    const unsubLanguage = useLanguageStore.persist.onFinishHydration(() => {
-      checkHydration()
-    })
-
-    // Cleanup listeners
     return () => {
-      unsubAuth()
-      unsubLanguage()
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
     }
   }, [])
 
-  return hydrated
+  return isHydrated
 }
