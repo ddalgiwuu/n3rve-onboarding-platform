@@ -7,11 +7,14 @@ npm run type-check: Verify types
 ## 📊 Current Platform Status
 
 ### 🚀 Production Deployment (Latest)
-- **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com
-- **Latest Commit**: 86db752 (Add additional safety checks for undefined errors)
+- **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com  
+- **EC2 Instance ID**: i-0fd6de9be4fa199a9
+- **Docker Hub**: ddalgiwuu/n3rve-platform:latest
+- **Latest Version**: v1.3.17
 - **Deployment Date**: 2025-07-14
 - **Status**: ✅ LIVE and Running
 - **GitHub Actions**: ✅ Auto-deployment enabled
+- **Database**: MongoDB Atlas (Cloud) - 로컬 MongoDB 사용 X
 
 ### 🏗️ Major Features Deployed
 1. **JSON-based FUGA QC Management System** 
@@ -24,6 +27,19 @@ npm run type-check: Verify types
 4. **Admin Dashboard with File Preview**
 5. **Korean/English Bilingual Support**
 6. **Mobile-responsive Design**
+
+### 🐛 Recent Fixes (2025-07-14)
+1. **Map Undefined Error Fix**
+   - Added comprehensive defensive programming in ReleaseSubmissionNew
+   - Used `useMemo` for sections initialization
+   - Added null checks for all array operations
+   - Fixed language store initialization issues
+
+2. **Infrastructure Fixes**
+   - Nginx proxy port correction: 5001 → 3001
+   - MongoDB Atlas migration (no local MongoDB)
+   - docker-compose.prod.yml for production deployments
+   - EC2 SSH connectivity improvements
 
 ### 📁 Reference Implementation
 - **Complete Form**: `/Users/ryansong/Downloads/n3rve-onboarding-platform`
@@ -219,7 +235,7 @@ When simulation is absolutely necessary, I will always ask for permission first 
 4. **자동 실행**: GitHub Actions가 자동으로:
    - Docker 이미지 빌드 (linux/amd64)
    - Docker Hub 푸시 (ddalgiwuu/n3rve-platform)
-   - EC2 자동 배포 (컨테이너 재시작)
+   - EC2 자동 배포 (docker-compose.prod.yml 사용)
    - 상태: Actions 탭에서 확인 가능
 
 #### 수동 배포 (필요시)
@@ -228,8 +244,17 @@ When simulation is absolutely necessary, I will always ask for permission first 
 3. **버전 입력**: v1.3.x 형식으로 입력
 4. **자동 처리**: 빌드, 푸시, 배포 전체 과정
 
+#### 배포 파일 구조
+- `docker-compose.yml`: 로컬 개발용 (MongoDB 포함)
+- `docker-compose.prod.yml`: 프로덕션용 (MongoDB Atlas 사용)
+- `.github/workflows/deploy-docker.yml`: GitHub Actions 워크플로우
+
 ### 📋 Key Management Tasks
 - **QC Rules**: Update JSON files in `/fuga-qc-config/`
-- **Deployment**: Use deployment script for consistency
+- **Deployment**: Use GitHub Actions (자동) or `./scripts/deploy.sh` (수동)
 - **Monitoring**: Check EC2 instance health regularly
 - **Backup**: Dropbox provides automatic file backup
+- **Troubleshooting**:
+  - EC2 SSH timeout: Reboot instance via AWS Console
+  - Map undefined errors: Check browser console, all arrays have defensive checks
+  - MongoDB connection: Ensure MONGODB_URI points to Atlas, not local
