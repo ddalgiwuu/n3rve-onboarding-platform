@@ -291,42 +291,47 @@ export default function ReleaseSubmissionNew() {
 
   // Validation
   useEffect(() => {
-    const dataString = JSON.stringify(formData)
-    if (!isValidatingRef.current && dataString !== lastValidatedDataRef.current) {
-      isValidatingRef.current = true
-      lastValidatedDataRef.current = dataString
-      
-      const validationData = {
-        artist: {
-          nameKo: formData.artists[0]?.primaryName || '',
-          nameEn: (formData.artists[0]?.translations || []).find(t => t.language === 'en')?.text || '',
-          genre: formData.marketingGenre ? [formData.marketingGenre] : []
-        },
-        album: {
-          titleKo: formData.albumTitle,
-          titleEn: (formData.albumTranslations || []).find(t => t.language === 'en')?.text || '',
-          format: formData.albumType,
-          parentalAdvisory: formData.parentalAdvisory
-        },
-        tracks: (formData.tracks || []).map(track => ({
-          titleKo: track.title || '',
-          titleEn: (track.translations || []).find(t => t.language === 'en')?.title || '',
-          featuring: ((track.featuringArtists || []).map(a => a?.primaryName || '').filter(Boolean).join(', ')) || '',
-          isrc: track.isrc || '',
-          trackVersion: track.version || '',
-          lyricsLanguage: track.audioLanguage || 'ko',
-          lyricsExplicit: track.explicitContent || false
-        })),
-        release: {
-          consumerReleaseDate: formData.releaseDate,
-          copyrightYear: formData.copyrightYear,
-          cRights: formData.copyrightOwner,
-          pRights: formData.masterRights
+    try {
+      const dataString = JSON.stringify(formData)
+      if (!isValidatingRef.current && dataString !== lastValidatedDataRef.current) {
+        isValidatingRef.current = true
+        lastValidatedDataRef.current = dataString
+        
+        const validationData = {
+          artist: {
+            nameKo: formData.artists?.[0]?.primaryName || '',
+            nameEn: (formData.artists?.[0]?.translations || []).find(t => t?.language === 'en')?.text || '',
+            genre: formData.marketingGenre ? [formData.marketingGenre] : []
+          },
+          album: {
+            titleKo: formData.albumTitle || '',
+            titleEn: (formData.albumTranslations || []).find(t => t?.language === 'en')?.text || '',
+            format: formData.albumType || 'single',
+            parentalAdvisory: formData.parentalAdvisory || false
+          },
+          tracks: (formData.tracks || []).map(track => ({
+            titleKo: track?.title || '',
+            titleEn: (track?.translations || []).find(t => t?.language === 'en')?.title || '',
+            featuring: ((track?.featuringArtists || []).map(a => a?.primaryName || '').filter(Boolean).join(', ')) || '',
+            isrc: track?.isrc || '',
+            trackVersion: track?.version || '',
+            lyricsLanguage: track?.audioLanguage || 'ko',
+            lyricsExplicit: track?.explicitContent || false
+          })),
+          release: {
+            consumerReleaseDate: formData.releaseDate || '',
+            copyrightYear: formData.copyrightYear || '',
+            cRights: formData.copyrightOwner || '',
+            pRights: formData.masterRights || ''
+          }
         }
-      }
 
-      const results = validateSubmission(validationData)
-      setValidationResults(results)
+        const results = validateSubmission(validationData)
+        setValidationResults(results)
+        isValidatingRef.current = false
+      }
+    } catch (error) {
+      console.error('Validation error:', error)
       isValidatingRef.current = false
     }
   }, [formData])
@@ -357,7 +362,7 @@ export default function ReleaseSubmissionNew() {
       }
       setFormData(prev => ({
         ...prev,
-        tracks: prev.tracks.map(track => 
+        tracks: (prev.tracks || []).map(track => 
           track.id === parentId
             ? { ...track, translations: [...(track.translations || []), trackTranslation] }
             : track
@@ -370,21 +375,21 @@ export default function ReleaseSubmissionNew() {
     if (field === 'albumTitle') {
       setFormData(prev => ({
         ...prev,
-        albumTranslations: prev.albumTranslations.map(t =>
+        albumTranslations: (prev.albumTranslations || []).map(t =>
           t.id === translationId ? { ...t, ...updates } : t
         )
       }))
     } else if (field === 'albumDescription') {
       setFormData(prev => ({
         ...prev,
-        albumDescriptionTranslations: prev.albumDescriptionTranslations.map(t =>
+        albumDescriptionTranslations: (prev.albumDescriptionTranslations || []).map(t =>
           t.id === translationId ? { ...t, ...updates } : t
         )
       }))
     } else if (field === 'track' && parentId) {
       setFormData(prev => ({
         ...prev,
-        tracks: prev.tracks.map(track => 
+        tracks: (prev.tracks || []).map(track => 
           track.id === parentId
             ? {
                 ...track,
@@ -402,17 +407,17 @@ export default function ReleaseSubmissionNew() {
     if (field === 'albumTitle') {
       setFormData(prev => ({
         ...prev,
-        albumTranslations: prev.albumTranslations.filter(t => t.id !== translationId)
+        albumTranslations: (prev.albumTranslations || []).filter(t => t.id !== translationId)
       }))
     } else if (field === 'albumDescription') {
       setFormData(prev => ({
         ...prev,
-        albumDescriptionTranslations: prev.albumDescriptionTranslations.filter(t => t.id !== translationId)
+        albumDescriptionTranslations: (prev.albumDescriptionTranslations || []).filter(t => t.id !== translationId)
       }))
     } else if (field === 'track' && parentId) {
       setFormData(prev => ({
         ...prev,
-        tracks: prev.tracks.map(track => 
+        tracks: (prev.tracks || []).map(track => 
           track.id === parentId
             ? { ...track, translations: (track.translations || []).filter(t => t.id !== translationId) }
             : track
@@ -437,7 +442,7 @@ export default function ReleaseSubmissionNew() {
   const updateArtist = (id: string, updates: Partial<Artist>) => {
     setFormData(prev => ({
       ...prev,
-      artists: prev.artists.map(artist =>
+      artists: (prev.artists || []).map(artist =>
         artist.id === id ? { ...artist, ...updates } : artist
       )
     }))
@@ -459,7 +464,7 @@ export default function ReleaseSubmissionNew() {
       artists: [...(formData.artists || [])],
       featuringArtists: [],
       contributors: [],
-      isTitle: formData.tracks.length === 0,
+      isTitle: (formData.tracks || []).length === 0,
       stereo: true,
       dolbyAtmos: false,
       genre: formData.marketingGenre,
@@ -474,7 +479,7 @@ export default function ReleaseSubmissionNew() {
   const updateTrack = (id: string, updates: Partial<Track>) => {
     setFormData(prev => ({
       ...prev,
-      tracks: prev.tracks.map(track =>
+      tracks: (prev.tracks || []).map(track =>
         track.id === id ? { ...track, ...updates } : track
       )
     }))
@@ -491,7 +496,7 @@ export default function ReleaseSubmissionNew() {
   const onDragEnd = (result: any) => {
     if (!result.destination) return
 
-    const items = Array.from(formData.tracks)
+    const items = Array.from(formData.tracks || [])
     const [reorderedItem] = items.splice(result.source.index, 1)
     items.splice(result.destination.index, 0, reorderedItem)
 
@@ -1068,7 +1073,7 @@ export default function ReleaseSubmissionNew() {
                                   if (e.target.checked) {
                                     setFormData(prev => ({
                                       ...prev,
-                                      tracks: prev.tracks.map(t => ({
+                                      tracks: (prev.tracks || []).map(t => ({
                                         ...t,
                                         isTitle: t.id === track.id
                                       }))
