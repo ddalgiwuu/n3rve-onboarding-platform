@@ -15,7 +15,8 @@ export const useLanguageStore = create<LanguageState>()(
       setLanguage: (language) => set({ language })
     }),
     {
-      name: 'language-storage'
+      name: 'language-storage',
+      skipHydration: true // Prevent React 18 hydration issues
     }
   )
 )

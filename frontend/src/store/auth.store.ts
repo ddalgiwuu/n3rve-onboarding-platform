@@ -63,7 +63,8 @@ export const useAuthStore = create<AuthState>()(
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated
-      })
+      }),
+      skipHydration: true // Prevent React 18 hydration issues
     }
   )
 )
