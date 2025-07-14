@@ -59,4 +59,3 @@ volumes:
 networks:
   n3rve-network:
     driver: bridge
-EOF < /dev/null
