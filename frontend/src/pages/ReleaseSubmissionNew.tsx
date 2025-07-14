@@ -265,24 +265,25 @@ export default function ReleaseSubmissionNew() {
   const isValidatingRef = useRef(false)
   const lastValidatedDataRef = useRef<string>('')
 
-  // Section configuration
+  // Section configuration - Always return a valid object
   const sections = useMemo(() => {
     console.log('Creating sections object, language:', language)
+    // Always return a valid sections object, even if language is undefined
     const sectionsObj = {
       album: {
-        label: tBilingual('앨범 (프로덕트 레벨)', 'Album (Product Level)'),
+        label: language === 'ko' ? '앨범 (프로덕트 레벨)' : 'Album (Product Level)',
         icon: Disc,
-        description: tBilingual('앨범 기본 정보, 아티스트, 권리 설정', 'Album basics, artists, rights')
+        description: language === 'ko' ? '앨범 기본 정보, 아티스트, 권리 설정' : 'Album basics, artists, rights'
       },
       asset: {
-        label: tBilingual('에셋 레벨', 'Asset Level'),
+        label: language === 'ko' ? '에셋 레벨' : 'Asset Level',
         icon: Music,
-        description: tBilingual('트랙 정보, 오디오 파일, ISRC', 'Track info, audio files, ISRC')
+        description: language === 'ko' ? '트랙 정보, 오디오 파일, ISRC' : 'Track info, audio files, ISRC'
       },
       marketing: {
-        label: tBilingual('마케팅', 'Marketing'),
+        label: language === 'ko' ? '마케팅' : 'Marketing',
         icon: Megaphone,
-        description: tBilingual('장르, 배포, 프로모션 전략', 'Genre, distribution, promotion')
+        description: language === 'ko' ? '장르, 배포, 프로모션 전략' : 'Genre, distribution, promotion'
       }
     }
     console.log('Sections object created:', sectionsObj)
@@ -1584,34 +1585,40 @@ export default function ReleaseSubmissionNew() {
         {/* Section tabs */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6">
           <div className="flex">
-            {(sections && typeof sections === 'object' && sections !== null) ? Object.entries(sections).map(([key, section]) => {
-              if (!section) return null
-              const Icon = section.icon || Disc
-              const validation = getSectionValidation(key as 'album' | 'asset' | 'marketing')
-              
-              return (
-                <button
-                  key={key}
-                  onClick={() => setActiveSection(key as 'album' | 'asset' | 'marketing')}
-                  className={`flex-1 px-6 py-4 flex items-center justify-center gap-3 border-b-2 transition-colors ${
-                    activeSection === key
-                      ? 'border-purple-500 text-purple-600 dark:text-purple-400'
-                      : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <div className="text-left">
-                    <div className="font-medium">{section.label || ''}</div>
-                    <div className="text-xs opacity-75">{section.description || ''}</div>
-                  </div>
-                  {validation.hasErrors && (
-                    <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                      {validation.errorCount}
-                    </span>
-                  )}
-                </button>
-              )
-            }) : null}
+            {sections && Object.keys(sections).length > 0 ? (
+              Object.entries(sections).map(([key, section]) => {
+                if (!section || typeof section !== 'object') return null
+                const Icon = section.icon || Disc
+                const validation = getSectionValidation(key as 'album' | 'asset' | 'marketing')
+                
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setActiveSection(key as 'album' | 'asset' | 'marketing')}
+                    className={`flex-1 px-6 py-4 flex items-center justify-center gap-3 border-b-2 transition-colors ${
+                      activeSection === key
+                        ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                    <div className="text-left">
+                      <div className="font-medium">{section.label || ''}</div>
+                      <div className="text-xs opacity-75">{section.description || ''}</div>
+                    </div>
+                    {validation.hasErrors && (
+                      <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                        {validation.errorCount}
+                      </span>
+                    )}
+                  </button>
+                )
+              })
+            ) : (
+              <div className="flex-1 px-6 py-4 text-center text-gray-500">
+                {tBilingual('로딩 중...', 'Loading...')}
+              </div>
+            )}
           </div>
         </div>
 
