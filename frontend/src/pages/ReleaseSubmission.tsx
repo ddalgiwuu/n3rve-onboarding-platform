@@ -144,9 +144,12 @@ const genreOptions = [
 ]
 
 export default function ReleaseSubmission() {
-  const { t, language } = useLanguageStore()
+  const language = useLanguageStore(state => state.language)
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  
+  // Translation function
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [currentStep, setCurrentStep] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null)
