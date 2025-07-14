@@ -149,9 +149,10 @@ const albumFormats = [
 
 export default function ReleaseSubmissionNew() {
   try {
-    const { language = 'ko' } = useLanguageStore() // Default to 'ko' if undefined
+    // Fix for React error #321: Use store hooks properly with selector functions
+    const language = useLanguageStore(state => state.language) || 'ko'
     const navigate = useNavigate()
-    const { user } = useAuthStore()
+    const user = useAuthStore(state => state.user)
     
     // Helper function for bilingual text
     const tBilingual = (ko: string, en: string) => {
