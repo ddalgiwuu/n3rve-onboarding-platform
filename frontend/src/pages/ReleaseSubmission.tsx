@@ -32,6 +32,8 @@ import {
   subgenreOptions 
 } from '@/constants/marketingOptions'
 import { countries } from '@/constants/countries'
+import { timezones, convertToUTC, formatUTCInTimezone } from '@/constants/timezones'
+import { generateUPC, generateEAN, validateUPC, validateEAN } from '@/utils/identifiers'
 
 // Types
 interface Translation {
@@ -166,43 +168,64 @@ export default function ReleaseSubmission() {
   
   // Form state
   const [formData, setFormData] = useState({
-    // Step 0: Artist Info
+    // Step 0: Metadata (NEW - moved to first)
+    releaseVersion: '',
+    upc: '',
+    ean: '',
+    catalogNumber: '',
+    recordLabel: '',
+    copyrightHolder: '',
+    copyrightYear: new Date().getFullYear().toString(),
+    productionHolder: '',
+    productionYear: new Date().getFullYear().toString(),
+    parentalAdvisory: 'none' as 'none' | 'explicit' | 'edited',
+    
+    // Consumer Release Date and Original Release Date
+    consumerReleaseDate: new Date().toISOString().split('T')[0],
+    consumerReleaseTime: '00:00',
+    consumerTimezone: 'Asia/Seoul',
+    originalReleaseDate: '',
+    originalReleaseTime: '00:00',
+    originalTimezone: 'Asia/Seoul',
+    hasOriginalRelease: false,
+    
+    // Step 1: Artist Info
     artists: [] as Artist[],
     bandMembers: [] as Member[],
     
-    // Step 1: Album Basic Info
+    // Step 2: Album Basic Info
     albumTitle: '',
     albumTranslations: [] as Translation[],
     albumType: 'single' as 'single' | 'ep' | 'album',
     releaseDate: new Date().toISOString().split('T')[0],
     releaseTime: '00:00',
     timezone: 'Asia/Seoul',
+    albumNotes: '', // Album notes for Korean DSPs
     
-    // Step 2: Track Info
+    // Step 3: Track Info
     tracks: [] as Track[],
     
-    // Step 3: Contributors
+    // Step 4: Contributors
     albumContributors: [] as Contributor[],
     
-    // Step 4: Album Details
+    // Step 5: Album Details
     albumCoverArt: null as File | null,
     albumCoverArtUrl: '',
     albumDescription: '',
     albumDescriptionTranslations: [] as Translation[],
-    recordLabel: '',
-    catalogNumber: '',
     
-    // Step 5: Release Settings
+    // Step 6: Release Settings
     territories: [] as string[],
     excludedTerritories: [] as string[],
     digitalReleaseDate: '',
     physicalReleaseDate: '',
     preOrderDate: '',
     
-    // Step 6: Marketing Info
+    // Step 7: Marketing Info
     privateListeningLink: '',
     mainGenre: '',
     moods: [] as string[],
+    subgenres: [] as string[], // Changed to array for custom input
     youtubeShortsPreviews: false,
     thisIsPlaylist: false,
     dolbyAtmosSpatialAudio: false,
@@ -247,7 +270,6 @@ export default function ReleaseSubmission() {
     pressShotCredits: '',
     tourdatesUrl: '',
     artistCountry: '',
-    subgenres: [] as string[],
     socialMediaCampaign: '',
     spotifyPitching: '',
     appleMusicPitching: '',
@@ -635,36 +657,353 @@ export default function ReleaseSubmission() {
   // Step renderer
   const renderStep = () => {
     switch (currentStep) {
-      case 0: // Artist Info
+      case 0: // Metadata (NEW - moved to first)
+        return renderMetadata()
+      case 1: // Artist Info
         return renderArtistInfo()
-      case 1: // Album Basic Info
+      case 2: // Album Basic Info
         return renderAlbumBasicInfo()
-      case 2: // Track Info
+      case 3: // Track Info
         return renderTrackInfo()
-      case 3: // Contributors
+      case 4: // Contributors
         return renderContributors()
-      case 4: // Album Details
+      case 5: // Album Details
         return renderAlbumDetails()
-      case 5: // Release Settings
+      case 6: // Release Settings
         return renderReleaseSettings()
-      case 6: // Marketing Info
+      case 7: // Marketing Info
         return renderMarketingInfo()
-      case 7: // Distribution
+      case 8: // Distribution
         return renderDistribution()
-      case 8: // Rights & Legal
+      case 9: // Rights & Legal
         return renderRightsLegal()
-      case 9: // Review & QC
+      case 10: // Review & QC
         return renderReviewQC()
-      case 10: // File Upload
+      case 11: // File Upload
         return renderFileUpload()
-      case 11: // Final Submission
+      case 12: // Final Submission
         return renderFinalSubmission()
       default:
         return null
     }
   }
 
-  // Step 0: Artist Info
+  // Step 0: Metadata
+  const renderMetadata = () => (
+    <div className="space-y-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <FileText className="w-5 h-5" />
+          {t('음원 메타데이터', 'Release Metadata')}
+        </h3>
+        
+        {/* Release Version */}
+        <div className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('릴리즈 버전', 'Release Version')}
+            </label>
+            <input
+              type="text"
+              value={formData.releaseVersion || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, releaseVersion: e.target.value }))}
+              className="input"
+              placeholder={t('예: Remix, Remastered, Acoustic Version', 'e.g., Remix, Remastered, Acoustic Version')}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {t('리믹스나 특별 버전인 경우에만 입력', 'Only fill for remixes or special versions')}
+            </p>
+          </div>
+
+          {/* Identifiers */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Shield className="w-4 h-4" />
+              {t('식별자', 'Identifiers')}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">UPC</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formData.upc || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, upc: e.target.value.replace(/\D/g, '').slice(0, 12) }))}
+                    className="input flex-1"
+                    placeholder="000000000000"
+                    maxLength={12}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, upc: generateUPC() }))}
+                    className="btn-secondary"
+                  >
+                    {t('자동생성', 'Generate')}
+                  </button>
+                </div>
+                {formData.upc && !validateUPC(formData.upc) && (
+                  <p className="text-xs text-red-500 mt-1">{t('유효하지 않은 UPC', 'Invalid UPC')}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">EAN</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={formData.ean || ''}
+                    onChange={(e) => setFormData(prev => ({ ...prev, ean: e.target.value.replace(/\D/g, '').slice(0, 13) }))}
+                    className="input flex-1"
+                    placeholder="0000000000000"
+                    maxLength={13}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, ean: generateEAN() }))}
+                    className="btn-secondary"
+                  >
+                    {t('자동생성', 'Generate')}
+                  </button>
+                </div>
+                {formData.ean && !validateEAN(formData.ean) && (
+                  <p className="text-xs text-red-500 mt-1">{t('유효하지 않은 EAN', 'Invalid EAN')}</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Release Dates */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              {t('발매일 설정', 'Release Date Settings')}
+            </h4>
+            
+            {/* Consumer Release Date */}
+            <div className="space-y-4">
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                <h5 className="font-medium mb-2">{t('일반 발매일', 'Consumer Release Date')} *</h5>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  {t('음원이 스트리밍 플랫폼에 공개되는 날짜와 시간', 'Date and time when the release becomes available on streaming platforms')}
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">{t('날짜', 'Date')} *</label>
+                    <DatePicker
+                      selected={new Date(formData.consumerReleaseDate)}
+                      onChange={(date) => setFormData(prev => ({ 
+                        ...prev, 
+                        consumerReleaseDate: date?.toISOString().split('T')[0] || ''
+                      }))}
+                      className="input w-full"
+                      dateFormat="yyyy-MM-dd"
+                      minDate={new Date()}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">{t('시간', 'Time')} *</label>
+                    <input
+                      type="time"
+                      value={formData.consumerReleaseTime}
+                      onChange={(e) => setFormData(prev => ({ ...prev, consumerReleaseTime: e.target.value }))}
+                      className="input"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">{t('시간대', 'Timezone')} *</label>
+                    <select
+                      value={formData.consumerTimezone}
+                      onChange={(e) => setFormData(prev => ({ ...prev, consumerTimezone: e.target.value }))}
+                      className="input"
+                    >
+                      {timezones.map(tz => (
+                        <option key={tz.value} value={tz.value}>
+                          {language === 'ko' ? tz.label : tz.labelEn}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {formData.consumerReleaseDate && formData.consumerReleaseTime && (
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    UTC: {convertToUTC(formData.consumerReleaseDate, formData.consumerReleaseTime, formData.consumerTimezone).toISOString()}
+                  </p>
+                )}
+              </div>
+
+              {/* Original Release Date */}
+              <div className="bg-gray-50 dark:bg-gray-900/20 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <h5 className="font-medium">{t('원곡 발매일', 'Original Release Date')}</h5>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.hasOriginalRelease}
+                      onChange={(e) => setFormData(prev => ({ ...prev, hasOriginalRelease: e.target.checked }))}
+                      className="rounded text-purple-500"
+                    />
+                    <span className="text-sm">{t('재발매/리믹스', 'Re-release/Remix')}</span>
+                  </label>
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                  {t('리믹스, 리마스터, 재발매의 경우 원곡이 처음 발매된 날짜', 'For remixes, remasters, or re-releases, the date when the original was first released')}
+                </p>
+                {formData.hasOriginalRelease && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium mb-1">{t('날짜', 'Date')}</label>
+                      <DatePicker
+                        selected={formData.originalReleaseDate ? new Date(formData.originalReleaseDate) : null}
+                        onChange={(date) => setFormData(prev => ({ 
+                          ...prev, 
+                          originalReleaseDate: date?.toISOString().split('T')[0] || ''
+                        }))}
+                        className="input w-full"
+                        dateFormat="yyyy-MM-dd"
+                        maxDate={new Date()}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">{t('시간', 'Time')}</label>
+                      <input
+                        type="time"
+                        value={formData.originalReleaseTime}
+                        onChange={(e) => setFormData(prev => ({ ...prev, originalReleaseTime: e.target.value }))}
+                        className="input"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium mb-1">{t('시간대', 'Timezone')}</label>
+                      <select
+                        value={formData.originalTimezone}
+                        onChange={(e) => setFormData(prev => ({ ...prev, originalTimezone: e.target.value }))}
+                        className="input"
+                      >
+                        {timezones.map(tz => (
+                          <option key={tz.value} value={tz.value}>
+                            {language === 'ko' ? tz.label : tz.labelEn}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Label and Copyright Info */}
+          <div>
+            <h4 className="font-medium mb-3 flex items-center gap-2">
+              <Building2 className="w-4 h-4" />
+              {t('레이블 및 저작권 정보', 'Label & Copyright Information')}
+            </h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('레코드 레이블', 'Record Label')} *
+                </label>
+                <input
+                  type="text"
+                  value={formData.recordLabel || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, recordLabel: e.target.value }))}
+                  className="input"
+                  placeholder={t('레이블명 입력', 'Enter label name')}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('카탈로그 번호', 'Catalog Number')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.catalogNumber || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, catalogNumber: e.target.value }))}
+                  className="input"
+                  placeholder={t('예: CAT-001', 'e.g., CAT-001')}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('저작권 소유자', 'Copyright Holder')} *
+                </label>
+                <input
+                  type="text"
+                  value={formData.copyrightHolder || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, copyrightHolder: e.target.value }))}
+                  className="input"
+                  placeholder={t('© 소유자명', '© Holder name')}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('저작권 연도', 'Copyright Year')} *
+                </label>
+                <input
+                  type="text"
+                  value={formData.copyrightYear || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, copyrightYear: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                  className="input"
+                  placeholder="2025"
+                  maxLength={4}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('제작권 소유자', 'Production Holder')} *
+                </label>
+                <input
+                  type="text"
+                  value={formData.productionHolder || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, productionHolder: e.target.value }))}
+                  className="input"
+                  placeholder={t('℗ 소유자명', '℗ Holder name')}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  {t('제작권 연도', 'Production Year')} *
+                </label>
+                <input
+                  type="text"
+                  value={formData.productionYear || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, productionYear: e.target.value.replace(/\D/g, '').slice(0, 4) }))}
+                  className="input"
+                  placeholder="2025"
+                  maxLength={4}
+                  required
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Parental Advisory */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('부모 권고 사항', 'Parental Advisory')}
+            </label>
+            <select
+              value={formData.parentalAdvisory}
+              onChange={(e) => setFormData(prev => ({ 
+                ...prev, 
+                parentalAdvisory: e.target.value as 'none' | 'explicit' | 'edited'
+              }))}
+              className="input"
+            >
+              <option value="none">{t('없음', 'None')}</option>
+              <option value="explicit">{t('명시적 콘텐츠', 'Explicit Content')}</option>
+              <option value="edited">{t('편집됨/깨끗한 버전', 'Edited/Clean')}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
+  // Step 1: Artist Info
   const renderArtistInfo = () => (
     <div className="space-y-6">
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
@@ -993,6 +1332,23 @@ export default function ReleaseSubmission() {
                 <option value="Europe/Paris">Europe/Paris (CET)</option>
               </select>
             </div>
+          </div>
+
+          {/* Album Notes field for Korean DSPs */}
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('앨범 노트', 'Album Notes')}
+            </label>
+            <textarea
+              value={formData.albumNotes || ''}
+              onChange={(e) => setFormData(prev => ({ ...prev, albumNotes: e.target.value }))}
+              className="input min-h-[150px]"
+              placeholder={t('한국 DSP에서 보여질 앨범 소개글 및 크레딧 정보를 입력하세요', 'Enter album introduction and credits information for Korean DSPs')}
+              rows={6}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {t('한국 음원 사이트에서 앨범 정보 페이지에 표시될 소개글입니다', 'This will be displayed on the album information page on Korean music streaming platforms')}
+            </p>
           </div>
         </div>
       </div>
@@ -1818,17 +2174,47 @@ export default function ReleaseSubmission() {
             />
           </div>
 
-          {/* Subgenres */}
+          {/* Subgenres - Custom Input */}
           <div>
             <label className="block text-sm font-medium mb-1">
               {t('서브장르', 'Subgenre(s)')}
             </label>
-            <MultiSelect
-              options={subgenreOptions}
-              value={formData.subgenres}
-              onChange={(value) => setFormData(prev => ({ ...prev, subgenres: value }))}
-              placeholder={t('서브장르 선택', 'Select subgenres')}
-            />
+            <div className="space-y-2">
+              {formData.subgenres.map((subgenre, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={subgenre}
+                    onChange={(e) => {
+                      const newSubgenres = [...formData.subgenres];
+                      newSubgenres[index] = e.target.value;
+                      setFormData(prev => ({ ...prev, subgenres: newSubgenres }));
+                    }}
+                    className="input flex-1"
+                    placeholder={t('서브장르 입력', 'Enter subgenre')}
+                  />
+                  <button
+                    onClick={() => {
+                      const newSubgenres = formData.subgenres.filter((_, i) => i !== index);
+                      setFormData(prev => ({ ...prev, subgenres: newSubgenres }));
+                    }}
+                    className="text-red-500 hover:text-red-600"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              <button
+                onClick={() => setFormData(prev => ({ ...prev, subgenres: [...prev.subgenres, ''] }))}
+                className="btn-ghost text-sm"
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                {t('서브장르 추가', 'Add Subgenre')}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {t('직접 서브장르를 입력할 수 있습니다', 'You can enter custom subgenres')}
+            </p>
           </div>
 
           {/* Marketing Spend & Drivers */}
