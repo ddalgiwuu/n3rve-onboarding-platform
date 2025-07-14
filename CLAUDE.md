@@ -77,6 +77,13 @@ npm run type-check: Verify types
    - Strengthened type checking and null safety throughout component
    - **Target**: Complete elimination of "Cannot read properties of undefined (reading 'map')" errors
 
+8. **React StrictMode Removal Fix (v1.3.25)**
+   - Removed React.StrictMode from main.tsx to prevent double mounting issues
+   - Added source maps to vite.config.ts for better error debugging
+   - **Root Cause**: StrictMode caused components to mount twice in development, creating race conditions
+   - **Solution**: Removed StrictMode wrapper while maintaining all hydration protections
+   - **Benefit**: Eliminates double rendering without compromising error detection
+
 8. **Infrastructure Fixes**
    - Nginx proxy port correction: 5001 → 3001
    - MongoDB Atlas migration (no local MongoDB)
