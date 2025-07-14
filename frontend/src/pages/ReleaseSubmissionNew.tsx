@@ -266,23 +266,28 @@ export default function ReleaseSubmissionNew() {
   const lastValidatedDataRef = useRef<string>('')
 
   // Section configuration
-  const sections = useMemo(() => ({
-    album: {
-      label: tBilingual('앨범 (프로덕트 레벨)', 'Album (Product Level)'),
-      icon: Disc,
-      description: tBilingual('앨범 기본 정보, 아티스트, 권리 설정', 'Album basics, artists, rights')
-    },
-    asset: {
-      label: tBilingual('에셋 레벨', 'Asset Level'),
-      icon: Music,
-      description: tBilingual('트랙 정보, 오디오 파일, ISRC', 'Track info, audio files, ISRC')
-    },
-    marketing: {
-      label: tBilingual('마케팅', 'Marketing'),
-      icon: Megaphone,
-      description: tBilingual('장르, 배포, 프로모션 전략', 'Genre, distribution, promotion')
+  const sections = useMemo(() => {
+    console.log('Creating sections object, language:', language)
+    const sectionsObj = {
+      album: {
+        label: tBilingual('앨범 (프로덕트 레벨)', 'Album (Product Level)'),
+        icon: Disc,
+        description: tBilingual('앨범 기본 정보, 아티스트, 권리 설정', 'Album basics, artists, rights')
+      },
+      asset: {
+        label: tBilingual('에셋 레벨', 'Asset Level'),
+        icon: Music,
+        description: tBilingual('트랙 정보, 오디오 파일, ISRC', 'Track info, audio files, ISRC')
+      },
+      marketing: {
+        label: tBilingual('마케팅', 'Marketing'),
+        icon: Megaphone,
+        description: tBilingual('장르, 배포, 프로모션 전략', 'Genre, distribution, promotion')
+      }
     }
-  }), [language])
+    console.log('Sections object created:', sectionsObj)
+    return sectionsObj
+  }, [language])
 
   // Validation
   useEffect(() => {
@@ -1579,8 +1584,9 @@ export default function ReleaseSubmissionNew() {
         {/* Section tabs */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm mb-6">
           <div className="flex">
-            {sections && Object.entries(sections || {}).map(([key, section]) => {
-              const Icon = section?.icon || Disc
+            {(sections && typeof sections === 'object' && sections !== null) ? Object.entries(sections).map(([key, section]) => {
+              if (!section) return null
+              const Icon = section.icon || Disc
               const validation = getSectionValidation(key as 'album' | 'asset' | 'marketing')
               
               return (
@@ -1595,8 +1601,8 @@ export default function ReleaseSubmissionNew() {
                 >
                   <Icon className="w-5 h-5" />
                   <div className="text-left">
-                    <div className="font-medium">{section?.label || ''}</div>
-                    <div className="text-xs opacity-75">{section?.description || ''}</div>
+                    <div className="font-medium">{section.label || ''}</div>
+                    <div className="text-xs opacity-75">{section.description || ''}</div>
                   </div>
                   {validation.hasErrors && (
                     <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
@@ -1605,7 +1611,7 @@ export default function ReleaseSubmissionNew() {
                   )}
                 </button>
               )
-            })}
+            }) : null}
           </div>
         </div>
 
