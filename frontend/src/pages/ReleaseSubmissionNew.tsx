@@ -153,6 +153,11 @@ export default function ReleaseSubmissionNew() {
   const navigate = useNavigate()
   const user = useAuthStore(state => state.user)
 
+  // Early safety check - ensure all dependencies are available
+  if (!language || !navigate) {
+    return <div>Loading...</div>
+  }
+
   try {
     
     // Helper function for bilingual text
@@ -267,29 +272,42 @@ export default function ReleaseSubmissionNew() {
   const isValidatingRef = useRef(false)
   const lastValidatedDataRef = useRef<string>('')
 
-  // Section configuration - Always return a valid object
+  // Section configuration - Always return a valid object with comprehensive safety
   const sections = useMemo(() => {
     console.log('Creating sections object, language:', language)
-    // Always return a valid sections object, even if language is undefined
-    const sectionsObj = {
-      album: {
-        label: language === 'ko' ? '앨범 (프로덕트 레벨)' : 'Album (Product Level)',
-        icon: Disc,
-        description: language === 'ko' ? '앨범 기본 정보, 아티스트, 권리 설정' : 'Album basics, artists, rights'
-      },
-      asset: {
-        label: language === 'ko' ? '에셋 레벨' : 'Asset Level',
-        icon: Music,
-        description: language === 'ko' ? '트랙 정보, 오디오 파일, ISRC' : 'Track info, audio files, ISRC'
-      },
-      marketing: {
-        label: language === 'ko' ? '마케팅' : 'Marketing',
-        icon: Megaphone,
-        description: language === 'ko' ? '장르, 배포, 프로모션 전략' : 'Genre, distribution, promotion'
+    
+    // Ensure language is always a valid string
+    const safeLanguage = typeof language === 'string' ? language : 'ko'
+    
+    try {
+      const sectionsObj = {
+        album: {
+          label: safeLanguage === 'ko' ? '앨범 (프로덕트 레벨)' : 'Album (Product Level)',
+          icon: Disc,
+          description: safeLanguage === 'ko' ? '앨범 기본 정보, 아티스트, 권리 설정' : 'Album basics, artists, rights'
+        },
+        asset: {
+          label: safeLanguage === 'ko' ? '에셋 레벨' : 'Asset Level',
+          icon: Music,
+          description: safeLanguage === 'ko' ? '트랙 정보, 오디오 파일, ISRC' : 'Track info, audio files, ISRC'
+        },
+        marketing: {
+          label: safeLanguage === 'ko' ? '마케팅' : 'Marketing',
+          icon: Megaphone,
+          description: safeLanguage === 'ko' ? '장르, 배포, 프로모션 전략' : 'Genre, distribution, promotion'
+        }
+      }
+      console.log('Sections object created:', sectionsObj)
+      return sectionsObj
+    } catch (error) {
+      console.error('Error creating sections object:', error)
+      // Fallback sections object
+      return {
+        album: { label: 'Album', icon: Disc, description: 'Album information' },
+        asset: { label: 'Asset', icon: Music, description: 'Track information' },
+        marketing: { label: 'Marketing', icon: Megaphone, description: 'Marketing information' }
       }
     }
-    console.log('Sections object created:', sectionsObj)
-    return sectionsObj
   }, [language])
 
   // Validation
@@ -302,17 +320,17 @@ export default function ReleaseSubmissionNew() {
         
         const validationData = {
           artist: {
-            nameKo: formData.artists?.[0]?.primaryName || '',
-            nameEn: (formData.artists?.[0]?.translations || []).find(t => t?.language === 'en')?.text || '',
-            genre: formData.marketingGenre ? [formData.marketingGenre] : []
+            nameKo: formData?.artists?.[0]?.primaryName || '',
+            nameEn: (formData?.artists?.[0]?.translations || []).find(t => t?.language === 'en')?.text || '',
+            genre: formData?.marketingGenre ? [formData.marketingGenre] : []
           },
           album: {
-            titleKo: formData.albumTitle || '',
-            titleEn: (formData.albumTranslations || []).find(t => t?.language === 'en')?.text || '',
-            format: formData.albumType || 'single',
-            parentalAdvisory: formData.parentalAdvisory || false
+            titleKo: formData?.albumTitle || '',
+            titleEn: (formData?.albumTranslations || []).find(t => t?.language === 'en')?.text || '',
+            format: formData?.albumType || 'single',
+            parentalAdvisory: formData?.parentalAdvisory || false
           },
-          tracks: (formData.tracks || []).map(track => ({
+          tracks: (formData?.tracks || []).map(track => ({
             titleKo: track?.title || '',
             titleEn: (track?.translations || []).find(t => t?.language === 'en')?.title || '',
             featuring: ((track?.featuringArtists || []).map(a => a?.primaryName || '').filter(Boolean).join(', ')) || '',
@@ -322,10 +340,10 @@ export default function ReleaseSubmissionNew() {
             lyricsExplicit: track?.explicitContent || false
           })),
           release: {
-            consumerReleaseDate: formData.releaseDate || '',
-            copyrightYear: formData.copyrightYear || '',
-            cRights: formData.copyrightOwner || '',
-            pRights: formData.masterRights || ''
+            consumerReleaseDate: formData?.releaseDate || '',
+            copyrightYear: formData?.copyrightYear || '',
+            cRights: formData?.copyrightOwner || '',
+            pRights: formData?.masterRights || ''
           }
         }
 
@@ -365,39 +383,39 @@ export default function ReleaseSubmissionNew() {
       }
       setFormData(prev => ({
         ...prev,
-        tracks: (prev.tracks || []).map(track => 
-          track.id === parentId
-            ? { ...track, translations: [...(track.translations || []), trackTranslation] }
+        tracks: (prev?.tracks || []).map(track => 
+          track?.id === parentId
+            ? { ...track, translations: [...(track?.translations || []), trackTranslation] }
             : track
         )
       }))
     }
   }
 
-  const updateTranslation = (field: string, translationId: string, updates: Partial<Translation>, parentId?: string) => {
+  const updateTranslation = (field: string, translationId: string, updates: Partial<Translation> | Partial<TrackTranslation>, parentId?: string) => {
     if (field === 'albumTitle') {
       setFormData(prev => ({
         ...prev,
-        albumTranslations: (prev.albumTranslations || []).map(t =>
-          t.id === translationId ? { ...t, ...updates } : t
+        albumTranslations: (prev?.albumTranslations || []).map(t =>
+          t?.id === translationId ? { ...t, ...updates } : t
         )
       }))
     } else if (field === 'albumDescription') {
       setFormData(prev => ({
         ...prev,
-        albumDescriptionTranslations: (prev.albumDescriptionTranslations || []).map(t =>
-          t.id === translationId ? { ...t, ...updates } : t
+        albumDescriptionTranslations: (prev?.albumDescriptionTranslations || []).map(t =>
+          t?.id === translationId ? { ...t, ...updates } : t
         )
       }))
     } else if (field === 'track' && parentId) {
       setFormData(prev => ({
         ...prev,
-        tracks: (prev.tracks || []).map(track => 
-          track.id === parentId
+        tracks: (prev?.tracks || []).map(track => 
+          track?.id === parentId
             ? {
                 ...track,
-                translations: (track.translations || []).map(t =>
-                  t.id === translationId ? { ...t, ...updates } : t
+                translations: (track?.translations || []).map(t =>
+                  t?.id === translationId ? { ...t, ...updates } : t
                 )
               }
             : track
@@ -410,19 +428,19 @@ export default function ReleaseSubmissionNew() {
     if (field === 'albumTitle') {
       setFormData(prev => ({
         ...prev,
-        albumTranslations: (prev.albumTranslations || []).filter(t => t.id !== translationId)
+        albumTranslations: (prev?.albumTranslations || []).filter(t => t?.id !== translationId)
       }))
     } else if (field === 'albumDescription') {
       setFormData(prev => ({
         ...prev,
-        albumDescriptionTranslations: (prev.albumDescriptionTranslations || []).filter(t => t.id !== translationId)
+        albumDescriptionTranslations: (prev?.albumDescriptionTranslations || []).filter(t => t?.id !== translationId)
       }))
     } else if (field === 'track' && parentId) {
       setFormData(prev => ({
         ...prev,
-        tracks: (prev.tracks || []).map(track => 
-          track.id === parentId
-            ? { ...track, translations: (track.translations || []).filter(t => t.id !== translationId) }
+        tracks: (prev?.tracks || []).map(track => 
+          track?.id === parentId
+            ? { ...track, translations: (track?.translations || []).filter(t => t?.id !== translationId) }
             : track
         )
       }))
@@ -439,14 +457,14 @@ export default function ReleaseSubmissionNew() {
       customIdentifiers: [],
       role: 'main'
     }
-    setFormData(prev => ({ ...prev, artists: [...(prev.artists || []), newArtist] }))
+    setFormData(prev => ({ ...prev, artists: [...(prev?.artists || []), newArtist] }))
   }
 
   const updateArtist = (id: string, updates: Partial<Artist>) => {
     setFormData(prev => ({
       ...prev,
-      artists: (prev.artists || []).map(artist =>
-        artist.id === id ? { ...artist, ...updates } : artist
+      artists: (prev?.artists || []).map(artist =>
+        artist?.id === id ? { ...artist, ...updates } : artist
       )
     }))
   }
@@ -454,7 +472,7 @@ export default function ReleaseSubmissionNew() {
   const removeArtist = (id: string) => {
     setFormData(prev => ({
       ...prev,
-      artists: (prev.artists || []).filter(artist => artist.id !== id)
+      artists: (prev?.artists || []).filter(artist => artist?.id !== id)
     }))
   }
 
@@ -464,10 +482,10 @@ export default function ReleaseSubmissionNew() {
       id: uuidv4(),
       title: '',
       translations: [],
-      artists: [...(formData.artists || [])],
+      artists: [...(formData?.artists || [])],
       featuringArtists: [],
       contributors: [],
-      isTitle: (formData.tracks || []).length === 0,
+      isTitle: (formData?.tracks || []).length === 0,
       stereo: true,
       dolbyAtmos: false,
       genre: formData.marketingGenre,
@@ -476,14 +494,14 @@ export default function ReleaseSubmissionNew() {
       explicitContent: false,
       previewLength: 30
     }
-    setFormData(prev => ({ ...prev, tracks: [...(prev.tracks || []), newTrack] }))
+    setFormData(prev => ({ ...prev, tracks: [...(prev?.tracks || []), newTrack] }))
   }
 
   const updateTrack = (id: string, updates: Partial<Track>) => {
     setFormData(prev => ({
       ...prev,
-      tracks: (prev.tracks || []).map(track =>
-        track.id === id ? { ...track, ...updates } : track
+      tracks: (prev?.tracks || []).map(track =>
+        track?.id === id ? { ...track, ...updates } : track
       )
     }))
   }
@@ -491,7 +509,7 @@ export default function ReleaseSubmissionNew() {
   const removeTrack = (id: string) => {
     setFormData(prev => ({
       ...prev,
-      tracks: (prev.tracks || []).filter(track => track.id !== id)
+      tracks: (prev?.tracks || []).filter(track => track?.id !== id)
     }))
   }
 
@@ -499,7 +517,7 @@ export default function ReleaseSubmissionNew() {
   const onDragEnd = (result: any) => {
     if (!result.destination) return
 
-    const items = Array.from(formData.tracks || [])
+    const items = Array.from(formData?.tracks || [])
     const [reorderedItem] = items.splice(result.source.index, 1)
     items.splice(result.destination.index, 0, reorderedItem)
 
@@ -542,7 +560,7 @@ export default function ReleaseSubmissionNew() {
       return
     }
 
-    if (!formData.agreedToTerms) {
+    if (!formData?.agreedToTerms) {
       toast.error(tBilingual('이용약관에 동의해주세요', 'Please agree to terms'))
       return
     }
@@ -552,63 +570,63 @@ export default function ReleaseSubmissionNew() {
       // Transform formData to match SubmissionData interface
       const submissionData = {
         artist: {
-          nameKo: formData.artists[0]?.primaryName || '',
-          nameEn: (formData.artists[0]?.translations || []).find(t => t.language === 'en')?.text || '',
-          genre: formData.marketingGenre ? [formData.marketingGenre] : [],
-          spotifyId: formData.artists[0]?.spotifyId,
-          appleMusicId: formData.artists[0]?.appleMusicId,
-          youtubeChannelId: formData.artists[0]?.youtubeChannelId,
-          bookingAgent: formData.artists[0]?.bookingAgent,
-          countryOfOrigin: formData.artists[0]?.countryOfOrigin
+          nameKo: formData?.artists?.[0]?.primaryName || '',
+          nameEn: (formData?.artists?.[0]?.translations || []).find(t => t?.language === 'en')?.text || '',
+          genre: formData?.marketingGenre ? [formData.marketingGenre] : [],
+          spotifyId: formData?.artists?.[0]?.spotifyId,
+          appleMusicId: formData?.artists?.[0]?.appleMusicId,
+          youtubeChannelId: formData?.artists?.[0]?.youtubeChannelId,
+          bookingAgent: formData?.artists?.[0]?.bookingAgent,
+          countryOfOrigin: formData?.artists?.[0]?.countryOfOrigin
         },
         album: {
-          titleKo: formData.albumTitle,
-          titleEn: (formData.albumTranslations || []).find(t => t.language === 'en')?.text || '',
-          format: formData.albumType,
-          parentalAdvisory: formData.parentalAdvisory,
-          description: formData.albumDescription,
-          descriptionTranslations: formData.albumDescriptionTranslations,
-          recordLabel: formData.recordLabel,
-          catalogNumber: formData.catalogNumber,
-          upc: formData.upc
+          titleKo: formData?.albumTitle,
+          titleEn: (formData?.albumTranslations || []).find(t => t?.language === 'en')?.text || '',
+          format: formData?.albumType,
+          parentalAdvisory: formData?.parentalAdvisory,
+          description: formData?.albumDescription,
+          descriptionTranslations: formData?.albumDescriptionTranslations,
+          recordLabel: formData?.recordLabel,
+          catalogNumber: formData?.catalogNumber,
+          upc: formData?.upc
         },
-        tracks: (formData.tracks || []).map(track => ({
-          titleKo: track.title || '',
-          titleEn: (track.translations || []).find(t => t.language === 'en')?.title || '',
-          featuring: ((track.featuringArtists || []).map(a => a?.primaryName || '').filter(Boolean).join(', ')) || '',
-          isrc: track.isrc || '',
-          trackVersion: track.version || '',
-          lyricsLanguage: track.audioLanguage || 'ko',
-          lyricsExplicit: track.explicitContent || false,
-          isTitle: track.isTitle || false,
-          dolbyAtmos: track.dolbyAtmos || false,
-          stereo: track.stereo || true,
-          genre: track.genre || formData.marketingGenre || '',
-          metadataLanguage: track.metadataLanguage || 'ko',
-          previewStartTime: track.previewStartTime || 0,
-          previewLength: track.previewLength || 30,
-          consumerReleaseDate: track.hasCustomReleaseDate ? track.consumerReleaseDate : formData.releaseDate,
-          releaseTime: track.hasCustomReleaseDate ? track.releaseTime : formData.releaseTime,
-          contributors: track.contributors || [],
-          artists: track.artists || []
+        tracks: (formData?.tracks || []).map(track => ({
+          titleKo: track?.title || '',
+          titleEn: (track?.translations || []).find(t => t?.language === 'en')?.title || '',
+          featuring: ((track?.featuringArtists || []).map(a => a?.primaryName || '').filter(Boolean).join(', ')) || '',
+          isrc: track?.isrc || '',
+          trackVersion: track?.version || '',
+          lyricsLanguage: track?.audioLanguage || 'ko',
+          lyricsExplicit: track?.explicitContent || false,
+          isTitle: track?.isTitle || false,
+          dolbyAtmos: track?.dolbyAtmos || false,
+          stereo: track?.stereo || true,
+          genre: track?.genre || formData?.marketingGenre || '',
+          metadataLanguage: track?.metadataLanguage || 'ko',
+          previewStartTime: track?.playtimeStartShortClip || 0,
+          previewLength: track?.previewLength || 30,
+          consumerReleaseDate: track?.hasCustomReleaseDate ? track?.consumerReleaseDate : formData?.releaseDate,
+          releaseTime: track?.hasCustomReleaseDate ? track?.releaseTime : formData?.releaseTime,
+          contributors: track?.contributors || [],
+          artists: track?.artists || []
         })),
         release: {
-          consumerReleaseDate: formData.releaseDate,
-          copyrightYear: formData.copyrightYear,
-          cRights: formData.copyrightOwner,
-          pRights: formData.masterRights,
-          territories: formData.territories,
-          excludedTerritories: formData.excludedTerritories,
-          digitalReleaseDate: formData.digitalReleaseDate,
-          physicalReleaseDate: formData.physicalReleaseDate,
-          preOrderDate: formData.preOrderDate,
-          timezone: formData.timezone,
-          releaseTime: formData.releaseTime
+          consumerReleaseDate: formData?.releaseDate,
+          copyrightYear: formData?.copyrightYear,
+          cRights: formData?.copyrightOwner,
+          pRights: formData?.masterRights,
+          territories: formData?.territories,
+          excludedTerritories: formData?.excludedTerritories,
+          digitalReleaseDate: formData?.digitalReleaseDate,
+          physicalReleaseDate: formData?.physicalReleaseDate,
+          preOrderDate: formData?.preOrderDate,
+          timezone: formData?.timezone,
+          releaseTime: formData?.releaseTime
         },
         files: {
-          coverImage: formData.albumCoverArt,
-          coverImageUrl: formData.albumCoverArtUrl,
-          audioFiles: Object.entries(formData.audioFiles || {}).flatMap(([trackId, files]) =>
+          coverImage: formData?.albumCoverArt,
+          coverImageUrl: formData?.albumCoverArtUrl,
+          audioFiles: Object.entries(formData?.audioFiles || {}).flatMap(([trackId, files]) =>
             (files || []).map(file => ({
               trackId,
               file
@@ -633,19 +651,19 @@ export default function ReleaseSubmissionNew() {
   const getSectionValidation = (section: 'album' | 'asset' | 'marketing') => {
     if (!validationResults) return { hasErrors: false, errorCount: 0 }
     
-    const sectionErrors = (validationResults.errors || []).filter(error => {
-      if (!error.field) return false
+    const sectionErrors = (validationResults?.errors || []).filter(error => {
+      if (!error?.field) return false
       
       switch (section) {
         case 'album':
-          return error.field.includes('artist') || 
-                 error.field.includes('album') || 
-                 error.field.includes('release') ||
-                 error.field.includes('copyright')
+          return error?.field?.includes('artist') || 
+                 error?.field?.includes('album') || 
+                 error?.field?.includes('release') ||
+                 error?.field?.includes('copyright')
         case 'asset':
-          return error.field.includes('track') || error.field.includes('isrc')
+          return error?.field?.includes('track') || error?.field?.includes('isrc')
         case 'marketing':
-          return error.field.includes('genre') || error.field.includes('marketing')
+          return error?.field?.includes('genre') || error?.field?.includes('marketing')
         default:
           return false
       }
@@ -668,14 +686,14 @@ export default function ReleaseSubmissionNew() {
         </h3>
         
         <div className="space-y-4">
-          {(formData.artists || []).map((artist, index) => (
+          {(formData?.artists || []).map((artist, index) => (
             <div key={artist.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
               <div className="flex items-start justify-between mb-3">
                 <h4 className="font-medium">
                   {tBilingual('아티스트', 'Artist')} {index + 1}
                 </h4>
                 <button
-                  onClick={() => removeArtist(artist.id)}
+                  onClick={() => removeArtist(artist?.id)}
                   className="text-red-500 hover:text-red-600"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -685,16 +703,16 @@ export default function ReleaseSubmissionNew() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Input
                   label={tBilingual('아티스트명 (한국어)', 'Artist Name (Korean)')}
-                  value={artist.primaryName}
-                  onChange={(e) => updateArtist(artist.id, { primaryName: e.target.value })}
+                  value={artist?.primaryName || ''}
+                  onChange={(e) => updateArtist(artist?.id, { primaryName: e.target.value })}
                   placeholder={tBilingual('아티스트명 입력', 'Enter artist name')}
                   required
                 />
                 
                 <Select
                   label={tBilingual('역할', 'Role')}
-                  value={artist.role}
-                  onChange={(e) => updateArtist(artist.id, { role: e.target.value as 'main' | 'featuring' })}
+                  value={artist?.role || 'main'}
+                  onChange={(e) => updateArtist(artist?.id, { role: e.target.value as 'main' | 'featuring' })}
                 >
                   <option value="main">{tBilingual('메인 아티스트', 'Main Artist')}</option>
                   <option value="featuring">{tBilingual('피처링 아티스트', 'Featuring Artist')}</option>
@@ -706,35 +724,35 @@ export default function ReleaseSubmissionNew() {
                 <label className="block text-sm font-medium mb-2">
                   {tBilingual('번역', 'Translations')}
                 </label>
-                {(artist.translations || []).map((trans) => (
+                {(artist?.translations || []).map((trans) => (
                   <div key={trans.id} className="flex items-center gap-2 mb-2">
                     <Select
-                      value={trans.language}
-                      onChange={(e) => updateArtist(artist.id, {
-                        translations: (artist.translations || []).map(t =>
-                          t.id === trans.id ? { ...t, language: e.target.value } : t
+                      value={trans?.language || ''}
+                      onChange={(e) => updateArtist(artist?.id, {
+                        translations: (artist?.translations || []).map(t =>
+                          t?.id === trans?.id ? { ...t, language: e.target.value } : t
                         )
                       })}
                       className="w-32"
                     >
                       <option value="">{tBilingual('언어', 'Language')}</option>
-                      {languageOptions.map(lang => (
-                        <option key={lang.value} value={lang.value}>{lang.label}</option>
+                      {(languageOptions || []).map(lang => (
+                        <option key={lang?.value} value={lang?.value}>{lang?.label}</option>
                       ))}
                     </Select>
                     <Input
-                      value={trans.text}
-                      onChange={(e) => updateArtist(artist.id, {
-                        translations: (artist.translations || []).map(t =>
-                          t.id === trans.id ? { ...t, text: e.target.value } : t
+                      value={trans?.text || ''}
+                      onChange={(e) => updateArtist(artist?.id, {
+                        translations: (artist?.translations || []).map(t =>
+                          t?.id === trans?.id ? { ...t, text: e.target.value } : t
                         )
                       })}
                       placeholder={tBilingual('번역된 아티스트명', 'Translated artist name')}
                       className="flex-1"
                     />
                     <button
-                      onClick={() => updateArtist(artist.id, {
-                        translations: (artist.translations || []).filter(t => t.id !== trans.id)
+                      onClick={() => updateArtist(artist?.id, {
+                        translations: (artist?.translations || []).filter(t => t?.id !== trans?.id)
                       })}
                       className="text-red-500 hover:text-red-600"
                     >
@@ -743,8 +761,8 @@ export default function ReleaseSubmissionNew() {
                   </div>
                 ))}
                 <Button
-                  onClick={() => updateArtist(artist.id, {
-                    translations: [...(artist.translations || []), {
+                  onClick={() => updateArtist(artist?.id, {
+                    translations: [...(artist?.translations || []), {
                       id: uuidv4(),
                       language: '',
                       text: ''
@@ -778,7 +796,7 @@ export default function ReleaseSubmissionNew() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label={tBilingual('앨범명 (한국어)', 'Album Title (Korean)')}
-              value={formData.albumTitle}
+              value={formData?.albumTitle || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, albumTitle: e.target.value }))}
               placeholder={tBilingual('앨범명 입력', 'Enter album title')}
               required
@@ -786,10 +804,10 @@ export default function ReleaseSubmissionNew() {
             
             <Select
               label={tBilingual('앨범 형식', 'Album Format')}
-              value={formData.albumType}
+              value={formData?.albumType || 'single'}
               onChange={(e) => setFormData(prev => ({ ...prev, albumType: e.target.value as 'single' | 'ep' | 'album' }))}
             >
-              {albumFormats.map(format => (
+              {(albumFormats || []).map(format => (
                 <option key={format.value} value={format.value}>{format.label}</option>
               ))}
             </Select>
@@ -800,7 +818,7 @@ export default function ReleaseSubmissionNew() {
             <label className="block text-sm font-medium mb-2">
               {tBilingual('앨범명 번역', 'Album Title Translations')}
             </label>
-            {(formData.albumTranslations || []).map((trans) => (
+            {(formData?.albumTranslations || []).map((trans) => (
               <div key={trans.id} className="flex items-center gap-2 mb-2">
                 <Select
                   value={trans.language}
@@ -808,8 +826,8 @@ export default function ReleaseSubmissionNew() {
                   className="w-32"
                 >
                   <option value="">{tBilingual('언어', 'Language')}</option>
-                  {languageOptions.map(lang => (
-                    <option key={lang.value} value={lang.value}>{lang.label}</option>
+                  {(languageOptions || []).map(lang => (
+                    <option key={lang?.value} value={lang?.value}>{lang?.label}</option>
                   ))}
                 </Select>
                 <Input
@@ -1026,7 +1044,7 @@ export default function ReleaseSubmissionNew() {
           <Droppable droppableId="tracks">
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                {(formData.tracks || []).map((track, index) => (
+                {(formData?.tracks || []).map((track, index) => (
                   <Draggable key={track.id} draggableId={track.id} index={index}>
                     {(provided, snapshot) => (
                       <div
@@ -1052,7 +1070,7 @@ export default function ReleaseSubmissionNew() {
                                 )}
                               </h4>
                               <button
-                                onClick={() => removeTrack(track.id)}
+                                onClick={() => removeTrack(track?.id)}
                                 className="text-red-500 hover:text-red-600"
                               >
                                 <Trash2 className="w-4 h-4" />
@@ -1062,27 +1080,27 @@ export default function ReleaseSubmissionNew() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <Input
                                 label={tBilingual('트랙명 (한국어)', 'Track Title (Korean)')}
-                                value={track.title}
-                                onChange={(e) => updateTrack(track.id, { title: e.target.value })}
+                                value={track?.title || ''}
+                                onChange={(e) => updateTrack(track?.id, { title: e.target.value })}
                                 placeholder={tBilingual('트랙명 입력', 'Enter track title')}
                                 required
                               />
                               
                               <Checkbox
-                                id={`title-track-${track.id}`}
-                                checked={track.isTitle}
+                                id={`title-track-${track?.id}`}
+                                checked={track?.isTitle || false}
                                 onChange={(e) => {
                                   // Unset other title tracks
                                   if (e.target.checked) {
                                     setFormData(prev => ({
                                       ...prev,
-                                      tracks: (prev.tracks || []).map(t => ({
+                                      tracks: (prev?.tracks || []).map(t => ({
                                         ...t,
-                                        isTitle: t.id === track.id
+                                        isTitle: t?.id === track?.id
                                       }))
                                     }))
                                   } else {
-                                    updateTrack(track.id, { isTitle: false })
+                                    updateTrack(track?.id, { isTitle: false })
                                   }
                                 }}
                                 label={tBilingual('타이틀 트랙', 'Title Track')}
@@ -1094,26 +1112,26 @@ export default function ReleaseSubmissionNew() {
                               <label className="block text-sm font-medium mb-2">
                                 {tBilingual('트랙명 번역', 'Track Title Translations')}
                               </label>
-                              {(track.translations || []).map((trans) => (
+                              {(track?.translations || []).map((trans) => (
                                 <div key={trans.id} className="flex items-center gap-2 mb-2">
                                   <Select
-                                    value={trans.language}
-                                    onChange={(e) => updateTranslation('track', trans.id, { language: e.target.value }, track.id)}
+                                    value={trans?.language || ''}
+                                    onChange={(e) => updateTranslation('track', trans?.id, { language: e.target.value }, track?.id)}
                                     className="w-32"
                                   >
                                     <option value="">{tBilingual('언어', 'Language')}</option>
-                                    {languageOptions.map(lang => (
-                                      <option key={lang.value} value={lang.value}>{lang.label}</option>
+                                    {(languageOptions || []).map(lang => (
+                                      <option key={lang?.value} value={lang?.value}>{lang?.label}</option>
                                     ))}
                                   </Select>
                                   <Input
-                                    value={trans.title}
-                                    onChange={(e) => updateTranslation('track', trans.id, { title: e.target.value }, track.id)}
+                                    value={trans?.title || ''}
+                                    onChange={(e) => updateTranslation('track', trans?.id, { title: e.target.value }, track?.id)}
                                     placeholder={tBilingual('번역된 트랙명', 'Translated track title')}
                                     className="flex-1"
                                   />
                                   <button
-                                    onClick={() => removeTranslation('track', trans.id, track.id)}
+                                    onClick={() => removeTranslation('track', trans?.id, track?.id)}
                                     className="text-red-500 hover:text-red-600"
                                   >
                                     <X className="w-4 h-4" />
@@ -1121,7 +1139,7 @@ export default function ReleaseSubmissionNew() {
                                 </div>
                               ))}
                               <Button
-                                onClick={() => addTranslation('track', track.id)}
+                                onClick={() => addTranslation('track', track?.id)}
                                 variant="ghost"
                                 size="sm"
                               >
@@ -1134,15 +1152,15 @@ export default function ReleaseSubmissionNew() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                               <Input
                                 label={tBilingual('ISRC 코드', 'ISRC Code')}
-                                value={track.isrc || ''}
-                                onChange={(e) => updateTrack(track.id, { isrc: e.target.value })}
+                                value={track?.isrc || ''}
+                                onChange={(e) => updateTrack(track?.id, { isrc: e.target.value })}
                                 placeholder="USKRE2400001"
                               />
                               
                               <Select
                                 label={tBilingual('버전', 'Version')}
-                                value={track.version || 'original'}
-                                onChange={(e) => updateTrack(track.id, { version: e.target.value })}
+                                value={track?.version || 'original'}
+                                onChange={(e) => updateTrack(track?.id, { version: e.target.value })}
                               >
                                 <option value="original">{tBilingual('원곡', 'Original')}</option>
                                 <option value="remix">{tBilingual('리믹스', 'Remix')}</option>
@@ -1155,33 +1173,33 @@ export default function ReleaseSubmissionNew() {
                               
                               <Select
                                 label={tBilingual('오디오 언어', 'Audio Language')}
-                                value={track.audioLanguage || 'ko'}
-                                onChange={(e) => updateTrack(track.id, { audioLanguage: e.target.value })}
+                                value={track?.audioLanguage || 'ko'}
+                                onChange={(e) => updateTrack(track?.id, { audioLanguage: e.target.value })}
                               >
-                                {languageOptions.map(lang => (
-                                  <option key={lang.value} value={lang.value}>{lang.label}</option>
+                                {(languageOptions || []).map(lang => (
+                                  <option key={lang?.value} value={lang?.value}>{lang?.label}</option>
                                 ))}
                               </Select>
                             </div>
                             
                             <div className="flex items-center gap-6">
                               <Toggle
-                                checked={track.dolbyAtmos || false}
-                                onChange={(checked) => updateTrack(track.id, { dolbyAtmos: checked })}
+                                checked={track?.dolbyAtmos || false}
+                                onChange={(checked) => updateTrack(track?.id, { dolbyAtmos: checked })}
                                 label={tBilingual('돌비 애트모스', 'Dolby Atmos')}
                                 size="md"
                               />
                               
                               <Toggle
-                                checked={track.explicitContent || false}
-                                onChange={(checked) => updateTrack(track.id, { explicitContent: checked })}
+                                checked={track?.explicitContent || false}
+                                onChange={(checked) => updateTrack(track?.id, { explicitContent: checked })}
                                 label={tBilingual('수위 제한 콘텐츠', 'Explicit Content')}
                                 size="md"
                               />
                               
                               <Toggle
-                                checked={track.stereo || false}
-                                onChange={(checked) => updateTrack(track.id, { stereo: checked })}
+                                checked={track?.stereo || false}
+                                onChange={(checked) => updateTrack(track?.id, { stereo: checked })}
                                 label={tBilingual('스테레오', 'Stereo')}
                                 size="md"
                               />
@@ -1201,7 +1219,7 @@ export default function ReleaseSubmissionNew() {
                                     onChange={(e) => {
                                       const files = Array.from(e.target.files || [])
                                       if (files.length) {
-                                        handleFileUpload(files, track.id)
+                                        handleFileUpload(files, track?.id)
                                       }
                                     }}
                                     className="hidden"
@@ -1212,7 +1230,7 @@ export default function ReleaseSubmissionNew() {
                                   </Button>
                                 </label>
                               </div>
-                              {(formData.audioFiles?.[track.id] || []).map((file, idx) => (
+                              {(formData?.audioFiles?.[track?.id] || []).map((file, idx) => (
                                 <div key={idx} className="flex items-center gap-2 mt-2">
                                   <Volume2 className="w-4 h-4 text-gray-400" />
                                   <span className="text-sm">{file.name}</span>
@@ -1248,12 +1266,12 @@ export default function ReleaseSubmissionNew() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
               label={tBilingual('마케팅 장르', 'Marketing Genre')}
-              value={formData.marketingGenre}
+              value={formData?.marketingGenre || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, marketingGenre: e.target.value }))}
               required
             >
               <option value="">{tBilingual('장르 선택', 'Select genre')}</option>
-              {genreOptions.map(genre => (
+              {(genreOptions || []).map(genre => (
                 <option key={genre} value={genre}>{genre}</option>
               ))}
             </Select>
@@ -1277,7 +1295,7 @@ export default function ReleaseSubmissionNew() {
                   if (e.key === 'Enter' && e.currentTarget.value) {
                     setFormData(prev => ({
                       ...prev,
-                      marketingTags: [...(prev.marketingTags || []), e.currentTarget.value]
+                      marketingTags: [...(prev?.marketingTags || []), e.currentTarget.value]
                     }))
                     e.currentTarget.value = ''
                   }
@@ -1285,7 +1303,7 @@ export default function ReleaseSubmissionNew() {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {(formData.marketingTags || []).map((tag, index) => (
+              {(formData?.marketingTags || []).map((tag, index) => (
                 <span
                   key={index}
                   className="bg-purple-500/20 text-purple-600 dark:text-purple-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
@@ -1294,7 +1312,7 @@ export default function ReleaseSubmissionNew() {
                   <button
                     onClick={() => setFormData(prev => ({
                       ...prev,
-                      marketingTags: (prev.marketingTags || []).filter((_, i) => i !== index)
+                      marketingTags: (prev?.marketingTags || []).filter((_, i) => i !== index)
                     }))}
                     className="hover:text-purple-800 dark:hover:text-purple-100"
                   >
@@ -1315,7 +1333,7 @@ export default function ReleaseSubmissionNew() {
         </h3>
         
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-          {Object.entries({
+          {(Object.entries({
             spotify: 'Spotify',
             appleMusic: 'Apple Music',
             youtube: 'YouTube Music',
@@ -1334,7 +1352,7 @@ export default function ReleaseSubmissionNew() {
             anghami: 'Anghami',
             yandex: 'Yandex Music',
             vk: 'VK Music'
-          }).map(([key, name]) => (
+          }) || []).map(([key, name]) => (
             <Checkbox
               key={key}
               id={`platform-${key}`}
@@ -1433,7 +1451,7 @@ export default function ReleaseSubmissionNew() {
                   if (e.key === 'Enter' && e.currentTarget.value) {
                     setFormData(prev => ({
                       ...prev,
-                      similarArtists: [...(prev.similarArtists || []), e.currentTarget.value]
+                      similarArtists: [...(prev?.similarArtists || []), e.currentTarget.value]
                     }))
                     e.currentTarget.value = ''
                   }
@@ -1441,7 +1459,7 @@ export default function ReleaseSubmissionNew() {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {(formData.similarArtists || []).map((artist, index) => (
+              {(formData?.similarArtists || []).map((artist, index) => (
                 <span
                   key={index}
                   className="bg-blue-500/20 text-blue-600 dark:text-blue-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
@@ -1450,7 +1468,7 @@ export default function ReleaseSubmissionNew() {
                   <button
                     onClick={() => setFormData(prev => ({
                       ...prev,
-                      similarArtists: (prev.similarArtists || []).filter((_, i) => i !== index)
+                      similarArtists: (prev?.similarArtists || []).filter((_, i) => i !== index)
                     }))}
                     className="hover:text-blue-800 dark:hover:text-blue-100"
                   >
@@ -1634,10 +1652,13 @@ export default function ReleaseSubmissionNew() {
                   )
                 }
                 
-                return entries.map(([key, section]) => {
+                return (entries || []).map(([key, section]) => {
                   if (!section || typeof section !== 'object') return null
-                  const Icon = section.icon || Disc
-                  const validation = getSectionValidation(key as 'album' | 'asset' | 'marketing')
+                  
+                  // Additional safety checks
+                  try {
+                    const Icon = section.icon || Disc
+                    const validation = getSectionValidation(key as 'album' | 'asset' | 'marketing')
                   
                   return (
                     <button
@@ -1661,6 +1682,14 @@ export default function ReleaseSubmissionNew() {
                       )}
                     </button>
                   )
+                  } catch (sectionError) {
+                    console.error('Error rendering section:', key, sectionError)
+                    return (
+                      <div key={key} className="flex-1 px-6 py-4 text-center text-gray-500">
+                        {tBilingual('로딩 중...', 'Loading...')}
+                      </div>
+                    )
+                  }
                 })
               } catch (error) {
                 console.error('Error rendering section tabs:', error)
@@ -1699,7 +1728,7 @@ export default function ReleaseSubmissionNew() {
         <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <Toggle
-              checked={formData.agreedToTerms}
+              checked={formData?.agreedToTerms || false}
               onChange={(checked) => setFormData(prev => ({ ...prev, agreedToTerms: checked }))}
               label={tBilingual('이용약관 및 배포 조건에 동의합니다', 'I agree to the terms and distribution conditions')}
               size="lg"
@@ -1713,16 +1742,16 @@ export default function ReleaseSubmissionNew() {
               >
                 <AlertCircle className="w-4 h-4 mr-2" />
                 {tBilingual('QC 검증', 'QC Validation')}
-                {validationResults && !validationResults.isValid && (
+                {validationResults && !validationResults?.isValid && (
                   <span className="ml-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full">
-                    {(validationResults.errors || []).length}
+                    {(validationResults?.errors || []).length}
                   </span>
                 )}
               </Button>
               
               <Button
                 onClick={handleSubmit}
-                disabled={isSubmitting || !formData.agreedToTerms}
+                disabled={isSubmitting || !formData?.agreedToTerms}
                 loading={isSubmitting}
               >
                 <CheckCircle className="w-4 h-4 mr-2" />
