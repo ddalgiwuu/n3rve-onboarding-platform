@@ -262,7 +262,7 @@ export function compilePattern(patternKey: string): RegExp {
   }
   
   // Handle unicode patterns
-  if (pattern.includes('\\p{')) {
+  if (pattern.includes('\\p{') || pattern.includes('\\u{')) {
     return new RegExp(pattern, 'gu')
   }
   

@@ -92,6 +92,14 @@ npm run type-check: Verify types
    - **Solution**: Default parameter options = [] and optional interface type
    - **Location**: /components/ui/Select.tsx line 46
 
+10. **FUGA QC Regular Expression Unicode Fix (v1.3.27)**
+   - Fixed "Invalid regular expression" error in fugaQCLoader.ts:269
+   - Added support for Unicode patterns with \u{...} syntax requiring 'u' flag
+   - Enhanced regex creation logic to handle emoji and Unicode character classes
+   - **Root Cause**: Unicode escape sequences like \u{1F600} need 'u' flag to work properly
+   - **Solution**: Added \u{ pattern detection alongside existing \p{ detection
+   - **Location**: /utils/fugaQCLoader.ts line 265
+
 8. **Infrastructure Fixes**
    - Nginx proxy port correction: 5001 → 3001
    - MongoDB Atlas migration (no local MongoDB)
