@@ -5,14 +5,14 @@ import { cn } from '@/lib/utils'
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
   error?: string
-  options: Array<{ value: string; label: string }>
+  options?: Array<{ value: string; label: string }>
   placeholder?: string
 }
 
 export default function Select({ 
   label, 
   error, 
-  options, 
+  options = [], 
   className = '', 
   placeholder = 'Select an option',
   ...props 
