@@ -227,7 +227,7 @@ const SubmissionManagement = () => {
             <div>
               <h3 className="text-xl font-semibold text-white mb-4">{t('submission.trackList', 'Track List')}</h3>
               <div className="space-y-3">
-                {submission.tracks.map((track, index) => (
+                {submission.tracks && submission.tracks.map((track, index) => (
                   <div key={track.id} className="flex items-center justify-between p-4 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors">
                     <div className="flex items-center gap-4">
                       <span className="text-gray-400 w-8">{index + 1}</span>
@@ -261,7 +261,7 @@ const SubmissionManagement = () => {
             <div>
               <h3 className="text-xl font-semibold text-white mb-4">{t('submission.marketingInfo', 'Marketing Information')}</h3>
               <div className="space-y-4">
-                {Object.entries(submission.marketingInfo).map(([key, value]) => (
+                {submission.marketingInfo && Object.entries(submission.marketingInfo).map(([key, value]) => (
                   <div key={key}>
                     <p className="text-gray-400 text-sm capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
                     <p className="text-white">{value}</p>

@@ -742,7 +742,7 @@ export default function ReleaseSubmission() {
         </h3>
         
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {Object.entries(formData.distributionPlatforms).map(([platform, enabled]) => {
+          {formData.distributionPlatforms && Object.entries(formData.distributionPlatforms).map(([platform, enabled]) => {
             if (platform === 'custom') return null
             return (
               <Checkbox
@@ -830,7 +830,7 @@ export default function ReleaseSubmission() {
           )}
           
           <div className="space-y-4">
-            {formData.artists.map((artist, index) => (
+            {formData.artists && formData.artists.map((artist, index) => (
               <div key={artist.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
@@ -1005,7 +1005,7 @@ export default function ReleaseSubmission() {
         </h3>
         
         <div className="space-y-4">
-          {formData.tracks.map((track, index) => (
+          {formData.tracks && formData.tracks.map((track, index) => (
             <div key={track.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -1181,7 +1181,7 @@ export default function ReleaseSubmission() {
         </h3>
         
         <div className="space-y-4">
-          {formData.albumContributors.map((contributor, index) => (
+          {formData.albumContributors && formData.albumContributors.map((contributor, index) => (
             <div key={contributor.id} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
@@ -1218,7 +1218,7 @@ export default function ReleaseSubmission() {
                     {t('역할', 'Roles')}
                   </label>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {Object.entries(contributorRoles.reduce((acc, role) => {
+                    {contributorRoles && Object.entries(contributorRoles.reduce((acc, role) => {
                       if (!acc[role.category]) acc[role.category] = []
                       acc[role.category].push(role)
                       return acc
@@ -1246,7 +1246,7 @@ export default function ReleaseSubmission() {
                     ))}
                   </div>
                   <div className="flex flex-wrap gap-1">
-                    {contributor.roles.map(roleValue => {
+                    {contributor.roles && contributor.roles.map(roleValue => {
                       const role = contributorRoles.find(r => r.value === roleValue)
                       return role ? (
                         <span
@@ -1457,7 +1457,7 @@ export default function ReleaseSubmission() {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              {formData.marketingTags.map((tag, index) => (
+              {formData.marketingTags && formData.marketingTags.map((tag, index) => (
                 <span
                   key={index}
                   className="bg-purple-500/20 text-purple-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
@@ -1498,7 +1498,7 @@ export default function ReleaseSubmission() {
               }}
             />
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.similarArtists.map((artist, index) => (
+              {formData.similarArtists && formData.similarArtists.map((artist, index) => (
                 <span
                   key={index}
                   className="bg-blue-500/20 text-blue-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
@@ -1755,7 +1755,7 @@ export default function ReleaseSubmission() {
               }}
             />
             <div className="flex flex-wrap gap-2 mt-2">
-              {formData.playlistTargets.map((playlist, index) => (
+              {formData.playlistTargets && formData.playlistTargets.map((playlist, index) => (
                 <span
                   key={index}
                   className="bg-green-500/20 text-green-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
@@ -1797,7 +1797,7 @@ export default function ReleaseSubmission() {
                 }}
               />
               <div className="flex flex-wrap gap-2 mt-2">
-                {formData.radioTargets.map((radio, index) => (
+                {formData.radioTargets && formData.radioTargets.map((radio, index) => (
                   <span
                     key={index}
                     className="bg-yellow-500/20 text-yellow-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
@@ -1838,7 +1838,7 @@ export default function ReleaseSubmission() {
                 }}
               />
               <div className="flex flex-wrap gap-2 mt-2">
-                {formData.pressTargets.map((press, index) => (
+                {formData.pressTargets && formData.pressTargets.map((press, index) => (
                   <span
                     key={index}
                     className="bg-red-500/20 text-red-300 px-3 py-1 rounded-full text-sm flex items-center gap-1"
@@ -1980,7 +1980,7 @@ export default function ReleaseSubmission() {
               </Button>
             </div>
             <div className="space-y-2">
-              {formData.tourDates.map((tour, index) => (
+              {formData.tourDates && formData.tourDates.map((tour, index) => (
                 <div key={index} className="flex items-center justify-between p-2 bg-gray-100 dark:bg-gray-700 rounded">
                   <span className="text-sm">
                     {tour.date} - {tour.venue}, {tour.city}

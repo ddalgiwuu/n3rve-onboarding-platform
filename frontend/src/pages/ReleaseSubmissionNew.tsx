@@ -148,21 +148,22 @@ const albumFormats = [
 ]
 
 export default function ReleaseSubmissionNew() {
-  const { language = 'ko' } = useLanguageStore() // Default to 'ko' if undefined
-  const navigate = useNavigate()
-  const { user } = useAuthStore()
-  
-  // Helper function for bilingual text
-  const tBilingual = (ko: string, en: string) => {
-    return language === 'ko' ? ko : en
-  }
-  
-  // Debug: Check if initial values are defined
-  console.log('Component mounting, language:', language, 'user:', user)
-  const [activeSection, setActiveSection] = useState<'album' | 'asset' | 'marketing'>('album')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null)
-  const [showQCWarnings, setShowQCWarnings] = useState(false)
+  try {
+    const { language = 'ko' } = useLanguageStore() // Default to 'ko' if undefined
+    const navigate = useNavigate()
+    const { user } = useAuthStore()
+    
+    // Helper function for bilingual text
+    const tBilingual = (ko: string, en: string) => {
+      return language === 'ko' ? ko : en
+    }
+    
+    // Debug: Check if initial values are defined
+    console.log('Component mounting, language:', language, 'user:', user)
+    const [activeSection, setActiveSection] = useState<'album' | 'asset' | 'marketing'>('album')
+    const [isSubmitting, setIsSubmitting] = useState(false)
+    const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null)
+    const [showQCWarnings, setShowQCWarnings] = useState(false)
   
   // Form state
   const [formData, setFormData] = useState({
@@ -1580,6 +1581,20 @@ export default function ReleaseSubmissionNew() {
     marketing: { label: 'Marketing', icon: Megaphone, description: 'Marketing' }
   }
 
+  // Debug logging
+  console.log('Rendering component, checking all data:', {
+    sections: safeSections,
+    formData: {
+      artists: formData.artists,
+      tracks: formData.tracks,
+      albumTranslations: formData.albumTranslations,
+      marketingTags: formData.marketingTags,
+      similarArtists: formData.similarArtists,
+      audioFiles: formData.audioFiles,
+      distributionPlatforms: formData.distributionPlatforms
+    }
+  })
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -1717,4 +1732,28 @@ export default function ReleaseSubmissionNew() {
       </div>
     </div>
   )
+  } catch (error) {
+    console.error('ReleaseSubmissionNew component error:', error)
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack')
+    
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="text-center p-8">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Component Error</h1>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            An error occurred while rendering the release submission form.
+          </p>
+          <pre className="text-left bg-gray-100 dark:bg-gray-800 p-4 rounded text-sm">
+            {error instanceof Error ? error.message : String(error)}
+          </pre>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          >
+            Reload Page
+          </button>
+        </div>
+      </div>
+    )
+  }
 }
