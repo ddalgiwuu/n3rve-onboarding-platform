@@ -23,7 +23,9 @@ interface Section {
 }
 
 const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
-  const { language, t } = useLanguageStore()
+  const language = useLanguageStore(state => state.language)
+  // Note: t function is not available from useLanguageStore, need to create local t function
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [expandedSections, setExpandedSections] = useState<string[]>([
     'product', 'artist', 'tracks', 'distribution', 'files'
   ])
