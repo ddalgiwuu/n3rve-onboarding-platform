@@ -1,13 +1,10 @@
 import { useEffect } from 'react'
 import { useAuthStore } from '@/store/auth.store'
-import useSafeStore from '@/hooks/useSafeStore'
 import { useNavigate } from 'react-router-dom'
 
 export default function DebugAuth() {
-  const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated)
-  const user = useSafeStore(useAuthStore, (state) => state.user)
-  const accessToken = useSafeStore(useAuthStore, (state) => state.accessToken)
-  const clearAuth = useSafeStore(useAuthStore, (state) => state.clearAuth)
+  const authStore = useAuthStore()
+  const { isAuthenticated, user, accessToken, refreshToken, clearAuth } = authStore
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -21,8 +18,8 @@ export default function DebugAuth() {
   }, [isAuthenticated, user, accessToken])
 
   const clearAllAuth = () => {
-    // Clear zustand store
-    clearAuth?.()
+    // Clear Jotai store
+    clearAuth()
     
     // Clear localStorage
     localStorage.removeItem('auth-storage')
@@ -44,7 +41,7 @@ export default function DebugAuth() {
               isAuthenticated: isAuthenticated,
               user: user,
               hasAccessToken: !!accessToken,
-              hasRefreshToken: !!useSafeStore(useAuthStore, (state) => state.refreshToken)
+              hasRefreshToken: !!refreshToken
             }, null, 2)}
           </pre>
         </div>

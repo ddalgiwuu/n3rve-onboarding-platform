@@ -1,13 +1,11 @@
-// Custom useStore hook for hydration (Context7 MCP solution)
-import { useState, useEffect, useRef } from 'react'
+// Simplified hook for Jotai compatibility
+import { useState, useEffect } from 'react'
 
 const useSafeStore = <T, F>(
-  store: (callback: (state: T) => unknown) => unknown,
+  store: () => T,
   callback: (state: T) => F,
 ) => {
   const [data, setData] = useState<F | undefined>(undefined)
-  const callbackRef = useRef(callback)
-  callbackRef.current = callback
 
   useEffect(() => {
     let mounted = true
@@ -17,20 +15,13 @@ const useSafeStore = <T, F>(
       if (!mounted) return
 
       try {
-        // Subscribe to store
-        const unsubscribe = store((state: T) => {
-          if (mounted) {
-            setData(callbackRef.current(state))
-          }
-        })
-
-        // Cleanup
-        return () => {
-          mounted = false
-          unsubscribe()
+        // Get current state from store
+        const state = store()
+        if (mounted) {
+          setData(callback(state))
         }
       } catch (error) {
-        console.warn('Store subscription failed:', error)
+        console.warn('Store access failed:', error)
       }
     }, 0)
 
@@ -38,7 +29,7 @@ const useSafeStore = <T, F>(
       mounted = false
       clearTimeout(timer)
     }
-  }, [store])
+  }, [store, callback])
 
   return data
 }

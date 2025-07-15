@@ -15,7 +15,7 @@ export default defineConfig({
             if (id.includes('react') || id.includes('react-dom') || id.includes('react/')) {
               return 'react-vendor'
             }
-            if (id.includes('zustand')) {
+            if (id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
               return 'state-vendor'
             }
             if (id.includes('lucide-react')) {
