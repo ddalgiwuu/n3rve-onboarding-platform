@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Calendar, Clock, Info, Copy, Globe } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { DatePicker } from '@/components/DatePicker'
 import { timezones, convertToUTC, formatUTCInTimezone } from '@/constants/timezones'
 
@@ -23,7 +24,7 @@ interface ReleaseDateSettingsProps {
 }
 
 export default function ReleaseDateSettings({ consumerDate, originalDate, onChange }: ReleaseDateSettingsProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [showOriginalDateEdit, setShowOriginalDateEdit] = useState(false)

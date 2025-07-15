@@ -4,13 +4,14 @@ import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 
 /**
  * Simplified release submission form as a fallback
  * This prevents any complex .map() operations that might cause errors
  */
 export default function SimpleReleaseSubmission() {
-  const language = useLanguageStore(state => state.language) || 'ko'
+  const language = useSafeStore(useLanguageStore, (state) => state.language) || 'ko'
   const [formData, setFormData] = useState({
     albumTitle: '',
     artistName: '',

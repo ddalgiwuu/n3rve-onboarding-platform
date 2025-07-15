@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ChevronRight, ChevronLeft, Save, Upload, Check, AlertCircle, Info } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import FileSpecsGuide from './FileSpecsGuide'
 import ContributorForm from './ContributorForm'
 import ReleaseDateSettings from './ReleaseDateSettings'
@@ -92,7 +93,7 @@ interface FormData {
 }
 
 export default function ReleaseFormV2() {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [currentSection, setCurrentSection] = useState(0)

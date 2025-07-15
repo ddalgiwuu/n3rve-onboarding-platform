@@ -1,13 +1,14 @@
 import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const setAuth = useAuthStore(state => state.setAuth)
+  const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth)
 
   useEffect(() => {
     const handleAuth = async () => {
@@ -36,7 +37,7 @@ export default function AuthCallback() {
         const user = await response.json()
 
         // Set auth in store
-        setAuth(user, accessToken, refreshToken)
+        setAuth?.(user, accessToken, refreshToken)
 
         // Get return URL from session storage
         const returnUrl = sessionStorage.getItem('returnUrl')

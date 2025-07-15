@@ -1,5 +1,6 @@
 import { Info, Music, Image, Video, Disc, AlertCircle } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import {
   AUDIO_SPECIFICATIONS,
   ARTWORK_SPECIFICATIONS,
@@ -14,7 +15,7 @@ interface FileSpecsGuideProps {
 }
 
 export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const getSpecContent = () => {

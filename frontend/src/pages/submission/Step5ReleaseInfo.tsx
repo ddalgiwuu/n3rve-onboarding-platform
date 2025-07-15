@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { t, useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { Calendar, Globe, Music, Shield, Clock, FileText, Info, ChevronDown, ChevronRight, AlertCircle, Tag, AlertTriangle, ExternalLink, Camera, Link, Headphones, Film } from 'lucide-react'
 import { continents, allCountries, getExcludedCountriesForDSPs, getCountryByCode, dspExclusions } from '@/data/territories'
 import { validateField } from '@/utils/fugaQCValidation'
@@ -148,7 +149,7 @@ interface Props {
 }
 
 export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const { getStepData, updateStep, updateCurrentStep } = useSubmissionStore()
   const savedData = getStepData(5)
   

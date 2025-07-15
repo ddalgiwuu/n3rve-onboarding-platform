@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Menu, X, Check } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 
 interface MobileFormNavProps {
   sections: Array<{
@@ -20,7 +21,7 @@ export default function MobileFormNav({
   onSectionChange 
 }: MobileFormNavProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
 
   return (
     <>

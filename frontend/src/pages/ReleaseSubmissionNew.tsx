@@ -10,6 +10,7 @@ import Checkbox from '@/components/ui/Checkbox'
 import toast from 'react-hot-toast'
 import { submissionService } from '@/services/submission.service'
 import { useAuthStore } from '@/store/auth.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
 import { v4 as uuidv4 } from 'uuid'
@@ -149,9 +150,9 @@ const albumFormats = [
 
 export default function ReleaseSubmissionNew() {
   // Always call hooks at the top level - no conditional rendering here
-  const language = useLanguageStore(state => state.language) || 'ko'
+  const language = useSafeStore(useLanguageStore, (state) => state.language) || 'ko'
   const navigate = useNavigate()
-  const user = useAuthStore(state => state.user)
+  const user = useSafeStore(useAuthStore, (state) => state.user)
 
   // Early safety check - ensure all dependencies are available
   if (!language || !navigate) {

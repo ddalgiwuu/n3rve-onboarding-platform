@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { 
   Music, FileText, Settings, Send, ArrowRight, ArrowLeft, 
   CheckCircle, AlertCircle, Info, Users, Globe, Megaphone,
@@ -12,7 +13,7 @@ import ProgressSteps from '@/components/ui/ProgressSteps'
 import { cn } from '@/utils/cn'
 
 export default function ModernReleaseSubmission() {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const navigate = useNavigate()
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 

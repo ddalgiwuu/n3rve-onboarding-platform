@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Search, Globe, Play, Download, Video, Radio, Users, Settings, Filter, BarChart3 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import api from '@/lib/api'
 
 interface DSP {
@@ -50,7 +51,7 @@ const ServiceTypeColors = {
 }
 
 export default function DSPList() {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [dsps, setDsps] = useState<DSP[]>([])

@@ -3,6 +3,7 @@ import { Globe, Check, X, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { territories, regions, getTerritoriesByRegion, regionCounts, type Region } from '@/constants/territories';
 import { dsps, getDSPsByTerritory, type DSP } from '@/constants/dsps';
 import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore'
 
 interface TerritoryDSPSelectorProps {
   value: {
@@ -16,7 +17,7 @@ interface TerritoryDSPSelectorProps {
 }
 
 export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSelectorProps) {
-  const language = useLanguageStore(state => state.language);
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string) => language === 'ko' ? ko : en;
   
   const [selectedRegion, setSelectedRegion] = useState<Region>('World');
