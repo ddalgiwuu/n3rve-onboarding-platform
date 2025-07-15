@@ -12,6 +12,8 @@ import { AdminModule } from './admin/admin.module';
 import { FilesModule } from './files/files.module';
 import { HealthModule } from './health/health.module';
 import { WebsocketModule } from './websocket/websocket.module';
+import { SavedArtistsModule } from './saved-artists/saved-artists.module';
+import { DSPModule } from './dsp/dsp.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { WebsocketModule } from './websocket/websocket.module';
     FilesModule,
     HealthModule,
     WebsocketModule,
+    SavedArtistsModule,
+    DSPModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,0 +1,268 @@
+import { useState, useEffect } from 'react'
+import { Search, Plus, Clock, Star, Music, Users, Languages, Link as LinkIcon } from 'lucide-react'
+import { useLanguageStore } from '@/store/language.store'
+import { useSavedArtistsStore, SavedArtist, SavedContributor } from '@/store/savedArtists.store'
+import ContributorForm from './ContributorForm'
+
+interface ArtistSelectorProps {
+  type: 'artist' | 'contributor'
+  onSelect: (selected: SavedArtist | SavedContributor) => void
+  onCreateNew: () => void
+  filterRoles?: string[]
+  filterInstruments?: string[]
+}
+
+export default function ArtistSelector({ 
+  type, 
+  onSelect, 
+  onCreateNew,
+  filterRoles = [],
+  filterInstruments = []
+}: ArtistSelectorProps) {
+  const language = useLanguageStore(state => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+
+  const [searchQuery, setSearchQuery] = useState('')
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  
+  const { 
+    artists, 
+    contributors, 
+    loading,
+    searchArtists, 
+    searchContributors,
+    useArtist,
+    useContributor,
+    addArtist,
+    addContributor,
+    fetchArtists,
+    fetchContributors
+  } = useSavedArtistsStore()
+
+  // Fetch data on mount
+  useEffect(() => {
+    if (type === 'artist') {
+      fetchArtists()
+    } else {
+      fetchContributors()
+    }
+  }, [type])
+
+  const results = type === 'artist' 
+    ? searchArtists(searchQuery)
+    : searchContributors(searchQuery, filterRoles, filterInstruments)
+
+  const handleSelect = async (item: SavedArtist | SavedContributor) => {
+    if (type === 'artist') {
+      const artist = await useArtist(item.id)
+      if (artist) onSelect(artist)
+    } else {
+      const contributor = await useContributor(item.id)
+      if (contributor) onSelect(contributor)
+    }
+  }
+
+  const handleCreateNew = async (data: any) => {
+    try {
+      if (type === 'artist') {
+        const newArtist = await addArtist({
+          name: data.name,
+          translations: data.translations,
+          identifiers: data.identifiers
+        })
+        onSelect(newArtist)
+      } else {
+        const newContributor = await addContributor({
+          name: data.name,
+          roles: data.roles,
+          instruments: data.instruments,
+          translations: data.translations,
+          identifiers: data.identifiers
+        })
+        onSelect(newContributor)
+      }
+      setShowCreateForm(false)
+    } catch (error) {
+      console.error('Error creating:', error)
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
+    
+    if (diffInDays === 0) return t('오늘', 'Today')
+    if (diffInDays === 1) return t('어제', 'Yesterday')
+    if (diffInDays < 7) return t(`${diffInDays}일 전`, `${diffInDays} days ago`)
+    if (diffInDays < 30) return t(`${Math.floor(diffInDays / 7)}주 전`, `${Math.floor(diffInDays / 7)} weeks ago`)
+    return t(`${Math.floor(diffInDays / 30)}개월 전`, `${Math.floor(diffInDays / 30)} months ago`)
+  }
+
+  return (
+    <>
+      <div className="space-y-4">
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
+            placeholder={t(
+              type === 'artist' ? '아티스트 검색...' : '기여자 검색...',
+              type === 'artist' ? 'Search artists...' : 'Search contributors...'
+            )}
+          />
+        </div>
+
+        {/* Results */}
+        <div className="space-y-2 max-h-96 overflow-y-auto">
+          {loading ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600 mx-auto"></div>
+              <p className="text-gray-500 dark:text-gray-400 mt-2">
+                {t('로딩 중...', 'Loading...')}
+              </p>
+            </div>
+          ) : results.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                {searchQuery ? 
+                  t('검색 결과가 없습니다', 'No results found') :
+                  t(
+                    type === 'artist' ? '저장된 아티스트가 없습니다' : '저장된 기여자가 없습니다',
+                    type === 'artist' ? 'No saved artists' : 'No saved contributors'
+                  )
+                }
+              </p>
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="text-purple-600 hover:text-purple-700 font-medium flex items-center gap-2 mx-auto"
+              >
+                <Plus className="w-4 h-4" />
+                {t(
+                  type === 'artist' ? '새 아티스트 추가' : '새 기여자 추가',
+                  type === 'artist' ? 'Add new artist' : 'Add new contributor'
+                )}
+              </button>
+            </div>
+          ) : (
+            <>
+              {results.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => handleSelect(item)}
+                  className="w-full p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-left group"
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-3 flex-1">
+                      <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                        {type === 'artist' ? 
+                          <Music className="w-5 h-5 text-purple-600 dark:text-purple-400" /> :
+                          <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                        }
+                      </div>
+                      
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                          {item.name}
+                        </h4>
+                        
+                        <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
+                          {item.translations.length > 0 && (
+                            <span className="flex items-center gap-1">
+                              <Languages className="w-3 h-3" />
+                              {item.translations.length} {t('번역', 'translations')}
+                            </span>
+                          )}
+                          
+                          {item.identifiers.length > 0 && (
+                            <span className="flex items-center gap-1">
+                              <LinkIcon className="w-3 h-3" />
+                              {item.identifiers.map(i => i.type).join(', ')}
+                            </span>
+                          )}
+                          
+                          {'roles' in item && item.roles.length > 0 && (
+                            <span>{item.roles.join(', ')}</span>
+                          )}
+                          
+                          {'instruments' in item && item.instruments.length > 0 && (
+                            <span>{item.instruments.join(', ')}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right text-xs text-gray-500">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Star className="w-3 h-3" />
+                        <span>{item.usageCount}</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        <span>{formatDate(item.lastUsed)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              ))}
+              
+              {/* Add New Button */}
+              <button
+                onClick={() => setShowCreateForm(true)}
+                className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-purple-500 dark:hover:border-purple-400 rounded-lg transition-colors text-center group"
+              >
+                <div className="flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                  <Plus className="w-5 h-5" />
+                  <span className="font-medium">
+                    {t(
+                      type === 'artist' ? '새 아티스트 추가' : '새 기여자 추가',
+                      type === 'artist' ? 'Add new artist' : 'Add new contributor'
+                    )}
+                  </span>
+                </div>
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Usage Stats */}
+        {(type === 'artist' ? artists : contributors).length > 0 && (
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className="flex items-center justify-between text-sm text-gray-500">
+              <span>
+                {t(
+                  type === 'artist' 
+                    ? `총 ${artists.length}명의 아티스트` 
+                    : `총 ${contributors.length}명의 기여자`,
+                  type === 'artist' 
+                    ? `Total ${artists.length} artists` 
+                    : `Total ${contributors.length} contributors`
+                )}
+              </span>
+              <span>
+                {t(
+                  `${results.length}개 검색됨`,
+                  `${results.length} found`
+                )}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Create New Form */}
+      {showCreateForm && (
+        <ContributorForm
+          contributor={null}
+          onSave={handleCreateNew}
+          onCancel={() => setShowCreateForm(false)}
+          isArtist={type === 'artist'}
+        />
+      )}
+    </>
+  )
+}
