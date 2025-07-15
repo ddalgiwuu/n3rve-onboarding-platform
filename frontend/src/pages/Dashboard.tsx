@@ -1,11 +1,19 @@
 import { useAuthStore } from '@/store/auth.store'
 import { useTranslation } from '@/store/language.store'
+import { useHydration } from '@/hooks/useHydration'
 import { LayoutDashboard, Music, FileText, Users, TrendingUp, Upload, ChevronRight, Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import LoadingSpinner from '@/components/common/LoadingSpinner'
 
 export default function Dashboard() {
+  const isHydrated = useHydration()
   const user = useAuthStore(state => state.user)
   const { t } = useTranslation()
+
+  // Show loading spinner until stores are hydrated
+  if (!isHydrated) {
+    return <LoadingSpinner />
+  }
 
   const stats = [
     {

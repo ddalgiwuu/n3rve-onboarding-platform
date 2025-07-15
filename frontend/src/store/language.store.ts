@@ -1922,13 +1922,15 @@ export function t(key: string, replacements?: Record<string, string | number>): 
   return value
 }
 
-// Hook for translations (for compatibility)
+// Hook for translations (for compatibility) with hydration safety
 export function useTranslation() {
-  const language = useLanguageStore(state => state.language)
+  const language = useLanguageStore(state => state.language) || 'ko' // Fallback to 'ko' if not hydrated
   
   return {
     t: (key: string, replacements?: Record<string, string | number>) => {
-      let value = translations[language][key as keyof typeof translations['ko']] || key
+      // Ensure language is valid before accessing translations
+      const safeLanguage = language && translations[language] ? language : 'ko'
+      let value = translations[safeLanguage][key as keyof typeof translations['ko']] || key
       
       if (replacements) {
         Object.entries(replacements).forEach(([placeholder, replacement]) => {
@@ -1938,6 +1940,6 @@ export function useTranslation() {
       
       return value
     },
-    language
+    language: language || 'ko'
   }
 }
