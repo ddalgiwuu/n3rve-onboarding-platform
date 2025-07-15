@@ -31,8 +31,15 @@ const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
 const ReleaseFormV2 = lazy(() => import('./components/ReleaseFormV2'))
 
 function App() {
+  const hasAuthHydrated = useAuthStore(state => state._hasHydrated)
+  const hasLanguageHydrated = useLanguageStore(state => state._hasHydrated)
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
   const userRole = useAuthStore(state => state.user?.role)
+
+  // Wait for both stores to hydrate
+  if (!hasAuthHydrated || !hasLanguageHydrated) {
+    return <LoadingSpinner fullScreen />
+  }
 
   // Initialize dark mode on app load
   useEffect(() => {
