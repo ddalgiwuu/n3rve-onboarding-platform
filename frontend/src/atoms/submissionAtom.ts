@@ -1,5 +1,4 @@
 import { atom } from 'jotai'
-import { atomWithStorage } from 'jotai/utils'
 
 const initialFormData = {
   // Artist info
@@ -78,51 +77,8 @@ const initialState: SubmissionState = {
   currentStep: 1
 }
 
-// Main submission atom with localStorage persistence
-export const submissionAtom = atomWithStorage<SubmissionState>('submission-storage', initialState, {
-  getItem: (key, initialValue) => {
-    if (typeof window === 'undefined') return initialValue
-    
-    try {
-      const storedValue = localStorage.getItem(key)
-      if (!storedValue) return initialValue
-      
-      const parsed = JSON.parse(storedValue)
-      // Handle legacy format from zustand/redux
-      if (parsed.state) {
-        return {
-          formData: parsed.state.formData || initialFormData,
-          currentStep: parsed.state.currentStep || 1
-        }
-      }
-      return parsed
-    } catch {
-      return initialValue
-    }
-  },
-  setItem: (key, value) => {
-    if (typeof window === 'undefined') return
-    
-    try {
-      const dataToStore = {
-        state: value,
-        version: 0
-      }
-      localStorage.setItem(key, JSON.stringify(dataToStore))
-    } catch (error) {
-      console.warn('Failed to save to localStorage:', error)
-    }
-  },
-  removeItem: (key) => {
-    if (typeof window === 'undefined') return
-    
-    try {
-      localStorage.removeItem(key)
-    } catch (error) {
-      console.warn('Failed to remove from localStorage:', error)
-    }
-  }
-})
+// Main submission atom - simple atom without localStorage integration
+export const submissionAtom = atom<SubmissionState>(initialState)
 
 // Derived atoms
 export const formDataAtom = atom(
