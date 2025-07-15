@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react'
 import useSafeStore from '@/hooks/useSafeStore'
 
 export default function LanguageToggle() {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language) || 'ko'
   const setLanguage = useSafeStore(useLanguageStore, (state) => state.setLanguage)
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
