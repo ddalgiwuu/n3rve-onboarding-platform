@@ -36,6 +36,8 @@ jobs:
           ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
         cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
         cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+        build-args: |
+          BUILDKIT_INLINE_CACHE=1
 
   deploy-to-ec2:
     needs: build-and-push
