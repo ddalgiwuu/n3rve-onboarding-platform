@@ -24,11 +24,11 @@ const Settings = () => {
   });
 
   const tabs = [
-    { id: 'profile', label: t('settings.profile', 'Profile'), icon: User },
-    { id: 'notifications', label: t('settings.notifications', 'Notifications'), icon: Bell },
-    { id: 'security', label: t('settings.security', 'Security'), icon: Shield },
-    { id: 'language', label: t('settings.language', 'Language'), icon: Globe },
-    { id: 'billing', label: t('settings.billing', 'Billing'), icon: CreditCard }
+    { id: 'profile', label: t('settings.profile'), icon: User },
+    { id: 'notifications', label: t('settings.notifications'), icon: Bell },
+    { id: 'security', label: t('settings.security'), icon: Shield },
+    { id: 'language', label: t('settings.language'), icon: Globe },
+    { id: 'billing', label: t('settings.billing'), icon: CreditCard }
   ];
 
   const handleSaveProfile = () => {
@@ -55,9 +55,9 @@ const Settings = () => {
         {/* Header */}
         <div className="glass-effect rounded-2xl p-8 animate-fade-in">
           <h1 className="text-3xl font-bold gradient-text mb-2">
-            {t('settings.title', 'Settings')}
+            {t('settings.title')}
           </h1>
-          <p className="text-gray-600 dark:text-gray-400">{t('settings.description', 'Manage your account preferences and settings')}</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('settings.description')}</p>
         </div>
 
         <div className="flex gap-6">
@@ -87,11 +87,11 @@ const Settings = () => {
           <div className="flex-1 glass-effect rounded-2xl p-8 animate-fade-in">
             {activeTab === 'profile' && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.profileSettings', 'Profile Settings')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.profileSettings')}</h2>
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('settings.fullName', 'Full Name')}
+                      {t('settings.fullName')}
                     </label>
                     <input
                       type="text"
@@ -103,7 +103,7 @@ const Settings = () => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('settings.email', 'Email')}
+                      {t('settings.email')}
                     </label>
                     <input
                       type="email"
@@ -115,7 +115,7 @@ const Settings = () => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('settings.phone', 'Phone Number')}
+                      {t('settings.phone')}
                     </label>
                     <input
                       type="tel"
@@ -127,7 +127,7 @@ const Settings = () => {
                   
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('settings.company', 'Company/Label')}
+                      {t('settings.company')}
                     </label>
                     <input
                       type="text"
@@ -142,7 +142,7 @@ const Settings = () => {
                     className="btn-modern btn-primary hover-lift flex items-center gap-2"
                   >
                     <Save className="w-5 h-5" />
-                    {t('settings.saveChanges', 'Save Changes')}
+                    {t('settings.saveChanges')}
                   </button>
                 </div>
               </div>
@@ -150,12 +150,12 @@ const Settings = () => {
 
             {activeTab === 'notifications' && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.notificationSettings', 'Notification Settings')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.notificationSettings')}</h2>
                 <div className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.emailNotifications', 'Email Notifications')}</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.emailNotificationsDesc', 'Receive updates via email')}</p>
+                      <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.emailNotifications')}</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.emailNotificationsDesc')}</p>
                     </div>
                     <ToggleSwitch
                       enabled={notifications.email}
@@ -165,8 +165,8 @@ const Settings = () => {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.pushNotifications', 'Push Notifications')}</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.pushNotificationsDesc', 'Browser push notifications')}</p>
+                      <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.pushNotifications')}</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.pushNotificationsDesc')}</p>
                     </div>
                     <ToggleSwitch
                       enabled={notifications.push}
@@ -176,8 +176,8 @@ const Settings = () => {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.smsNotifications', 'SMS Notifications')}</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.smsNotificationsDesc', 'Important updates via SMS')}</p>
+                      <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.smsNotifications')}</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.smsNotificationsDesc')}</p>
                     </div>
                     <ToggleSwitch
                       enabled={notifications.sms}
@@ -187,8 +187,8 @@ const Settings = () => {
                   
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.marketingEmails', 'Marketing Emails')}</h3>
-                      <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.marketingEmailsDesc', 'Promotional content and updates')}</p>
+                      <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.marketingEmails')}</h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.marketingEmailsDesc')}</p>
                     </div>
                     <ToggleSwitch
                       enabled={notifications.marketing}
@@ -201,18 +201,18 @@ const Settings = () => {
 
             {activeTab === 'security' && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.securitySettings', 'Security Settings')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.securitySettings')}</h2>
                 <div className="space-y-6">
                   <div className="p-6 bg-gray-100 dark:bg-gray-800/30 rounded-lg">
                     <div className="flex items-center gap-4 mb-4">
                       <Key className="w-8 h-8 text-purple-400" />
                       <div>
-                        <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.changePassword', 'Change Password')}</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.lastChanged', 'Last changed 30 days ago')}</p>
+                        <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.changePassword')}</h3>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.lastChanged')}</p>
                       </div>
                     </div>
                     <button className="btn-modern btn-secondary text-sm">
-                      {t('settings.updatePassword', 'Update Password')}
+                      {t('settings.updatePassword')}
                     </button>
                   </div>
                   
@@ -220,12 +220,12 @@ const Settings = () => {
                     <div className="flex items-center gap-4 mb-4">
                       <Shield className="w-8 h-8 text-green-400" />
                       <div>
-                        <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.twoFactor', 'Two-Factor Authentication')}</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.twoFactorDesc', 'Add an extra layer of security')}</p>
+                        <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.twoFactor')}</h3>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">{t('settings.twoFactorDesc')}</p>
                       </div>
                     </div>
                     <button className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg text-sm font-medium transition-all">
-                      {t('settings.enable2FA', 'Enable 2FA')}
+                      {t('settings.enable2FA')}
                     </button>
                   </div>
                 </div>
@@ -234,7 +234,7 @@ const Settings = () => {
 
             {activeTab === 'language' && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.languageSettings', 'Language Settings')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.languageSettings')}</h2>
                 <div className="space-y-4">
                   <button
                     onClick={() => setLanguage?.('en')}
@@ -275,23 +275,23 @@ const Settings = () => {
 
             {activeTab === 'billing' && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.billingSettings', 'Billing Settings')}</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.billingSettings')}</h2>
                 <div className="space-y-6">
                   <div className="p-6 bg-gray-100 dark:bg-gray-800/30 rounded-lg">
-                    <h3 className="text-gray-900 dark:text-white font-medium mb-4">{t('settings.currentPlan', 'Current Plan')}</h3>
+                    <h3 className="text-gray-900 dark:text-white font-medium mb-4">{t('settings.currentPlan')}</h3>
                     <div className="flex items-center justify-between mb-4">
                       <div>
                         <p className="text-xl font-bold text-purple-400">Pro Plan</p>
                         <p className="text-gray-600 dark:text-gray-400">$29.99/month</p>
                       </div>
                       <button className="btn-modern btn-secondary text-sm">
-                        {t('settings.upgrade', 'Upgrade')}
+                        {t('settings.upgrade')}
                       </button>
                     </div>
                   </div>
                   
                   <div className="p-6 bg-gray-100 dark:bg-gray-800/30 rounded-lg">
-                    <h3 className="text-gray-900 dark:text-white font-medium mb-4">{t('settings.paymentMethod', 'Payment Method')}</h3>
+                    <h3 className="text-gray-900 dark:text-white font-medium mb-4">{t('settings.paymentMethod')}</h3>
                     <div className="flex items-center gap-4">
                       <CreditCard className="w-8 h-8 text-gray-500 dark:text-gray-400" />
                       <div>

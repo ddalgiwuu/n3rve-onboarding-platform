@@ -181,7 +181,7 @@ export default function TrackVersionManager({
 
             {filteredVersions.length === 0 && searchQuery && (
               <div className="px-3 py-4 text-center text-gray-500 dark:text-gray-400 text-sm">
-                {t('검색 결과가 없습니다', 'No versions found')}
+                {t('검색 결과가 없습니다', 'No search results')}
               </div>
             )}
           </div>
@@ -246,12 +246,12 @@ export default function TrackVersionManager({
           {isStandardVersion ? (
             <span className="flex items-center gap-1">
               <Check className="w-3 h-3 text-green-500" />
-              {t('표준 버전', 'Standard version')}
+              {t('표준 버전', 'Standard Version')}
             </span>
           ) : (
             <span className="flex items-center gap-1">
               <Edit2 className="w-3 h-3 text-orange-500" />
-              {t('사용자 정의 버전', 'Custom version')}
+              {t('사용자 정의 버전', 'Custom Version')}
             </span>
           )}
         </div>

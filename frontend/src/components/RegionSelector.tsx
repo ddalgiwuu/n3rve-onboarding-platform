@@ -174,8 +174,8 @@ export default function RegionSelector({ selectedRegions, onRegionsChange, class
         >
           <Check className={cn("w-4 h-4", allVisibleSelected && "text-green-600")} />
           {allVisibleSelected 
-            ? t('표시된 지역 모두 해제', 'Deselect All Visible')
-            : t('표시된 지역 모두 선택', 'Select All Visible')
+            ? t('표시된 지역 모두 해제', 'Deselect all visible regions')
+            : t('표시된 지역 모두 선택', 'Select all visible regions')
           }
         </button>
       </div>
@@ -228,7 +228,7 @@ export default function RegionSelector({ selectedRegions, onRegionsChange, class
           <div className="col-span-full py-8 text-center">
             <Globe className="w-12 h-12 mx-auto text-gray-400 mb-2" />
             <p className="text-gray-500 dark:text-gray-400">
-              {t('검색 결과가 없습니다', 'No regions found')}
+              {t('검색 결과가 없습니다', 'No search results')}
             </p>
           </div>
         )}

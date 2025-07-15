@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Video, Music, Hash, X, Check, AlertCircle } from 'lucide-react'
+import { Video, X, Check, AlertCircle } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 
@@ -48,7 +48,7 @@ export default function MusicVideoForm({ video, audioTracks, onSave, onCancel }:
     }
 
     if (!localVideo.audioISRC) {
-      newErrors.audioISRC = t('연결된 오디오 트랙을 선택해주세요', 'Please select associated audio track')
+      newErrors.audioISRC = t('연결된 오디오 트랙을 선택해주세요', 'Please select an associated audio track')
     }
 
     setErrors(newErrors)
@@ -161,7 +161,7 @@ export default function MusicVideoForm({ video, audioTracks, onSave, onCancel }:
                 value={localVideo.audioISRC}
                 readOnly
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-700/50"
-                placeholder={t('오디오 트랙 선택 시 자동 입력', 'Auto-filled from audio track')}
+                placeholder={t('오디오 트랙 선택 시 자동 입력', 'Auto-filled when audio track is selected')}
               />
             </div>
 
@@ -227,8 +227,8 @@ export default function MusicVideoForm({ video, audioTracks, onSave, onCancel }:
                 <ul className="space-y-1 ml-4">
                   <li>• {t('뮤직비디오는 반드시 오디오 트랙과 연결되어야 합니다', 'Music videos must be linked to an audio track')}</li>
                   <li>• {t('오디오 ISRC는 연결된 트랙의 ISRC를 사용합니다', 'Audio ISRC uses the linked track\'s ISRC')}</li>
-                  <li>• {t('비디오 전용 ISRC는 별도로 발급받은 경우에만 입력하세요', 'Only enter video ISRC if separately issued')}</li>
-                  <li>• {t('버전 정보로 Official Video, Lyric Video 등을 구분할 수 있습니다', 'Use version to distinguish Official Video, Lyric Video, etc.')}</li>
+                  <li>• {t('비디오 전용 ISRC는 별도로 발급받은 경우에만 입력하세요', 'Video-specific ISRC should only be entered if separately issued')}</li>
+                  <li>• {t('버전 정보로 Official Video, Lyric Video 등을 구분할 수 있습니다', 'Version information can distinguish between Official Video, Lyric Video, etc.')}</li>
                 </ul>
               </div>
             </div>
@@ -248,7 +248,7 @@ export default function MusicVideoForm({ video, audioTracks, onSave, onCancel }:
             className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2"
           >
             <Check className="w-4 h-4" />
-            {video.id ? t('수정', 'Update') : t('추가', 'Add')}
+            {video.id ? t('수정', 'Edit') : t('추가', 'Add')}
           </button>
         </div>
       </div>

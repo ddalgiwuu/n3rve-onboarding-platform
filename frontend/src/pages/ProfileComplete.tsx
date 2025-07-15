@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CheckCircle, User, Music, Globe, Star, ArrowRight } from 'lucide-react';
-import { useTranslation } from '@/store/language.store';
+import { useTranslation } from '@/hooks/useTranslation';
 import confetti from 'canvas-confetti';
 
 const ProfileComplete = () => {
@@ -21,33 +21,33 @@ const ProfileComplete = () => {
   const achievements = [
     {
       icon: <User className="w-6 h-6" />,
-      title: t('profileComplete.basicInfo', 'Basic Information'),
-      description: t('profileComplete.basicInfoDesc', 'Your artist details are complete')
+      title: t('profileComplete.basicInfo'),
+      description: t('profileComplete.basicInfoDesc')
     },
     {
       icon: <Music className="w-6 h-6" />,
-      title: t('profileComplete.musicCatalog', 'Music Catalog'),
-      description: t('profileComplete.musicCatalogDesc', 'Your discography is ready')
+      title: t('profileComplete.musicCatalog'),
+      description: t('profileComplete.musicCatalogDesc')
     },
     {
       icon: <Globe className="w-6 h-6" />,
-      title: t('profileComplete.socialLinks', 'Social Links'),
-      description: t('profileComplete.socialLinksDesc', 'All platforms connected')
+      title: t('profileComplete.socialLinks'),
+      description: t('profileComplete.socialLinksDesc')
     }
   ];
 
   const nextSteps = [
     {
-      title: t('profileComplete.submitMusic', 'Submit Your Music'),
-      description: t('profileComplete.submitMusicDesc', 'Start distributing your tracks to 150+ platforms'),
+      title: t('profileComplete.submitMusic'),
+      description: t('profileComplete.submitMusicDesc'),
       action: () => navigate('/submit'),
-      buttonText: t('profileComplete.startSubmission', 'Start Submission')
+      buttonText: t('profileComplete.startSubmission')
     },
     {
-      title: t('profileComplete.exploreGuides', 'Explore Guides'),
-      description: t('profileComplete.exploreGuidesDesc', 'Learn best practices for music distribution'),
+      title: t('profileComplete.exploreGuides'),
+      description: t('profileComplete.exploreGuidesDesc'),
       action: () => navigate('/guide'),
-      buttonText: t('profileComplete.viewGuides', 'View Guides')
+      buttonText: t('profileComplete.viewGuides')
     }
   ];
 
@@ -61,17 +61,17 @@ const ProfileComplete = () => {
           </div>
           
           <h1 className="text-4xl font-bold text-white mb-4">
-            {t('profileComplete.title', 'Profile Complete!')}
+            {t('profileComplete.title')}
           </h1>
           
           <p className="text-xl text-gray-300 mb-8">
-            {t('profileComplete.subtitle', 'Congratulations! Your artist profile is now 100% complete.')}
+            {t('profileComplete.subtitle')}
           </p>
           
           <div className="inline-flex items-center gap-2 px-6 py-3 bg-purple-500/20 rounded-full border border-purple-500/30">
             <Star className="w-5 h-5 text-yellow-400" />
             <span className="text-purple-300 font-medium">
-              {t('profileComplete.profileScore', 'Profile Score: 100/100')}
+              {t('profileComplete.profileScore')}
             </span>
           </div>
         </div>
@@ -79,7 +79,7 @@ const ProfileComplete = () => {
         {/* Achievements */}
         <div className="mb-12">
           <h2 className="text-2xl font-bold text-white text-center mb-8">
-            {t('profileComplete.achievements', 'Your Achievements')}
+            {t('profileComplete.achievements')}
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -139,7 +139,7 @@ const ProfileComplete = () => {
             onClick={() => navigate('/dashboard')}
             className="text-gray-400 hover:text-white transition-colors"
           >
-            {t('profileComplete.skipToDashboard', 'Or go to Dashboard →')}
+            {t('profileComplete.skipToDashboard')}
           </button>
         </div>
       </div>

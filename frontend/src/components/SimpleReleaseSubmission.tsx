@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { FileText, Music, Megaphone } from 'lucide-react'
+import { FileText } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import Input from '@/components/ui/Input'
 import Textarea from '@/components/ui/Textarea'
@@ -26,7 +26,7 @@ export default function SimpleReleaseSubmission() {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {t('음원 발매 신청', 'Release Submission')}
+            {t('음원 발매 신청', 'Music Release Submission')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
             {t('기본 정보를 입력해주세요', 'Please enter basic information')}

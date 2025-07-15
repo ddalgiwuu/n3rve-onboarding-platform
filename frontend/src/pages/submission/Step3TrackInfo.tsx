@@ -2262,7 +2262,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <div className="flex items-start gap-2">
                   <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                   <div className="text-sm text-blue-800 dark:text-blue-200">
-                    <p className="font-medium mb-1">{t('track.productLevel.description')}</p>
+                    <p className="font-medium mb-1">{t('프로덕트 레벨 설정에 대한 설명', 'Product level configuration description')}</p>
                   </div>
                 </div>
               </div>
@@ -2271,7 +2271,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
               <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                 <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-n3rve-main" />
-                  {t('track.releaseInfo')}
+                  {t('릴리즈 정보', 'Release Information')}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
@@ -2300,7 +2300,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('track.originalReleaseDate')}
+                      {t('원본 발매일', 'Original Release Date')}
                     </label>
                     <DatePicker
                       value={productMetadata.originalReleaseDate}
@@ -2317,25 +2317,25 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('track.releaseTimezone')}
+                      {t('발매 시간대', 'Release Timezone')}
                     </label>
                     <select
                       value={productMetadata.selectedTimezone || 'Asia/Seoul'}
                       onChange={(e) => setProductMetadata({ ...productMetadata, selectedTimezone: e.target.value })}
                       className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                     >
-                      <option value="Pacific/Auckland">{t('timezone.newZealand')} (UTC+12/+13)</option>
-                      <option value="Asia/Seoul">{t('timezone.seoul')} (UTC+9)</option>
-                      <option value="Asia/Tokyo">{t('timezone.tokyo')} (UTC+9)</option>
-                      <option value="Asia/Shanghai">{t('timezone.beijing')} (UTC+8)</option>
-                      <option value="Asia/Singapore">{t('timezone.singapore')} (UTC+8)</option>
-                      <option value="Europe/London">{t('timezone.london')} (UTC+0/+1)</option>
-                      <option value="Europe/Paris">{t('timezone.paris')} (UTC+1/+2)</option>
-                      <option value="Europe/Berlin">{t('timezone.berlin')} (UTC+1/+2)</option>
-                      <option value="America/New_York">{t('timezone.newYork')} (UTC-5/-4)</option>
-                      <option value="America/Chicago">{t('timezone.chicago')} (UTC-6/-5)</option>
-                      <option value="America/Denver">{t('timezone.denver')} (UTC-7/-6)</option>
-                      <option value="America/Los_Angeles">{t('timezone.losAngeles')} (UTC-8/-7)</option>
+                      <option value="Pacific/Auckland">{t('뉴질랜드', 'New Zealand')} (UTC+12/+13)</option>
+                      <option value="Asia/Seoul">{t('서울', 'Seoul')} (UTC+9)</option>
+                      <option value="Asia/Tokyo">{t('도쿄', 'Tokyo')} (UTC+9)</option>
+                      <option value="Asia/Shanghai">{t('베이징', 'Beijing')} (UTC+8)</option>
+                      <option value="Asia/Singapore">{t('싱가포르', 'Singapore')} (UTC+8)</option>
+                      <option value="Europe/London">{t('런던', 'London')} (UTC+0/+1)</option>
+                      <option value="Europe/Paris">{t('파리', 'Paris')} (UTC+1/+2)</option>
+                      <option value="Europe/Berlin">{t('베를린', 'Berlin')} (UTC+1/+2)</option>
+                      <option value="America/New_York">{t('뉴욕', 'New York')} (UTC-5/-4)</option>
+                      <option value="America/Chicago">{t('시카고', 'Chicago')} (UTC-6/-5)</option>
+                      <option value="America/Denver">{t('덴버', 'Denver')} (UTC-7/-6)</option>
+                      <option value="America/Los_Angeles">{t('로스앤젤레스', 'Los Angeles')} (UTC-8/-7)</option>
                     </select>
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
                       {language === 'ko' 
@@ -2346,7 +2346,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('track.releaseTime')} ({productMetadata.selectedTimezone === 'Asia/Seoul' ? 'KST' : 
+                      {t('발매 시간', 'Release Time')} ({productMetadata.selectedTimezone === 'Asia/Seoul' ? 'KST' : 
                         productMetadata.selectedTimezone === 'Asia/Tokyo' ? 'JST' :
                         productMetadata.selectedTimezone === 'America/New_York' ? 'EST' :
                         productMetadata.selectedTimezone === 'America/Los_Angeles' ? 'PST' :
@@ -2753,17 +2753,17 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
               <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                 <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <Languages className="w-5 h-5 text-n3rve-main" />
-                  {t('track.metadataLanguage')}
+                  {t('메타데이터 언어', 'Metadata Language')}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {t('track.metadataLanguage.description')}
+                  {t('음원 정보를 입력할 언어를 선택하세요', 'Select the language for entering music metadata')}
                 </p>
                 <select
                   value={productMetadata.metadataLanguage || ''}
                   onChange={(e) => setProductMetadata({ ...productMetadata, metadataLanguage: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                 >
-                  <option value="">{t('common.selectLanguage')}</option>
+                  <option value="">{t('언어 선택', 'Select Language')}</option>
                   {languageOptions.map(option => (
                     <option key={option.value} value={option.value}>
                       {option.label}
@@ -2776,10 +2776,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
               <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                 <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <Target className="w-5 h-5 text-n3rve-main" />
-                  {t('track.territory')}
+                  {t('유통 지역', 'Territory')}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {t('track.territory.description')}
+                  {t('음원이 유통될 지역을 선택하세요', 'Select the territories where your music will be distributed')}
                 </p>
                 
                 {/* Territory Type Selection */}
@@ -2797,7 +2797,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         })}
                         className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
                       />
-                      <span className="text-gray-700 dark:text-gray-300">{t('track.territory.world')}</span>
+                      <span className="text-gray-700 dark:text-gray-300">{t('전 세계', 'Worldwide')}</span>
                     </label>
                     <label className="flex items-center gap-2 cursor-pointer">
                       <input
@@ -2810,7 +2810,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         })}
                         className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
                       />
-                      <span className="text-gray-700 dark:text-gray-300">{t('track.territory.selected')}</span>
+                      <span className="text-gray-700 dark:text-gray-300">{t('선택한 지역', 'Selected Territories')}</span>
                     </label>
                   </div>
 
@@ -2860,7 +2860,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               <div className="mb-3">
                                 <div className="flex items-center justify-between mb-2">
                                   <h5 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {t(`track.territory.${continentKey}`)}
+                                    {t(`track.territory.${continentKey}`, continentKey.charAt(0).toUpperCase() + continentKey.slice(1))}
                                   </h5>
                                   <button
                                     type="button"
@@ -3001,10 +3001,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
               <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                 <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                   <Disc className="w-5 h-5 text-n3rve-main" />
-                  {t('track.dspTerritories')}
+                  {t('DSP별 지역 설정', 'DSP Territory Settings')}
                 </h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {t('track.dspTerritories.description')}
+                  {t('사용자 지역 설정을 사용하여 각 DSP별로 다른 지역을 설정할 수 있습니다', 'You can set different territories for each DSP using custom territory settings')}
                 </p>
                 
                 {/* Summary of DSP Settings */}
@@ -3177,7 +3177,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       <div>
                         <h5 className="text-md font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                           <Languages className="w-4 h-4 text-n3rve-main" />
-                          {t('track.translations')}
+                          {t('번역', 'Translations')}
                         </h5>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           {language === 'ko' 
@@ -3200,7 +3200,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         className="flex items-center gap-1 px-3 py-1.5 bg-n3rve-main hover:bg-n3rve-700 text-white text-sm rounded-lg transition-colors"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        {t('track.addTranslation')}
+                        {t('번역 추가', 'Add Translation')}
                       </button>
                     </div>
                     
@@ -3232,7 +3232,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                  {t('common.language')}
+                                  {t('언어', 'Language')}
                                 </label>
                                 <select
                                   value={translation.language}
@@ -3268,7 +3268,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               </div>
                               <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                  {t('track.translatedTitle')}
+                                  {t('번역된 제목', 'Translated Title')}
                                 </label>
                                 <input
                                   type="text"
@@ -3351,7 +3351,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <User className="w-5 h-5 text-n3rve-main" />
-                        {t('artist.mainArtists')}
+                        {t('메인 아티스트', 'Main Artists')}
                       </h4>
                       <button
                         type="button"
@@ -3363,7 +3363,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         className="flex items-center gap-1 px-3 py-1.5 bg-n3rve-main hover:bg-n3rve-700 text-white text-sm rounded-lg transition-colors"
                       >
                         <Plus className="w-4 h-4" />
-                        {t('common.add')}
+                        {t('추가', 'Add')}
                       </button>
                     </div>
                     {selectedTrack.artists.length > 0 ? (
@@ -3408,7 +3408,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
-                        {t('artist.mainArtists.empty')}
+                        {t('메인 아티스트가 없습니다', 'No main artists added')}
                       </p>
                     )}
                   </div>
@@ -3427,7 +3427,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                         <Mic className="w-5 h-5 text-pink-600" />
-                        {t('artist.featuringArtists')}
+                        {t('피처링 아티스트', 'Featuring Artists')}
                       </h4>
                       <button
                         type="button"
@@ -3439,7 +3439,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         className="flex items-center gap-1 px-3 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-sm rounded-lg transition-colors"
                       >
                         <Plus className="w-4 h-4" />
-                        {t('common.add')}
+                        {t('추가', 'Add')}
                       </button>
                     </div>
                     {selectedTrack.featuringArtists.length > 0 ? (
@@ -3484,7 +3484,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       </div>
                     ) : (
                       <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
-                        {t('artist.featuringArtists.empty')}
+                        {t('피처링 아티스트가 없습니다', 'No featuring artists added')}
                       </p>
                     )}
                   </div>
@@ -3496,7 +3496,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <div className="flex items-center justify-between mb-4">
                   <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <UserCheck className="w-5 h-5 text-n3rve-main" />
-                    {t('track.contributorInfo')}
+                    {t('기여자 정보', 'Contributor Information')}
                   </h4>
                   <button
                     type="button"
@@ -3649,7 +3649,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   </div>
                 ) : (
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('track.contributorInfo.empty')}
+                    {t('기여자 정보가 없습니다', 'No contributor information added')}
                   </p>
                 )}
               </div>
@@ -4127,7 +4127,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('track.metadataLanguage')}
+                      {t('메타데이터 언어', 'Metadata Language')}
                     </label>
                     <select
                       value={selectedTrack.metadataLanguage || 'en'}
@@ -4139,42 +4139,42 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       ))}
                     </select>
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {t('track.metadataLanguage.description')}
+                      {t('음원 정보를 입력할 언어를 선택하세요', 'Select the language for entering music metadata')}
                     </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('track.explicitContent')}
+                      {t('선정적 콘텐츠', 'Explicit Content')}
                     </label>
                     <select
                       value={selectedTrack.explicitContent ? 'explicit' : 'not-explicit'}
                       onChange={(e) => updateTrack(selectedTrack.id, { explicitContent: e.target.value === 'explicit' })}
                       className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                     >
-                      <option value="not-explicit">{t('track.explicitContent.notExplicit')}</option>
-                      <option value="explicit">{t('track.explicitContent.explicit')}</option>
+                      <option value="not-explicit">{t('비선정적', 'Not Explicit')}</option>
+                      <option value="explicit">{t('선정적', 'Explicit')}</option>
                     </select>
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {t('track.explicitContent.description')}
+                      {t('선정적 콘텐츠 여부를 설정하세요', 'Set whether the content is explicit')}
                     </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('track.audioLanguage')} <span className="text-red-500">*</span>
+                      {t('음성 언어', 'Audio Language')} <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={selectedTrack.audioLanguage || ''}
                       onChange={(e) => updateTrack(selectedTrack.id, { audioLanguage: e.target.value })}
                       className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                     >
-                      <option value="">{t('common.selectLanguage')}</option>
+                      <option value="">{t('언어 선택', 'Select Language')}</option>
                       {languageOptions.map(lang => (
                         <option key={lang.value} value={lang.value}>{lang.label}</option>
                       ))}
-                      <option value="instrumental">{t('track.audioLanguage.instrumental')}</option>
+                      <option value="instrumental">{t('연주곡', 'Instrumental')}</option>
                     </select>
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {t('track.audioLanguage.description')}
+                      {t('음성에 사용된 언어를 선택하세요', 'Select the language used in the audio')}
                     </p>
                   </div>
                 </div>
@@ -5348,30 +5348,30 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
 
           {/* Album Description & Marketing Strategy */}
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('track.albumDescription')}</h4>
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('앨범 설명', 'Album Description')}</h4>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('track.albumIntroduction')}
+                  {t('앨범 소개', 'Album Introduction')}
                 </label>
                 <textarea
                   value={marketing.albumIntroduction}
                   onChange={(e) => setMarketing(prev => ({ ...prev, albumIntroduction: e.target.value }))}
                   rows={4}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder={t('track.albumIntroduction.placeholder')}
+                  placeholder={t('앨범에 대한 간단한 소개를 작성하세요', 'Write a brief introduction about the album')}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('track.detailedDescription')}
+                  {t('상세 설명', 'Detailed Description')}
                 </label>
                 <textarea
                   value={marketing.albumDescription}
                   onChange={(e) => setMarketing(prev => ({ ...prev, albumDescription: e.target.value }))}
                   rows={6}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder={t('track.detailedDescription.placeholder')}
+                  placeholder={t('앨범에 대한 상세한 설명을 작성하세요', 'Write a detailed description about the album')}
                 />
               </div>
             </div>
@@ -5382,7 +5382,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 mb-4">
               <FileText className="w-5 h-5 text-n3rve-main" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.albumNotes')}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('앨범 노트', 'Album Notes')}</h3>
             </div>
             
             <textarea
@@ -5390,7 +5390,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
               onChange={(e) => setProductMetadata(prev => ({ ...prev, albumNotes: e.target.value }))}
               rows={4}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              placeholder={t('release.albumNotesDesc')}
+              placeholder={t('앨범에 대한 추가 노트나 설명을 입력하세요', 'Enter additional notes or description about the album')}
             />
             <p className="mt-1 text-xs text-gray-500">
               {language === 'ko' ? '국내 음원사이트에서만 표시됩니다' : 'Only displayed on Korean music sites'}
@@ -5401,7 +5401,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
             <div className="flex items-center gap-2 mb-4">
               <FileText className="w-5 h-5 text-n3rve-main" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.notes')}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('추가 노트', 'Additional Notes')}</h3>
             </div>
             
             <textarea
@@ -5467,7 +5467,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       type="text"
                       value={dspSearchQuery}
                       onChange={(e) => setDspSearchQuery(e.target.value)}
-                      placeholder={t('common.search')}
+                      placeholder={t('검색', 'Search')}
                       className="w-full px-4 py-2 pl-10 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                     <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
@@ -5485,14 +5485,14 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       }}
                       className="text-xs px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/70"
                     >
-                      {t('track.selectAll')}
+                      {t('전체 선택', 'Select All')}
                     </button>
                     <button
                       type="button"
                       onClick={() => setSelectedDsps([])}
                       className="text-xs px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
                     >
-                      {t('track.deselectAll')}
+                      {t('전체 선택 해제', 'Deselect All')}
                     </button>
                   </div>
 
@@ -5598,7 +5598,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               }}
                               className="text-xs px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded hover:bg-green-200"
                             >
-                              {t('track.selectWorld')}
+                              {t('전 세계 선택', 'Select World')}
                             </button>
                             <button
                               type="button"
@@ -5611,7 +5611,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               }}
                               className="text-xs px-3 py-1 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 rounded hover:bg-red-200"
                             >
-                              {t('track.deselectAll')}
+                              {t('전체 선택 해제', 'Deselect All')}
                             </button>
                           </div>
                         </div>
@@ -5659,7 +5659,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                     }}
                                     className="flex-1 text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200"
                                   >
-                                    {t('track.selectAll')}
+                                    {t('전체 선택', 'Select All')}
                                   </button>
                                   <button
                                     type="button"
@@ -5674,7 +5674,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                     }}
                                     className="flex-1 text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200"
                                   >
-                                    {t('track.deselectAll')}
+                                    {t('전체 선택 해제', 'Deselect All')}
                                   </button>
                                 </div>
                               </div>
@@ -5716,7 +5716,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   }}
                   className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
-                  {t('common.cancel')}
+                  {t('취소', 'Cancel')}
                 </button>
                 <button
                   type="button"
@@ -5763,7 +5763,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
           <div className="bg-white dark:bg-gray-800 rounded-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
             <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {editingDSP} - {t('track.territory')}
+                {editingDSP} - {t('지역 설정', 'Territory Settings')}
               </h3>
             </div>
             
@@ -5787,7 +5787,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       }}
                       className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
                     />
-                    <span className="text-gray-700 dark:text-gray-300">{t('track.dspTerritories.useDefault')}</span>
+                    <span className="text-gray-700 dark:text-gray-300">{t('기본 설정 사용', 'Use Default Settings')}</span>
                   </label>
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -5808,7 +5808,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       }}
                       className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
                     />
-                    <span className="text-gray-700 dark:text-gray-300">{t('track.dspTerritories.useCustom')}</span>
+                    <span className="text-gray-700 dark:text-gray-300">{t('사용자 지정 설정', 'Use Custom Settings')}</span>
                   </label>
                 </div>
 
@@ -5870,7 +5870,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             <div className="mb-3">
                               <div className="flex items-center justify-between mb-2">
                                 <h5 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                  {t(`track.territory.${continentKey}`)}
+                                  {t(`track.territory.${continentKey}`, continentKey.charAt(0).toUpperCase() + continentKey.slice(1))}
                                 </h5>
                                 <button
                                   type="button"
@@ -6028,7 +6028,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 }}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
               >
-                {t('common.cancel')}
+                {t('취소', 'Cancel')}
               </button>
               <button
                 onClick={() => {
@@ -6037,7 +6037,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 }}
                 className="px-4 py-2 bg-n3rve-main hover:bg-n3rve-700 text-white rounded-lg transition-colors"
               >
-                {t('common.save')}
+                {t('저장', 'Save')}
               </button>
             </div>
           </div>

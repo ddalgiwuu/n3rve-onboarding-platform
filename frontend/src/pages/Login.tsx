@@ -3,14 +3,14 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuthStore } from '@/store/auth.store'
 import useSafeStore from '@/hooks/useSafeStore'
-import { useTranslation } from '@/store/language.store'
+import { useTranslation } from '@/hooks/useTranslation'
 import LanguageToggle from '@/components/common/LanguageToggle'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth)
+  const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated)
   const { t } = useTranslation()
   const popupRef = useRef<Window | null>(null)
   
@@ -18,7 +18,7 @@ export default function LoginPage() {
   useEffect(() => {
     console.log('[LoginPage] Mounted')
     console.log('[LoginPage] Location:', location)
-    console.log('[LoginPage] isAuthenticated:', useAuthStore.getState().isAuthenticated)
+    console.log('[LoginPage] isAuthenticated:', isAuthenticated)
   }, [])
   
   // Check for OAuth error in URL
@@ -27,7 +27,7 @@ export default function LoginPage() {
     const error = urlParams.get('error')
     
     if (error === 'oauth_failed') {
-      toast.error(t('OAuth 인증에 실패했습니다. 다시 시도해주세요.', 'OAuth authentication failed. Please try again.'))
+      toast.error(t('OAuth 인증에 실패했습니다. 다시 시도해주세요.'))
     }
   }, [location, t])
   

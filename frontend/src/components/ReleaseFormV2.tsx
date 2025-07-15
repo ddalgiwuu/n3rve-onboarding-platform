@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { ChevronRight, ChevronLeft, Save, Upload, Check, AlertCircle, Info } from 'lucide-react'
+import { ChevronRight, ChevronLeft, Save, Upload, Check, Info } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import FileSpecsGuide from './FileSpecsGuide'
@@ -8,7 +8,7 @@ import ReleaseDateSettings from './ReleaseDateSettings'
 import CopyrightInfo from './CopyrightInfo'
 import MobileFormNav from './MobileFormNav'
 import TrackList from './TrackList'
-import { v4 as uuidv4 } from 'uuid'
+// import { v4 as uuidv4 } from 'uuid' // Reserved for future use
 
 // Form sections - reorganized from 12-13 steps to 7 logical groups
 const formSections = [
@@ -186,7 +186,7 @@ export default function ReleaseFormV2() {
         if (!formData.albumTitle) errors.albumTitle = t('필수 항목입니다', 'Required field')
         break
       case 1: // Tracks
-        if (formData.tracks.length === 0) errors.tracks = t('최소 1개의 트랙이 필요합니다', 'At least one track is required')
+        if (formData.tracks.length === 0) errors.tracks = t('최소 1개의 트랙이 필요합니다', 'At least 1 track is required')
         break
       case 3: // Dates
         if (!formData.consumerDate.date) errors.consumerDate = t('필수 항목입니다', 'Required field')
@@ -222,7 +222,7 @@ export default function ReleaseFormV2() {
           </h1>
           <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-800">
             <Save className="w-4 h-4" />
-            {t('임시 저장됨', 'Draft saved')}
+            {t('임시 저장됨', 'Auto-saved')}
           </button>
         </div>
         
@@ -365,7 +365,7 @@ export default function ReleaseFormV2() {
                 value={formData.albumVersion}
                 onChange={(e) => setFormData(prev => ({ ...prev, albumVersion: e.target.value }))}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
-                placeholder={t('예: Deluxe Edition, Remastered', 'e.g., Deluxe Edition, Remastered')}
+                placeholder={t('예: Deluxe Edition, Remastered', 'e.g. Deluxe Edition, Remastered')}
               />
             </div>
           </div>
@@ -399,7 +399,7 @@ export default function ReleaseFormV2() {
                 maxLength={13}
               />
               <p className="mt-1 text-xs text-gray-500">
-                {t('자동 생성을 원하시면 비워두세요', 'Leave empty for auto-generation')}
+                {t('자동 생성을 원하시면 비워두세요', 'Leave blank for auto-generation')}
               </p>
             </div>
 
@@ -413,7 +413,7 @@ export default function ReleaseFormV2() {
                 value={formData.catalogNumber}
                 onChange={(e) => setFormData(prev => ({ ...prev, catalogNumber: e.target.value }))}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
-                placeholder={t('예: N3RVE-001', 'e.g., N3RVE-001')}
+                placeholder={t('예: N3RVE-001', 'e.g. N3RVE-001')}
               />
             </div>
 
@@ -430,23 +430,23 @@ export default function ReleaseFormV2() {
                 value={formData.isrc}
                 onChange={(e) => setFormData(prev => ({ ...prev, isrc: e.target.value.toUpperCase() }))}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
-                placeholder={t('예: USRC17607839', 'e.g., USRC17607839')}
+                placeholder={t('예: USRC17607839', 'e.g. USRC17607839')}
                 maxLength={12}
               />
               <p className="mt-1 text-xs text-gray-500">
-                {t('트랙별 ISRC는 트랙 정보 입력 시 설정합니다', 'Track-level ISRCs are set when entering track information')}
+                {t('트랙별 ISRC는 트랙 정보 입력 시 설정합니다', 'Track-specific ISRC will be set when entering track information')}
               </p>
             </div>
 
             {/* Metadata Info Box */}
             <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-                {t('메타데이터란?', 'What is Metadata?')}
+                {t('메타데이터란?', 'What is metadata?')}
               </h4>
               <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
                 <li>• <strong>UPC/EAN</strong>: {t('앨범의 고유 바코드', 'Unique barcode for the album')}</li>
-                <li>• <strong>ISRC</strong>: {t('각 트랙의 국제 표준 녹음 코드', 'International Standard Recording Code for tracks')}</li>
-                <li>• <strong>{t('카탈로그 번호', 'Catalog Number')}</strong>: {t('레이블 내부 관리 번호', 'Internal label reference number')}</li>
+                <li>• <strong>ISRC</strong>: {t('각 트랙의 국제 표준 녹음 코드', 'International Standard Recording Code for each track')}</li>
+                <li>• <strong>{t('카탈로그 번호', 'Catalog Number')}</strong>: {t('레이블 내부 관리 번호', 'Label internal management number')}</li>
               </ul>
             </div>
           </div>
@@ -483,7 +483,7 @@ export default function ReleaseFormV2() {
             {formData.contributors.length === 0 ? (
               <div className="text-center py-12 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                 <p className="text-gray-500 mb-4">
-                  {t('아직 등록된 기여자가 없습니다', 'No contributors added yet')}
+                  {t('아직 등록된 기여자가 없습니다', 'No contributors registered yet')}
                 </p>
                 <button
                   onClick={() => setShowContributorForm(true)}
@@ -494,7 +494,7 @@ export default function ReleaseFormV2() {
               </div>
             ) : (
               <div className="space-y-3">
-                {formData.contributors.map((contributor, idx) => (
+                {formData.contributors.map((contributor) => (
                   <div
                     key={contributor.id}
                     className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-300 transition-colors"
@@ -570,14 +570,14 @@ export default function ReleaseFormV2() {
           <div className="space-y-6">
             <FileSpecsGuide type="audio" />
             <FileSpecsGuide type="artwork" />
-            <FileSpecsGuide type="motionArt" />
-            <FileSpecsGuide type="dolbyAtmos" />
+            <FileSpecsGuide type="motionart" />
+            <FileSpecsGuide type="dolbyatmos" />
             
             {/* File upload sections would go here */}
             <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-900/50 rounded-lg text-center">
               <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
               <p className="text-gray-600 dark:text-gray-400">
-                {t('파일 업로드 기능은 현재 개발 중입니다', 'File upload feature is under development')}
+                {t('파일 업로드 기능은 현재 개발 중입니다', 'File upload feature is currently under development')}
               </p>
             </div>
           </div>
