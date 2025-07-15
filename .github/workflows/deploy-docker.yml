@@ -34,8 +34,7 @@ jobs:
         tags: |
           ${{ env.DOCKER_IMAGE }}:latest
           ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
-        cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
-        cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
+        no-cache: true
         build-args: |
           BUILDKIT_INLINE_CACHE=1
 

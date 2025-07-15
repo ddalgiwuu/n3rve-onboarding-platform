@@ -11,7 +11,8 @@ interface HeaderProps {
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const { user, clearAuth } = useAuthStore()
+  const user = useAuthStore((state) => state.user)
+  const clearAuth = useAuthStore((state) => state.clearAuth)
   const navigate = useNavigate()
   const location = useLocation()
   const { t } = useTranslation()

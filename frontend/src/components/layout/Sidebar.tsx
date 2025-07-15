@@ -11,8 +11,9 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const { user, logout } = useAuthStore()
-  const { language } = useLanguageStore()
+  const user = useAuthStore((state) => state.user)
+  const logout = useAuthStore((state) => state.logout)
+  const language = useLanguageStore((state) => state.language)
   const location = useLocation()
   const sidebarRef = useRef<HTMLDivElement>(null)
   const isAdmin = user?.role === 'ADMIN'
