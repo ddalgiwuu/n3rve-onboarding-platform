@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { ChevronDown, Music, Smartphone, CheckCircle, TrendingUp, Share2, ExternalLink } from 'lucide-react'
-import { t } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 
 export default function ArtistProfileGuide() {
   const [isExpanded, setIsExpanded] = useState(false)
   const [activeTab, setActiveTab] = useState<'spotify' | 'apple'>('spotify')
+  const language = useLanguageStore(state => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   return (
     <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">

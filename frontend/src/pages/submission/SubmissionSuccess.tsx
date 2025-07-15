@@ -1,18 +1,19 @@
 import { CheckCircle, Music, Disc, Upload, Calendar, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { t, useLanguageStore } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 
 export default function SubmissionSuccess() {
   const navigate = useNavigate()
   const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const steps = [
-    { id: 1, icon: Disc, title: t('onboarding.step2').split(' ')[0], description: t('onboarding.step2') },
-    { id: 2, icon: Music, title: t('onboarding.step3').split(' ')[0], description: t('onboarding.step3') },
-    { id: 3, icon: Upload, title: t('onboarding.step4').split(' ')[0], description: t('onboarding.step4') },
-    { id: 4, icon: Calendar, title: t('onboarding.step5').split(' ')[0], description: t('onboarding.step5') },
-    { id: 5, icon: Shield, title: t('onboarding.step6').split(' ')[0], description: t('onboarding.step6') }
+    { id: 1, icon: Disc, title: t('2단계', 'Step 2').split(' ')[0], description: t('2단계 앨범 정보', 'Step 2: Album Info') },
+    { id: 2, icon: Music, title: t('3단계', 'Step 3').split(' ')[0], description: t('3단계 트랙 정보', 'Step 3: Track Info') },
+    { id: 3, icon: Upload, title: t('4단계', 'Step 4').split(' ')[0], description: t('4단계 파일 업로드', 'Step 4: File Upload') },
+    { id: 4, icon: Calendar, title: t('5단계', 'Step 5').split(' ')[0], description: t('5단계 발매 정보', 'Step 5: Release Info') },
+    { id: 5, icon: Shield, title: t('6단계', 'Step 6').split(' ')[0], description: t('6단계 약관 동의', 'Step 6: Terms') }
   ]
 
   return (
@@ -24,10 +25,10 @@ export default function SubmissionSuccess() {
             <CheckCircle className="w-12 h-12 text-green-600 dark:text-green-400" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-3">
-            {t('onboarding.submitSuccess')}
+            {t('제출이 완료되었습니다!', 'Submission Complete!')}
           </h1>
           <p className="text-lg text-gray-600 dark:text-gray-400">
-            {t('submission.success.reviewNotice')}
+            {t('N3RVE 팀이 제출하신 내용을 검토 후 연락드리겠습니다.', 'The N3RVE team will review your submission and contact you soon.')}
           </p>
         </div>
 

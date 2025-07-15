@@ -1,15 +1,15 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { t, useLanguageStore } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import { Disc, FileText, Info, Languages, AlertCircle } from 'lucide-react'
 import { validateField } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
 import { useMemo, useState } from 'react'
 
-const createAlbumSchema = () => z.object({
-  primaryTitle: z.string().min(1, t('validation.required.albumTitle')),
+const createAlbumSchema = (t: (ko: string, en: string) => string) => z.object({
+  primaryTitle: z.string().min(1, t('앨범 제목을 입력해주세요', 'Album title is required')),
   hasTranslation: z.boolean().default(false),
   translationLanguage: z.string().optional(),
   translatedTitle: z.string().optional(),
@@ -23,23 +23,23 @@ const createAlbumSchema = () => z.object({
   }
   return true
 }, {
-  message: t('validation.translationRequired'),
+  message: t('번역 정보를 모두 입력해주세요', 'Please enter all translation information'),
   path: ["translatedTitle"]
 })
 
 type AlbumForm = z.infer<ReturnType<typeof createAlbumSchema>>
 
-const getLanguageOptions = () => [
-  { value: 'en', label: t('language.en') },
-  { value: 'ko', label: t('language.ko') },
-  { value: 'ja', label: t('language.ja') },
-  { value: 'zh', label: t('language.zh') },
-  { value: 'es', label: t('language.es') },
-  { value: 'fr', label: t('language.fr') },
-  { value: 'de', label: t('language.de') },
-  { value: 'it', label: t('language.it') },
-  { value: 'pt', label: t('language.pt') },
-  { value: 'ru', label: t('language.ru') }
+const getLanguageOptions = (t: (ko: string, en: string) => string) => [
+  { value: 'en', label: t('영어', 'English') },
+  { value: 'ko', label: t('한국어', 'Korean') },
+  { value: 'ja', label: t('일본어', 'Japanese') },
+  { value: 'zh', label: t('중국어', 'Chinese') },
+  { value: 'es', label: t('스페인어', 'Spanish') },
+  { value: 'fr', label: t('프랑스어', 'French') },
+  { value: 'de', label: t('독일어', 'German') },
+  { value: 'it', label: t('이탈리아어', 'Italian') },
+  { value: 'pt', label: t('포르투갈어', 'Portuguese') },
+  { value: 'ru', label: t('러시아어', 'Russian') }
 ]
 
 interface Props {
@@ -50,8 +50,9 @@ interface Props {
 
 export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<AlbumForm>({
-    resolver: zodResolver(createAlbumSchema()),
+    resolver: zodResolver(createAlbumSchema(t)),
     defaultValues: data?.album || {
       type: 'single',
       hasTranslation: false
@@ -134,7 +135,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
               <div className="mb-6">
                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                  {t('album.title')} <span className="text-red-500">*</span>
+                  {t('앨범 제목', 'Album Title')} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -212,7 +213,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                       className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-500 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                     >
                       <option value="">{language === 'ko' ? '언어를 선택하세요' : 'Select a language'}</option>
-                      {getLanguageOptions().map(lang => (
+                      {getLanguageOptions(t).map(lang => (
                         <option key={lang.value} value={lang.value}>
                           {lang.label}
                         </option>
@@ -255,7 +256,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('album.releaseFormat')}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('발매 형태', 'Release Format')}</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{language === 'ko' ? '앨범 형식을 선택하세요' : 'Choose your release format'}</p>
               </div>
             </div>
