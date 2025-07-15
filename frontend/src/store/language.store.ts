@@ -26,9 +26,7 @@ export const useLanguageStore = create<LanguageState>()(
     }),
     {
       name: 'language-storage',
-      onRehydrateStorage: () => (state) => {
-        state?.setHasHydrated(true)
-      }
+      skipHydration: true,
     }
   )
 )
