@@ -1,5 +1,4 @@
 import { atom } from 'jotai'
-import { atomWithStorage } from 'jotai/utils'
 
 interface User {
   id: string
@@ -27,51 +26,8 @@ const initialState: AuthState = {
   _hasHydrated: false
 }
 
-// Main auth atom with localStorage persistence
-export const authAtom = atomWithStorage<AuthState>('auth-storage', initialState, {
-  getItem: (key, initialValue) => {
-    if (typeof window === 'undefined') return initialValue
-    
-    try {
-      const storedValue = localStorage.getItem(key)
-      if (!storedValue) return initialValue
-      
-      const parsed = JSON.parse(storedValue)
-      // Handle legacy format from zustand/redux
-      if (parsed.state) {
-        return {
-          ...parsed.state,
-          _hasHydrated: true
-        }
-      }
-      return { ...parsed, _hasHydrated: true }
-    } catch {
-      return initialValue
-    }
-  },
-  setItem: (key, value) => {
-    if (typeof window === 'undefined') return
-    
-    try {
-      const dataToStore = {
-        state: value,
-        version: 0
-      }
-      localStorage.setItem(key, JSON.stringify(dataToStore))
-    } catch (error) {
-      console.warn('Failed to save to localStorage:', error)
-    }
-  },
-  removeItem: (key) => {
-    if (typeof window === 'undefined') return
-    
-    try {
-      localStorage.removeItem(key)
-    } catch (error) {
-      console.warn('Failed to remove from localStorage:', error)
-    }
-  }
-})
+// Main auth atom - simple atom without localStorage integration
+export const authAtom = atom<AuthState>(initialState)
 
 // Hydration status atom
 export const authHydratedAtom = atom(false)

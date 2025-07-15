@@ -16,10 +16,44 @@ export function useAuthStore() {
   const updateTokens = useSetAtom(updateTokensAtom)
   const [hasHydrated, setHasHydrated] = useAtom(authHydratedAtom)
   
-  // Mark as hydrated after first render
+  // Load from localStorage on first render
   useEffect(() => {
-    setHasHydrated(true)
-  }, [setHasHydrated])
+    if (typeof window !== 'undefined' && !hasHydrated) {
+      try {
+        const storedValue = localStorage.getItem('auth-storage')
+        if (storedValue) {
+          const parsed = JSON.parse(storedValue)
+          // Handle legacy format from zustand/redux
+          if (parsed.state) {
+            setAuthState({
+              ...parsed.state,
+              _hasHydrated: true
+            })
+          } else {
+            setAuthState({ ...parsed, _hasHydrated: true })
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to load auth from localStorage:', error)
+      }
+      setHasHydrated(true)
+    }
+  }, [hasHydrated, setAuthState, setHasHydrated])
+  
+  // Save to localStorage when auth state changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && hasHydrated) {
+      try {
+        const dataToStore = {
+          state: authState,
+          version: 0
+        }
+        localStorage.setItem('auth-storage', JSON.stringify(dataToStore))
+      } catch (error) {
+        console.warn('Failed to save auth to localStorage:', error)
+      }
+    }
+  }, [authState, hasHydrated])
   
   return {
     ...authState,
