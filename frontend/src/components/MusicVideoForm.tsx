@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Video, Music, Hash, X, Check, AlertCircle } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 
 interface MusicVideo {
   id: string
@@ -21,7 +22,7 @@ interface MusicVideoFormProps {
 }
 
 export default function MusicVideoForm({ video, audioTracks, onSave, onCancel }: MusicVideoFormProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [localVideo, setLocalVideo] = useState<MusicVideo>(video)

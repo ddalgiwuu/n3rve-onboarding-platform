@@ -5,6 +5,7 @@ import {
   Check, AlertCircle, ExternalLink, Loader2
 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import contributorRolesData from '@/data/contributorRoles.json'
 import instrumentsData from '@/data/instruments.json'
 import { v4 as uuidv4 } from 'uuid'
@@ -94,7 +95,7 @@ const identifierTypes = {
 }
 
 export default function ContributorForm({ contributor, onSave, onCancel, trackId }: ContributorFormProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [formData, setFormData] = useState<Contributor>({

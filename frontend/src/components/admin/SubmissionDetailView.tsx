@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import toast from 'react-hot-toast'
 import AudioPlayer from '@/components/AudioPlayer'
 import { dropboxService } from '@/services/dropbox.service'
@@ -23,7 +24,7 @@ interface Section {
 }
 
 const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   // Note: t function is not available from useLanguageStore, need to create local t function
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [expandedSections, setExpandedSections] = useState<string[]>([

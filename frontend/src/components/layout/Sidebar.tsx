@@ -4,6 +4,7 @@ import { cn } from '@/utils/cn'
 import { useAuthStore } from '@/store/auth.store'
 import { useLanguageStore } from '@/store/language.store'
 import { useEffect, useRef } from 'react'
+import useSafeStore from '@/hooks/useSafeStore'
 
 interface SidebarProps {
   isOpen: boolean
@@ -11,9 +12,9 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const user = useAuthStore(state => state.user)
-  const logout = useAuthStore(state => state.logout)
-  const language = useLanguageStore(state => state.language)
+  const user = useSafeStore(useAuthStore, (state) => state.user)
+  const logout = useSafeStore(useAuthStore, (state) => state.logout)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const location = useLocation()
   const sidebarRef = useRef<HTMLDivElement>(null)
   const isAdmin = user?.role === 'ADMIN'
@@ -124,7 +125,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const menuItems = isAdmin && isInAdminConsole ? adminMenuItems : customerMenuItems
   
   const handleLogout = () => {
-    logout()
+    logout?.()
     window.location.href = '/'
   }
   

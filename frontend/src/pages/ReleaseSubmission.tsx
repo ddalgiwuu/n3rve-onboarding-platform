@@ -12,6 +12,7 @@ import toast from 'react-hot-toast'
 import { submissionService } from '@/services/submission.service'
 import { dropboxService } from '@/services/dropbox.service'
 import { useAuthStore } from '@/store/auth.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { validateSubmission, validateField, type QCValidationResult, type QCValidationResults } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
 import ArtistModal from '@/components/submission/ArtistModal'
@@ -156,9 +157,9 @@ const genreOptions = [
 ]
 
 export default function ReleaseSubmission() {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const navigate = useNavigate()
-  const { user } = useAuthStore()
+  const user = useSafeStore(useAuthStore, (state) => state.user)
   
   // Translation function
   const t = (ko: string, en: string) => language === 'ko' ? ko : en

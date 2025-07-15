@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Album } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import TranslationManager, { Translation } from './TranslationManager'
 
 interface AlbumTranslationFormProps {
@@ -22,7 +23,7 @@ export default function AlbumTranslationForm({
   onTranslationsChange,
   className = ''
 }: AlbumTranslationFormProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   return (

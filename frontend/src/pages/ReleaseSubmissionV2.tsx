@@ -2,10 +2,11 @@ import ReleaseFormV2 from '@/components/ReleaseFormV2'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 
 export default function ReleaseSubmissionV2Page() {
   const navigate = useNavigate()
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   return (

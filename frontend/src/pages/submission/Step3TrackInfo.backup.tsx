@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { Plus, X, Music, Star, User, Edit3, Users, ChevronRight, List, AlertTriangle, Info, Languages, Clock, AlertCircle, Volume2, BookOpen, Megaphone, CheckCircle, FileText, Tag, Target, Disc, Music2, Mic, UserCheck, Calendar, Search, GripVertical } from 'lucide-react'
 import { t, useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { v4 as uuidv4 } from 'uuid'
 import { validateField, type QCValidationResult } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
@@ -526,7 +527,7 @@ function ContributorModal({
   onClose: () => void
   onSave: (contributor: Contributor) => void
 }) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const [contributor, setContributor] = useState<Contributor>({
     id: uuidv4(),
     name: '',
@@ -990,7 +991,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
 ]
 
 export default function Step3TrackInfo({ data, onNext }: Props) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   
   console.log('Step3TrackInfo mounted, data:', data)
   

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Info, HelpCircle, Music, Disc, Calendar } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 
 interface CopyrightInfoProps {
   copyrightData: {
@@ -18,7 +19,7 @@ interface CopyrightInfoProps {
 }
 
 export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfoProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [showTooltip, setShowTooltip] = useState<'copyright' | 'production' | null>(null)

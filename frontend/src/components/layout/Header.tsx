@@ -6,6 +6,7 @@ import LanguageToggle from '@/components/common/LanguageToggle'
 import DarkModeToggle from '@/components/common/DarkModeToggle'
 import { useLanguageStore, useTranslation } from '@/store/language.store'
 import { useHydration } from '@/hooks/useHydration'
+import useSafeStore from '@/hooks/useSafeStore'
 
 interface HeaderProps {
   onMenuClick?: () => void
@@ -13,7 +14,8 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick }: HeaderProps) {
   const isHydrated = useHydration()
-  const { user, clearAuth } = useAuthStore()
+  const user = useSafeStore(useAuthStore, (state) => state.user)
+  const clearAuth = useSafeStore(useAuthStore, (state) => state.clearAuth)
   const navigate = useNavigate()
   const location = useLocation()
   const { t } = useTranslation()
@@ -42,7 +44,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
   }
 
   const handleLogout = () => {
-    clearAuth()
+    clearAuth?.()
     toast.success(t('auth.logoutSuccess'))
     navigate('/login')
   }

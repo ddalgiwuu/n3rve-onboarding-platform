@@ -1,10 +1,11 @@
 import { CheckCircle, Music, Disc, Upload, Calendar, Shield } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { t, useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 
 export default function SubmissionSuccess() {
   const navigate = useNavigate()
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
 
   const steps = [
     { id: 1, icon: Disc, title: t('onboarding.step2').split(' ')[0], description: t('onboarding.step2') },

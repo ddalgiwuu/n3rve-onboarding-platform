@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Search, Plus, Clock, Star, Music, Users, Languages, Link as LinkIcon } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { useSavedArtistsStore, SavedArtist, SavedContributor } from '@/store/savedArtists.store'
 import ContributorForm from './ContributorForm'
 
@@ -19,7 +20,7 @@ export default function ArtistSelector({
   filterRoles = [],
   filterInstruments = []
 }: ArtistSelectorProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [searchQuery, setSearchQuery] = useState('')

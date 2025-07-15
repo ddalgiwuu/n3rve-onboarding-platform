@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { Users, FileText, Music } from 'lucide-react'
 
 export default function ReleaseSubmissionTest() {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   
   // Translation function
   const t = (ko: string, en: string) => language === 'ko' ? ko : en

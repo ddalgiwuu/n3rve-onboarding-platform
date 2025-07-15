@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Music, Info } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import TranslationManager, { Translation } from './TranslationManager'
 import TrackVersionManager from './TrackVersionManager'
 
@@ -29,7 +30,7 @@ export default function TrackTranslationForm({
   onTrackVersionChange,
   className = ''
 }: TrackTranslationFormProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [isExpanded, setIsExpanded] = useState(false)

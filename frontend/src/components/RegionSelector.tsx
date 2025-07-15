@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Check, Globe, Search } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 
 interface Region {
   code: string
@@ -75,7 +76,7 @@ const regions: Region[] = [
 ]
 
 export default function RegionSelector({ selectedRegions, onRegionsChange, className }: RegionSelectorProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedContinent, setSelectedContinent] = useState<string>('All')

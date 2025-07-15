@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
+import useSafeStore from '@/hooks/useSafeStore';
 import { useTranslation } from '@/store/language.store';
 import { UserCog, Users } from 'lucide-react';
 import { useEffect } from 'react';
@@ -7,7 +8,7 @@ import { useEffect } from 'react';
 export default function RoleSelect() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const setAuth = useAuthStore(state => state.setAuth);
+  const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth);
 
   useEffect(() => {
     // Check if we have temporary auth data
@@ -34,7 +35,7 @@ export default function RoleSelect() {
       sessionStorage.removeItem('temp_user');
 
       // Set auth with selected role view
-      setAuth(user, accessToken, refreshToken);
+      setAuth?.(user, accessToken, refreshToken);
 
       // Navigate based on role selection
       if (role === 'admin') {

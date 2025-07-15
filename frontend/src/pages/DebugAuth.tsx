@@ -1,24 +1,28 @@
 import { useEffect } from 'react'
 import { useAuthStore } from '@/store/auth.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { useNavigate } from 'react-router-dom'
 
 export default function DebugAuth() {
-  const authState = useAuthStore()
+  const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated)
+  const user = useSafeStore(useAuthStore, (state) => state.user)
+  const accessToken = useSafeStore(useAuthStore, (state) => state.accessToken)
+  const clearAuth = useSafeStore(useAuthStore, (state) => state.clearAuth)
   const navigate = useNavigate()
 
   useEffect(() => {
     // Log current auth state
     console.log('=== AUTH DEBUG ===')
-    console.log('isAuthenticated:', authState.isAuthenticated)
-    console.log('user:', authState.user)
-    console.log('accessToken:', authState.accessToken)
+    console.log('isAuthenticated:', isAuthenticated)
+    console.log('user:', user)
+    console.log('accessToken:', accessToken)
     console.log('localStorage auth-storage:', localStorage.getItem('auth-storage'))
     console.log('==================')
-  }, [authState])
+  }, [isAuthenticated, user, accessToken])
 
   const clearAllAuth = () => {
     // Clear zustand store
-    authState.clearAuth()
+    clearAuth?.()
     
     // Clear localStorage
     localStorage.removeItem('auth-storage')
@@ -37,10 +41,10 @@ export default function DebugAuth() {
           <h2 className="text-lg font-semibold mb-2">Current Auth State</h2>
           <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
             {JSON.stringify({
-              isAuthenticated: authState.isAuthenticated,
-              user: authState.user,
-              hasAccessToken: !!authState.accessToken,
-              hasRefreshToken: !!authState.refreshToken
+              isAuthenticated: isAuthenticated,
+              user: user,
+              hasAccessToken: !!accessToken,
+              hasRefreshToken: !!useSafeStore(useAuthStore, (state) => state.refreshToken)
             }, null, 2)}
           </pre>
         </div>

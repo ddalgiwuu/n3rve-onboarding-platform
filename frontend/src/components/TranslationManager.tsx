@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { Plus, X, Edit2, Globe, Search, Check } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { SUPPORTED_LANGUAGES, getLanguageByCode, getLanguageDisplay, getCommonLanguages } from '@/data/languages'
 
 export interface Translation {
@@ -28,7 +29,7 @@ export default function TranslationManager({
   className = '',
   showCommonOnly = false
 }: TranslationManagerProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [isAdding, setIsAdding] = useState(false)

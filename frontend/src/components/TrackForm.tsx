@@ -5,6 +5,7 @@ import {
   Disc, Mic, Languages, Link as LinkIcon, Info, Video
 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import ContributorForm from './ContributorForm'
 import ArtistSelector from './ArtistSelector'
 import MusicVideoForm from './MusicVideoForm'
@@ -63,7 +64,7 @@ interface TrackFormProps {
 }
 
 export default function TrackForm({ track, albumArtists, onUpdate, onDelete, totalTracks }: TrackFormProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [isExpanded, setIsExpanded] = useState(false)

@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { User, Bell, Shield, Globe, CreditCard, Key, Save, ChevronRight, ToggleLeft, ToggleRight, CheckCircle } from 'lucide-react';
 import { useLanguageStore, useTranslation } from '@/store/language.store';
 import { useAuthStore } from '@/store/auth.store';
+import useSafeStore from '@/hooks/useSafeStore';
 
 const Settings = () => {
-  const language = useLanguageStore(state => state.language);
-  const setLanguage = useLanguageStore(state => state.setLanguage);
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const setLanguage = useSafeStore(useLanguageStore, (state) => state.setLanguage);
   const { t } = useTranslation();
-  const { user } = useAuthStore();
+  const user = useSafeStore(useAuthStore, (state) => state.user);
   const [activeTab, setActiveTab] = useState('profile');
   const [notifications, setNotifications] = useState({
     email: true,
@@ -236,7 +237,7 @@ const Settings = () => {
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('settings.languageSettings', 'Language Settings')}</h2>
                 <div className="space-y-4">
                   <button
-                    onClick={() => setLanguage('en')}
+                    onClick={() => setLanguage?.('en')}
                     className={`w-full p-4 rounded-lg border transition-all ${
                       language === 'en'
                         ? 'border-purple-500 bg-purple-500/10 dark:bg-purple-500/20'
@@ -253,7 +254,7 @@ const Settings = () => {
                   </button>
                   
                   <button
-                    onClick={() => setLanguage('ko')}
+                    onClick={() => setLanguage?.('ko')}
                     className={`w-full p-4 rounded-lg border transition-all ${
                       language === 'ko'
                         ? 'border-purple-500 bg-purple-500/10 dark:bg-purple-500/20'
