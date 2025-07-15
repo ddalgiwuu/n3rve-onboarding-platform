@@ -34,12 +34,8 @@ function App() {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
   const userRole = useAuthStore(state => state.user?.role)
 
-  // Initialize stores and dark mode on app load
+  // Initialize dark mode on app load
   useEffect(() => {
-    // Manually hydrate stores to prevent React 18 SSR issues
-    useAuthStore.persist.rehydrate()
-    useLanguageStore.persist.rehydrate()
-    
     // Initialize dark mode
     const theme = localStorage.getItem('theme')
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
