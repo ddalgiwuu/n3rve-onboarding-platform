@@ -36,6 +36,26 @@ function App() {
   const isAuthenticated = useAuthStore(state => state.isAuthenticated)
   const userRole = useAuthStore(state => state.user?.role)
 
+  // Manual rehydration on mount (Context7 MCP solution)
+  useEffect(() => {
+    const rehydrateStores = async () => {
+      try {
+        await useAuthStore.persist.rehydrate()
+        useAuthStore.getState().setHasHydrated(true)
+        
+        await useLanguageStore.persist.rehydrate()
+        useLanguageStore.getState().setHasHydrated(true)
+      } catch (error) {
+        console.warn('Store rehydration failed:', error)
+        // Fallback: mark as hydrated anyway to prevent infinite loading
+        useAuthStore.getState().setHasHydrated(true)
+        useLanguageStore.getState().setHasHydrated(true)
+      }
+    }
+    
+    rehydrateStores()
+  }, [])
+
   // Wait for both stores to hydrate
   if (!hasAuthHydrated || !hasLanguageHydrated) {
     return <LoadingSpinner fullScreen />
