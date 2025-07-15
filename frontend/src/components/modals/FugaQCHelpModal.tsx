@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { X, ChevronRight, CheckCircle, AlertCircle, Info, Clock, FileText, Music, HelpCircle } from 'lucide-react'
 import { fugaQCHelp, qcFAQ } from '@/constants/fugaQCHelp'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+// import { useLanguageStore } from '@/store/language.store' // Reserved for future use
+// import useSafeStore from '@/hooks/useSafeStore' // Reserved for future use
 
 interface FugaQCHelpModalProps {
   isOpen: boolean
@@ -33,7 +33,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
       <div>
         <h4 className="font-medium mb-2">중요성</h4>
         <ul className="space-y-2">
-          {fugaQCHelp.overview.importance.map((item, index) => (
+          {fugaQCHelp.overview.importance.map((item: any, index: number) => (
             <li key={index} className="flex items-start gap-2">
               <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
               <span className="text-sm text-gray-600 dark:text-gray-400">{item}</span>
@@ -48,7 +48,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">{fugaQCHelp.process.title}</h3>
       
-      {fugaQCHelp.process.steps.map((step) => (
+      {fugaQCHelp.process.steps.map((step: any) => (
         <div key={step.step} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
             <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
@@ -58,7 +58,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
               <h4 className="font-medium mb-1">{step.title}</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{step.description}</p>
               <ul className="space-y-1">
-                {step.items.map((item, index) => (
+                {step.items.map((item: any, index: number) => (
                   <li key={index} className="text-sm text-gray-500 dark:text-gray-500 flex items-start gap-2">
                     <span className="text-gray-400">•</span>
                     <span>{item}</span>
@@ -73,7 +73,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
       <div className="mt-6">
         <h4 className="font-medium mb-3">{fugaQCHelp.timeline.title}</h4>
         <div className="space-y-3">
-          {fugaQCHelp.timeline.stages.map((stage, index) => (
+          {fugaQCHelp.timeline.stages.map((stage: any, index: number) => (
             <div key={index} className="flex items-center gap-4">
               <div className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium min-w-[100px] text-center">
                 {stage.time}
@@ -93,11 +93,11 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">{fugaQCHelp.commonErrors.title}</h3>
       
-      {fugaQCHelp.commonErrors.errors.map((error, index) => (
+      {fugaQCHelp.commonErrors.errors.map((error: any, index: number) => (
         <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h4 className="font-medium mb-3 text-red-600 dark:text-red-400">{error.type}</h4>
           <div className="space-y-2">
-            {error.examples.map((example, idx) => (
+            {error.examples.map((example: any, idx: number) => (
               <div key={idx} className="text-sm font-mono bg-gray-50 dark:bg-gray-800 p-2 rounded">
                 {example}
               </div>
@@ -112,13 +112,13 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
           <div>
             <h5 className="font-medium text-sm mb-2">{fugaQCHelp.languageRules.english.title}</h5>
             <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-              {fugaQCHelp.languageRules.english.rules.map((rule, index) => (
+              {fugaQCHelp.languageRules.english.rules.map((rule: any, index: number) => (
                 <li key={index}>• {rule}</li>
               ))}
             </ul>
             {fugaQCHelp.languageRules.english.examples && (
               <div className="mt-2 space-y-1">
-                {fugaQCHelp.languageRules.english.examples.map((example, idx) => (
+                {fugaQCHelp.languageRules.english.examples.map((example: any, idx: number) => (
                   <div key={idx} className="text-xs font-mono bg-gray-100 dark:bg-gray-800 p-1 rounded">
                     {example}
                   </div>
@@ -130,7 +130,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
           <div>
             <h5 className="font-medium text-sm mb-2">{fugaQCHelp.languageRules.korean.title}</h5>
             <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-              {fugaQCHelp.languageRules.korean.rules.map((rule, index) => (
+              {fugaQCHelp.languageRules.korean.rules.map((rule: any, index: number) => (
                 <li key={index}>• {rule}</li>
               ))}
             </ul>
@@ -170,7 +170,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
             <h4 className="font-medium mb-3">{fugaQCHelp.audioSpecs.dolbyAtmos.title}</h4>
             <ul className="space-y-1">
-              {fugaQCHelp.audioSpecs.dolbyAtmos.requirements.map((req, index) => (
+              {fugaQCHelp.audioSpecs.dolbyAtmos.requirements.map((req: any, index: number) => (
                 <li key={index} className="text-sm text-gray-600 dark:text-gray-400 flex items-start gap-2">
                   <span className="text-blue-500">•</span>
                   <span>{req}</span>
@@ -187,7 +187,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
           <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
             <h4 className="font-medium mb-3 text-green-700 dark:text-green-400">필수 규격</h4>
             <ul className="space-y-1">
-              {fugaQCHelp.albumArt.requirements.map((req, index) => (
+              {fugaQCHelp.albumArt.requirements.map((req: any, index: number) => (
                 <li key={index} className="text-sm text-gray-600 dark:text-gray-400">• {req}</li>
               ))}
             </ul>
@@ -196,7 +196,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
           <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
             <h4 className="font-medium mb-3 text-red-700 dark:text-red-400">금지 사항</h4>
             <ul className="space-y-1">
-              {fugaQCHelp.albumArt.forbidden.map((item, index) => (
+              {fugaQCHelp.albumArt.forbidden.map((item: any, index: number) => (
                 <li key={index} className="text-sm text-gray-600 dark:text-gray-400">• {item}</li>
               ))}
             </ul>
@@ -266,7 +266,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
 
         {/* Tabs */}
         <div className="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
-          {tabs.map((tab) => {
+          {tabs.map((tab: any) => {
             const Icon = tab.icon
             return (
               <button
@@ -297,7 +297,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
             <div>
               <h4 className="font-medium text-sm mb-1">Pro Tips</h4>
               <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                {fugaQCHelp.tips.items.slice(0, 3).map((tip, index) => (
+                {fugaQCHelp.tips.items.slice(0, 3).map((tip: any, index: number) => (
                   <li key={index}>• {tip}</li>
                 ))}
               </ul>

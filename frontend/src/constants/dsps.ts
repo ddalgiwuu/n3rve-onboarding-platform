@@ -1,4 +1,6 @@
 // Digital Service Providers (DSPs) for music distribution
+import { territories } from './territories';
+
 export interface DSP {
   id: string;
   name: string;

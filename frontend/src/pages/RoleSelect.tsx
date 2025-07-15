@@ -50,10 +50,10 @@ export default function RoleSelect() {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 flex items-center justify-center p-4">
       <div className="glassmorphism max-w-2xl w-full p-8">
         <h1 className="text-3xl font-bold text-white text-center mb-2">
-          {t('역할 선택', 'Select Role')}
+          {t('역할 선택')}
         </h1>
         <p className="text-gray-400 text-center mb-8">
-          {t('어떤 모드로 접속하시겠습니까?', 'Which mode would you like to access?')}
+          {t('어떤 모드로 접속하시겠습니까?')}
         </p>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -66,10 +66,10 @@ export default function RoleSelect() {
               <UserCog className="w-10 h-10 text-purple-400" />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">
-              {t('관리자 모드', 'Admin Mode')}
+              {t('관리자 모드')}
             </h3>
             <p className="text-gray-400 text-sm">
-              {t('제출물 관리, 사용자 관리, 통계 확인', 'Manage submissions, users, and view statistics')}
+              {t('제출물 관리, 사용자 관리, 통계 확인')}
             </p>
           </button>
 
@@ -82,10 +82,10 @@ export default function RoleSelect() {
               <Users className="w-10 h-10 text-blue-400" />
             </div>
             <h3 className="text-xl font-semibold text-white mb-2">
-              {t('사용자 모드', 'User Mode')}
+              {t('사용자 모드')}
             </h3>
             <p className="text-gray-400 text-sm">
-              {t('릴리즈 제출, 제출 내역 확인', 'Submit releases and view submission history')}
+              {t('릴리즈 제출, 제출 내역 확인')}
             </p>
           </button>
         </div>

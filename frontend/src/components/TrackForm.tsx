@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react'
 import { 
-  Music, Users, Clock, Hash, ChevronDown, ChevronUp, 
-  Plus, Trash2, Edit2, Check, X, AlertCircle, 
-  Disc, Mic, Languages, Link as LinkIcon, Info, Video
+  Music, Users, Clock, ChevronDown, ChevronUp, 
+  Trash2, Edit2, Check, X,
+  Mic, Languages, Link as LinkIcon, Info, Video
 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import ContributorForm from './ContributorForm'
 import ArtistSelector from './ArtistSelector'
 import MusicVideoForm from './MusicVideoForm'
-import { useSavedArtistsStore } from '@/store/savedArtists.store'
 import { v4 as uuidv4 } from 'uuid'
 
 interface TrackArtist {
@@ -453,7 +452,7 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                                 {artist.identifiers.length > 0 && (
                                   <span className="flex items-center gap-1">
                                     <LinkIcon className="w-3 h-3" />
-                                    {artist.identifiers.length} {t('연동', 'linked')}
+                                    {artist.identifiers.length} {t('연동', 'links')}
                                   </span>
                                 )}
                                 {artist.isNewArtist && (
@@ -511,7 +510,7 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                                 {artist.identifiers.length > 0 && (
                                   <span className="flex items-center gap-1">
                                     <LinkIcon className="w-3 h-3" />
-                                    {artist.identifiers.length} {t('연동', 'linked')}
+                                    {artist.identifiers.length} {t('연동', 'links')}
                                   </span>
                                 )}
                               </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Globe, Play, Download, Video, Radio, Users, Settings, Filter, BarChart3 } from 'lucide-react'
+import { Search, Globe, Play, Download, Video, Radio, Users, Settings, BarChart3 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import api from '@/lib/api'
@@ -96,7 +96,7 @@ export default function DSPList() {
   }, [searchQuery, selectedServiceType, showInactive])
 
   const getTerritoryText = (territories: string[]) => {
-    if (territories.includes('World')) return t('전세계', 'World')
+    if (territories.includes('World')) return t('전세계', 'Worldwide')
     return territories.join(', ')
   }
 

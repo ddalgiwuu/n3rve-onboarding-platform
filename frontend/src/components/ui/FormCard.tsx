@@ -1,12 +1,12 @@
-import React from 'react'
+import { cloneElement, ReactElement, ReactNode } from 'react'
 import { cn } from '@/utils/cn'
 
 interface FormCardProps {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
   title?: string
   description?: string
-  icon?: React.ReactNode
+  icon?: ReactNode
 }
 
 export default function FormCard({ 
@@ -25,7 +25,7 @@ export default function FormCard({
         <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700/50">
           {icon && (
             <div className="w-10 h-10 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/30 dark:to-purple-900/30 rounded-xl flex items-center justify-center">
-              {React.cloneElement(icon as React.ReactElement, {
+              {cloneElement(icon as ReactElement<any>, {
                 className: "w-5 h-5 text-blue-600 dark:text-blue-400"
               })}
             </div>

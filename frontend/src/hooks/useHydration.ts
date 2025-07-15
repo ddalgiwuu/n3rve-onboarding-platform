@@ -1,6 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { useAuthStore } from '@/store/auth.store'
-import { useLanguageStore } from '@/store/language.store'
 
 /**
  * Simple hydration check hook that waits for stores to be ready
@@ -10,7 +8,7 @@ import { useLanguageStore } from '@/store/language.store'
  */
 export const useHydration = () => {
   const [isHydrated, setIsHydrated] = useState(false)
-  const timeoutRef = useRef<NodeJS.Timeout>()
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   useEffect(() => {
     // Clear any existing timeout

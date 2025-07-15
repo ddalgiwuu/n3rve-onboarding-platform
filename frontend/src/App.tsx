@@ -31,20 +31,22 @@ const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
 const ReleaseFormV2 = lazy(() => import('./components/ReleaseFormV2'))
 
 function App() {
-  const hasAuthHydrated = useAuthStore((state) => state._hasHydrated)
-  const hasLanguageHydrated = useLanguageStore((state) => state._hasHydrated)
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
-  const userRole = useAuthStore((state) => state.user?.role)
+  const authStore = useAuthStore()
+  const languageStore = useLanguageStore()
+  const hasAuthHydrated = authStore._hasHydrated
+  const hasLanguageHydrated = languageStore._hasHydrated
+  const isAuthenticated = authStore.isAuthenticated
+  const userRole = authStore.user?.role
 
-  // Mark stores as hydrated (Redux handles persistence automatically)
+  // Mark stores as hydrated
   useEffect(() => {
-    const authStore = useAuthStore()
-    const languageStore = useLanguageStore()
-    
-    // Redux loads from localStorage automatically, just mark as hydrated
-    authStore.setHasHydrated(true)
-    languageStore.setHasHydrated(true)
-  }, [])
+    if (!hasAuthHydrated) {
+      authStore.setHasHydrated(true)
+    }
+    if (!hasLanguageHydrated) {
+      languageStore.setHasHydrated(true)
+    }
+  }, [hasAuthHydrated, hasLanguageHydrated, authStore, languageStore])
 
   // Wait for both stores to hydrate
   if (!hasAuthHydrated || !hasLanguageHydrated) {

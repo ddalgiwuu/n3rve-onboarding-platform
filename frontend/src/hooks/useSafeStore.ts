@@ -1,4 +1,4 @@
-// Simplified hook for Jotai compatibility
+// Simplified hook for store compatibility
 import { useState, useEffect } from 'react'
 
 const useSafeStore = <T, F>(

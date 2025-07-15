@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { 
   X, Plus, Trash2, Search, Music, User, Globe, 
   Info, Link as LinkIcon, ChevronDown, ChevronUp,
-  Check, AlertCircle, ExternalLink, Loader2
+  Check, AlertCircle, ExternalLink
 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
@@ -17,7 +17,7 @@ interface Translation {
 }
 
 interface PlatformIdentifier {
-  type: 'spotify' | 'apple' | 'youtube' | 'isni' | 'ipi' | 'custom'
+  type: 'spotify' | 'apple' | 'youtube' | 'isni' | 'ipi'
   value: string
   url?: string
 }
@@ -94,7 +94,7 @@ const identifierTypes = {
   }
 }
 
-export default function ContributorForm({ contributor, onSave, onCancel, trackId }: ContributorFormProps) {
+export default function ContributorForm({ contributor, onSave, onCancel }: ContributorFormProps) {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
@@ -110,8 +110,6 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
 
   const [searchQuery, setSearchQuery] = useState({ roles: '', instruments: '' })
   const [showDropdown, setShowDropdown] = useState({ roles: false, instruments: false })
-  const [showIdentifierHelp, setShowIdentifierHelp] = useState<string | null>(null)
-  const [isValidating, setIsValidating] = useState(false)
 
   // Filter roles and instruments based on search
   const filteredRoles = contributorRolesData.roles.filter(role =>
@@ -231,7 +229,7 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
   // Save handler
   const handleSave = () => {
     if (!formData.name.trim()) {
-      alert(t('기여자 이름을 입력해주세요', 'Please enter contributor name'))
+      alert(t('기여자 이름을 입력해주세요', 'Please enter the contributor name'))
       return
     }
 
@@ -241,12 +239,12 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
     }
 
     // Validate identifiers
-    const invalidIdentifiers = formData.identifiers.filter((id, index) => 
+    const invalidIdentifiers = formData.identifiers.filter((id) => 
       id.value && !validateIdentifier(id.type as keyof typeof identifierTypes, id.value)
     )
 
     if (invalidIdentifiers.length > 0) {
-      alert(t('올바르지 않은 식별자가 있습니다', 'Some identifiers are invalid'))
+      alert(t('올바르지 않은 식별자가 있습니다', 'There are invalid identifiers'))
       return
     }
 
@@ -292,7 +290,7 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
-                    placeholder={t('아티스트/기여자 이름', 'Artist/Contributor name')}
+                    placeholder={t('아티스트/기여자 이름', 'Artist/Contributor Name')}
                   />
                   
                   {/* Spotify Full Name Policy Alert */}
@@ -335,7 +333,7 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
                   </label>
                   {formData.isNewArtist && (
                     <span className="text-xs text-orange-600 dark:text-orange-400">
-                      {t('플랫폼에 새 아티스트 페이지가 생성됩니다', 'New artist pages will be created on platforms')}
+                      {t('플랫폼에 새 아티스트 페이지가 생성됩니다', 'A new artist page will be created on platforms')}
                     </span>
                   )}
                 </div>
@@ -345,7 +343,7 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
                   <div className="flex items-center justify-between mb-2">
                     <label className="text-sm font-medium flex items-center gap-2">
                       <Globe className="w-4 h-4" />
-                      {t('다국어 이름', 'Translations')}
+                      {t('다국어 이름', 'Multilingual Names')}
                     </label>
                     <button
                       onClick={addTranslation}
@@ -377,7 +375,7 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
                           value={translation.name}
                           onChange={(e) => updateTranslation(translation.id, 'name', e.target.value)}
                           className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
-                          placeholder={t('번역된 이름', 'Translated name')}
+                          placeholder={t('번역된 이름', 'Translated Name')}
                         />
                         <button
                           onClick={() => removeTranslation(translation.id)}
@@ -396,7 +394,7 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
             <div>
               <h4 className="font-medium mb-4 flex items-center gap-2">
                 <User className="w-4 h-4" />
-                {t('역할', 'Roles')} <span className="text-red-500">*</span>
+                {t('역할', 'Role')} <span className="text-red-500">*</span>
               </h4>
               
               {/* Selected Roles */}
@@ -633,7 +631,7 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
                           >
-                            {t('페이지 확인', 'View page')}
+                            {t('페이지 확인', 'View Page')}
                             <ExternalLink className="w-3 h-3" />
                           </a>
                         )}
@@ -649,11 +647,11 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
                   <div className="flex items-start gap-2">
                     <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
                     <div className="text-sm text-blue-700 dark:text-blue-300">
-                      <p className="font-medium mb-1">{t('신규 아티스트 안내', 'New Artist Information')}</p>
+                      <p className="font-medium mb-1">{t('신규 아티스트 안내', 'New Artist Guide')}</p>
                       <ul className="space-y-1 text-xs">
-                        <li>• {t('각 플랫폼에 새로운 아티스트 페이지가 생성됩니다', 'New artist pages will be created on each platform')}</li>
-                        <li>• {t('기존 아티스트와 연결하려면 위의 식별자를 입력하세요', 'To link to existing artist, enter identifiers above')}</li>
-                        <li>• {t('생성 후 약 24-48시간 내 플랫폼에 반영됩니다', 'Pages will appear on platforms within 24-48 hours')}</li>
+                        <li>• {t('각 플랫폼에 새로운 아티스트 페이지가 생성됩니다', 'A new artist page will be created on each platform')}</li>
+                        <li>• {t('기존 아티스트와 연결하려면 위의 식별자를 입력하세요', 'To connect with existing artists, enter the identifiers above')}</li>
+                        <li>• {t('생성 후 약 24-48시간 내 플랫폼에 반영됩니다', 'It will be reflected on platforms within 24-48 hours after creation')}</li>
                       </ul>
                     </div>
                   </div>
@@ -677,7 +675,7 @@ export default function ContributorForm({ contributor, onSave, onCancel, trackId
               disabled={!formData.name || formData.roles.length === 0}
               className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {contributor ? t('수정', 'Update') : t('추가', 'Add')}
+              {contributor ? t('수정', 'Edit') : t('추가', 'Add')}
             </button>
           </div>
         </div>

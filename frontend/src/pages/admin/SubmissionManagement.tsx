@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { 
-  Search, Filter, Eye, Check, X, Download, ChevronLeft, ChevronRight, 
-  FileSpreadsheet, Calendar, BarChart3, Clock, CheckSquare, XSquare,
-  Music, FileText, Info, History, Printer, FileDown, TrendingUp,
-  Users, Album, AlertCircle, Package, Loader2
+  Search, Eye, Check, X, Download, ChevronLeft, ChevronRight, 
+  FileSpreadsheet, Calendar, Clock, CheckSquare, XSquare,
+  Music, FileText, Info, History, TrendingUp,
+  AlertCircle, Package, Loader2
 } from 'lucide-react'
-import { useLanguageStore } from '../../store/language.store'
-import { cn } from '../../utils/cn'
-import { exportSubmissionsToExcel, exportSubmissionReport } from '../../utils/excelExport'
-import { submissionService } from '../../services/submission.service'
-import SubmissionDetailView from '../../components/admin/SubmissionDetailView'
+import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
+import { CheckCircle } from 'lucide-react'
+import { cn } from '@/utils/cn'
+import { exportSubmissionsToExcel } from '@/utils/excelExport'
+import { submissionService } from '@/services/submission.service'
+import SubmissionDetailView from '@/components/admin/SubmissionDetailView'
 import toast from 'react-hot-toast'
 
 // Stats Card Component
@@ -115,7 +117,7 @@ const SubmissionManagement: React.FC = () => {
       }
     } catch (error) {
       console.error('Failed to fetch submissions:', error)
-      toast.error(t('제출 목록을 불러오는데 실패했습니다', 'Failed to load submissions'))
+      toast.error(t('제출 목록을 불러오는데 실패했습니다', 'Failed to load submission list'))
     } finally {
       setLoading(false)
     }
@@ -202,7 +204,7 @@ const SubmissionManagement: React.FC = () => {
       toast.success(t('Excel 파일이 다운로드되었습니다', 'Excel file downloaded'))
     } catch (error) {
       console.error('Failed to export:', error)
-      toast.error(t('Excel 내보내기에 실패했습니다', 'Failed to export to Excel'))
+      toast.error(t('Excel 내보내기에 실패했습니다', 'Failed to export Excel'))
     }
   }
 
@@ -213,7 +215,7 @@ const SubmissionManagement: React.FC = () => {
     }
 
     const selected = submissions.filter(s => selectedSubmissions.has(s.id))
-    exportSubmissionsToExcel(selected)
+    exportSubmissionsToExcel({ submissions: selected })
     toast.success(t('선택된 제출이 내보내기되었습니다', 'Selected submissions exported'))
   }
 
@@ -439,7 +441,7 @@ const SubmissionManagement: React.FC = () => {
                       {t('앨범', 'Album')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('제출일', 'Submitted')}
+                      {t('제출일', 'Submit Date')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                       {t('상태', 'Status')}
@@ -659,11 +661,11 @@ const SubmissionManagement: React.FC = () => {
                         <dd className="font-mono text-sm">{selectedSubmission.id}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-gray-500 dark:text-gray-400">{t('제출일', 'Submitted')}</dt>
+                        <dt className="text-sm text-gray-500 dark:text-gray-400">{t('제출일', 'Submit Date')}</dt>
                         <dd className="text-sm">{new Date(selectedSubmission.createdAt).toLocaleString()}</dd>
                       </div>
                       <div>
-                        <dt className="text-sm text-gray-500 dark:text-gray-400">{t('마지막 수정', 'Last Updated')}</dt>
+                        <dt className="text-sm text-gray-500 dark:text-gray-400">{t('마지막 수정', 'Last Modified')}</dt>
                         <dd className="text-sm">{new Date(selectedSubmission.updatedAt).toLocaleString()}</dd>
                       </div>
                     </dl>

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Search, Filter, Download, Eye } from 'lucide-react'
+import { Search } from 'lucide-react'
 
 export default function AdminSubmissions() {
   const [searchTerm, setSearchTerm] = useState('')

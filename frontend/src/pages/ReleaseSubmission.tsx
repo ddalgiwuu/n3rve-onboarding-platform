@@ -368,13 +368,13 @@ export default function ReleaseSubmission() {
 
   // Steps configuration
   const steps = [
-    { id: 0, label: t('아티스트 정보', 'Artist Info'), icon: Users },
-    { id: 1, label: t('앨범 기본 정보', 'Album Basic Info'), icon: FileText },
-    { id: 2, label: t('트랙 정보', 'Track Info'), icon: Music },
+    { id: 0, label: t('아티스트 정보', 'Artist Information'), icon: Users },
+    { id: 1, label: t('앨범 기본 정보', 'Album Basic Information'), icon: FileText },
+    { id: 2, label: t('트랙 정보', 'Track Information'), icon: Music },
     { id: 3, label: t('기여자', 'Contributors'), icon: UserCheck },
     { id: 4, label: t('앨범 상세', 'Album Details'), icon: Image },
     { id: 5, label: t('릴리즈 설정', 'Release Settings'), icon: Calendar },
-    { id: 6, label: t('마케팅 정보', 'Marketing Info'), icon: Megaphone },
+    { id: 6, label: t('마케팅 정보', 'Marketing Information'), icon: Megaphone },
     { id: 7, label: t('배포', 'Distribution'), icon: Globe },
     { id: 8, label: t('권리 및 법적 사항', 'Rights & Legal'), icon: Shield },
     { id: 9, label: t('검토 및 QC', 'Review & QC'), icon: CheckCircle },
@@ -634,7 +634,7 @@ export default function ReleaseSubmission() {
           [trackId]: files
         }
       }))
-      toast.success(t('파일 업로드 성공', 'Files uploaded successfully'))
+      toast.success(t('파일 업로드 성공', 'File upload successful'))
     } catch (error) {
       toast.error(t('파일 업로드 실패', 'File upload failed'))
     }
@@ -722,7 +722,7 @@ export default function ReleaseSubmission() {
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <FileText className="w-5 h-5" />
-          {t('음원 메타데이터', 'Release Metadata')}
+          {t('음원 메타데이터', 'Music Metadata')}
         </h3>
         
         {/* Release Version */}
@@ -736,10 +736,10 @@ export default function ReleaseSubmission() {
               value={formData.releaseVersion || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, releaseVersion: e.target.value }))}
               className="input"
-              placeholder={t('예: Remix, Remastered, Acoustic Version', 'e.g., Remix, Remastered, Acoustic Version')}
+              placeholder={t('예: Remix, Remastered, Acoustic Version', 'e.g. Remix, Remastered, Acoustic Version')}
             />
             <p className="text-xs text-gray-500 mt-1">
-              {t('리믹스나 특별 버전인 경우에만 입력', 'Only fill for remixes or special versions')}
+              {t('리믹스나 특별 버전인 경우에만 입력', 'Only enter for remix or special versions')}
             </p>
           </div>
 
@@ -766,7 +766,7 @@ export default function ReleaseSubmission() {
                     onClick={() => setFormData(prev => ({ ...prev, upc: generateUPC() }))}
                     className="btn-secondary"
                   >
-                    {t('자동생성', 'Generate')}
+                    {t('자동생성', 'Auto Generate')}
                   </button>
                 </div>
                 {formData.upc && !validateUPC(formData.upc) && (
@@ -789,7 +789,7 @@ export default function ReleaseSubmission() {
                     onClick={() => setFormData(prev => ({ ...prev, ean: generateEAN() }))}
                     className="btn-secondary"
                   >
-                    {t('자동생성', 'Generate')}
+                    {t('자동생성', 'Auto Generate')}
                   </button>
                 </div>
                 {formData.ean && !validateEAN(formData.ean) && (
@@ -809,9 +809,9 @@ export default function ReleaseSubmission() {
             {/* Consumer Release Date */}
             <div className="space-y-4">
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
-                <h5 className="font-medium mb-2">{t('일반 발매일', 'Consumer Release Date')} *</h5>
+                <h5 className="font-medium mb-2">{t('일반 발매일', 'General Release Date')} *</h5>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  {t('음원이 스트리밍 플랫폼에 공개되는 날짜와 시간', 'Date and time when the release becomes available on streaming platforms')}
+                  {t('음원이 스트리밍 플랫폼에 공개되는 날짜와 시간', 'Date and time when music is released on streaming platforms')}
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
@@ -869,11 +869,11 @@ export default function ReleaseSubmission() {
                       onChange={(e) => setFormData(prev => ({ ...prev, hasOriginalRelease: e.target.checked }))}
                       className="rounded text-purple-500"
                     />
-                    <span className="text-sm">{t('재발매/리믹스', 'Re-release/Remix')}</span>
+                    <span className="text-sm">{t('재발매/리믹스', 'Reissue/Remix')}</span>
                   </label>
                 </div>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                  {t('리믹스, 리마스터, 재발매의 경우 원곡이 처음 발매된 날짜', 'For remixes, remasters, or re-releases, the date when the original was first released')}
+                  {t('리믹스, 리마스터, 재발매의 경우 원곡이 처음 발매된 날짜', 'Original release date for remixes, remasters, and reissues')}
                 </p>
                 {formData.hasOriginalRelease && (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -923,7 +923,7 @@ export default function ReleaseSubmission() {
           <div>
             <h4 className="font-medium mb-3 flex items-center gap-2">
               <Building2 className="w-4 h-4" />
-              {t('레이블 및 저작권 정보', 'Label & Copyright Information')}
+              {t('레이블 및 저작권 정보', 'Label and Copyright Information')}
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -948,19 +948,19 @@ export default function ReleaseSubmission() {
                   value={formData.catalogNumber || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, catalogNumber: e.target.value }))}
                   className="input"
-                  placeholder={t('예: CAT-001', 'e.g., CAT-001')}
+                  placeholder={t('예: CAT-001', 'e.g. CAT-001')}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('저작권 소유자', 'Copyright Holder')} *
+                  {t('저작권 소유자', 'Copyright Owner')} *
                 </label>
                 <input
                   type="text"
                   value={formData.copyrightHolder || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, copyrightHolder: e.target.value }))}
                   className="input"
-                  placeholder={t('© 소유자명', '© Holder name')}
+                  placeholder={t('© 소유자명', '© Owner name')}
                   required
                 />
               </div>
@@ -980,20 +980,20 @@ export default function ReleaseSubmission() {
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('제작권 소유자', 'Production Holder')} *
+                  {t('제작권 소유자', 'Production Rights Owner')} *
                 </label>
                 <input
                   type="text"
                   value={formData.productionHolder || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, productionHolder: e.target.value }))}
                   className="input"
-                  placeholder={t('℗ 소유자명', '℗ Holder name')}
+                  placeholder={t('℗ 소유자명', '℗ Owner name')}
                   required
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('제작권 연도', 'Production Year')} *
+                  {t('제작권 연도', 'Production Rights Year')} *
                 </label>
                 <input
                   type="text"
@@ -1023,7 +1023,7 @@ export default function ReleaseSubmission() {
             >
               <option value="none">{t('없음', 'None')}</option>
               <option value="explicit">{t('명시적 콘텐츠', 'Explicit Content')}</option>
-              <option value="edited">{t('편집됨/깨끗한 버전', 'Edited/Clean')}</option>
+              <option value="edited">{t('편집됨/깨끗한 버전', 'Edited/Clean Version')}</option>
             </select>
           </div>
         </div>
@@ -1074,7 +1074,7 @@ export default function ReleaseSubmission() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="text-sm font-medium">
-                      {t('번역', 'Translations')}
+                      {t('번역', 'Translation')}
                     </label>
                     <button
                       onClick={() => {
@@ -1109,7 +1109,7 @@ export default function ReleaseSubmission() {
                         }}
                         className="input flex-none w-32"
                       >
-                        <option value="">{t('언어 선택', 'Select language')}</option>
+                        <option value="">{t('언어 선택', 'Select Language')}</option>
                         {languageOptions.map(lang => (
                           <option key={lang.value} value={lang.value}>
                             {lang.label}
@@ -1252,7 +1252,7 @@ export default function ReleaseSubmission() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">
-                {t('앨범 제목 번역', 'Album Title Translations')}
+                {t('앨범 제목 번역', 'Album Title Translation')}
               </label>
               <button
                 onClick={() => addTranslation('albumTitle')}
@@ -1270,7 +1270,7 @@ export default function ReleaseSubmission() {
                   onChange={(e) => updateTranslation('albumTitle', translation.id, { language: e.target.value })}
                   className="input flex-none w-32"
                 >
-                  <option value="">{t('언어 선택', 'Select language')}</option>
+                  <option value="">{t('언어 선택', 'Select Language')}</option>
                   {languageOptions.map(lang => (
                     <option key={lang.value} value={lang.value}>
                       {lang.label}
@@ -1371,11 +1371,11 @@ export default function ReleaseSubmission() {
               value={formData.albumNotes || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, albumNotes: e.target.value }))}
               className="input min-h-[150px]"
-              placeholder={t('한국 DSP에서 보여질 앨범 소개글 및 크레딧 정보를 입력하세요', 'Enter album introduction and credits information for Korean DSPs')}
+              placeholder={t('한국 DSP에서 보여질 앨범 소개글 및 크레딧 정보를 입력하세요', 'Enter album introduction and credit information to be displayed on Korean DSPs')}
               rows={6}
             />
             <p className="text-xs text-gray-500 mt-1">
-              {t('한국 음원 사이트에서 앨범 정보 페이지에 표시될 소개글입니다', 'This will be displayed on the album information page on Korean music streaming platforms')}
+              {t('한국 음원 사이트에서 앨범 정보 페이지에 표시될 소개글입니다', 'Introduction text to be displayed on album information pages of Korean music sites')}
             </p>
           </div>
 
@@ -1406,7 +1406,7 @@ export default function ReleaseSubmission() {
               </span>
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {t('릴리즈의 마케팅 우선순위를 설정하세요 (1: 낮음, 5: 높음)', 'Set marketing priority for this release (1: Low, 5: High)')}
+              {t('릴리즈의 마케팅 우선순위를 설정하세요 (1: 낮음, 5: 높음)', 'Set marketing priority for the release (1: Low, 5: High)')}
             </p>
           </div>
 
@@ -1444,7 +1444,7 @@ export default function ReleaseSubmission() {
               </label>
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {t('프론트라인: 신규 릴리즈, 카탈로그: 기존 음원', 'Frontline: New release, Catalog: Existing music')}
+              {t('프론트라인: 신규 릴리즈, 카탈로그: 기존 음원', 'Frontline: New releases, Catalog: Existing music')}
             </p>
           </div>
 
@@ -1468,7 +1468,7 @@ export default function ReleaseSubmission() {
           {/* FUGA 마케팅 필드 - Fact Sheets URL */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('팩트시트/프로젝트 덱 URL', 'Fact Sheets/Project Deck URL')}
+              {t('팩트시트/프로젝트 덱 URL', 'Fact Sheet/Project Deck URL')}
             </label>
             <input
               type="url"
@@ -1478,7 +1478,7 @@ export default function ReleaseSubmission() {
               placeholder={t('https://example.com/factsheet.pdf', 'https://example.com/factsheet.pdf')}
             />
             <p className="text-xs text-gray-500 mt-1">
-              {t('아티스트/앨범 정보가 담긴 팩트시트나 프로젝트 덱 URL을 입력하세요', 'Enter URL for fact sheet or project deck containing artist/album information')}
+              {t('아티스트/앨범 정보가 담긴 팩트시트나 프로젝트 덱 URL을 입력하세요', 'Enter the URL of the fact sheet or project deck containing artist/album information')}
             </p>
           </div>
         </div>
@@ -1592,7 +1592,7 @@ export default function ReleaseSubmission() {
 
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      {t('역할', 'Roles')}
+                      {t('역할', 'Role')}
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {Object.entries((contributorRoles || []).reduce((acc, role) => {
@@ -1646,7 +1646,7 @@ export default function ReleaseSubmission() {
 
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      {t('악기', 'Instruments')}
+                      {t('악기', 'Instrument')}
                     </label>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -1735,7 +1735,7 @@ export default function ReleaseSubmission() {
       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Image className="w-5 h-5" />
-          {t('앨범 상세 정보', 'Album Details')}
+          {t('앨범 상세 정보', 'Album Detailed Information')}
         </h3>
 
         <div className="space-y-4">
@@ -1766,7 +1766,7 @@ export default function ReleaseSubmission() {
                 <div>
                   <Upload className="w-12 h-12 mx-auto mb-3 text-gray-400" />
                   <p className="text-sm text-gray-500 mb-2">
-                    {t('이미지를 드래그하거나 클릭하여 업로드', 'Drag image or click to upload')}
+                    {t('이미지를 드래그하거나 클릭하여 업로드', 'Drag and drop an image or click to upload')}
                   </p>
                   <input
                     type="file"
@@ -1788,7 +1788,7 @@ export default function ReleaseSubmission() {
                     htmlFor="album-cover-upload"
                     className="btn-primary cursor-pointer"
                   >
-                    {t('파일 선택', 'Choose File')}
+                    {t('파일 선택', 'Select File')}
                   </label>
                 </div>
               )}
@@ -1806,14 +1806,14 @@ export default function ReleaseSubmission() {
               value={formData.albumDescription}
               onChange={(e) => setFormData(prev => ({ ...prev, albumDescription: e.target.value }))}
               className="input min-h-[100px]"
-              placeholder={t('앨범에 대한 설명을 입력하세요', 'Enter album description')}
+              placeholder={t('앨범에 대한 설명을 입력하세요', 'Enter a description of the album')}
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium">
-                {t('앨범 설명 번역', 'Album Description Translations')}
+                {t('앨범 설명 번역', 'Album Description Translation')}
               </label>
               <button
                 onClick={() => addTranslation('albumDescription')}
@@ -1832,7 +1832,7 @@ export default function ReleaseSubmission() {
                     onChange={(e) => updateTranslation('albumDescription', translation.id, { language: e.target.value })}
                     className="input flex-none w-32"
                   >
-                    <option value="">{t('언어 선택', 'Select language')}</option>
+                    <option value="">{t('언어 선택', 'Select Language')}</option>
                     {languageOptions.map(lang => (
                       <option key={lang.value} value={lang.value}>
                         {lang.label}
@@ -1859,7 +1859,7 @@ export default function ReleaseSubmission() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">
-                {t('레이블', 'Record Label')}
+                {t('레이블', 'Label')}
               </label>
               <input
                 type="text"
@@ -1900,7 +1900,7 @@ export default function ReleaseSubmission() {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">
-              {t('배포 지역', 'Distribution Territories')}
+              {t('배포 지역', 'Distribution Territory')}
             </label>
             <RegionSelector
               selectedRegions={formData.territories}
@@ -1922,7 +1922,7 @@ export default function ReleaseSubmission() {
                   digitalReleaseDate: date?.toISOString().split('T')[0] || ''
                 }))}
                 className="input w-full"
-                placeholderText={t('디지털 발매일', 'Digital release date')}
+                placeholderText={t('디지털 발매일', 'Digital Release Date')}
               />
             </div>
 
@@ -1937,13 +1937,13 @@ export default function ReleaseSubmission() {
                   physicalReleaseDate: date?.toISOString().split('T')[0] || ''
                 }))}
                 className="input w-full"
-                placeholderText={t('피지컬 발매일', 'Physical release date')}
+                placeholderText={t('피지컬 발매일', 'Physical Release Date')}
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">
-                {t('예약 판매 시작일', 'Pre-order Date')}
+                {t('예약 판매 시작일', 'Pre-order Start Date')}
               </label>
               <DatePicker
                 selected={formData.preOrderDate ? new Date(formData.preOrderDate) : null}
@@ -1952,7 +1952,7 @@ export default function ReleaseSubmission() {
                   preOrderDate: date?.toISOString().split('T')[0] || ''
                 }))}
                 className="input w-full"
-                placeholderText={t('예약 판매 시작일', 'Pre-order date')}
+                placeholderText={t('예약 판매 시작일', 'Pre-order Start Date')}
               />
             </div>
           </div>
@@ -1985,7 +1985,7 @@ export default function ReleaseSubmission() {
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              {t('릴리즈 전 음원을 들을 수 있는 프라이빗 링크', 'Private link to listen to the release before launch')}
+              {t('릴리즈 전 음원을 들을 수 있는 프라이빗 링크', 'Private link to listen to music before release')}
             </p>
           </div>
 
@@ -2001,7 +2001,7 @@ export default function ReleaseSubmission() {
                 className="input"
                 required
               >
-                <option value="">{t('장르 선택', 'Select genre')}</option>
+                <option value="">{t('장르 선택', 'Select Genre')}</option>
                 {genreOptions.map(genre => (
                   <option key={genre} value={genre}>{genre}</option>
                 ))}
@@ -2011,13 +2011,13 @@ export default function ReleaseSubmission() {
             {/* Mood(s) */}
             <div>
               <label className="block text-sm font-medium mb-1">
-                {t('분위기', 'Mood(s)')}
+                {t('분위기', 'Mood')}
               </label>
               <MultiSelect
                 options={moodOptions}
                 value={formData.moods}
                 onChange={(value) => setFormData(prev => ({ ...prev, moods: value }))}
-                placeholder={t('분위기 선택 (최대 3개)', 'Select moods (max 3)')}
+                placeholder={t('분위기 선택 (최대 3개)', 'Select mood (max 3)')}
                 max={3}
               />
             </div>
@@ -2027,7 +2027,7 @@ export default function ReleaseSubmission() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1 flex items-center gap-2">
-                {t('YouTube Shorts 프리뷰', 'YouTube Shorts Previews')}
+                {t('YouTube Shorts 프리뷰', 'YouTube Shorts Preview')}
                 <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded">
                   {formData.youtubeShortsPreviews ? 'Yes' : 'No'}
                 </span>
@@ -2061,7 +2061,7 @@ export default function ReleaseSubmission() {
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                 }`}
               >
-                {formData.thisIsPlaylist ? t('포함', 'Include') : t('미포함', 'Exclude')}
+                {formData.thisIsPlaylist ? t('포함', 'Included') : t('미포함', 'Not Included')}
               </button>
             </div>
           </div>
@@ -2118,7 +2118,7 @@ export default function ReleaseSubmission() {
               value={formData.soundtrackScore || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, soundtrackScore: e.target.value }))}
               className="input min-h-[80px]"
-              placeholder={t('영화, TV, 게임 등의 사운드트랙 정보', 'Information about movie, TV, game soundtracks')}
+              placeholder={t('영화, TV, 게임 등의 사운드트랙 정보', 'Soundtrack information for movies, TV, games, etc.')}
             />
           </div>
 
@@ -2138,7 +2138,7 @@ export default function ReleaseSubmission() {
           {/* Subgenres - Custom Input */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              {t('서브장르', 'Subgenre(s)')}
+              {t('서브장르', 'Subgenre')}
             </label>
             <div className="space-y-2">
               {formData.subgenres.map((subgenre, index) => (
@@ -2174,7 +2174,7 @@ export default function ReleaseSubmission() {
               </button>
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {t('직접 서브장르를 입력할 수 있습니다', 'You can enter custom subgenres')}
+              {t('직접 서브장르를 입력할 수 있습니다', 'You can enter subgenres directly')}
             </p>
           </div>
 
@@ -2183,14 +2183,14 @@ export default function ReleaseSubmission() {
 
             <div>
               <label className="block text-sm font-medium mb-1">
-                {t('마케팅 드라이버', 'Marketing Drivers')}
+                {t('마케팅 드라이버', 'Marketing Driver')}
               </label>
               <input
                 type="text"
                 value={formData.marketingDrivers || ''}
                 onChange={(e) => setFormData(prev => ({ ...prev, marketingDrivers: e.target.value }))}
                 className="input"
-                placeholder={t('예: Radio, Playlist, Social Media', 'e.g., Radio, Playlist, Social Media')}
+                placeholder={t('예: Radio, Playlist, Social Media', 'e.g. Radio, Playlist, Social Media')}
               />
             </div>
           </div>
@@ -2204,7 +2204,7 @@ export default function ReleaseSubmission() {
               value={formData.socialMediaPoliticalPlan || ''}
               onChange={(e) => setFormData(prev => ({ ...prev, socialMediaPoliticalPlan: e.target.value }))}
               className="input min-h-[100px]"
-              placeholder={t('소셜 미디어 캠페인 및 관련 전략 설명', 'Describe social media campaigns and related strategies')}
+              placeholder={t('소셜 미디어 캠페인 및 관련 전략 설명', 'Social media campaign and related strategy description')}
             />
           </div>
 
@@ -2228,7 +2228,7 @@ export default function ReleaseSubmission() {
                     className="input"
                     required
                   >
-                    <option value="">{t('국가 선택', 'Select country')}</option>
+                    <option value="">{t('국가 선택', 'Select Country')}</option>
                     {countries.map(country => (
                       <option key={country.code} value={country.name}>
                         {country.name}
@@ -2264,7 +2264,7 @@ export default function ReleaseSubmission() {
                     value={formData.artistCurrentCity || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, artistCurrentCity: e.target.value }))}
                     className="input"
-                    placeholder={t('예: Seoul, Los Angeles', 'e.g., Seoul, Los Angeles')}
+                    placeholder={t('예: Seoul, Los Angeles', 'e.g. Seoul, Los Angeles')}
                   />
                 </div>
 
@@ -2277,7 +2277,7 @@ export default function ReleaseSubmission() {
                     value={formData.artistHometown || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, artistHometown: e.target.value }))}
                     className="input"
-                    placeholder={t('예: Busan, Tokyo', 'e.g., Busan, Tokyo')}
+                    placeholder={t('예: Busan, Tokyo', 'e.g. Busan, Tokyo')}
                   />
                 </div>
               </div>
@@ -2292,13 +2292,13 @@ export default function ReleaseSubmission() {
                   onChange={(e) => setFormData(prev => ({ ...prev, artistGender: e.target.value }))}
                   className="input"
                 >
-                  <option value="">{t('선택하세요', 'Select')}</option>
+                  <option value="">{t('선택하세요', 'Please select')}</option>
                   <option value="male">{t('남성', 'Male')}</option>
                   <option value="female">{t('여성', 'Female')}</option>
-                  <option value="mixed-band">{t('혼성 밴드', 'Mixed (band)')}</option>
-                  <option value="non-binary">{t('논바이너리', 'Non-Binary')}</option>
-                  <option value="trans">{t('트랜스젠더', 'Trans')}</option>
-                  <option value="prefer-not-to-say">{t('밝히고 싶지 않음', 'Prefer Not To Say')}</option>
+                  <option value="mixed-band">{t('혼성 밴드', 'Mixed Band')}</option>
+                  <option value="non-binary">{t('논바이너리', 'Non-binary')}</option>
+                  <option value="trans">{t('트랜스젠더', 'Transgender')}</option>
+                  <option value="prefer-not-to-say">{t('밝히고 싶지 않음', 'Prefer not to say')}</option>
                   <option value="other">{t('기타', 'Other')}</option>
                 </select>
               </div>
@@ -2306,7 +2306,7 @@ export default function ReleaseSubmission() {
               {/* Social Movements */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('사회 운동 / 인식 개선', 'Social Movements / Awareness-Raising')}
+                  {t('사회 운동 / 인식 개선', 'Social Movement / Awareness')}
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
                   {[
@@ -2361,12 +2361,12 @@ export default function ReleaseSubmission() {
               {/* Similar Artists */}
               <div>
                 <label className="block text-sm font-medium mb-1">
-                  {t('유사 아티스트 (사운드)', 'Similar Artists (Sounds Like)')}
+                  {t('유사 아티스트 (사운드)', 'Similar Artists (Sound)')}
                 </label>
                 <input
                   type="text"
                   className="input"
-                  placeholder={t('유사 아티스트 입력 후 Enter', 'Enter similar artist and press Enter')}
+                  placeholder={t('유사 아티스트 입력 후 Enter', 'Enter similar artist then press Enter')}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' && e.currentTarget.value) {
                       setFormData(prev => ({
@@ -2402,7 +2402,7 @@ export default function ReleaseSubmission() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    {t('싱크 히스토리 여부', 'Artist Sync History Y/N')}
+                    {t('싱크 히스토리 여부', 'Sync History Status')}
                   </label>
                   <div className="flex gap-4">
                     <label className="flex items-center gap-2">
@@ -2433,13 +2433,13 @@ export default function ReleaseSubmission() {
                 {formData.artistSyncHistory === 'yes' && (
                   <div>
                     <label className="block text-sm font-medium mb-1">
-                      {t('싱크 히스토리 상세', 'Artist Sync History Details')}
+                      {t('싱크 히스토리 상세', 'Sync History Details')}
                     </label>
                     <textarea
                       value={formData.artistSyncHistoryDetails || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, artistSyncHistoryDetails: e.target.value }))}
                       className="input min-h-[60px]"
-                      placeholder={t('싱크 사용 이력 설명', 'Describe sync usage history')}
+                      placeholder={t('싱크 사용 이력 설명', 'Sync usage history description')}
                     />
                   </div>
                 )}
@@ -2451,7 +2451,7 @@ export default function ReleaseSubmission() {
           <div>
             <h4 className="font-medium mb-3 flex items-center gap-2">
               <Music className="w-4 h-4" />
-              {t('DSP 아티스트 프로필 ID', 'DSP Artist Profile IDs')}
+              {t('DSP 아티스트 프로필 ID', 'DSP Artist Profile ID')}
             </h4>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2513,7 +2513,7 @@ export default function ReleaseSubmission() {
                   options={ugcPriorityOptions}
                   value={formData.ugcPriorities}
                   onChange={(value) => setFormData(prev => ({ ...prev, ugcPriorities: value }))}
-                  placeholder={t('플랫폼 선택', 'Select platforms')}
+                  placeholder={t('플랫폼 선택', 'Select platform')}
                 />
               </div>
 
@@ -2632,7 +2632,7 @@ export default function ReleaseSubmission() {
           <div>
             <h4 className="font-medium mb-3 flex items-center gap-2">
               <Sparkles className="w-4 h-4" />
-              {t('추가 마케팅 정보', 'Additional Marketing Info')}
+              {t('추가 마케팅 정보', 'Additional Marketing Information')}
             </h4>
 
             <div className="space-y-3">
@@ -2904,7 +2904,7 @@ export default function ReleaseSubmission() {
               className="rounded"
             />
             <label htmlFor="parental-advisory" className="text-sm">
-              {t('19금 콘텐츠 포함', 'Contains Explicit Content')}
+              {t('19금 콘텐츠 포함', 'Contains explicit content')}
             </label>
           </div>
         </div>
@@ -2935,7 +2935,7 @@ export default function ReleaseSubmission() {
             
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-gray-400">{t('아티스트', 'Artists')}:</dt>
+                <dt className="text-gray-400">{t('아티스트', 'Artist')}:</dt>
                 <dd>{formData.artists.map(a => a.primaryName).join(', ')}</dd>
               </div>
               <div className="flex justify-between">
@@ -2943,7 +2943,7 @@ export default function ReleaseSubmission() {
                 <dd>{formData.albumTitle}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-400">{t('트랙 수', 'Tracks')}:</dt>
+                <dt className="text-gray-400">{t('트랙 수', 'Track Count')}:</dt>
                 <dd>{formData.tracks.length}</dd>
               </div>
               <div className="flex justify-between">
@@ -2951,7 +2951,7 @@ export default function ReleaseSubmission() {
                 <dd>{formData.releaseDate}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-gray-400">{t('배포 플랫폼', 'Platforms')}:</dt>
+                <dt className="text-gray-400">{t('배포 플랫폼', 'Distribution Platforms')}:</dt>
                 <dd>{Object.entries(formData.distributionPlatforms)
                   .filter(([key, value]) => key !== 'custom' && value)
                   .length + (formData.distributionPlatforms.custom?.length || 0)}</dd>
@@ -2967,7 +2967,7 @@ export default function ReleaseSubmission() {
               value={formData.qcNotes}
               onChange={(e) => setFormData(prev => ({ ...prev, qcNotes: e.target.value }))}
               className="input min-h-[100px]"
-              placeholder={t('품질 확인 관련 메모', 'Quality check related notes')}
+              placeholder={t('품질 확인 관련 메모', 'Quality control related notes')}
             />
           </div>
 
@@ -3037,7 +3037,7 @@ export default function ReleaseSubmission() {
                     <div>
                       <Upload className="w-8 h-8 mx-auto mb-2 text-gray-400" />
                       <p className="text-sm text-gray-500 mb-2">
-                        {t('오디오 파일을 드래그하거나 클릭하여 업로드', 'Drag audio files or click to upload')}
+                        {t('오디오 파일을 드래그하거나 클릭하여 업로드', 'Drag and drop audio files or click to upload')}
                       </p>
                     </div>
                   )}
@@ -3059,7 +3059,7 @@ export default function ReleaseSubmission() {
                     htmlFor={`audio-upload-${track.id}`}
                     className="btn-primary cursor-pointer inline-block mt-2"
                   >
-                    {t('파일 선택', 'Choose Files')}
+                    {t('파일 선택', 'Select Files')}
                   </label>
                 </div>
 
@@ -3160,7 +3160,7 @@ export default function ReleaseSubmission() {
   // Submit handler
   const handleSubmit = async () => {
     if (!formData.agreedToTerms) {
-      toast.error(t('이용약관에 동의해주세요', 'Please agree to the terms'))
+      toast.error(t('이용약관에 동의해주세요', 'Please agree to the terms of service'))
       return
     }
 
@@ -3173,10 +3173,10 @@ export default function ReleaseSubmission() {
     try {
       // Submit the form data
       await submissionService.createSubmission(formData)
-      toast.success(t('제출이 완료되었습니다', 'Submission completed'))
+      toast.success(t('제출이 완료되었습니다', 'Submission completed successfully'))
       navigate('/submissions')
     } catch (error) {
-      toast.error(t('제출 중 오류가 발생했습니다', 'Error during submission'))
+      toast.error(t('제출 중 오류가 발생했습니다', 'An error occurred during submission'))
     } finally {
       setIsSubmitting(false)
     }
@@ -3419,7 +3419,7 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
         <div className="space-y-2">
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium">
-              {t('트랙 제목 번역', 'Track Title Translations')}
+              {t('트랙 제목 번역', 'Track Title Translation')}
             </label>
             <button
               onClick={() => addTranslation('track', track.id)}
@@ -3437,7 +3437,7 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
                 onChange={(e) => updateTranslation('track', translation.id, { language: e.target.value }, track.id)}
                 className="input flex-none w-32"
               >
-                <option value="">{t('언어 선택', 'Select language')}</option>
+                <option value="">{t('언어 선택', 'Select Language')}</option>
                 {languageOptions.map((lang: any) => (
                   <option key={lang.value} value={lang.value}>
                     {lang.label}
@@ -3449,7 +3449,7 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
                 value={translation.text}
                 onChange={(e) => updateTranslation('track', translation.id, { text: e.target.value }, track.id)}
                 className="input flex-1"
-                placeholder={t('번역된 제목', 'Translated title')}
+                placeholder={t('번역된 제목')}
               />
               <button
                 onClick={() => removeTranslation('track', translation.id, track.id)}
@@ -3464,14 +3464,14 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
             <label className="block text-sm font-medium mb-1">
-              {t('장르', 'Genre')}
+              {t('장르')}
             </label>
             <select
               value={track.genre || ''}
               onChange={(e) => updateTrack(track.id, { genre: e.target.value })}
               className="input"
             >
-              <option value="">{t('장르 선택', 'Select genre')}</option>
+              <option value="">{t('장르 선택')}</option>
               {genreOptions.map((genre: string) => (
                 <option key={genre} value={genre}>{genre}</option>
               ))}
@@ -3493,7 +3493,7 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div>
             <label className="block text-sm font-medium mb-1">
-              {t('작곡가', 'Composer')}
+              {t('작곡가')}
             </label>
             <input
               type="text"
@@ -3505,7 +3505,7 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              {t('작사가', 'Lyricist')}
+              {t('작사가')}
             </label>
             <input
               type="text"
@@ -3517,7 +3517,7 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
 
           <div>
             <label className="block text-sm font-medium mb-1">
-              {t('편곡자', 'Arranger')}
+              {t('편곡자')}
             </label>
             <input
               type="text"
@@ -3545,7 +3545,7 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
               }}
               className="rounded"
             />
-            <span className="text-sm">{t('타이틀 트랙', 'Title Track')}</span>
+            <span className="text-sm">{t('타이틀 트랙')}</span>
           </label>
 
           <label className="flex items-center gap-2">
@@ -3555,7 +3555,7 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
               onChange={(e) => updateTrack(track.id, { explicitContent: e.target.checked })}
               className="rounded"
             />
-            <span className="text-sm">{t('19금 콘텐츠', 'Explicit Content')}</span>
+            <span className="text-sm">{t('19금 콘텐츠')}</span>
           </label>
 
           <label className="flex items-center gap-2">

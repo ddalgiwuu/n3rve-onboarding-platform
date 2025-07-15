@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Globe, Check, X, ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { useState } from 'react';
+import { Globe, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { territories, regions, getTerritoriesByRegion, regionCounts, type Region } from '@/constants/territories';
-import { dsps, getDSPsByTerritory, type DSP } from '@/constants/dsps';
+import { dsps, getDSPsByTerritory } from '@/constants/dsps';
 import { useLanguageStore } from '@/store/language.store';
 import useSafeStore from '@/hooks/useSafeStore'
 
@@ -165,7 +165,7 @@ export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSe
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder={t('국가 검색...', 'Search territories...')}
+            placeholder={t('국가 검색...', 'Search countries...')}
             className="input pl-10"
           />
         </div>
@@ -200,7 +200,7 @@ export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSe
             {showAllTerritories ? (
               <>
                 <ChevronUp className="w-4 h-4" />
-                {t('접기', 'Show less')}
+                {t('접기', 'Collapse')}
               </>
             ) : (
               <>
@@ -223,7 +223,7 @@ export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSe
       {value.territories.length > 0 && (
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
           <h4 className="font-medium mb-3">
-            {t('DSP별 지역 제외 설정', 'DSP Territory Exclusions')}
+            {t('DSP별 지역 제외 설정', 'DSP Territory Exclusion Settings')}
           </h4>
           <p className="text-sm text-gray-500 mb-4">
             {t(

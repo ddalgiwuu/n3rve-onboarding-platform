@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Album } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
@@ -33,10 +32,10 @@ export default function AlbumTranslationForm({
         <Album className="w-6 h-6 text-purple-600" />
         <div>
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-            {t('앨범 제목 및 번역', 'Album Title & Translations')}
+            {t('앨범 제목 및 번역', 'Album Title & Translation')}
           </h3>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {t('앨범 제목을 다양한 언어로 번역하여 글로벌 배포를 준비하세요', 'Translate album title into various languages for global distribution')}
+            {t('앨범 제목을 다양한 언어로 번역하여 글로벌 배포를 준비하세요', 'Translate your album title into various languages to prepare for global distribution')}
           </p>
         </div>
       </div>
@@ -57,7 +56,7 @@ export default function AlbumTranslationForm({
             required
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            {t('기본 언어 (필수)', 'Primary language (required)')}
+            {t('기본 언어 (필수)', 'Default language (required)')}
           </p>
         </div>
 
@@ -96,9 +95,9 @@ export default function AlbumTranslationForm({
           💡 {t('번역 팁', 'Translation Tips')}
         </h4>
         <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
-          <li>• {t('각 지역의 문화와 언어 특성을 고려하여 번역하세요', 'Consider cultural and linguistic characteristics of each region')}</li>
+          <li>• {t('각 지역의 문화와 언어 특성을 고려하여 번역하세요', 'Consider the cultural and linguistic characteristics of each region when translating')}</li>
           <li>• {t('직역보다는 의미 전달에 중점을 두세요', 'Focus on conveying meaning rather than literal translation')}</li>
-          <li>• {t('타겟 시장에서 자주 사용되는 언어를 우선 번역하세요', 'Prioritize languages commonly used in your target markets')}</li>
+          <li>• {t('타겟 시장에서 자주 사용되는 언어를 우선 번역하세요', 'Prioritize translating into languages commonly used in your target markets')}</li>
           <li>• {t('음악 스트리밍 플랫폼에서 검색 최적화를 위해 현지 언어 번역이 중요합니다', 'Local language translations are important for search optimization on music streaming platforms')}</li>
         </ul>
       </div>
@@ -114,7 +113,7 @@ export default function AlbumTranslationForm({
         <div className="text-xs text-gray-500 dark:text-gray-500">
           {translations.length > 0 && (
             <span>
-              {t('추가 번역', 'Additional translations')}: {translations.map(t => t.language.toUpperCase()).join(', ')}
+              {t('추가 번역', 'Additional Translations')}: {translations.map(t => t.language.toUpperCase()).join(', ')}
             </span>
           )}
         </div>

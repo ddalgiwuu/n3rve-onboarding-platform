@@ -277,9 +277,9 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
     
     let dateNote = ''
     if (selectedTz.offset > 0 && utcHours < hours) {
-      dateNote = ` ${t('release.previousDay')}`
+      dateNote = ` ${t('release.previousDay', '(Previous Day)')}`
     } else if (selectedTz.offset < 0 && utcHours > hours) {
-      dateNote = ` ${t('release.nextDay')}`
+      dateNote = ` ${t('release.nextDay', '(Next Day)')}`
     }
     
     return `UTC ${utcTime}${dateNote}`
@@ -376,28 +376,28 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
     )} className="w-full h-full">
       <div className="space-y-4">
         <div className="mb-4">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('onboarding.step5')}</h2>
-          <p className="text-sm text-gray-600 dark:text-gray-400">{t('text.onboarding.step5.description')}</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('onboarding.step5', 'Step 5: Release Information')}</h2>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{t('text.onboarding.step5.description', 'Configure release information and distribution settings')}</p>
         </div>
 
         {/* 기본 정보 */}
         <div id="basic-info-section" className="bg-gray-50 dark:bg-gray-700 rounded-xl p-5 mb-4 transition-all">
           <div className="flex items-center gap-2 mb-3">
             <Music className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">기본 정보</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.basicInfo', 'Basic Information')}</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                {t('release.upc')}
+                {t('release.upc', 'UPC')}
               </label>
               <div className="flex gap-2">
                 <input
                   {...register('upc')}
                   type="text"
                   className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-                  placeholder="자동 생성됨"
+                  placeholder={t('release.upc.placeholder', 'Auto-generated')}
                   readOnly
                 />
                 <button
@@ -405,20 +405,20 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                   onClick={generateUPC}
                   className="px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
                 >
-                  생성
+                  {t('release.upc.generate', 'Generate')}
                 </button>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
-                {t('release.catalogNumber')}
+                {t('release.catalogNumber', 'Catalog Number')}
               </label>
               <input
                 {...register('catalogNumber')}
                 type="text"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-                placeholder="예: N3RVE-2024-001"
+                placeholder={t('release.catalogNumber.placeholder', 'e.g., N3RVE-2024-001')}
               />
             </div>
           </div>
@@ -429,7 +429,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
           <div className="flex items-center gap-2 mb-3">
             <Globe className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {t('release.distributors')} <span className="text-red-500">*</span>
+              {t('release.distributors', 'Distributors')} <span className="text-red-500">*</span>
             </h3>
           </div>
           <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
@@ -510,7 +510,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
           <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
             <div className="mb-3">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('release.timezone')}
+                {t('release.timezone', 'Timezone')}
               </label>
               <select
                 value={selectedTimezone}
@@ -524,14 +524,14 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 ))}
               </select>
               <p className="mt-1 text-xs text-gray-500">
-                {t('release.timezoneHelp')}
+                {t('release.timezoneHelp', 'Choose the timezone for your release time')}
               </p>
             </div>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('release.releaseTime')}
+                  {t('release.releaseTime', 'Release Time')}
                 </label>
                 <input
                   {...register('releaseTime')}
@@ -539,12 +539,12 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                 />
                 <p className="mt-0.5 text-[10px] text-gray-500">
-                  {t('release.timeInTimezone', { timezone: timezones.find(tz => tz.value === selectedTimezone)?.label.split(' ')[0] || selectedTimezone })}
+                  {t('release.timeInTimezone', `Time in ${timezones.find(tz => tz.value === selectedTimezone)?.label.split(' ')[0] || selectedTimezone}`)}
                 </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('release.timezoneConversion')}
+                  {t('release.timezoneConversion', 'UTC Conversion')}
                 </label>
                 {releaseTime && consumerReleaseDate ? (
                   <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded text-xs h-[38px] flex items-center">
@@ -552,7 +552,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                   </div>
                 ) : (
                   <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded text-xs h-[38px] flex items-center">
-                    <p className="text-gray-400 dark:text-gray-500">{t('release.timezoneNote')}</p>
+                    <p className="text-gray-400 dark:text-gray-500">{t('release.timezoneNote', 'Select time to see UTC conversion')}</p>
                   </div>
                 )}
               </div>
@@ -573,21 +573,21 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <Info className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
             <div className="flex-1">
               <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-1">
-                {t('release.timedReleaseTitle')}
+                {t('release.timedReleaseTitle', 'Timed Release Information')}
               </h4>
               <p className="text-xs text-amber-800 dark:text-amber-200 mb-2">
-                {t('release.timedReleaseNotice')}
+                {t('release.timedReleaseNotice', 'Please note that some DSPs may not support exact time release. Most platforms release at midnight local time.')}
               </p>
               <p className="text-xs font-medium text-amber-900 dark:text-amber-100 mb-1">
-                {t('release.timedReleaseWorkaround')}
+                {t('release.timedReleaseWorkaround', 'Workaround for timed release:')}
               </p>
               <ul className="space-y-0.5 text-xs text-amber-800 dark:text-amber-200">
-                <li>{t('release.timedReleaseStep1')}</li>
-                <li>{t('release.timedReleaseStep2')}</li>
-                <li>{t('release.timedReleaseStep3')}</li>
+                <li>{t('release.timedReleaseStep1', '1. Release at midnight first')}</li>
+                <li>{t('release.timedReleaseStep2', '2. Update release time after initial release')}</li>
+                <li>{t('release.timedReleaseStep3', '3. Coordinate with DSP support for specific timing')}</li>
               </ul>
               <p className="mt-2 text-xs text-amber-700 dark:text-amber-300 italic">
-                {t('release.timedReleaseExample')}
+                {t('release.timedReleaseExample', 'Example: For a 6 PM release, set midnight first, then request time change.')}
               </p>
             </div>
           </div>
@@ -597,19 +597,19 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         <div id="copyright-section" className="bg-gray-50 dark:bg-gray-700 rounded-xl p-5 mb-4 transition-all">
           <div className="flex items-center gap-2 mb-3">
             <Shield className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.copyrightInfo')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.copyrightInfo', 'Copyright Information')}</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('release.cRights')} <span className="text-red-500">*</span>
+                {t('release.cRights', 'C Rights (Copyright)')} <span className="text-red-500">*</span>
               </label>
               <input
                 {...register('cRights')}
                 type="text"
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                placeholder="예: N3RVE Entertainment"
+                placeholder={t('release.cRights.placeholder', 'e.g., N3RVE Entertainment')}
               />
               {errors.cRights && (
                 <p className="mt-1 text-sm text-red-500">{errors.cRights.message}</p>
@@ -618,13 +618,13 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('release.pRights')} <span className="text-red-500">*</span>
+                {t('release.pRights', 'P Rights (Phonogram)')} <span className="text-red-500">*</span>
               </label>
               <input
                 {...register('pRights')}
                 type="text"
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                placeholder="예: N3RVE Entertainment"
+                placeholder={t('release.pRights.placeholder', 'e.g., N3RVE Entertainment')}
               />
               {errors.pRights && (
                 <p className="mt-1 text-sm text-red-500">{errors.pRights.message}</p>
@@ -633,7 +633,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('release.copyrightYear')} <span className="text-red-500">*</span>
+                {t('release.copyrightYear', 'Copyright Year')} <span className="text-red-500">*</span>
               </label>
               <input
                 {...register('copyrightYear')}
@@ -652,12 +652,12 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <Clock className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.preview')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.preview', 'Preview Settings')}</h3>
           </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t('release.previewStart')}
+              {t('release.previewStart', 'Preview Start Time (seconds)')}
             </label>
             <input
               {...register('previewStart', { valueAsNumber: true })}
@@ -667,7 +667,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               placeholder="0"
             />
-            <p className="mt-1 text-xs text-gray-500">{t('release.previewStartDesc')}</p>
+            <p className="mt-1 text-xs text-gray-500">{t('release.previewStartDesc', 'Set the start time for preview samples (0-300 seconds)')}</p>
           </div>
         </div>
 
@@ -675,7 +675,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <Globe className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.territorySelection')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.territorySelection', 'Territory Selection')}</h3>
           </div>
           
           <div className="space-y-4">
@@ -687,7 +687,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                   value="worldwide"
                   className="text-purple-600"
                 />
-                <span className="text-sm font-medium">{t('release.worldwide')}</span>
+                <span className="text-sm font-medium">{t('release.worldwide', 'Worldwide')}</span>
               </label>
             </div>
             
@@ -699,7 +699,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                   value="select"
                   className="text-purple-600"
                 />
-                <span className="text-sm font-medium">{t('release.selectSpecificCountries')}</span>
+                <span className="text-sm font-medium">{t('release.selectSpecificCountries', 'Select Specific Countries')}</span>
               </label>
             </div>
 
@@ -708,10 +708,10 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 {/* Selected Countries Count */}
                 <div className="flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                   <span className="text-sm font-medium text-purple-900 dark:text-purple-100">
-                    {t('release.selectedCountries')}
+                    {t('release.selectedCountries', 'Selected Countries')}
                   </span>
                   <span className="text-sm font-bold text-purple-600 dark:text-purple-400">
-                    {t('release.countriesSelected').replace('{{count}}', selectedCountries.length.toString())}
+                    {t('release.countriesSelected', `${selectedCountries.length} countries selected`)}
                   </span>
                 </div>
 
@@ -722,10 +722,10 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                       <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <p className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-2">
-                          {t('release.dspExclusions')}
+                          {t('release.dspExclusions', 'DSP Exclusions')}
                         </p>
                         <p className="text-xs text-amber-800 dark:text-amber-200 mb-2">
-                          {t('release.dspExclusionNotice')}
+                          {t('release.dspExclusionNotice', 'The following countries are excluded by selected DSPs:')}
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {dspExcludedCountries.map(code => {
@@ -741,7 +741,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                             return (
                               <div key={code} className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-800/30 rounded text-xs">
                                 <span className="font-medium">
-                                  {t(`country.${code}`) || country.name}
+                                  {t(`country.${code}`, country.name)}
                                 </span>
                                 <span className="text-amber-600 dark:text-amber-400">
                                   ({excludingDSPs.map(dsp => distributors.find(d => d.id === dsp)?.name).join(', ')})
@@ -780,7 +780,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                             >
                               {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
                               <span className="font-medium">
-                                {t(`continent.${continent.id}`)}
+                                {t(`continent.${continent.id}`, continent.name)}
                               </span>
                               <span className="text-sm text-gray-500 dark:text-gray-400">
                                 ({selectedInContinent}/{continentCountries.length})
@@ -798,7 +798,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                                 }}
                                 className="text-xs px-2 py-1 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
                               >
-                                {t('release.selectAll')}
+                                {t('release.selectAll', 'Select All')}
                               </button>
                               <button
                                 type="button"
@@ -810,7 +810,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                                 }}
                                 className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
                               >
-                                {t('release.deselectAll')}
+                                {t('release.deselectAll', 'Deselect All')}
                               </button>
                             </div>
                           </div>
@@ -849,7 +849,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                                     className="text-purple-600 disabled:opacity-50"
                                   />
                                   <span className={isExcluded ? 'line-through' : ''}>
-                                    {t(`country.${country.code}`) || country.name}
+                                    {t(`country.${country.code}`, country.name)}
                                   </span>
                                   {isExcluded && (
                                     <span className="text-xs text-amber-600 dark:text-amber-400">⚠️</span>
@@ -873,16 +873,16 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('release.recordingCountry')} <span className="text-red-500">*</span>
+                {t('release.recordingCountry', 'Recording Country')} <span className="text-red-500">*</span>
               </label>
               <select
                 {...register('recordingCountry')}
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="">선택하세요</option>
+                <option value="">{t('common.select', 'Select')}</option>
                 {allCountries.slice(0, 50).map(country => (
                   <option key={country.code} value={country.code}>
-                    {t(`country.${country.code}`) || country.name}
+                    {t(`country.${country.code}`, country.name)}
                   </option>
                 ))}
               </select>
@@ -893,13 +893,13 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('release.recordingLanguage')} <span className="text-red-500">*</span>
+                {t('release.recordingLanguage', 'Recording Language')} <span className="text-red-500">*</span>
               </label>
               <select
                 {...register('recordingLanguage')}
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="">선택하세요</option>
+                <option value="">{t('common.select', 'Select')}</option>
                 {languages.map(language => (
                   <option key={language.code} value={language.code}>
                     {language.name}
@@ -913,27 +913,27 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('release.priceType')} <span className="text-red-500">*</span>
+                {t('release.priceType', 'Price Type')} <span className="text-red-500">*</span>
               </label>
               <select
                 {...register('priceType')}
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="paid">{t('release.paid')}</option>
-                <option value="free">{t('release.free')}</option>
+                <option value="paid">{t('release.paid', 'Paid')}</option>
+                <option value="free">{t('release.free', 'Free')}</option>
               </select>
             </div>
 
             {priceType === 'paid' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('release.price')}
+                  {t('release.price', 'Price')}
                 </label>
                 <input
                   {...register('price', { valueAsNumber: true })}
                   type="number"
                   className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder="예: 700"
+                  placeholder={t('release.price.placeholder', 'e.g., 700')}
                 />
               </div>
             )}
@@ -944,7 +944,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <Headphones className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.advancedFormats')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.advancedFormats', 'Advanced Format Options')}</h3>
           </div>
           
           <div className="space-y-4">
@@ -958,17 +958,17 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 />
                 <div className="flex-1">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('release.dolbyAtmos')}
+                    {t('Dolby Atmos 지원', 'Dolby Atmos Support')}
                   </span>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {t('release.dolbyAtmosDesc')}
+                    {t('Dolby Atmos 파일을 업로드하려면 체크하세요', 'Check to upload Dolby Atmos files')}
                   </p>
                   {watch('dolbyAtmos') && (
                     <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded border border-blue-200 dark:border-blue-800">
                       <div className="flex items-start gap-2">
                         <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                         <div className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
-                          <p className="font-medium">{t('release.dolbyAtmosRequirements')}:</p>
+                          <p className="font-medium">{t('Dolby Atmos 요구사항', 'Dolby Atmos Requirements')}:</p>
                           <ul className="space-y-0.5 ml-4">
                             <li>• ADM BWF format master file</li>
                             <li>• 48kHz/24-bit audio</li>
@@ -994,16 +994,16 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 <div className="flex-1">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                     <Film className="w-4 h-4" />
-                    {t('release.motionArt')}
+                    {t('Motion Art 지원', 'Motion Art Support')}
                   </span>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {t('release.motionArtDesc')}
+                    {t('Motion Art 파일을 업로드하려면 체크하세요', 'Check to upload Motion Art files')}
                   </p>
                   
                   {watch('hasMotionArt') && (
                     <div className="mt-4 space-y-3 ml-6">
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {t('release.motionArtSettings')}
+                        {t('Motion Art 설정', 'Motion Art Settings')}
                       </h4>
                       <label className="flex items-center gap-3">
                         <input
@@ -1011,7 +1011,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                           type="checkbox"
                           className="text-purple-600"
                         />
-                        <span className="text-sm">{t('release.motionArt.autoPlay')}</span>
+                        <span className="text-sm">{t('자동 재생', 'Auto Play')}</span>
                       </label>
                       <label className="flex items-center gap-3">
                         <input
@@ -1019,7 +1019,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                           type="checkbox"
                           className="text-purple-600"
                         />
-                        <span className="text-sm">{t('release.motionArt.loop')}</span>
+                        <span className="text-sm">{t('반복 재생', 'Loop')}</span>
                       </label>
                       <label className="flex items-center gap-3">
                         <input
@@ -1027,7 +1027,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                           type="checkbox"
                           className="text-purple-600"
                         />
-                        <span className="text-sm">{t('release.motionArt.showControls')}</span>
+                        <span className="text-sm">{t('컨트롤 표시', 'Show Controls')}</span>
                       </label>
                     </div>
                   )}
@@ -1041,38 +1041,38 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <Tag className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.metadata')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('메타데이터', 'Metadata')}</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('release.parentalAdvisory')}
+                {t('등급 표시', 'Parental Advisory')}
               </label>
               <select
                 {...register('parentalAdvisory')}
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="none">{t('release.parentalAdvisory.none')}</option>
-                <option value="explicit">{t('release.parentalAdvisory.explicit')}</option>
-                <option value="clean">{t('release.parentalAdvisory.clean')}</option>
+                <option value="none">{t('없음', 'None')}</option>
+                <option value="explicit">{t('성인', 'Explicit')}</option>
+                <option value="clean">{t('전체이용가', 'Clean')}</option>
               </select>
-              <p className="mt-1 text-xs text-gray-500">{t('release.parentalAdvisoryDesc')}</p>
+              <p className="mt-1 text-xs text-gray-500">{t('앨범의 등급 표시를 선택하세요', 'Select parental advisory rating for the album')}</p>
             </div>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('release.releaseFormat')}
+                {t('릴리즈 포맷', 'Release Format')}
               </label>
               <select
                 {...register('releaseFormat')}
                 className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
               >
-                <option value="standard">{t('release.format.standard')}</option>
-                <option value="deluxe">{t('release.format.deluxe')}</option>
-                <option value="special">{t('release.format.special')}</option>
-                <option value="remastered">{t('release.format.remastered')}</option>
-                <option value="anniversary">{t('release.format.anniversary')}</option>
+                <option value="standard">{t('스탠다드', 'Standard')}</option>
+                <option value="deluxe">{t('디럭스', 'Deluxe')}</option>
+                <option value="special">{t('스페셜', 'Special')}</option>
+                <option value="remastered">{t('리마스터드', 'Remastered')}</option>
+                <option value="anniversary">{t('기념판', 'Anniversary')}</option>
               </select>
             </div>
           </div>
@@ -1086,9 +1086,9 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               />
               <div>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('release.compilationAlbum')}
+                  {t('컴필레이션 앨범', 'Compilation Album')}
                 </span>
-                <p className="text-xs text-gray-500">{t('release.compilationAlbumDesc')}</p>
+                <p className="text-xs text-gray-500">{t('다양한 아티스트의 곡이 포함된 앨범', 'Album containing tracks from various artists')}</p>
               </div>
             </label>
             
@@ -1107,16 +1107,16 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               />
               <div>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('release.preOrder')}
+                  {t('사전 주문', 'Pre-order')}
                 </span>
-                <p className="text-xs text-gray-500">{t('release.preOrderDesc')}</p>
+                <p className="text-xs text-gray-500">{t('발매 전 사전 주문을 받습니다', 'Accept pre-orders before release')}</p>
               </div>
             </label>
             
             {watch('preOrderEnabled') && (
               <div className="ml-7">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('release.preOrderDate')}
+                  {t('사전 주문 날짜', 'Pre-order Date')}
                 </label>
                 <input
                   {...register('preOrderDate')}
@@ -1142,9 +1142,9 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               />
               <div>
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('release.previouslyReleased')}
+                  {t('이전 발매', 'Previously Released')}
                 </span>
-                <p className="text-xs text-gray-500">{t('release.previouslyReleasedDesc')}</p>
+                <p className="text-xs text-gray-500">{t('이전에 발매된 적이 있습니다', 'Has been previously released')}</p>
               </div>
             </label>
             
@@ -1152,7 +1152,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               <div className="ml-7 space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('release.previousReleaseDate')}
+                    {t('이전 발매일', 'Previous Release Date')}
                   </label>
                   <input
                     {...register('previousReleaseDate')}
@@ -1162,13 +1162,13 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('release.previousReleaseInfo')}
+                    {t('이전 발매 정보', 'Previous Release Information')}
                   </label>
                   <textarea
                     {...register('previousReleaseInfo')}
                     rows={3}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    placeholder={t('release.previousReleaseInfoPlaceholder')}
+                    placeholder={t('이전 발매에 대한 상세 정보를 입력하세요', 'Enter details about the previous release')}
                   />
                 </div>
               </div>
@@ -1180,7 +1180,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <Camera className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.dspProfileUpdate')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('DSP 프로필 업데이트', 'DSP Profile Update')}</h3>
           </div>
           
           <div className="space-y-4">
@@ -1191,7 +1191,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 className="text-purple-600"
               />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {t('release.dspProfileUpdate.checkbox')}
+                {t('DSP 프로필 업데이트 요청', 'Request DSP Profile Update')}
               </span>
             </label>
             
@@ -1200,10 +1200,10 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 {/* International DSP Profile Update */}
                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                   <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
-                    {t('release.dspProfileUpdate.internationalForm')}
+                    {t('국제 DSP 프로필 업데이트', 'International DSP Profile Update')}
                   </h4>
                   <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
-                    {t('release.dspProfileUpdate.internationalFormDesc')}
+                    {t('국제 DSP 프로필 정보를 업데이트하려면 아래 양식을 작성하세요', 'Fill out the form below to update international DSP profile information')}
                   </p>
                   <a
                     href="https://form.jotform.com/your-form-id" // Replace with actual JotForm URL
@@ -1211,7 +1211,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
-                    {t('release.dspProfileUpdate.formLink')}
+                    {t('양식 작성하기', 'Fill out Form')}
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
@@ -1220,10 +1220,10 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 {showKoreanDSP && (
                   <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
                     <h4 className="font-medium text-amber-900 dark:text-amber-100 mb-2">
-                      {t('release.dspProfileUpdate.koreanDSPInfo')}
+                      {t('한국 DSP 프로필 정보', 'Korean DSP Profile Information')}
                     </h4>
                     <p className="text-sm text-amber-800 dark:text-amber-200">
-                      {t('release.dspProfileUpdate.koreanDSPDesc')}
+                      {t('한국 DSP 프로필은 별도로 관리됩니다', 'Korean DSP profiles are managed separately')}
                     </p>
                   </div>
                 )}
@@ -1236,18 +1236,18 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <FileText className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.albumIntroduction')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('앨범 소개', 'Album Introduction')}</h3>
           </div>
           
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            {t('release.albumIntroductionDesc')}
+            {t('앨범에 대한 소개를 작성하세요', 'Write an introduction for the album')}
           </p>
           
           <textarea
             {...register('albumIntroduction')}
             rows={6}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            placeholder={t('release.albumIntroductionPlaceholder')}
+            placeholder={t('앨범의 컨셉, 제작 배경, 메시지 등을 상세히 소개해주세요', 'Please provide details about the album concept, production background, message, etc.')}
           />
         </div>
 
@@ -1255,16 +1255,16 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6 mb-6">
           <div className="flex items-center gap-2 mb-4">
             <FileText className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.albumNotes')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('앨범 노트', 'Album Notes')}</h3>
           </div>
           
           <textarea
             {...register('albumNotes')}
             rows={4}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            placeholder={t('release.albumNotesDesc')}
+            placeholder={t('앨범에 대한 추가 정보나 메모를 입력하세요', 'Enter additional information or notes about the album')}
           />
-          <p className="mt-1 text-xs text-gray-500">국내 음원사이트에서만 표시됩니다</p>
+          <p className="mt-1 text-xs text-gray-500">{t('release.albumNotes.note', 'Displayed only on domestic music sites')}</p>
         </div>
 
         {/* 한국 DSP 정보 */}
@@ -1272,7 +1272,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
           <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-6 border border-yellow-200 dark:border-yellow-800 mb-6">
             <div className="flex items-center gap-2 mb-4">
               <Info className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.koreanDSP')}</h3>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('한국 DSP 정보', 'Korean DSP Information')}</h3>
             </div>
             
             <div className="space-y-6">
@@ -1285,7 +1285,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                       type="checkbox"
                       className="text-purple-600"
                     />
-                    <span className="text-sm font-medium">{t('release.lyricsAttached')}</span>
+                    <span className="text-sm font-medium">{t('가사 첨부', 'Lyrics Attached')}</span>
                   </label>
                 </div>
                 
@@ -1297,8 +1297,8 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                       className="text-purple-600"
                     />
                     <div>
-                      <span className="text-sm font-medium">{t('release.koreanDSP.newArtist')}</span>
-                      <p className="text-xs text-gray-500">{t('release.koreanDSP.newArtistDesc')}</p>
+                      <span className="text-sm font-medium">{t('신인 아티스트', 'New Artist')}</span>
+                      <p className="text-xs text-gray-500">{t('처음 발매하는 아티스트입니다', 'This is the artist\'s first release')}</p>
                     </div>
                   </label>
                 </div>
@@ -1308,51 +1308,51 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               <div>
                 <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
                   <Link className="w-4 h-4" />
-                  {t('release.koreanDSP.artistPageLinks')}
+                  {t('아티스트 페이지 링크', 'Artist Page Links')}
                 </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('release.koreanDSP.melonLink')}
+                      {t('Melon 링크', 'Melon Link')}
                     </label>
                     <input
                       {...register('koreanDSP.melonLink')}
                       type="url"
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      placeholder={t('release.koreanDSP.linkPlaceholder')}
+                      placeholder={t('https://www.melon.com/artist/...', 'https://www.melon.com/artist/...')}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('release.koreanDSP.genieLink')}
+                      {t('Genie 링크', 'Genie Link')}
                     </label>
                     <input
                       {...register('koreanDSP.genieLink')}
                       type="url"
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      placeholder={t('release.koreanDSP.linkPlaceholder')}
+                      placeholder={t('https://www.genie.co.kr/artist/...', 'https://www.genie.co.kr/artist/...')}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('release.koreanDSP.bugsLink')}
+                      {t('Bugs 링크', 'Bugs Link')}
                     </label>
                     <input
                       {...register('koreanDSP.bugsLink')}
                       type="url"
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      placeholder={t('release.koreanDSP.linkPlaceholder')}
+                      placeholder={t('https://music.bugs.co.kr/artist/...', 'https://music.bugs.co.kr/artist/...')}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('release.koreanDSP.vibeLink')}
+                      {t('VIBE 링크', 'VIBE Link')}
                     </label>
                     <input
                       {...register('koreanDSP.vibeLink')}
                       type="url"
                       className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      placeholder={t('release.koreanDSP.linkPlaceholder')}
+                      placeholder={t('https://vibe.naver.com/artist/...', 'https://vibe.naver.com/artist/...')}
                     />
                   </div>
                 </div>
@@ -1371,7 +1371,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                     }}
                     className="text-purple-600"
                   />
-                  <span className="text-sm font-medium">{t('release.translation')}</span>
+                  <span className="text-sm font-medium">{t('번역', 'Translation')}</span>
                 </label>
 
                 {hasTranslation && (
@@ -1379,14 +1379,14 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                     <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                       <p className="text-sm text-blue-800 dark:text-blue-200">
                         <Info className="w-4 h-4 inline mr-1" />
-                        {t('release.koreanDSP.translationNoticeDesc')}
+                        {t('한국 DSP용 번역 정보를 제공하세요', 'Provide translation information for Korean DSPs')}
                       </p>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('release.koreanDSP.artistNameTranslation')} (한글)
+                          {t('아티스트명 번역', 'Artist Name Translation')} (한글)
                         </label>
                         <input
                           {...register('koreanDSP.translation.artistNameKo')}
@@ -1397,7 +1397,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('release.koreanDSP.artistNameTranslation')} (English)
+                          {t('아티스트명 번역', 'Artist Name Translation')} (English)
                         </label>
                         <input
                           {...register('koreanDSP.translation.artistNameEn')}
@@ -1408,7 +1408,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('release.koreanDSP.labelNameTranslation')} (한글)
+                          {t('레이블명 번역', 'Label Name Translation')} (한글)
                         </label>
                         <input
                           {...register('koreanDSP.translation.labelNameKo')}
@@ -1418,7 +1418,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('release.koreanDSP.labelNameTranslation')} (English)
+                          {t('레이블명 번역', 'Label Name Translation')} (English)
                         </label>
                         <input
                           {...register('koreanDSP.translation.labelNameEn')}
@@ -1434,13 +1434,13 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               {/* Album Credits */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('release.koreanDSP.albumCredits')}
+                  {t('앨범 크레딧', 'Album Credits')}
                 </label>
                 <textarea
                   {...register('koreanDSP.albumCredits')}
                   rows={4}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder={t('release.koreanDSP.albumCreditsPlaceholder')}
+                  placeholder={t('앨범 크레딧 정보를 입력하세요', 'Enter album credits information')}
                 />
               </div>
             </div>
@@ -1456,10 +1456,10 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {t('qc.report.title')}
+                  {t('품질 검사 보고서', 'Quality Check Report')}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                  {t('qc.report.subtitle')}
+                  {t('제출하기 전에 다음 사항들을 확인하세요', 'Please review the following items before submitting')}
                 </p>
               </div>
             </div>
@@ -1471,14 +1471,14 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-6">
           <div className="flex items-center gap-2 mb-4">
             <FileText className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.notes')}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('추가 요청사항', 'Additional Notes')}</h3>
           </div>
           
           <textarea
             {...register('notes')}
             rows={4}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-            placeholder="특별한 요청사항이나 주의사항을 입력해주세요"
+            placeholder={t('release.notes.placeholder', 'Enter any special requests or notes')}
           />
         </div>
       </div>

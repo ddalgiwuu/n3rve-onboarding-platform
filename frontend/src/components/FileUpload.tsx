@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Upload, X, File, Image, Music } from 'lucide-react'
 import { cn } from '@/utils/cn'
-import { useTranslation } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 
 interface FileUploadProps {
   accept?: string
@@ -24,7 +25,8 @@ export default function FileUpload({
   required = false,
   className
 }: FileUploadProps) {
-  const { t } = useTranslation()
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [dragActive, setDragActive] = useState(false)
   const [error, setError] = useState('')
 
@@ -221,7 +223,7 @@ export default function FileUpload({
             </p>
             <p className="text-xs text-gray-500">
               {accept === '*/*' 
-                ? t('모든 파일 형식 지원', 'All file types supported')
+                ? t('모든 파일 형식 지원', 'All file formats supported')
                 : accept.replace(/\*/g, '').toUpperCase()
               } • {t(`최대 ${maxSize}MB`, `Max ${maxSize}MB`)}
             </p>

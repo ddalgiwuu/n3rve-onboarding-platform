@@ -111,7 +111,7 @@ export default function MultiSelect({
                 className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between ${
                   isSelected ? 'bg-purple-50 dark:bg-purple-900/20' : ''
                 }`}
-                disabled={max && value.length >= max && !isSelected}
+                disabled={!!(max && value.length >= max && !isSelected)}
               >
                 <span className={max && value.length >= max && !isSelected ? 'opacity-50' : ''}>
                   {option}

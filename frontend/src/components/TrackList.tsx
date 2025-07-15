@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Music, AlertCircle, Info, Upload, Download } from 'lucide-react'
+import { Plus, Music, AlertCircle, Info, Upload } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import TrackForm from './TrackForm'
@@ -318,10 +318,10 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
           <div className="text-sm text-blue-700 dark:text-blue-300 space-y-2">
             <p className="font-medium">{t('트랙 관리 안내', 'Track Management Guide')}</p>
             <ul className="space-y-1 ml-4">
-              <li>• {t('트랙 순서 변경 기능은 일시적으로 비활성화되었습니다', 'Track reordering is temporarily disabled')}</li>
+              <li>• {t('트랙 순서 변경 기능은 일시적으로 비활성화되었습니다', 'Track reordering feature is temporarily disabled')}</li>
               <li>• {t('앨범 아티스트는 모든 트랙에 자동 적용됩니다', 'Album artists are automatically applied to all tracks')}</li>
-              <li>• {t('트랙별로 추가 아티스트와 기여자를 설정할 수 있습니다', 'You can add additional artists and contributors per track')}</li>
-              <li>• {t('ISRC 코드는 트랙별로 고유해야 합니다', 'ISRC codes must be unique per track')}</li>
+              <li>• {t('트랙별로 추가 아티스트와 기여자를 설정할 수 있습니다', 'You can set additional artists and contributors for each track')}</li>
+              <li>• {t('ISRC 코드는 트랙별로 고유해야 합니다', 'ISRC codes must be unique for each track')}</li>
             </ul>
           </div>
         </div>

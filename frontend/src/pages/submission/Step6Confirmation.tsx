@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { CheckCircle, AlertTriangle, Info, Music, User, Disc, Calendar, Globe, Shield, Tag, ChevronDown, ChevronRight, FileText, Clock, Volume2, Star, AlertCircle } from 'lucide-react'
+import { CheckCircle, AlertTriangle, Info, Music, User, Disc, Calendar, Shield, ChevronDown, ChevronRight, FileText, Star, AlertCircle } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import type { SubmissionData } from '../ReleaseSubmission'
 import AdminEmailPreview from '@/components/submission/AdminEmailPreview'
@@ -9,7 +9,6 @@ import QCWarnings, { QCStatusBadge } from '@/components/submission/QCWarnings'
 interface Props {
   data: Partial<SubmissionData>
   onNext: (data: { confirmed: boolean }) => void
-  onPrevious: () => void
   isSubmitting?: boolean
 }
 
@@ -19,12 +18,12 @@ interface ValidationIssue {
   message: string
 }
 
-export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitting }: Props) {
+export default function Step6Confirmation({ data, onNext, isSubmitting }: Props) {
   const [expandedSections, setExpandedSections] = useState<string[]>(['artist', 'album', 'tracks', 'release'])
   const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([])
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [qcResults, setQcResults] = useState<QCValidationResults | null>(null)
-  const language = useLanguageStore(state => state.language)
+  const language = useLanguageStore((state: any) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   useEffect(() => {
@@ -39,14 +38,14 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
         issues.push({
           type: 'error',
           field: 'tracks',
-          message: t('validation.noTitleTrack')
+          message: t('타이틀 트랙이 선택되지 않았습니다', 'No title track selected')
         })
       }
       if (titleTracks.length > 1) {
         issues.push({
           type: 'warning',
           field: 'tracks',
-          message: t('validation.multipleTitleTracks')
+          message: t('여러 개의 타이틀 트랙이 선택되었습니다', 'Multiple title tracks selected')
         })
       }
 
@@ -57,7 +56,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
         issues.push({
           type: 'error',
           field: 'tracks',
-          message: t('validation.duplicateIsrc')
+          message: t('중복된 ISRC 코드가 발견되었습니다', 'Duplicate ISRC codes found')
         })
       }
 
@@ -67,7 +66,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
         issues.push({
           type: 'warning',
           field: 'release',
-          message: t('validation.explicitContentWarning')
+          message: t('성인 콘텐츠가 감지되었지만 보호자 경고가 설정되지 않았습니다', 'Explicit content detected but parental advisory is set to none')
         })
       }
     }
@@ -82,7 +81,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
         issues.push({
           type: 'warning',
           field: 'release',
-          message: t('validation.shortReleaseNotice')
+          message: t('발매일이 오늘로부터 14일 미만입니다', 'Release date is less than 14 days from today')
         })
       }
 
@@ -93,7 +92,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
           issues.push({
             type: 'error',
             field: 'release',
-            message: t('validation.invalidPreOrderDate')
+            message: t('사전 주문 날짜는 발매일 이전이어야 합니다', 'Pre-order date must be before release date')
           })
         }
       }
@@ -104,7 +103,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
       issues.push({
         type: 'error',
         field: 'files',
-        message: t('validation.noCoverImage')
+        message: t('커버 이미지가 필요합니다', 'Cover image is required')
       })
     }
 
@@ -113,7 +112,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
       issues.push({
         type: 'error',
         field: 'files',
-        message: t('validation.audioFilesMismatch')
+        message: t('오디오 파일 수가 트랙 수와 일치하지 않습니다', 'Number of audio files does not match track count')
       })
     }
 
@@ -145,7 +144,33 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
   }
 
   const formatGenres = (genres: string[]) => {
-    return genres.map(g => t(`genre.${g}`)).join(', ')
+    return genres.map(g => {
+      // Genre translations
+      const genreTranslations: Record<string, { ko: string; en: string }> = {
+        'pop': { ko: '팝', en: 'Pop' },
+        'rock': { ko: '록', en: 'Rock' },
+        'hiphop': { ko: '힙합', en: 'Hip-Hop' },
+        'rnb': { ko: 'R&B', en: 'R&B' },
+        'electronic': { ko: '일렉트로닉', en: 'Electronic' },
+        'dance': { ko: '댄스', en: 'Dance' },
+        'indie': { ko: '인디', en: 'Indie' },
+        'jazz': { ko: '재즈', en: 'Jazz' },
+        'classical': { ko: '클래식', en: 'Classical' },
+        'folk': { ko: '포크', en: 'Folk' },
+        'metal': { ko: '메탈', en: 'Metal' },
+        'alternative': { ko: '얼터너티브', en: 'Alternative' },
+        'country': { ko: '컨트리', en: 'Country' },
+        'soul': { ko: '소울', en: 'Soul' },
+        'funk': { ko: '펑크', en: 'Funk' },
+        'reggae': { ko: '레게', en: 'Reggae' },
+        'blues': { ko: '블루스', en: 'Blues' },
+        'latin': { ko: '라틴', en: 'Latin' },
+        'world': { ko: '월드', en: 'World' },
+        'ambient': { ko: '앰비언트', en: 'Ambient' }
+      }
+      const translation = genreTranslations[g]
+      return translation ? t(translation.ko, translation.en) : g
+    }).join(', ')
   }
 
   const formatDistributors = (distributors: string[]) => {
@@ -161,15 +186,15 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
       tiktok: 'TikTok',
       instagram: 'Instagram'
     }
-    return distributors.map(d => dspMap[d] || d).join(', ')
+    return distributors.map((d: string) => dspMap[d] || d).join(', ')
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
       <div>
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('onboarding.step6')}</h2>
-          <p className="text-gray-600 dark:text-gray-400">{t('text.onboarding.step6.description')}</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('온보딩 단계 6', 'Step 6')}</h2>
+          <p className="text-gray-600 dark:text-gray-400">{t('발매 신청 전 모든 정보를 검토해 주세요.', 'Please review all information before submitting your release.')}</p>
         </div>
 
         {/* FUGA QC Report */}
@@ -180,10 +205,10 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                 <div>
                   <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <Shield className="w-5 h-5 text-n3rve-main" />
-                    {t('qc.report.title')}
+                    {t('FUGA QC 리포트', 'FUGA QC Report')}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {t('qc.report.subtitle')}
+                    {t('자동 품질 관리 분석 결과', 'Automatic quality control analysis results')}
                   </p>
                 </div>
                 <QCStatusBadge errors={qcResults.errors.length} warnings={qcResults.warnings.length} />
@@ -195,7 +220,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                 <div>
                   <h4 className="text-sm font-semibold text-red-700 dark:text-red-300 mb-3 flex items-center gap-2">
                     <AlertTriangle className="w-4 h-4" />
-                    {t('qc.report.errors')} ({qcResults.errors.length})
+                    {t('오류', 'Errors')} ({qcResults.errors.length})
                   </h4>
                   <QCWarnings results={qcResults.errors} />
                 </div>
@@ -205,7 +230,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                 <div>
                   <h4 className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-3 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" />
-                    {t('qc.report.warnings')} ({qcResults.warnings.length})
+                    {t('경고', 'Warnings')} ({qcResults.warnings.length})
                   </h4>
                   <QCWarnings results={qcResults.warnings} />
                 </div>
@@ -215,7 +240,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                 <div>
                   <h4 className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-3 flex items-center gap-2">
                     <Info className="w-4 h-4" />
-                    {t('qc.report.info')} ({qcResults.info.length})
+                    {t('정보', 'Information')} ({qcResults.info.length})
                   </h4>
                   <QCWarnings results={qcResults.info} />
                 </div>
@@ -225,7 +250,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                 <div className="text-center py-4">
                   <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
                   <p className="text-green-700 dark:text-green-300 font-medium">
-                    {t('qc.report.noIssues')}
+                    {t('문제가 발견되지 않았습니다', 'No issues found')}
                   </p>
                 </div>
               )}
@@ -242,7 +267,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                   <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-semibold text-red-900 dark:text-red-100 mb-2">
-                      {t('validation.errorsFound')}
+                      {t('발견된 오류', 'Errors Found')}
                     </h4>
                     <ul className="space-y-1">
                       {validationIssues
@@ -264,7 +289,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                   <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-semibold text-amber-900 dark:text-amber-100 mb-2">
-                      {t('validation.warningsFound')}
+                      {t('발견된 경고', 'Warnings Found')}
                     </h4>
                     <ul className="space-y-1">
                       {validationIssues
@@ -291,7 +316,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
           >
             <div className="flex items-center gap-3">
               <User className="w-5 h-5 text-n3rve-main" />
-              <h3 className="font-semibold text-gray-900 dark:text-white">{t('section.artistInfo')}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{t('아티스트 정보', 'Artist Information')}</h3>
             </div>
             {expandedSections.includes('artist') ? (
               <ChevronDown className="w-5 h-5 text-gray-600" />
@@ -304,27 +329,27 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('artist.nameKo')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('한국어 이름', 'Korean Name')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">{data.artist.nameKo}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('artist.nameEn')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('영어 이름', 'English Name')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">{data.artist.nameEn}</p>
                 </div>
                 {data.artist.labelName && (
                   <div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('artist.labelName')}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('레이블명', 'Label Name')}</p>
                     <p className="font-medium text-gray-900 dark:text-white">{data.artist.labelName}</p>
                   </div>
                 )}
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('artist.genre')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('장르', 'Genre')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">{formatGenres(data.artist.genre)}</p>
                 </div>
               </div>
               {data.artist.biography && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('artist.biography')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('바이오그래피', 'Biography')}</p>
                   <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{data.artist.biography}</p>
                 </div>
               )}
@@ -341,7 +366,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
           >
             <div className="flex items-center gap-3">
               <Disc className="w-5 h-5 text-n3rve-main" />
-              <h3 className="font-semibold text-gray-900 dark:text-white">{t('admin.submissions.modal.albumInfo')}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{t('앨범 정보', 'Album Information')}</h3>
             </div>
             {expandedSections.includes('album') ? (
               <ChevronDown className="w-5 h-5 text-gray-600" />
@@ -354,25 +379,25 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('album.titleKo')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('한국어 제목', 'Korean Title')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">{data.album.titleKo}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('album.titleEn')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('영어 제목', 'English Title')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">{data.album.titleEn}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('album.type')}</p>
-                  <p className="font-medium text-gray-900 dark:text-white">{t(`album.type.${data.album.type}`)}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('유형', 'Type')}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{data.album.type === 'album' ? t('정규 앨범', 'Full Album') : data.album.type === 'single' ? t('싱글', 'Single') : data.album.type === 'ep' ? t('EP', 'EP') : data.album.type}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('album.releaseDate')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('발매일', 'Release Date')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">{data.album.releaseDate}</p>
                 </div>
               </div>
               {data.album.description && (
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('album.description')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('설명', 'Description')}</p>
                   <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{data.album.description}</p>
                 </div>
               )}
@@ -389,7 +414,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
           >
             <div className="flex items-center gap-3">
               <Music className="w-5 h-5 text-n3rve-main" />
-              <h3 className="font-semibold text-gray-900 dark:text-white">{t('admin.submissions.modal.trackInfo')}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{t('트랙 정보', 'Track Information')}</h3>
             </div>
             {expandedSections.includes('tracks') ? (
               <ChevronDown className="w-5 h-5 text-gray-600" />
@@ -415,7 +440,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                           {track.isTitle && (
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 text-xs rounded-full mt-1">
                               <Star className="w-3 h-3" />
-                              {t('track.titleTrack')}
+                              {t('타이틀 트랙', 'Title Track')}
                             </span>
                           )}
                         </div>
@@ -428,7 +453,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                         )}
                         {track.trackVersion !== 'original' && (
                           <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs rounded">
-                            {t(`track.version.${track.trackVersion}`)}
+                            {track.trackVersion === 'original' ? t('오리지널', 'Original') : track.trackVersion === 'remix' ? t('리믹스', 'Remix') : track.trackVersion === 'acoustic' ? t('어쿠스틱', 'Acoustic') : track.trackVersion === 'instrumental' ? t('인스트루멘탈', 'Instrumental') : track.trackVersion === 'live' ? t('라이브', 'Live') : track.trackVersion}
                           </span>
                         )}
                       </div>
@@ -436,22 +461,22 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div>
-                        <p className="text-gray-500 dark:text-gray-400">{t('track.composer')}</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('작곡가', 'Composer')}</p>
                         <p className="text-gray-900 dark:text-white">{track.composer}</p>
                       </div>
                       <div>
-                        <p className="text-gray-500 dark:text-gray-400">{t('track.lyricist')}</p>
+                        <p className="text-gray-500 dark:text-gray-400">{t('작사가', 'Lyricist')}</p>
                         <p className="text-gray-900 dark:text-white">{track.lyricist}</p>
                       </div>
                       {track.arranger && (
                         <div>
-                          <p className="text-gray-500 dark:text-gray-400">{t('track.arranger')}</p>
+                          <p className="text-gray-500 dark:text-gray-400">{t('편곡가', 'Arranger')}</p>
                           <p className="text-gray-900 dark:text-white">{track.arranger}</p>
                         </div>
                       )}
                       {track.featuring && (
                         <div>
-                          <p className="text-gray-500 dark:text-gray-400">{t('track.featuring')}</p>
+                          <p className="text-gray-500 dark:text-gray-400">{t('피처링', 'Featuring')}</p>
                           <p className="text-gray-900 dark:text-white">{track.featuring}</p>
                         </div>
                       )}
@@ -461,13 +486,13 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                       <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600 grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                         {track.isrc && (
                           <div>
-                            <p className="text-gray-500 dark:text-gray-400">{t('track.isrc')}</p>
+                            <p className="text-gray-500 dark:text-gray-400">{t('ISRC 코드', 'ISRC Code')}</p>
                             <p className="text-gray-900 dark:text-white font-mono text-xs">{track.isrc}</p>
                           </div>
                         )}
                         {track.previewStart !== undefined && (
                           <div>
-                            <p className="text-gray-500 dark:text-gray-400">{t('track.previewSettings')}</p>
+                            <p className="text-gray-500 dark:text-gray-400">{t('미리듣기 설정', 'Preview Settings')}</p>
                             <p className="text-gray-900 dark:text-white">
                               {track.previewStart}s - {track.previewEnd || 30}s
                             </p>
@@ -491,7 +516,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
           >
             <div className="flex items-center gap-3">
               <Calendar className="w-5 h-5 text-n3rve-main" />
-              <h3 className="font-semibold text-gray-900 dark:text-white">{t('admin.submissions.modal.releaseInfo')}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{t('발매 정보', 'Release Information')}</h3>
             </div>
             {expandedSections.includes('release') ? (
               <ChevronDown className="w-5 h-5 text-gray-600" />
@@ -504,32 +529,32 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('release.distributors')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('유통사', 'Distributors')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">
                     {formatDistributors(data.release.distributors)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('release.priceType')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('가격 유형', 'Price Type')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">
-                    {t(`release.${data.release.priceType}`)}
+                    {data.release.priceType === 'free' ? t('무료', 'Free') : data.release.priceType === 'paid' ? t('유료', 'Paid') : data.release.priceType}
                     {data.release.priceType === 'paid' && data.release.price && ` (₩${data.release.price})`}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('release.originalReleaseDate')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('오리지널 발매일', 'Original Release Date')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">{data.release.originalReleaseDate}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('release.consumerReleaseDate')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('소비자 발매일', 'Consumer Release Date')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">{data.release.consumerReleaseDate}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('release.cRights')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('저작권 (C)', 'Copyright (C)')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">Ⓒ {data.release.copyrightYear} {data.release.cRights}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('release.pRights')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('발행권 (P)', 'Publishing Rights (P)')}</p>
                   <p className="font-medium text-gray-900 dark:text-white">Ⓟ {data.release.copyrightYear} {data.release.pRights}</p>
                 </div>
               </div>
@@ -538,10 +563,10 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                 <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
                   <p className="text-sm">
                     <span className="font-medium text-amber-900 dark:text-amber-100">
-                      {t('release.parentalAdvisory')}:
+                      {t('보호자 경고', 'Parental Advisory')}:
                     </span>{' '}
                     <span className="text-amber-800 dark:text-amber-200">
-                      {t(`release.parentalAdvisory.${data.release.parentalAdvisory}`)}
+                      {data.release.parentalAdvisory === 'none' ? t('없음', 'None') : data.release.parentalAdvisory === 'explicit' ? t('성인 콘텐츠', 'Explicit') : data.release.parentalAdvisory === 'clean' ? t('클린', 'Clean') : data.release.parentalAdvisory}
                     </span>
                   </p>
                 </div>
@@ -551,10 +576,10 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
                 <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <p className="text-sm">
                     <span className="font-medium text-blue-900 dark:text-blue-100">
-                      {t('release.preOrder')}:
+                      {t('사전 주문', 'Pre-Order')}:
                     </span>{' '}
                     <span className="text-blue-800 dark:text-blue-200">
-                      {t('release.preOrderDate')}: {data.release.preOrderDate}
+                      {t('사전 주문 날짜', 'Pre-Order Date')}: {data.release.preOrderDate}
                     </span>
                   </p>
                 </div>
@@ -563,10 +588,10 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
               {data.release.previouslyReleased && (
                 <div className="p-3 bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg">
                   <p className="text-sm font-medium text-n3rve-900 dark:text-n3rve-100 mb-1">
-                    {t('release.previouslyReleased')}
+                    {t('이전 발매', 'Previously Released')}
                   </p>
                   <p className="text-sm text-n3rve-800 dark:text-n3rve-200">
-                    {t('release.previousReleaseDate')}: {data.release.previousReleaseDate}
+                    {t('이전 발매일', 'Previous Release Date')}: {data.release.previousReleaseDate}
                   </p>
                   {data.release.previousReleaseInfo && (
                     <p className="text-sm text-n3rve-800 dark:text-n3rve-200 mt-1">
@@ -578,7 +603,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
 
               {data.release.albumIntroduction && (
                 <div className="mt-4">
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('release.albumIntroduction')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('앨범 소개', 'Album Introduction')}</p>
                   <p className="text-gray-900 dark:text-white whitespace-pre-wrap">{data.release.albumIntroduction}</p>
                 </div>
               )}
@@ -586,10 +611,10 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
               {data.release.dspProfileUpdate?.updateProfile && (
                 <div className="mt-4 p-3 bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg">
                   <p className="text-sm font-medium text-n3rve-900 dark:text-n3rve-100">
-                    {t('release.dspProfileUpdate')}
+                    {t('DSP 프로필 업데이트', 'DSP Profile Update')}
                   </p>
                   <p className="text-sm text-n3rve-800 dark:text-n3rve-200 mt-1">
-                    {t('release.dspProfileUpdate.checkbox')}
+                    {t('DSP 플랫폼에서 아티스트 프로필 업데이트 요청', 'Request artist profile update on DSP platforms')}
                   </p>
                 </div>
               )}
@@ -597,21 +622,21 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
               {data.release.koreanDSP && (
                 <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                   <p className="text-sm font-medium text-yellow-900 dark:text-yellow-100 mb-2">
-                    {t('release.koreanDSP')}
+                    {t('한국 DSP 설정', 'Korean DSP Settings')}
                   </p>
                   <div className="text-sm text-yellow-800 dark:text-yellow-200 space-y-1">
                     {data.release.koreanDSP.lyricsAttached && (
-                      <p>• {t('release.lyricsAttached')}</p>
+                      <p>• {t('가사 첨부됨', 'Lyrics attached')}</p>
                     )}
                     {data.release.koreanDSP.newArtist && (
-                      <p>• {t('release.koreanDSP.newArtist')}</p>
+                      <p>• {t('신인 아티스트 등록', 'New artist registration')}</p>
                     )}
                     {(data.release.koreanDSP.melonLink || data.release.koreanDSP.genieLink || 
                       data.release.koreanDSP.bugsLink || data.release.koreanDSP.vibeLink) && (
-                      <p>• {t('release.koreanDSP.artistPageLinks')}</p>
+                      <p>• {t('아티스트 페이지 링크 제공됨', 'Artist page links provided')}</p>
                     )}
                     {data.release.koreanDSP.translation?.hasTranslation && (
-                      <p>• {t('release.translation')}</p>
+                      <p>• {t('번역 정보 제공됨', 'Translation information provided')}</p>
                     )}
                   </div>
                 </div>
@@ -629,7 +654,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
           >
             <div className="flex items-center gap-3">
               <FileText className="w-5 h-5 text-n3rve-main" />
-              <h3 className="font-semibold text-gray-900 dark:text-white">{t('confirmation.fileInfo')}</h3>
+              <h3 className="font-semibold text-gray-900 dark:text-white">{t('파일 정보', 'File Information')}</h3>
             </div>
             {expandedSections.includes('files') ? (
               <ChevronDown className="w-5 h-5 text-gray-600" />
@@ -642,27 +667,27 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t('upload.coverImage')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t('커버 이미지', 'Cover Image')}</p>
                   <div className="flex items-center gap-2">
                     {data.files.coverImage ? (
                       <>
                         <CheckCircle className="w-5 h-5 text-green-500" />
-                        <span className="text-green-700 dark:text-green-400">{t('confirmation.uploaded')}</span>
+                        <span className="text-green-700 dark:text-green-400">{t('업로드됨', 'Uploaded')}</span>
                       </>
                     ) : (
                       <>
                         <AlertTriangle className="w-5 h-5 text-red-500" />
-                        <span className="text-red-700 dark:text-red-400">{t('confirmation.notUploaded')}</span>
+                        <span className="text-red-700 dark:text-red-400">{t('업로드되지 않음', 'Not Uploaded')}</span>
                       </>
                     )}
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t('upload.audioFiles')}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">{t('오디오 파일', 'Audio Files')}</p>
                   <div className="flex items-center gap-2">
                     <CheckCircle className="w-5 h-5 text-green-500" />
                     <span className="text-green-700 dark:text-green-400">
-                      {data.files.audioFiles?.length || 0} {t('confirmation.filesUploaded')}
+                      {data.files.audioFiles?.length || 0} {t('개 파일 업로드됨', 'files uploaded')}
                     </span>
                   </div>
                 </div>
@@ -691,16 +716,16 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
               />
               <div className="flex-1">
                 <p className="font-medium text-gray-900 dark:text-white">
-                  {t('confirmation.termsAcceptance')}
+                  {t('이용약관 동의', 'Terms and Conditions Agreement')}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {t('confirmation.termsDescription')}
+                  {t('이 박스를 체크함으로써 다음 약관에 동의합니다.', 'By checking this box, you agree to the following terms and conditions.')}
                 </p>
                 <div className="mt-3 space-y-2 text-sm text-gray-700 dark:text-gray-300">
-                  <p>• {t('confirmation.term1')}</p>
-                  <p>• {t('confirmation.term2')}</p>
-                  <p>• {t('confirmation.term3')}</p>
-                  <p>• {t('confirmation.term4')}</p>
+                  <p>• {t('제공된 모든 정보가 정확하고 완전함을 확인합니다.', 'I confirm that all provided information is accurate and complete.')}</p>
+                  <p>• {t('이 콘텐츠를 배포할 권한이 있습니다.', 'I have the rights to distribute this content.')}</p>
+                  <p>• {t('검토 과정이 영업일 기준 7-14일 소요될 수 있음을 이해합니다.', 'I understand that the review process may take 7-14 business days.')}</p>
+                  <p>• {t('서비스 이용약관 및 개인정보 보호정책에 동의합니다.', 'I agree to the terms of service and privacy policy.')}</p>
                 </div>
               </div>
             </label>
@@ -714,7 +739,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400" />
               <p className="text-sm font-medium text-red-800 dark:text-red-200">
-                {t('qc.report.fixRequired')}
+                {t('제출하기 전에 위의 오류를 수정해 주세요.', 'Please fix the errors above before submitting.')}
               </p>
             </div>
           </div>
@@ -726,7 +751,7 @@ export default function Step6Confirmation({ data, onNext, onPrevious, isSubmitti
             disabled={hasErrors || !termsAccepted || isSubmitting}
             className="px-8 py-3 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg hover:from-green-700 hover:to-green-600 font-semibold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? t('confirmation.submitting') : t('confirmation.submitRelease')}
+            {isSubmitting ? t('제출 중...', 'Submitting...') : t('발매 신청', 'Submit Release')}
           </button>
         </div>
       </div>

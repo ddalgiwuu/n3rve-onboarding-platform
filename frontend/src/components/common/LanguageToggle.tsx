@@ -4,8 +4,7 @@ import { Languages, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
 
 export default function LanguageToggle() {
-  const language = useLanguageStore((state) => state.language)
-  const setLanguage = useLanguageStore((state) => state.setLanguage)
+  const { language, setLanguage } = useLanguageStore()
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 

@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CheckCircle, XCircle, Loader } from 'lucide-react';
-import { useTranslation } from '@/store/language.store';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const DropboxCallback = () => {
   const navigate = useNavigate();
@@ -48,7 +48,7 @@ const DropboxCallback = () => {
         throw new Error('Failed to exchange code for token');
       }
 
-      const data = await response.json();
+      await response.json();
       
       // Store the access token securely
       localStorage.setItem('dropbox_connected', 'true');
@@ -75,10 +75,10 @@ const DropboxCallback = () => {
             <>
               <Loader className="w-16 h-16 text-purple-400 mx-auto mb-6 animate-spin" />
               <h2 className="text-2xl font-bold text-white mb-4">
-                {t('dropbox.connecting', 'Connecting to Dropbox...')}
+                {t('dropbox.connecting')}
               </h2>
               <p className="text-gray-300">
-                {t('dropbox.pleaseWait', 'Please wait while we complete the connection')}
+                {t('dropbox.pleaseWait')}
               </p>
             </>
           )}
@@ -89,14 +89,14 @@ const DropboxCallback = () => {
                 <CheckCircle className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">
-                {t('dropbox.connected', 'Successfully Connected!')}
+                {t('dropbox.connected')}
               </h2>
               <p className="text-gray-300 mb-6">
-                {t('dropbox.connectedDesc', 'Your Dropbox account has been connected successfully')}
+                {t('dropbox.connectedDesc')}
               </p>
               <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
                 <Loader className="w-4 h-4 animate-spin" />
-                {t('dropbox.redirecting', 'Redirecting...')}
+                {t('dropbox.redirecting')}
               </div>
             </>
           )}
@@ -107,23 +107,23 @@ const DropboxCallback = () => {
                 <XCircle className="w-10 h-10 text-white" />
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">
-                {t('dropbox.connectionFailed', 'Connection Failed')}
+                {t('dropbox.connectionFailed')}
               </h2>
               <p className="text-gray-300 mb-6">
-                {error || t('dropbox.errorDesc', 'Unable to connect to Dropbox. Please try again.')}
+                {error || t('dropbox.errorDesc')}
               </p>
               <div className="space-y-3">
                 <button
                   onClick={() => navigate('/submit')}
                   className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-medium transition-all hover-lift"
                 >
-                  {t('dropbox.tryAgain', 'Try Again')}
+                  {t('dropbox.tryAgain')}
                 </button>
                 <button
                   onClick={() => navigate('/dashboard')}
                   className="w-full px-6 py-3 glass-effect hover:bg-gray-800/50 rounded-lg font-medium transition-all"
                 >
-                  {t('dropbox.backToDashboard', 'Back to Dashboard')}
+                  {t('dropbox.backToDashboard')}
                 </button>
               </div>
             </>
@@ -133,9 +133,9 @@ const DropboxCallback = () => {
         {/* Help Text */}
         <div className="mt-8 text-center text-gray-400 text-sm">
           <p>
-            {t('dropbox.havingIssues', 'Having issues?')}{' '}
+            {t('dropbox.havingIssues')}{' '}
             <a href="mailto:support@n3rve.com" className="text-purple-400 hover:text-purple-300 transition-colors">
-              {t('dropbox.contactSupport', 'Contact support')}
+              {t('dropbox.contactSupport')}
             </a>
           </p>
         </div>

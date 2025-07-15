@@ -1,7 +1,6 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Image, Link, Globe, Music, CheckCircle, AlertCircle, Star } from 'lucide-react';
-import { useTranslation } from '@/store/language.store';
+import { ArrowLeft, User, Image, Link, Music, CheckCircle, AlertCircle, Star } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const ArtistProfileGuide = () => {
   const navigate = useNavigate();
@@ -10,62 +9,62 @@ const ArtistProfileGuide = () => {
   const sections = [
     {
       icon: User,
-      title: t('profileGuide.basicInfo', 'Basic Information'),
+      title: t('profileGuide.basicInfo'),
       color: 'from-purple-500 to-pink-500',
       items: [
-        t('profileGuide.artistName', 'Choose a unique artist name'),
-        t('profileGuide.biography', 'Write a compelling biography'),
-        t('profileGuide.genre', 'Select appropriate genres'),
-        t('profileGuide.location', 'Add your location')
+        t('profileGuide.artistName'),
+        t('profileGuide.biography'),
+        t('profileGuide.genre'),
+        t('profileGuide.location')
       ]
     },
     {
       icon: Image,
-      title: t('profileGuide.visualAssets', 'Visual Assets'),
+      title: t('profileGuide.visualAssets'),
       color: 'from-blue-500 to-cyan-500',
       items: [
-        t('profileGuide.profilePhoto', 'High-quality profile photo (min. 1000x1000px)'),
-        t('profileGuide.coverImage', 'Eye-catching cover image'),
-        t('profileGuide.consistent', 'Maintain consistent visual branding'),
-        t('profileGuide.professional', 'Use professional photography when possible')
+        t('profileGuide.profilePhoto'),
+        t('profileGuide.coverImage'),
+        t('profileGuide.consistent'),
+        t('profileGuide.professional')
       ]
     },
     {
       icon: Link,
-      title: t('profileGuide.socialLinks', 'Social Media Links'),
+      title: t('profileGuide.socialLinks'),
       color: 'from-green-500 to-emerald-500',
       items: [
-        t('profileGuide.spotify', 'Link your Spotify artist profile'),
-        t('profileGuide.instagram', 'Connect Instagram for updates'),
-        t('profileGuide.youtube', 'Add YouTube channel'),
-        t('profileGuide.website', 'Include your official website')
+        t('profileGuide.spotify'),
+        t('profileGuide.instagram'),
+        t('profileGuide.youtube'),
+        t('profileGuide.website')
       ]
     },
     {
       icon: Music,
-      title: t('profileGuide.musicCatalog', 'Music Catalog'),
+      title: t('profileGuide.musicCatalog'),
       color: 'from-orange-500 to-red-500',
       items: [
-        t('profileGuide.discography', 'Complete discography listing'),
-        t('profileGuide.featured', 'Highlight featured tracks'),
-        t('profileGuide.collaborations', 'Include collaborations'),
-        t('profileGuide.credits', 'Add production credits')
+        t('profileGuide.discography'),
+        t('profileGuide.featured'),
+        t('profileGuide.collaborations'),
+        t('profileGuide.credits')
       ]
     }
   ];
 
   const bestPractices = [
     {
-      text: t('profileGuide.updateRegularly', 'Update your profile regularly with new releases and achievements')
+      text: t('profileGuide.updateRegularly')
     },
     {
-      text: t('profileGuide.engageAudience', 'Engage with your audience through profile updates')
+      text: t('profileGuide.engageAudience')
     },
     {
-      text: t('profileGuide.seoOptimize', 'Use SEO-friendly descriptions and keywords')
+      text: t('profileGuide.seoOptimize')
     },
     {
-      text: t('profileGuide.authentic', 'Stay authentic to your artistic identity')
+      text: t('profileGuide.authentic')
     }
   ];
 
@@ -79,7 +78,7 @@ const ArtistProfileGuide = () => {
             className="flex items-center gap-2 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
-            {t('common.back', 'Back')}
+            {t('common.back')}
           </button>
           
           <div className="flex items-center gap-4">
@@ -88,10 +87,10 @@ const ArtistProfileGuide = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold gradient-text mb-2">
-                {t('profileGuide.title', 'Artist Profile Guide')}
+                {t('profileGuide.title')}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {t('profileGuide.subtitle', 'Create a compelling artist profile that stands out')}
+                {t('profileGuide.subtitle')}
               </p>
             </div>
           </div>
@@ -132,7 +131,7 @@ const ArtistProfileGuide = () => {
         <div className="glass-effect rounded-2xl p-8 animate-fade-in-delay">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
             <AlertCircle className="w-6 h-6 text-purple-500" />
-            {t('profileGuide.bestPractices', 'Best Practices')}
+            {t('profileGuide.bestPractices')}
           </h2>
           <div className="space-y-4">
             {bestPractices.map((practice, index) => (
@@ -147,16 +146,16 @@ const ArtistProfileGuide = () => {
         {/* CTA */}
         <div className="glass-effect rounded-2xl p-8 text-center animate-fade-in-delay">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            {t('profileGuide.readyToStart', 'Ready to create your profile?')}
+            {t('profileGuide.readyToStart')}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {t('profileGuide.ctaText', 'Follow this guide to build a professional artist profile that attracts fans and industry professionals.')}
+            {t('profileGuide.ctaText')}
           </p>
           <button
             onClick={() => navigate('/profile')}
             className="btn-modern btn-primary hover-lift"
           >
-            {t('profileGuide.createProfile', 'Create Your Profile')}
+            {t('profileGuide.createProfile')}
           </button>
         </div>
       </div>

@@ -9,7 +9,7 @@ import QCWarnings from '@/components/submission/QCWarnings'
 import { useMemo, useState } from 'react'
 
 const createAlbumSchema = (t: (ko: string, en: string) => string) => z.object({
-  primaryTitle: z.string().min(1, t('앨범 제목을 입력해주세요', 'Album title is required')),
+  primaryTitle: z.string().min(1, t('앨범 제목을 입력해주세요', 'Please enter the album title')),
   hasTranslation: z.boolean().default(false),
   translationLanguage: z.string().optional(),
   translatedTitle: z.string().optional(),
@@ -256,7 +256,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                 <FileText className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('발매 형태', 'Release Format')}</h3>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('발매 형태', 'Release Type')}</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{language === 'ko' ? '앨범 형식을 선택하세요' : 'Choose your release format'}</p>
               </div>
             </div>

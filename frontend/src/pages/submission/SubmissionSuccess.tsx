@@ -9,11 +9,11 @@ export default function SubmissionSuccess() {
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const steps = [
-    { id: 1, icon: Disc, title: t('2단계', 'Step 2').split(' ')[0], description: t('2단계 앨범 정보', 'Step 2: Album Info') },
-    { id: 2, icon: Music, title: t('3단계', 'Step 3').split(' ')[0], description: t('3단계 트랙 정보', 'Step 3: Track Info') },
-    { id: 3, icon: Upload, title: t('4단계', 'Step 4').split(' ')[0], description: t('4단계 파일 업로드', 'Step 4: File Upload') },
-    { id: 4, icon: Calendar, title: t('5단계', 'Step 5').split(' ')[0], description: t('5단계 발매 정보', 'Step 5: Release Info') },
-    { id: 5, icon: Shield, title: t('6단계', 'Step 6').split(' ')[0], description: t('6단계 약관 동의', 'Step 6: Terms') }
+    { id: 1, icon: Disc, title: t('2단계', 'Step 2').split(' ')[0], description: t('2단계 앨범 정보', 'Album Information') },
+    { id: 2, icon: Music, title: t('3단계', 'Step 3').split(' ')[0], description: t('3단계 트랙 정보', 'Track Information') },
+    { id: 3, icon: Upload, title: t('4단계', 'Step 4').split(' ')[0], description: t('4단계 파일 업로드', 'File Upload') },
+    { id: 4, icon: Calendar, title: t('5단계', 'Step 5').split(' ')[0], description: t('5단계 발매 정보', 'Release Information') },
+    { id: 5, icon: Shield, title: t('6단계', 'Step 6').split(' ')[0], description: t('6단계 약관 동의', 'Terms Agreement') }
   ]
 
   return (

@@ -1,5 +1,6 @@
 import { AlertTriangle, AlertCircle, Info, CheckCircle, X } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import type { QCValidationResult } from '@/utils/fugaQCValidation'
 import { useState } from 'react'
 
@@ -11,7 +12,7 @@ interface Props {
 
 export default function QCWarnings({ results, onDismiss, compact = false }: Props) {
   const [dismissed, setDismissed] = useState<number[]>([])
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   if (results.length === 0) return null
@@ -65,7 +66,7 @@ export default function QCWarnings({ results, onDismiss, compact = false }: Prop
           <div key={index} className="flex items-start gap-1.5 text-xs">
             {getIcon(result.severity)}
             <span className={getTextClass(result.severity)}>
-              {t(result.message)}
+              {result.message}
             </span>
           </div>
         ))}
@@ -94,17 +95,17 @@ export default function QCWarnings({ results, onDismiss, compact = false }: Prop
               </div>
               <div className="flex-1">
                 <p className={`text-sm font-medium ${getTextClass(result.severity)}`}>
-                  {t(result.message)}
+                  {result.message}
                 </p>
                 {result.field && (
                   <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                    <span className="font-medium">{t('qc.field')}:</span> <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">{result.field}</code>
+                    <span className="font-medium">{t('필드', 'Field')}:</span> <code className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">{result.field}</code>
                   </p>
                 )}
                 {result.suggestion && (
                   <div className="mt-2 p-2 bg-white/50 dark:bg-gray-900/50 rounded-md">
                     <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 font-medium">
-                      💡 {t('qc.suggestion')}
+                      💡 {t('제안', 'Suggestion')}
                     </p>
                     <code className="text-xs block bg-gray-100 dark:bg-gray-700 px-3 py-2 rounded mt-1 font-mono">
                       {result.suggestion}
@@ -132,11 +133,14 @@ export default function QCWarnings({ results, onDismiss, compact = false }: Prop
 
 // QC Status Badge Component
 export function QCStatusBadge({ errors, warnings }: { errors: number; warnings: number }) {
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+
   if (errors === 0 && warnings === 0) {
     return (
       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs rounded-full">
         <CheckCircle className="w-3.5 h-3.5" />
-        {t('qc.status.passed')}
+        {t('QC 통과', 'QC Passed')}
       </div>
     )
   }
@@ -145,7 +149,7 @@ export function QCStatusBadge({ errors, warnings }: { errors: number; warnings: 
     return (
       <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 text-xs rounded-full">
         <AlertTriangle className="w-3.5 h-3.5" />
-        {t('qc.status.failed')} ({errors})
+        {t('QC 실패', 'QC Failed')} ({errors})
       </div>
     )
   }
@@ -153,7 +157,7 @@ export function QCStatusBadge({ errors, warnings }: { errors: number; warnings: 
   return (
     <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs rounded-full">
       <AlertCircle className="w-3.5 h-3.5" />
-      {t('qc.status.warnings')} ({warnings})
+      {t('경고 있음', 'Has Warnings')} ({warnings})
     </div>
   )
 }

@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Music, Shield, Globe, Headphones, CheckCircle, Star } from 'lucide-react'
-import { useTranslation } from '@/store/language.store'
+import { ArrowRight, Music, Shield, Globe, CheckCircle, Star } from 'lucide-react'
+import { useTranslation } from '@/hooks/useTranslation'
 import { useAuthStore } from '@/store/auth.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import LanguageToggle from '@/components/common/LanguageToggle'
 import DarkModeToggle from '@/components/common/DarkModeToggle'
 
 export default function HomePage() {
-  const { t, language } = useTranslation()
+  const { language } = useTranslation()
   
   // Debug: Check if auth is causing issues
   const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated)

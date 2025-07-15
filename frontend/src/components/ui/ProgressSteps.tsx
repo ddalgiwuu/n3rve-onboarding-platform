@@ -1,4 +1,4 @@
-import React from 'react'
+import { cloneElement, ReactElement, ReactNode } from 'react'
 import { cn } from '@/utils/cn'
 import { Check } from 'lucide-react'
 
@@ -6,7 +6,7 @@ interface Step {
   id: string
   title: string
   description: string
-  icon: React.ReactNode
+  icon: ReactNode
   isCompleted?: boolean
   isActive?: boolean
 }
@@ -55,7 +55,7 @@ export default function ProgressSteps({
                     {isCompleted ? (
                       <Check className="w-5 h-5" />
                     ) : (
-                      React.cloneElement(step.icon as React.ReactElement, {
+                      cloneElement(step.icon as ReactElement<any>, {
                         className: "w-5 h-5"
                       })
                     )}
@@ -116,7 +116,7 @@ export default function ProgressSteps({
               "w-10 h-10 rounded-full flex items-center justify-center",
               "bg-blue-500 text-white shadow-lg shadow-blue-500/30"
             )}>
-              {React.cloneElement(steps[currentIndex].icon as React.ReactElement, {
+              {cloneElement(steps[currentIndex].icon as ReactElement<any>, {
                 className: "w-5 h-5"
               })}
             </div>

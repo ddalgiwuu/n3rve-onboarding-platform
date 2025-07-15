@@ -54,7 +54,7 @@ export default function TrackTranslationForm({
               )}
             </h4>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              {titleKo || titleEn || t('제목 없음', 'Untitled')}
+              {titleKo || titleEn || t('제목 없음', 'No title')}
             </p>
           </div>
         </div>
@@ -128,7 +128,7 @@ export default function TrackTranslationForm({
           {trackVersion && (
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
               <h5 className="text-sm font-medium text-amber-900 dark:text-amber-100 mb-1">
-                📀 {t('트랙 버전 정보', 'Track Version Information')}
+                📀 {t('트랙 버전 정보', 'Track Version Info')}
               </h5>
               <p className="text-sm text-amber-800 dark:text-amber-200">
                 {t(

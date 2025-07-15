@@ -1,7 +1,7 @@
 import { useAuthStore } from '@/store/auth.store'
-import { useTranslation } from '@/store/language.store'
+import { useTranslation } from '@/hooks/useTranslation'
 import { useHydration } from '@/hooks/useHydration'
-import { LayoutDashboard, Music, FileText, Users, TrendingUp, Upload, ChevronRight, Calendar } from 'lucide-react'
+import { Music, FileText, Users, Upload, ChevronRight, Calendar } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import useSafeStore from '@/hooks/useSafeStore'
@@ -18,25 +18,25 @@ export default function Dashboard() {
 
   const stats = [
     {
-      label: t('총 릴리스', 'Total Releases'),
+      label: t('총 릴리스'),
       value: '0',
       icon: Music,
       color: 'from-purple-500 to-pink-500',
-      description: t('등록된 앨범', 'Registered albums'),
+      description: t('등록된 앨범'),
     },
     {
-      label: t('대기 중', 'Pending'),
+      label: t('대기 중'),
       value: '0',
       icon: FileText,
       color: 'from-blue-500 to-cyan-500',
-      description: t('검토 대기 중', 'Awaiting review'),
+      description: t('검토 대기 중'),
     },
     {
-      label: t('아티스트', 'Artists'),
+      label: t('아티스트'),
       value: '0',
       icon: Users,
       color: 'from-green-500 to-emerald-500',
-      description: t('등록된 아티스트', 'Registered artists'),
+      description: t('등록된 아티스트'),
     },
   ]
 
@@ -53,9 +53,9 @@ export default function Dashboard() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'approved': return t('승인됨', 'Approved')
-      case 'pending': return t('대기 중', 'Pending')
-      case 'review': return t('검토 중', 'In Review')
+      case 'approved': return t('승인됨')
+      case 'pending': return t('대기 중')
+      case 'review': return t('검토 중')
       default: return status
     }
   }
@@ -68,10 +68,10 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold gradient-text mb-2">
-                {t('환영합니다', 'Welcome back')}, {user?.name || user?.email}!
+                {t('환영합니다')}, {user?.name || user?.email}!
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {t('오늘도 좋은 하루 되세요', 'Have a great day today')}
+                {t('오늘도 좋은 하루 되세요')}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -80,14 +80,14 @@ export default function Dashboard() {
                 className="btn-modern btn-secondary flex items-center gap-2 hover-lift"
               >
                 <Upload className="w-5 h-5" />
-                {t('기존 양식', 'Classic Form')}
+                {t('기존 양식')}
               </Link>
               <Link
                 to="/release-submission-modern"
                 className="btn-modern btn-primary flex items-center gap-2 hover-lift"
               >
                 <Upload className="w-5 h-5" />
-                {t('새 릴리스', 'New Release')}
+                {t('새 릴리스')}
               </Link>
             </div>
           </div>
@@ -126,13 +126,13 @@ export default function Dashboard() {
         <div className="glass-effect rounded-2xl p-6 animate-fade-in-delay">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('최근 제출', 'Recent Submissions')}
+              {t('최근 제출')}
             </h2>
             <Link
               to="/submissions"
               className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1 transition-colors"
             >
-              {t('모두 보기', 'View all')}
+              {t('모두 보기')}
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -141,7 +141,7 @@ export default function Dashboard() {
             {recentSubmissions.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500 dark:text-gray-400">
-                  {t('아직 제출된 음원이 없습니다', 'No submissions yet')}
+                  {t('아직 제출된 음원이 없습니다')}
                 </p>
               </div>
             ) : (
@@ -186,10 +186,10 @@ export default function Dashboard() {
               <Upload className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-              {t('새 릴리스 등록', 'Submit New Release')}
+              {t('새 릴리스 등록')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('음원을 등록하고 배포하세요', 'Register and distribute your music')}
+              {t('음원을 등록하고 배포하세요')}
             </p>
           </Link>
 
@@ -202,10 +202,10 @@ export default function Dashboard() {
               <FileText className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-              {t('가이드 보기', 'View Guide')}
+              {t('가이드 보기')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('제출 가이드라인 확인', 'Check submission guidelines')}
+              {t('제출 가이드라인 확인')}
             </p>
           </Link>
 
@@ -218,10 +218,10 @@ export default function Dashboard() {
               <Users className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-              {t('아티스트 프로필', 'Artist Profile')}
+              {t('아티스트 프로필')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('프로필 작성 가이드', 'Profile creation guide')}
+              {t('프로필 작성 가이드')}
             </p>
           </Link>
         </div>

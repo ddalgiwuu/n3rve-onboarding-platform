@@ -38,6 +38,7 @@ const SpecificationCard: React.FC<SpecificationCardProps> = ({
   tips
 }) => {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-n3rve-500/10 p-6 mb-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
@@ -53,7 +54,7 @@ const SpecificationCard: React.FC<SpecificationCardProps> = ({
         <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
           <h4 className="font-medium mb-2 flex items-center text-gray-900 dark:text-white">
             <Info className="w-4 h-4 mr-2 text-n3rve-main" />
-            {t('technicalGuide.specifications')}
+            {t('기술 사양', 'Technical Specifications')}
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             {Object.entries(specs).map(([key, value]) => {
@@ -64,7 +65,7 @@ const SpecificationCard: React.FC<SpecificationCardProps> = ({
                     {key.replace(/([A-Z])/g, ' $1').trim()}:
                   </span>
                   <span className="text-gray-600 dark:text-gray-400">
-                    {Array.isArray(value) ? value.join(', ') : value}
+                    {Array.isArray(value) ? value.join(', ') : String(value)}
                   </span>
                 </div>
               );
@@ -77,7 +78,7 @@ const SpecificationCard: React.FC<SpecificationCardProps> = ({
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
             <h4 className="font-medium mb-2 flex items-center text-gray-900 dark:text-white">
               <CheckCircle className="w-4 h-4 mr-2 text-green-600 dark:text-green-400" />
-              {t('technicalGuide.requirements')}
+              {t('필수 요구사항', 'Required Specifications')}
             </h4>
             <ul className="space-y-1 text-sm">
               {specs.requirements.map((req: string, index: number) => (
@@ -96,7 +97,7 @@ const SpecificationCard: React.FC<SpecificationCardProps> = ({
             <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
               <h4 className="font-medium mb-2 flex items-center text-green-700 dark:text-green-300">
                 <CheckCircle className="w-4 h-4 mr-2" />
-                {t('technicalGuide.correctExamples')}
+                {t('올바른 예시', 'Correct Examples')}
               </h4>
               <ul className="space-y-1 text-sm">
                 {examples.correct.map((example, index) => (
@@ -107,7 +108,7 @@ const SpecificationCard: React.FC<SpecificationCardProps> = ({
             <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
               <h4 className="font-medium mb-2 flex items-center text-red-700 dark:text-red-300">
                 <XCircle className="w-4 h-4 mr-2" />
-                {t('technicalGuide.incorrectExamples')}
+                {t('잘못된 예시', 'Incorrect Examples')}
               </h4>
               <ul className="space-y-1 text-sm">
                 {examples.incorrect.map((example, index) => (
@@ -123,7 +124,7 @@ const SpecificationCard: React.FC<SpecificationCardProps> = ({
           <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
             <h4 className="font-medium mb-2 flex items-center text-yellow-700 dark:text-yellow-300">
               <AlertCircle className="w-4 h-4 mr-2" />
-              {t('technicalGuide.proTips')}
+              {t('프로 팁', 'Pro Tips')}
             </h4>
             <ul className="space-y-1 text-sm">
               {tips.map((tip, index) => (
@@ -158,9 +159,9 @@ const TechnicalGuide: React.FC = () => {
   };
 
   const audioTips = [
-    t('technicalGuide.tips.audio1'),
-    t('technicalGuide.tips.audio2'),
-    t('technicalGuide.tips.audio3')
+    t('항상 마스터링된 최종 버전을 제출하세요', 'Always submit the final mastered version'),
+    t('클리핑이 없는지 파형을 확인하세요', 'Check the waveform for clipping'),
+    t('스테레오 채널이 잘 균형이 맞는지 확인하세요', 'Ensure stereo channels are well balanced')
   ];
 
   const artworkExamples = {
@@ -177,9 +178,9 @@ const TechnicalGuide: React.FC = () => {
   };
 
   const artworkTips = [
-    t('technicalGuide.tips.artwork1'),
-    t('technicalGuide.tips.artwork2'),
-    t('technicalGuide.tips.artwork3')
+    t('텍스트나 로고가 있는 경우 가독성을 확인하세요', 'Check readability if text or logos are present'),
+    t('모바일 기기에서도 잘 보이는지 확인하세요', 'Ensure it looks good on mobile devices'),
+    t('다른 플랫폼에서도 일관된 이미지를 사용하세요', 'Use consistent images across different platforms')
   ];
 
   const motionArtExamples = {
@@ -196,15 +197,15 @@ const TechnicalGuide: React.FC = () => {
   };
 
   const motionArtTips = [
-    t('technicalGuide.tips.motionArt1'),
-    t('technicalGuide.tips.motionArt2'),
-    t('technicalGuide.tips.motionArt3')
+    t('자연스럽게 반복되는 루프를 만드세요', 'Create naturally repeating loops'),
+    t('반드시 오디오 트랙을 제거하세요', 'Always remove audio tracks'),
+    t('파일 크기를 10MB 이하로 유지하세요', 'Keep file size under 10MB')
   ];
 
   const dolbyAtmosTips = [
-    t('technicalGuide.tips.dolbyAtmos1'),
-    t('technicalGuide.tips.dolbyAtmos2'),
-    t('technicalGuide.tips.dolbyAtmos3')
+    t('공인된 Dolby Atmos 스튜디오에서 작업하세요', 'Work with certified Dolby Atmos studios'),
+    t('Apple Music 공간 음향 가이드라인을 따르세요', 'Follow Apple Music spatial audio guidelines'),
+    t('스테레오 버전과 함께 제공하세요', 'Provide along with stereo version')
   ];
 
   const videoExamples = {
@@ -221,9 +222,9 @@ const TechnicalGuide: React.FC = () => {
   };
 
   const videoTips = [
-    t('technicalGuide.tips.video1'),
-    t('technicalGuide.tips.video2'),
-    t('technicalGuide.tips.video3')
+    t('저작권이 해결된 콘텐츠만 사용하세요', 'Use only copyright-cleared content'),
+    t('최소 1080p 해상도로 제작하세요', 'Create at minimum 1080p resolution'),
+    t('각 플랫폼의 가이드라인을 확인하세요', 'Check each platform\'s guidelines')
   ];
 
   return (
@@ -233,15 +234,15 @@ const TechnicalGuide: React.FC = () => {
         <div className="mb-8">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8 border border-gray-200 dark:border-gray-700">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-n3rve-main to-n3rve-accent bg-clip-text text-transparent mb-4">
-              {t('technicalGuide.title')}
+              {t('기술 사양 가이드', 'Technical Specification Guide')}
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 text-lg">{t('technicalGuide.description')}</p>
+            <p className="text-gray-600 dark:text-gray-400 text-lg">{t('음원 발매를 위한 자세한 기술 사양과 요구사항', 'Detailed technical specifications and requirements for music release')}</p>
           </div>
         </div>
 
       {/* Audio Specifications */}
       <SpecificationCard
-        title={t('technicalGuide.audio.title')}
+        title={t('오디오 사양', 'Audio Specifications')}
         icon={<FileAudio className="w-6 h-6" />}
         specs={AUDIO_SPECIFICATIONS}
         examples={audioExamples}
@@ -250,7 +251,7 @@ const TechnicalGuide: React.FC = () => {
 
       {/* Artwork Specifications */}
       <SpecificationCard
-        title={t('technicalGuide.artwork.title')}
+        title={t('앨범 아트워크 사양', 'Album Artwork Specifications')}
         icon={<Image className="w-6 h-6" />}
         specs={ARTWORK_SPECIFICATIONS}
         examples={artworkExamples}
@@ -259,7 +260,7 @@ const TechnicalGuide: React.FC = () => {
 
       {/* Motion Art Specifications */}
       <SpecificationCard
-        title={t('technicalGuide.motionArt.title')}
+        title={t('모션 아트 사양', 'Motion Art Specifications')}
         icon={<Film className="w-6 h-6" />}
         specs={MOTION_ART_SPECIFICATIONS}
         examples={motionArtExamples}
@@ -268,7 +269,7 @@ const TechnicalGuide: React.FC = () => {
 
       {/* Dolby Atmos Specifications */}
       <SpecificationCard
-        title={t('technicalGuide.dolbyAtmos.title')}
+        title={t('Dolby Atmos 사양', 'Dolby Atmos Specifications')}
         icon={<FileAudio className="w-6 h-6" />}
         specs={DOLBY_ATMOS_SPECIFICATIONS}
         tips={dolbyAtmosTips}
@@ -276,7 +277,7 @@ const TechnicalGuide: React.FC = () => {
 
       {/* Video Specifications */}
       <SpecificationCard
-        title={t('technicalGuide.video.title')}
+        title={t('비디오 사양', 'Video Specifications')}
         icon={<Video className="w-6 h-6" />}
         specs={VIDEO_SPECIFICATIONS}
         examples={videoExamples}
@@ -285,10 +286,10 @@ const TechnicalGuide: React.FC = () => {
 
         {/* Contact Support */}
         <div className="mt-8 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 text-center border border-gray-300 dark:border-gray-600">
-          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{t('technicalGuide.needHelp')}</h3>
-          <p className="text-gray-600 dark:text-gray-300 mb-6">{t('technicalGuide.contactSupport')}</p>
+          <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">{t('도움이 필요하신가요?', 'Need Help?')}</h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">{t('기술 사양에 대한 문의사항이 있으시면 언제든지 연락주세요', 'If you have any questions about technical specifications, please contact us anytime')}</p>
           <button className="bg-gradient-to-r from-gray-800 to-gray-900 dark:from-n3rve-main dark:to-n3rve-accent text-white px-8 py-3 rounded-xl hover:shadow-lg hover:scale-105 transition-all font-medium">
-            {t('technicalGuide.contactButton')}
+            {t('지원팀 연락하기', 'Contact Support Team')}
           </button>
         </div>
       </div>

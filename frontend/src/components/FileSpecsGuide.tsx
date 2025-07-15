@@ -58,19 +58,19 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
                 <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                   <li className="flex items-start gap-2">
                     <span className="text-green-500 mt-0.5">✓</span>
-                    {t('피크 레벨: -3dB ~ 0dB', 'Peak level: -3dB to 0dB')}
+                    {t('피크 레벨: -3dB ~ 0dB', 'Peak Level: -3dB ~ 0dB')}
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-500 mt-0.5">✓</span>
-                    {t('클리핑/왜곡 없음', 'No clipping or distortion')}
+                    {t('클리핑/왜곡 없음', 'No Clipping/Distortion')}
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-green-500 mt-0.5">✓</span>
-                    {t('최대 파일 크기: 2GB', 'Max file size: 2GB')}
+                    {t('최대 파일 크기: 2GB', 'Max File Size: 2GB')}
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-red-500 mt-0.5">✗</span>
-                    {t('손실 압축 불가 (MP3, AAC 등)', 'No lossy compression (MP3, AAC, etc.)')}
+                    {t('손실 압축 불가 (MP3, AAC 등)', 'No Lossy Compression (MP3, AAC, etc.)')}
                   </li>
                 </ul>
               </div>
@@ -103,7 +103,7 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
                   <p className="text-sm text-gray-600 dark:text-gray-400">1400 x 1400px</p>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">{t('권장 해상도', 'Recommended')}</h4>
+                  <h4 className="font-medium mb-2">{t('권장 해상도', 'Recommended Resolution')}</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">3000 x 3000px</p>
                 </div>
               </div>
@@ -113,12 +113,12 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
                   <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mt-0.5" />
                   <div className="text-sm">
                     <p className="font-medium text-yellow-800 dark:text-yellow-200 mb-1">
-                      {t('중요 사항', 'Important')}
+                      {t('중요 사항', 'Important Notes')}
                     </p>
                     <ul className="space-y-1 text-yellow-700 dark:text-yellow-300">
-                      <li>• {t('정사각형 비율 (1:1) 필수', 'Square ratio (1:1) required')}</li>
-                      <li>• {t('RGB 컬러 모드만 지원', 'RGB color mode only')}</li>
-                      <li>• {t('최대 파일 크기: 10MB', 'Max file size: 10MB')}</li>
+                      <li>• {t('정사각형 비율 (1:1) 필수', 'Square Ratio (1:1) Required')}</li>
+                      <li>• {t('RGB 컬러 모드만 지원', 'RGB Color Mode Only')}</li>
+                      <li>• {t('최대 파일 크기: 10MB', 'Max File Size: 10MB')}</li>
                     </ul>
                   </div>
                 </div>
@@ -129,15 +129,15 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
                 <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                   <li className="flex items-start gap-2">
                     <span className="text-green-500 mt-0.5">✓</span>
-                    {t('고품질 (압축 아티팩트 최소화)', 'High quality (minimal compression artifacts)')}
+                    {t('고품질 (압축 아티팩트 최소화)', 'High Quality (Minimize Compression Artifacts)')}
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-red-500 mt-0.5">✗</span>
-                    {t('워터마크/프로모션 텍스트 불가', 'No watermarks or promotional text')}
+                    {t('워터마크/프로모션 텍스트 불가', 'No Watermarks/Promotional Text')}
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-red-500 mt-0.5">✗</span>
-                    {t('테두리/프레임 불가', 'No borders or frames')}
+                    {t('테두리/프레임 불가', 'No Borders/Frames')}
                   </li>
                 </ul>
               </div>
@@ -153,7 +153,7 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
           content: (
             <div className="space-y-4">
               <div>
-                <h4 className="font-medium mb-2">{t('지원 포맷', 'Supported Format')}</h4>
+                <h4 className="font-medium mb-2">{t('지원 포맷', 'Supported Formats')}</h4>
                 <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-lg text-sm">
                   MP4 (H.264)
                 </span>
@@ -163,7 +163,7 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
                 <div>
                   <h4 className="font-medium mb-2">{t('해상도', 'Resolution')}</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('최소 1080x1080px', 'Min 1080x1080px')}
+                    {t('최소 1080x1080px', 'Minimum 1080x1080px')}
                   </p>
                 </div>
                 <div>
@@ -180,21 +180,21 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
                       {t('모션 아트 팁', 'Motion Art Tips')}
                     </p>
                     <ul className="space-y-1 text-purple-700 dark:text-purple-300">
-                      <li>• {t('정사각형 비율 (1:1) 필수', 'Square ratio (1:1) required')}</li>
-                      <li>• {t('오디오 트랙 없음', 'No audio track')}</li>
-                      <li>• {t('완벽한 루프 권장', 'Seamless loop preferred')}</li>
-                      <li>• {t('최대 파일 크기: 100MB', 'Max file size: 100MB')}</li>
+                      <li>• {t('정사각형 비율 (1:1) 필수', 'Square Ratio (1:1) Required')}</li>
+                      <li>• {t('오디오 트랙 없음', 'No Audio Track')}</li>
+                      <li>• {t('완벽한 루프 권장', 'Perfect Loop Recommended')}</li>
+                      <li>• {t('최대 파일 크기: 100MB', 'Max File Size: 100MB')}</li>
                     </ul>
                   </div>
                 </div>
               </div>
 
               <div>
-                <h4 className="font-medium mb-2">{t('기술 사양', 'Technical Specs')}</h4>
+                <h4 className="font-medium mb-2">{t('기술 사양', 'Technical Specifications')}</h4>
                 <ul className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
                   <li>• {t('코덱: H.264', 'Codec: H.264')}</li>
-                  <li>• {t('프레임레이트: 24/25/30 fps', 'Frame rate: 24/25/30 fps')}</li>
-                  <li>• {t('비율: 1:1 (정사각형)', 'Aspect ratio: 1:1 (square)')}</li>
+                  <li>• {t('프레임레이트: 24/25/30 fps', 'Frame Rate: 24/25/30 fps')}</li>
+                  <li>• {t('비율: 1:1 (정사각형)', 'Aspect Ratio: 1:1 (Square)')}</li>
                 </ul>
               </div>
             </div>
@@ -231,15 +231,15 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
                     <span className="text-blue-500 mt-0.5">1</span>
-                    <span className="text-sm">{t('ADM BWF 마스터 파일', 'ADM BWF master file')}</span>
+                    <span className="text-sm">{t('ADM BWF 마스터 파일', 'ADM BWF Master File')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-500 mt-0.5">2</span>
-                    <span className="text-sm">{t('바이노럴 스테레오 렌더 (필수)', 'Binaural stereo render (required)')}</span>
+                    <span className="text-sm">{t('바이노럴 스테레오 렌더 (필수)', 'Binaural Stereo Render (Required)')}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-blue-500 mt-0.5">3</span>
-                    <span className="text-sm">{t('Dolby Atmos 메타데이터 파일', 'Dolby Atmos metadata file')}</span>
+                    <span className="text-sm">{t('Dolby Atmos 메타데이터 파일', 'Dolby Atmos Metadata File')}</span>
                   </li>
                 </ul>
               </div>
@@ -285,7 +285,7 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
                   <p className="text-sm text-gray-600 dark:text-gray-400">1920 x 1080px (FHD)</p>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">{t('권장 해상도', 'Recommended')}</h4>
+                  <h4 className="font-medium mb-2">{t('권장 해상도', 'Recommended Resolution')}</h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400">3840 x 2160px (4K)</p>
                 </div>
               </div>
@@ -314,7 +314,7 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
 
               <div className="bg-gray-50 dark:bg-gray-900/20 rounded-lg p-3">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  <span className="font-medium">{t('최대 파일 크기', 'Max file size')}:</span> 4GB
+                  <span className="font-medium">{t('최대 파일 크기', 'Max File Size')}:</span> 4GB
                 </p>
               </div>
             </div>

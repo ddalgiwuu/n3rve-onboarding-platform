@@ -3,6 +3,7 @@ import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Mus
 import { cn } from '@/utils/cn'
 import { useAuthStore } from '@/store/auth.store'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { useEffect, useRef } from 'react'
 
 interface SidebarProps {
@@ -11,9 +12,9 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const user = useAuthStore((state) => state.user)
-  const logout = useAuthStore((state) => state.logout)
-  const language = useLanguageStore((state) => state.language)
+  const user = useSafeStore(useAuthStore, (state) => state.user)
+  const logout = useSafeStore(useAuthStore, (state) => state.logout)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const location = useLocation()
   const sidebarRef = useRef<HTMLDivElement>(null)
   const isAdmin = user?.role === 'ADMIN'
@@ -194,7 +195,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  onClick={(e) => {
+                  onClick={() => {
                     // On mobile, close sidebar after navigation with a delay
                     if (window.innerWidth < 1024) {
                       setTimeout(() => {
@@ -248,7 +249,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <div className="mt-6 pt-6 border-t border-gray-200/30 dark:border-gray-700/30">
                 <NavLink
                   to={isInAdminConsole ? '/dashboard' : '/admin'}
-                  onClick={(e) => {
+                  onClick={() => {
                     // On mobile, close sidebar after navigation with a delay
                     if (window.innerWidth < 1024) {
                       setTimeout(() => {

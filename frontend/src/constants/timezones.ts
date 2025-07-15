@@ -37,15 +37,6 @@ export function convertToUTC(localDate: string, localTime: string, timezone: str
   const dateTimeString = `${localDate}T${localTime}:00`
   const date = new Date(dateTimeString)
   
-  // Get timezone offset
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    timeZone: timezone,
-    timeZoneName: 'short'
-  })
-  
-  const parts = formatter.formatToParts(date)
-  const timeZoneName = parts.find(part => part.type === 'timeZoneName')?.value || ''
-  
   // Create date in the specified timezone and convert to UTC
   const localDateTime = new Date(date.toLocaleString('en-US', { timeZone: timezone }))
   const utcDateTime = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))

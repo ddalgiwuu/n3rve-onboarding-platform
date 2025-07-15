@@ -1,15 +1,14 @@
 import React, { useState } from 'react'
 import { 
   Copy, ChevronDown, ChevronRight, Music, Album, FileText, Globe, 
-  Shield, Calendar, DollarSign, Info, Users, Tag, Link, Camera,
-  Headphones, Film, CheckCircle, XCircle, AlertCircle, ExternalLink,
-  Package, Download, Eye, Image, Play
+  Info, Users,
+  CheckCircle, XCircle, AlertCircle,
+  Package, Download, Eye, Play
 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import toast from 'react-hot-toast'
-import AudioPlayer from '@/components/AudioPlayer'
 import { dropboxService } from '@/services/dropbox.service'
 
 interface Props {
@@ -55,9 +54,9 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
           })
         }, 2000)
       }
-      toast.success(t('복사되었습니다', 'Copied to clipboard'))
+      toast.success(t('복사되었습니다', 'Copied'))
     } catch (err) {
-      toast.error(t('복사 실패', 'Failed to copy'))
+      toast.error(t('복사 실패', 'Copy failed'))
     }
   }
 
@@ -100,7 +99,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
       data: {
         [t('릴리스 제목 (한국어)', 'Release Title (Korean)')]: submission.album?.titleKo,
         [t('릴리스 제목 (영어)', 'Release Title (English)')]: submission.album?.titleEn,
-        [t('릴리스 아티스트 (메인)', 'Release Artist (Primary)')]: submission.artist?.primaryName,
+        [t('릴리스 아티스트 (메인)', 'Release Artist (Main)')]: submission.artist?.primaryName,
         [t('포맷', 'Format')]: submission.album?.format,
         [t('원본 릴리스 날짜', 'Original Release Date')]: submission.release?.originalReleaseDate,
         [t('소비자 릴리스 날짜', 'Consumer Release Date')]: submission.release?.consumerReleaseDate,
@@ -127,7 +126,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         'Spotify ID': submission.artist?.spotifyId,
         'Apple Music ID': submission.artist?.appleMusicId,
         'YouTube Channel ID': submission.artist?.youtubeChannelId,
-        [t('장르', 'Genres')]: submission.artist?.genre?.join(', ')
+        [t('장르', 'Genre')]: submission.artist?.genre?.join(', ')
       }
     })
 
@@ -175,7 +174,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
     return sections
   }
 
-  const renderFileSection = (section: Section) => {
+  const renderFileSection = () => {
     const { files } = submission
 
     return (
@@ -215,7 +214,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
                 className="max-w-xs rounded-lg shadow-lg"
                 onError={() => {
                   setPreviewImage(null)
-                  toast.error(t('이미지를 불러올 수 없습니다', 'Failed to load image'))
+                  toast.error(t('이미지를 불러올 수 없습니다', 'Cannot load image'))
                 }}
               />
             </div>
@@ -257,7 +256,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
                 className="max-w-xs rounded-lg shadow-lg"
                 onError={() => {
                   setPreviewImage(null)
-                  toast.error(t('이미지를 불러올 수 없습니다', 'Failed to load image'))
+                  toast.error(t('이미지를 불러올 수 없습니다', 'Cannot load image'))
                 }}
               />
             </div>
@@ -422,7 +421,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
             </span>
           </div>
           <div className="text-sm text-gray-500">
-            {t('제출일', 'Submitted')}: {new Date(submission.createdAt).toLocaleDateString()}
+            {t('제출일', 'Submission Date')}: {new Date(submission.createdAt).toLocaleDateString()}
           </div>
         </div>
         {submission.adminNotes && (
@@ -490,7 +489,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
             {isExpanded && (
               <div className="p-4">
                 {section.id === 'files' ? (
-                  renderFileSection(section)
+                  renderFileSection()
                 ) : (
                   // Regular section content
                   <dl className="grid grid-cols-1 gap-3">
@@ -525,7 +524,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-green-500" />
-            <span className="text-sm">{t('모든 필수 메타데이터 필드 입력됨', 'All required metadata fields present')}</span>
+            <span className="text-sm">{t('모든 필수 메타데이터 필드 입력됨', 'All required metadata fields completed')}</span>
           </div>
           <div className="flex items-center gap-2">
             {submission.files?.coverImageUrl ? (
@@ -542,7 +541,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
               <AlertCircle className="w-4 h-4 text-yellow-500" />
             )}
             <span className="text-sm">
-              {t('오디오 파일', 'Audio files')}: {submission.files?.audioFiles?.length || 0} / {submission.tracks?.length || 0} {t('트랙', 'tracks')}
+              {t('오디오 파일', 'Audio Files')}: {submission.files?.audioFiles?.length || 0} / {submission.tracks?.length || 0} {t('트랙', 'Tracks')}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -552,7 +551,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
               <Info className="w-4 h-4 text-gray-400" />
             )}
             <span className="text-sm">
-              Dolby Atmos: {submission.album?.dolbyAtmos ? t('지원', 'Supported') : t('미지원', 'Not supported')}
+              Dolby Atmos: {submission.album?.dolbyAtmos ? t('지원', 'Supported') : t('미지원', 'Not Supported')}
             </span>
           </div>
         </div>
