@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, ServiceType } from '@prisma/client';
 import { DSP_SEED_DATA } from './dsp-seed-data';
 
 const prisma = new PrismaClient();
@@ -8,17 +8,17 @@ async function seedDSPs() {
   
   try {
     // Determine service type based on name/description
-    const determineServiceType = (name: string, description?: string) => {
+    const determineServiceType = (name: string, description?: string): ServiceType => {
       const text = `${name} ${description || ''}`.toLowerCase();
       
-      if (text.includes('fingerprint')) return 'FINGERPRINTING';
-      if (text.includes('video')) return 'VIDEO';
-      if (text.includes('download')) return 'DOWNLOAD';
-      if (text.includes('radio')) return 'RADIO';
-      if (text.includes('facebook') || text.includes('tiktok')) return 'SOCIAL';
-      if (text.includes('streaming') || text.includes('music')) return 'STREAMING';
+      if (text.includes('fingerprint')) return ServiceType.FINGERPRINTING;
+      if (text.includes('video')) return ServiceType.VIDEO;
+      if (text.includes('download')) return ServiceType.DOWNLOAD;
+      if (text.includes('radio')) return ServiceType.RADIO;
+      if (text.includes('facebook') || text.includes('tiktok')) return ServiceType.SOCIAL;
+      if (text.includes('streaming') || text.includes('music')) return ServiceType.STREAMING;
       
-      return 'OTHER';
+      return ServiceType.OTHER;
     };
 
     let created = 0;
@@ -27,7 +27,7 @@ async function seedDSPs() {
 
     for (const dspData of DSP_SEED_DATA) {
       try {
-        const serviceType = dspData.serviceType || determineServiceType(dspData.name, dspData.description);
+        const serviceType: ServiceType = (dspData.serviceType as ServiceType) || determineServiceType(dspData.name, dspData.description);
         
         const result = await prisma.dSP.upsert({
           where: { dspId: dspData.dspId },
