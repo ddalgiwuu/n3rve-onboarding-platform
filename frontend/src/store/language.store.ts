@@ -1,43 +1,37 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 type Language = 'ko' | 'en'
 
 interface LanguageState {
   language: Language
+  _hasHydrated: boolean
+  setHasHydrated: (state: boolean) => void
   setLanguage: (language: Language) => void
 }
 
-// Get initial language from localStorage synchronously
-const getInitialLanguage = (): Language => {
-  try {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('language-storage')
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        return parsed.state?.language || 'ko'
+export const useLanguageStore = create<LanguageState>()(
+  persist(
+    (set, get) => ({
+      language: 'ko',
+      _hasHydrated: false,
+      
+      setHasHydrated: (state) => {
+        set({ _hasHydrated: state })
+      },
+      
+      setLanguage: (language) => {
+        set({ language })
+      }
+    }),
+    {
+      name: 'language-storage',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
       }
     }
-  } catch (error) {
-    console.warn('Failed to read language from localStorage:', error)
-  }
-  return 'ko'
-}
-
-export const useLanguageStore = create<LanguageState>()((set, get) => ({
-  language: getInitialLanguage(),
-  setLanguage: (language) => {
-    set({ language })
-    // Manually save to localStorage
-    try {
-      localStorage.setItem('language-storage', JSON.stringify({
-        state: { language },
-        version: 0
-      }))
-    } catch (error) {
-      console.warn('Failed to save language to localStorage:', error)
-    }
-  }
-}))
+  )
+)
 
 // 번역 데이터
 export const translations = {
