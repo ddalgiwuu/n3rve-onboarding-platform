@@ -30,10 +30,12 @@ const initialState: AuthState = {
 // Main auth atom with localStorage persistence
 export const authAtom = atomWithStorage<AuthState>('auth-storage', initialState, {
   getItem: (key, initialValue) => {
-    const storedValue = localStorage.getItem(key)
-    if (!storedValue) return initialValue
+    if (typeof window === 'undefined') return initialValue
     
     try {
+      const storedValue = localStorage.getItem(key)
+      if (!storedValue) return initialValue
+      
       const parsed = JSON.parse(storedValue)
       // Handle legacy format from zustand/redux
       if (parsed.state) {
@@ -48,14 +50,26 @@ export const authAtom = atomWithStorage<AuthState>('auth-storage', initialState,
     }
   },
   setItem: (key, value) => {
-    const dataToStore = {
-      state: value,
-      version: 0
+    if (typeof window === 'undefined') return
+    
+    try {
+      const dataToStore = {
+        state: value,
+        version: 0
+      }
+      localStorage.setItem(key, JSON.stringify(dataToStore))
+    } catch (error) {
+      console.warn('Failed to save to localStorage:', error)
     }
-    localStorage.setItem(key, JSON.stringify(dataToStore))
   },
   removeItem: (key) => {
-    localStorage.removeItem(key)
+    if (typeof window === 'undefined') return
+    
+    try {
+      localStorage.removeItem(key)
+    } catch (error) {
+      console.warn('Failed to remove from localStorage:', error)
+    }
   }
 })
 
@@ -113,7 +127,13 @@ export const clearAuthAtom = atom(
       isAuthenticated: false,
       _hasHydrated: true
     })
-    localStorage.removeItem('auth-storage')
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem('auth-storage')
+      } catch (error) {
+        console.warn('Failed to remove auth from localStorage:', error)
+      }
+    }
   }
 )
 
