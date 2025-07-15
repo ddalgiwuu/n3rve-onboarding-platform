@@ -6,7 +6,26 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   build: {
-    sourcemap: true
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          // Vendor chunks for better caching
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom')) {
+              return 'react-vendor'
+            }
+            if (id.includes('lucide-react')) {
+              return 'icons'
+            }
+            return 'vendor'
+          }
+        }
+      }
+    },
+    chunkSizeWarningLimit: 1000,
+    minify: 'esbuild',
+    target: 'esnext'
   },
   resolve: {
     alias: {
