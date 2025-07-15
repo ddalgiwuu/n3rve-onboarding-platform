@@ -94,7 +94,7 @@ export function SubmissionProvider({ children }: { children: ReactNode }) {
 
   // Load from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined' && !submissionState._hasHydrated) {
+    if (typeof window !== 'undefined') {
       try {
         const storedValue = localStorage.getItem('submission-storage')
         if (storedValue) {
@@ -117,7 +117,7 @@ export function SubmissionProvider({ children }: { children: ReactNode }) {
         setSubmissionState(prev => ({ ...prev, _hasHydrated: true }))
       }
     }
-  }, [submissionState._hasHydrated])
+  }, [])
 
   // Save to localStorage when submission state changes
   useEffect(() => {

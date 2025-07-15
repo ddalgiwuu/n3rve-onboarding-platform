@@ -48,11 +48,6 @@ function App() {
     }
   }, [hasAuthHydrated, hasLanguageHydrated, authStore, languageStore])
 
-  // Wait for both stores to hydrate
-  if (!hasAuthHydrated || !hasLanguageHydrated) {
-    return <LoadingSpinner fullScreen />
-  }
-
   // Initialize dark mode on app load
   useEffect(() => {
     // Initialize dark mode
@@ -75,6 +70,11 @@ function App() {
       document.documentElement.style.colorScheme = 'light'
     }
   }, [])
+
+  // Wait for both stores to hydrate
+  if (!hasAuthHydrated || !hasLanguageHydrated) {
+    return <LoadingSpinner fullScreen />
+  }
 
   return (
     <div className="min-h-screen">

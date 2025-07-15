@@ -24,7 +24,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   // Load from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined' && !languageState._hasHydrated) {
+    if (typeof window !== 'undefined') {
       try {
         const storedValue = localStorage.getItem('language-storage')
         if (storedValue) {
@@ -46,7 +46,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
         setLanguageState(prev => ({ ...prev, _hasHydrated: true }))
       }
     }
-  }, [languageState._hasHydrated])
+  }, [])
 
   // Save to localStorage when language state changes
   useEffect(() => {

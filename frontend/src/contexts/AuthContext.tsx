@@ -41,7 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Load from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined' && !authState._hasHydrated) {
+    if (typeof window !== 'undefined') {
       try {
         const storedValue = localStorage.getItem('auth-storage')
         if (storedValue) {
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAuthState(prev => ({ ...prev, _hasHydrated: true }))
       }
     }
-  }, [authState._hasHydrated])
+  }, [])
 
   // Save to localStorage when auth state changes
   useEffect(() => {
