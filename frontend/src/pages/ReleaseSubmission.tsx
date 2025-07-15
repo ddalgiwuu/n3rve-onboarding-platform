@@ -222,7 +222,6 @@ export default function ReleaseSubmission() {
     preOrderDate: '',
     
     // Step 7: Marketing Info
-    privateListeningLink: '',
     mainGenre: '',
     moods: [] as string[],
     subgenres: [] as string[], // Changed to array for custom input
@@ -327,14 +326,11 @@ export default function ReleaseSubmission() {
     },
     
     // Step 8: Rights & Legal
-    copyrightYear: new Date().getFullYear().toString(),
     copyrightOwner: '',
     publishingRights: '',
     masterRights: '',
     isrcCodes: {} as Record<string, string>,
-    upc: '',
     licenses: [] as { type: string; territory: string; details: string }[],
-    parentalAdvisory: false,
     
     // Step 9: Review & QC
     qcNotes: '',
