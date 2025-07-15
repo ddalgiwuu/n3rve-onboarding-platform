@@ -4,25 +4,11 @@ import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import TrackForm from './TrackForm'
 import { v4 as uuidv4 } from 'uuid'
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent
-} from '@dnd-kit/core'
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy
-} from '@dnd-kit/sortable'
-import {
-  useSortable
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+// @dnd-kit temporarily disabled for React 19 compatibility
+// import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
+// import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
+// import { useSortable } from '@dnd-kit/sortable'
+// import { CSS } from '@dnd-kit/utilities'
 
 interface TrackArtist {
   id: string
@@ -129,30 +115,30 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
     onUpdate(updatedTracks)
   }
 
-  // Handle drag and drop
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
+  // Handle drag and drop - temporarily disabled for React 19 compatibility
+  // const handleDragEnd = (event: DragEndEvent) => {
+  //   const { active, over } = event
 
-    if (!over || active.id === over.id) return
+  //   if (!over || active.id === over.id) return
 
-    const oldIndex = localTracks.findIndex(track => track.id === active.id)
-    const newIndex = localTracks.findIndex(track => track.id === over.id)
+  //   const oldIndex = localTracks.findIndex(track => track.id === active.id)
+  //   const newIndex = localTracks.findIndex(track => track.id === over.id)
 
-    const reorderedTracks = arrayMove(localTracks, oldIndex, newIndex).map((track, index) => ({
-      ...track,
-      number: index + 1
-    }))
+  //   const reorderedTracks = arrayMove(localTracks, oldIndex, newIndex).map((track, index) => ({
+  //     ...track,
+  //     number: index + 1
+  //   }))
 
-    setLocalTracks(reorderedTracks)
-    onUpdate(reorderedTracks)
-  }
+  //   setLocalTracks(reorderedTracks)
+  //   onUpdate(reorderedTracks)
+  // }
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
+  // const sensors = useSensors(
+  //   useSensor(PointerSensor),
+  //   useSensor(KeyboardSensor, {
+  //     coordinateGetter: sortableKeyboardCoordinates,
+  //   })
+  // )
 
   // Calculate total duration
   const totalDuration = localTracks.reduce((sum, track) => {
@@ -258,8 +244,8 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
         </div>
       )}
 
-      {/* Track List */}
-      <DndContext 
+      {/* Track List - DndContext temporarily disabled for React 19 compatibility */}
+      {/* <DndContext 
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
@@ -281,7 +267,21 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
             ))}
           </div>
         </SortableContext>
-      </DndContext>
+      </DndContext> */}
+      
+      {/* Simple track list without drag and drop */}
+      <div className="space-y-4">
+        {localTracks.map((track) => (
+          <SimpleTrackItem
+            key={track.id}
+            track={track}
+            albumArtists={albumArtists}
+            onUpdate={updateTrack}
+            onDelete={deleteTrack}
+            totalTracks={localTracks.length}
+          />
+        ))}
+      </div>
 
       {/* Summary */}
       {localTracks.length > 0 && (
@@ -318,7 +318,7 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
           <div className="text-sm text-blue-700 dark:text-blue-300 space-y-2">
             <p className="font-medium">{t('트랙 관리 안내', 'Track Management Guide')}</p>
             <ul className="space-y-1 ml-4">
-              <li>• {t('드래그 & 드롭으로 트랙 순서를 변경할 수 있습니다', 'Drag & drop to reorder tracks')}</li>
+              <li>• {t('트랙 순서 변경 기능은 일시적으로 비활성화되었습니다', 'Track reordering is temporarily disabled')}</li>
               <li>• {t('앨범 아티스트는 모든 트랙에 자동 적용됩니다', 'Album artists are automatically applied to all tracks')}</li>
               <li>• {t('트랙별로 추가 아티스트와 기여자를 설정할 수 있습니다', 'You can add additional artists and contributors per track')}</li>
               <li>• {t('ISRC 코드는 트랙별로 고유해야 합니다', 'ISRC codes must be unique per track')}</li>
@@ -330,8 +330,52 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
   )
 }
 
-// Sortable Track Item Component
-interface SortableTrackItemProps {
+// Sortable Track Item Component - temporarily disabled for React 19 compatibility
+// interface SortableTrackItemProps {
+//   track: Track
+//   albumArtists: TrackArtist[]
+//   onUpdate: (track: Track) => void
+//   onDelete: (trackId: string) => void
+//   totalTracks: number
+// }
+
+// function SortableTrackItem({ track, albumArtists, onUpdate, onDelete, totalTracks }: SortableTrackItemProps) {
+//   const {
+//     attributes,
+//     listeners,
+//     setNodeRef,
+//     transform,
+//     transition,
+//     isDragging
+//   } = useSortable({ id: track.id })
+
+//   const style = {
+//     transform: CSS.Transform.toString(transform),
+//     transition,
+//     opacity: isDragging ? 0.5 : 1,
+//   }
+
+//   return (
+//     <div
+//       ref={setNodeRef}
+//       style={style}
+//       {...attributes}
+//       {...listeners}
+//       className={isDragging ? 'shadow-lg' : ''}
+//     >
+//       <TrackForm
+//         track={track}
+//         albumArtists={albumArtists}
+//         onUpdate={onUpdate}
+//         onDelete={onDelete}
+//         totalTracks={totalTracks}
+//       />
+//     </div>
+//   )
+// }
+
+// Simple Track Item Component (replacement for drag and drop)
+interface SimpleTrackItemProps {
   track: Track
   albumArtists: TrackArtist[]
   onUpdate: (track: Track) => void
@@ -339,30 +383,9 @@ interface SortableTrackItemProps {
   totalTracks: number
 }
 
-function SortableTrackItem({ track, albumArtists, onUpdate, onDelete, totalTracks }: SortableTrackItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({ id: track.id })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
-
+function SimpleTrackItem({ track, albumArtists, onUpdate, onDelete, totalTracks }: SimpleTrackItemProps) {
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      {...attributes}
-      {...listeners}
-      className={isDragging ? 'shadow-lg' : ''}
-    >
+    <div className="relative">
       <TrackForm
         track={track}
         albumArtists={albumArtists}

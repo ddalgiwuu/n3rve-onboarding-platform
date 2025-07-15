@@ -20,23 +20,24 @@ import { DatePicker } from '@/components/DatePicker'
 import { v4 as uuidv4 } from 'uuid'
 import { contributorRoles, getRolesByCategory, searchRoles } from '@/constants/contributorRoles'
 import { instrumentList, searchInstruments, getInstrumentCategory } from '@/constants/instruments'
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent
-} from '@dnd-kit/core'
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  useSortable
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+// @dnd-kit temporarily disabled for React 19 compatibility
+// import {
+//   DndContext,
+//   closestCenter,
+//   KeyboardSensor,
+//   PointerSensor,
+//   useSensor,
+//   useSensors,
+//   DragEndEvent
+// } from '@dnd-kit/core'
+// import {
+//   arrayMove,
+//   SortableContext,
+//   sortableKeyboardCoordinates,
+//   verticalListSortingStrategy,
+//   useSortable
+// } from '@dnd-kit/sortable'
+// import { CSS } from '@dnd-kit/utilities'
 import AudioPlayer from '@/components/AudioPlayer'
 import RegionSelector from '@/components/RegionSelector'
 import MultiSelect from '@/components/ui/MultiSelect'
@@ -602,25 +603,25 @@ export default function ReleaseSubmission() {
     }
   }
 
-  // Track reordering
-  const onDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
+  // Track reordering - temporarily disabled for React 19 compatibility
+  // const onDragEnd = (event: DragEndEvent) => {
+  //   const { active, over } = event
 
-    if (!over || active.id === over.id) return
+  //   if (!over || active.id === over.id) return
 
-    const oldIndex = formData.tracks.findIndex(track => track.id === active.id)
-    const newIndex = formData.tracks.findIndex(track => track.id === over.id)
+  //   const oldIndex = formData.tracks.findIndex(track => track.id === active.id)
+  //   const newIndex = formData.tracks.findIndex(track => track.id === over.id)
 
-    const reorderedTracks = arrayMove(formData.tracks, oldIndex, newIndex)
-    setFormData(prev => ({ ...prev, tracks: reorderedTracks }))
-  }
+  //   const reorderedTracks = arrayMove(formData.tracks, oldIndex, newIndex)
+  //   setFormData(prev => ({ ...prev, tracks: reorderedTracks }))
+  // }
 
-  const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
-  )
+  // const sensors = useSensors(
+  //   useSensor(PointerSensor),
+  //   useSensor(KeyboardSensor, {
+  //     coordinateGetter: sortableKeyboardCoordinates,
+  //   })
+  // )
 
   // File upload
   const handleFileUpload = async (files: File[], trackId: string) => {
@@ -1503,7 +1504,8 @@ export default function ReleaseSubmission() {
           </button>
         </div>
 
-        <DndContext 
+        {/* DndContext temporarily disabled for React 19 compatibility */}
+        {/* <DndContext 
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={onDragEnd}
@@ -1526,7 +1528,22 @@ export default function ReleaseSubmission() {
               ))}
             </div>
           </SortableContext>
-        </DndContext>
+        </DndContext> */}
+
+        {/* Simple track list without drag and drop */}
+        <div className="space-y-4">
+          {formData.tracks.map((track) => (
+            <SimpleTrackItem 
+              key={track.id} 
+              track={track} 
+              formData={formData} 
+              setFormData={setFormData} 
+              handleFileUpload={handleFileUpload} 
+              removeTrack={removeTrack} 
+              t={t} 
+            />
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -3261,8 +3278,28 @@ export default function ReleaseSubmission() {
   )
 }
 
-// Sortable Track Item Component
-interface SortableTrackItemProps {
+// Sortable Track Item Component - temporarily disabled for React 19 compatibility
+// interface SortableTrackItemProps {
+//   track: any
+//   formData: any
+//   setFormData: any
+//   handleFileUpload: any
+//   removeTrack: any
+//   t: any
+// }
+
+// function SortableTrackItem({ track, formData, setFormData, handleFileUpload, removeTrack, t }: SortableTrackItemProps) {
+//   const {
+//     attributes,
+//     listeners,
+//     setNodeRef,
+//     transform,
+//     transition,
+//     isDragging
+//   } = useSortable({ id: track.id })
+
+// Simple Track Item Component (replacement for drag and drop)
+interface SimpleTrackItemProps {
   track: any
   formData: any
   setFormData: any
@@ -3271,21 +3308,14 @@ interface SortableTrackItemProps {
   t: any
 }
 
-function SortableTrackItem({ track, formData, setFormData, handleFileUpload, removeTrack, t }: SortableTrackItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({ id: track.id })
+function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, removeTrack, t }: SimpleTrackItemProps) {
+  // Removed drag and drop functionality
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.5 : 1,
-  }
+  // const style = {
+  //   transform: CSS.Transform.toString(transform),
+  //   transition,
+  //   opacity: isDragging ? 0.5 : 1,
+  // }
 
   const updateTrack = (trackId: string, updates: any) => {
     setFormData((prev: any) => ({
@@ -3347,15 +3377,14 @@ function SortableTrackItem({ track, formData, setFormData, handleFileUpload, rem
 
   return (
     <div
-      ref={setNodeRef}
-      style={style}
       className="bg-white/10 dark:bg-white/5 rounded-lg p-4 space-y-4"
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div {...attributes} {...listeners}>
+          {/* Drag handle temporarily disabled for React 19 compatibility */}
+          {/* <div {...attributes} {...listeners}>
             <GripVertical className="w-5 h-5 text-gray-400 cursor-move" />
-          </div>
+          </div> */}
           <h4 className="font-medium">
             {t('트랙', 'Track')} {trackIndex + 1}
           </h4>

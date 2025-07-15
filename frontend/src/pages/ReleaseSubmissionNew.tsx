@@ -14,23 +14,24 @@ import useSafeStore from '@/hooks/useSafeStore'
 import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
 import { v4 as uuidv4 } from 'uuid'
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragEndEvent
-} from '@dnd-kit/core'
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  verticalListSortingStrategy,
-  useSortable
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
+// @dnd-kit temporarily disabled for React 19 compatibility
+// import {
+//   DndContext,
+//   closestCenter,
+//   KeyboardSensor,
+//   PointerSensor,
+//   useSensor,
+//   useSensors,
+//   DragEndEvent
+// } from '@dnd-kit/core'
+// import {
+//   arrayMove,
+//   SortableContext,
+//   sortableKeyboardCoordinates,
+//   verticalListSortingStrategy,
+//   useSortable
+// } from '@dnd-kit/sortable'
+// import { CSS } from '@dnd-kit/utilities'
 import Button from '@/components/ui/Button'
 import Toggle from '@/components/ui/Toggle'
 import Select from '@/components/ui/Select'
@@ -530,16 +531,16 @@ export default function ReleaseSubmissionNew() {
     }))
   }
 
-  // Track reordering
-  const onDragEnd = (result: any) => {
-    if (!result.destination) return
+  // Track reordering - temporarily disabled for React 19 compatibility
+  // const onDragEnd = (result: any) => {
+  //   if (!result.destination) return
 
-    const items = Array.from(formData?.tracks || [])
-    const [reorderedItem] = items.splice(result.source.index, 1)
-    items.splice(result.destination.index, 0, reorderedItem)
+  //   const items = Array.from(formData?.tracks || [])
+  //   const [reorderedItem] = items.splice(result.source.index, 1)
+  //   items.splice(result.destination.index, 0, reorderedItem)
 
-    setFormData(prev => ({ ...prev, tracks: items }))
-  }
+  //   setFormData(prev => ({ ...prev, tracks: items }))
+  // }
 
   // File upload
   const handleFileUpload = async (files: File[], trackId: string) => {
@@ -1057,24 +1058,27 @@ export default function ReleaseSubmissionNew() {
           </Button>
         </div>
         
-        <DragDropContext onDragEnd={onDragEnd}>
+        {/* DragDropContext temporarily disabled for React 19 compatibility */}
+        {/* <DragDropContext onDragEnd={onDragEnd}>
           <Droppable droppableId="tracks">
             {(provided) => (
               <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
                 {(formData?.tracks || []).map((track, index) => (
                   <Draggable key={track.id} draggableId={track.id} index={index}>
-                    {(provided, snapshot) => (
+                    {(provided, snapshot) => ( */}
+        
+        {/* Simple track list without drag and drop */}
+        <div className="space-y-4">
+          {(formData?.tracks || []).map((track, index) => (
+            <div key={track.id}>
                       <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        className={`p-4 bg-gray-50 dark:bg-gray-700 rounded-lg ${
-                          snapshot.isDragging ? 'shadow-lg' : ''
-                        }`}
+                        className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
                       >
                         <div className="flex items-start gap-3">
-                          <div {...provided.dragHandleProps} className="mt-2 cursor-move">
+                          {/* Drag handle temporarily disabled for React 19 compatibility */}
+                          {/* <div {...provided.dragHandleProps} className="mt-2 cursor-move">
                             <GripVertical className="w-5 h-5 text-gray-400" />
-                          </div>
+                          </div> */}
                           
                           <div className="flex-1 space-y-4">
                             <div className="flex items-start justify-between">
@@ -1257,14 +1261,15 @@ export default function ReleaseSubmissionNew() {
                           </div>
                         </div>
                       </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
+                    {/* )} */}
+                  {/* </Draggable> */}
+            </div>
+          ))}
+          {/* {provided.placeholder} */}
+        </div>
+        {/* )}
           </Droppable>
-        </DragDropContext>
+        </DragDropContext> */}
       </div>
     </div>
   )
