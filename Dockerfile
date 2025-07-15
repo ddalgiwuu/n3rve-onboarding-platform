@@ -7,19 +7,21 @@ WORKDIR /app/frontend
 
 # Copy frontend files
 COPY frontend/package*.json ./
-# Install with force to ensure rollup dependencies are properly installed
-RUN npm install --force
+
+# Install dependencies with increased memory and better error handling
+RUN npm ci --verbose
 
 COPY frontend/ ./
-# Install rollup dependencies manually before build
-RUN npm install @rollup/rollup-linux-x64-musl --force || true
+
 # Set production environment variables for build
 ENV VITE_API_URL=https://n3rve-onboarding.com/api
 ENV VITE_WS_URL=wss://n3rve-onboarding.com
 ENV VITE_DROPBOX_CLIENT_ID=slffi4mfztfohqd
 ENV VITE_DROPBOX_APP_KEY=slffi4mfztfohqd
 ENV VITE_DROPBOX_REDIRECT_URI=https://n3rve-onboarding.com/dropbox-callback
-RUN npm run build
+
+# Build with increased Node.js memory allocation
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 # Stage 2: Build Backend
 FROM node:20-alpine AS backend-builder
