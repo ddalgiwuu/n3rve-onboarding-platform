@@ -65,13 +65,22 @@ export default function Dashboard() {
                 {t('오늘도 좋은 하루 되세요', 'Have a great day today')}
               </p>
             </div>
-            <Link
-              to="/onboarding"
-              className="btn-modern btn-primary flex items-center gap-2 hover-lift"
-            >
-              <Upload className="w-5 h-5" />
-              {t('새 릴리스', 'New Release')}
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                to="/onboarding"
+                className="btn-modern btn-secondary flex items-center gap-2 hover-lift"
+              >
+                <Upload className="w-5 h-5" />
+                {t('기존 양식', 'Classic Form')}
+              </Link>
+              <Link
+                to="/release-submission-modern"
+                className="btn-modern btn-primary flex items-center gap-2 hover-lift"
+              >
+                <Upload className="w-5 h-5" />
+                {t('새 릴리스', 'New Release')}
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -161,7 +170,7 @@ export default function Dashboard() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <Link
-            to="/onboarding"
+            to="/release-submission-modern"
             className="card-glass p-6 hover-lift text-center group animate-fade-in"
           >
             <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg mb-4 mx-auto w-fit">
