@@ -1,5 +1,5 @@
 import React from 'react';
-import { t, useLanguageStore } from '@/store/language.store';
+import { useLanguageStore } from '@/store/language.store';
 import useSafeStore from '@/hooks/useSafeStore'
 import {
   FileAudio,
@@ -142,6 +142,7 @@ const SpecificationCard: React.FC<SpecificationCardProps> = ({
 
 const TechnicalGuide: React.FC = () => {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const audioExamples = {
     correct: [

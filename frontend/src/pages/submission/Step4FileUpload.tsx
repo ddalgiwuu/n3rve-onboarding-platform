@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react'
 import { Upload, Image, Music, FileText, X, CheckCircle, AlertCircle, Info, Film, Video, ExternalLink } from 'lucide-react'
-import { t, useLanguageStore } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import {
   AUDIO_SPECIFICATIONS,
@@ -23,6 +23,7 @@ interface Props {
 
 export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [files, setFiles] = useState(data?.files || {
     coverImage: null,
     artistPhoto: null,

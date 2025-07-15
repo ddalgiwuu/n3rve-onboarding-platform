@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import { Plus, X, Music, Star, User, Edit3, Users, ChevronRight, List, AlertTriangle, Info, Languages, AlertCircle, Volume2, BookOpen, Megaphone, CheckCircle, FileText, Tag, Target, Disc, Music2, Mic, UserCheck, Calendar, Search, GripVertical, Database, Share2, Heart, Link as LinkIcon, MapPin, Upload, Video } from 'lucide-react'
-import { t, useLanguageStore } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import { v4 as uuidv4 } from 'uuid'
 import { validateField, type QCValidationResult } from '@/utils/fugaQCValidation'
@@ -1513,6 +1513,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
 // Common timezones for music release
 export default function Step3TrackInfo({ data, onNext }: Props) {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
   
   console.log('Step3TrackInfo mounted, data:', data)
   

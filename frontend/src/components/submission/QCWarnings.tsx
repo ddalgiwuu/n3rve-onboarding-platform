@@ -1,5 +1,5 @@
 import { AlertTriangle, AlertCircle, Info, CheckCircle, X } from 'lucide-react'
-import { t } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 import type { QCValidationResult } from '@/utils/fugaQCValidation'
 import { useState } from 'react'
 
@@ -11,6 +11,8 @@ interface Props {
 
 export default function QCWarnings({ results, onDismiss, compact = false }: Props) {
   const [dismissed, setDismissed] = useState<number[]>([])
+  const language = useLanguageStore(state => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   if (results.length === 0) return null
 

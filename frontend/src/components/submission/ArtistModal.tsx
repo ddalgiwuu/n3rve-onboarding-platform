@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { X, User, Languages, Plus, Minus, Youtube, ExternalLink, Info, Music, Smartphone, Monitor } from 'lucide-react'
-import { t } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 import { v4 as uuidv4 } from 'uuid'
 
 interface ArtistIdentifier {
@@ -50,6 +50,8 @@ const identifierTypes = [
 ]
 
 export default function ArtistModal({ isOpen, onClose, onSave, role, editingArtist }: Props) {
+  const language = useLanguageStore(state => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [artist, setArtist] = useState<Artist>(editingArtist || {
     id: uuidv4(),
     primaryName: '',

@@ -1,5 +1,5 @@
 import { Mail, Info, Star, Music, Link as LinkIcon } from 'lucide-react'
-import { t } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
 import type { SubmissionData } from '@/pages/submission/ReleaseSubmission'
 
 interface Props {
@@ -7,6 +7,9 @@ interface Props {
 }
 
 export default function AdminEmailPreview({ data }: Props) {
+  const language = useLanguageStore(state => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  
   if (!data.release?.koreanDSP) return null
 
   const koreanDSP = data.release.koreanDSP
