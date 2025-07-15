@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Plus, Music, AlertCircle, Info, Upload, Download } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import TrackForm from './TrackForm'
 import { v4 as uuidv4 } from 'uuid'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
@@ -37,7 +38,7 @@ interface TrackListProps {
 }
 
 export default function TrackList({ tracks, albumArtists, releaseType, onUpdate }: TrackListProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [localTracks, setLocalTracks] = useState<Track[]>(tracks)

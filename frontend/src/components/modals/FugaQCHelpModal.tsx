@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { X, ChevronRight, CheckCircle, AlertCircle, Info, Clock, FileText, Music, HelpCircle } from 'lucide-react'
 import { fugaQCHelp, qcFAQ } from '@/constants/fugaQCHelp'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 
 interface FugaQCHelpModalProps {
   isOpen: boolean

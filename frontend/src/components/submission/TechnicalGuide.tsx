@@ -1,5 +1,6 @@
 import React from 'react';
 import { t, useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore'
 import {
   FileAudio,
   Image,
@@ -36,7 +37,7 @@ const SpecificationCard: React.FC<SpecificationCardProps> = ({
   examples,
   tips
 }) => {
-  const language = useLanguageStore((state) => state.language);
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-n3rve-500/10 p-6 mb-6 border border-gray-200 dark:border-gray-700 hover:shadow-xl transition-shadow">
@@ -140,7 +141,7 @@ const SpecificationCard: React.FC<SpecificationCardProps> = ({
 };
 
 const TechnicalGuide: React.FC = () => {
-  const language = useLanguageStore((state) => state.language);
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
 
   const audioExamples = {
     correct: [

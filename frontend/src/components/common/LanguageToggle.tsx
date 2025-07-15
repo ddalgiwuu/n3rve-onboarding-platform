@@ -2,10 +2,11 @@ import { useLanguageStore } from '@/store/language.store'
 import { cn } from '@/utils/cn'
 import { Languages, ChevronDown } from 'lucide-react'
 import { useState, useRef, useEffect } from 'react'
+import useSafeStore from '@/hooks/useSafeStore'
 
 export default function LanguageToggle() {
-  const language = useLanguageStore(state => state.language)
-  const setLanguage = useLanguageStore(state => state.setLanguage)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const setLanguage = useSafeStore(useLanguageStore, (state) => state.setLanguage)
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -39,7 +40,7 @@ export default function LanguageToggle() {
           <div className="absolute right-0 mt-2 w-32 dropdown-glass rounded-lg z-50 overflow-hidden animate-scale-in">
             <button
               onClick={() => {
-                setLanguage('ko')
+                setLanguage?.('ko')
                 setIsOpen(false)
               }}
               className={cn(
@@ -51,7 +52,7 @@ export default function LanguageToggle() {
             </button>
             <button
               onClick={() => {
-                setLanguage('en')
+                setLanguage?.('en')
                 setIsOpen(false)
               }}
               className={cn(
@@ -68,7 +69,7 @@ export default function LanguageToggle() {
       {/* Desktop: Toggle Buttons */}
       <div className="hidden sm:flex items-center gap-1 glass-effect rounded-full p-1">
         <button
-          onClick={() => setLanguage('ko')}
+          onClick={() => setLanguage?.('ko')}
           className={cn(
             'px-3 py-1 text-sm rounded-full transition-all duration-300 whitespace-nowrap',
             language === 'ko'
@@ -79,7 +80,7 @@ export default function LanguageToggle() {
           한국어
         </button>
         <button
-          onClick={() => setLanguage('en')}
+          onClick={() => setLanguage?.('en')}
           className={cn(
             'px-3 py-1 text-sm rounded-full transition-all duration-300 whitespace-nowrap',
             language === 'en'

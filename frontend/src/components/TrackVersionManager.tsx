@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { Plus, X, Music, Edit2, Check, ChevronDown } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { TRACK_VERSIONS } from '@/data/languages'
 
 interface TrackVersionManagerProps {
@@ -16,7 +17,7 @@ export default function TrackVersionManager({
   className = '',
   allowCustom = true
 }: TrackVersionManagerProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [isOpen, setIsOpen] = useState(false)

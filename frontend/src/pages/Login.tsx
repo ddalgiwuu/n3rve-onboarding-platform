@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuthStore } from '@/store/auth.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { useTranslation } from '@/store/language.store'
 import LanguageToggle from '@/components/common/LanguageToggle'
 
@@ -9,7 +10,7 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
-  const setAuth = useAuthStore(state => state.setAuth)
+  const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth)
   const { t } = useTranslation()
   const popupRef = useRef<Window | null>(null)
   

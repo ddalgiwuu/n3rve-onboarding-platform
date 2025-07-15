@@ -69,7 +69,7 @@ const Tab: React.FC<{
 )
 
 const SubmissionManagement: React.FC = () => {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   // Note: t function is not available from useLanguageStore, need to create local t function
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [submissions, setSubmissions] = useState<any[]>([])

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { ChevronDown, ChevronUp, Globe, X, Search, Filter } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 import { TERRITORY_DATA, Country, Continent } from '@/data/territory-data'
 
 export interface TerritorySelection {
@@ -42,7 +43,7 @@ export default function TerritorySelector({
   showDSPCustomization = false,
   className = ''
 }: TerritorySelectorProps) {
-  const language = useLanguageStore(state => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [expandedContinents, setExpandedContinents] = useState<string[]>([])
