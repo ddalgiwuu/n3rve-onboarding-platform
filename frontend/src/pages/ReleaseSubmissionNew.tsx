@@ -14,7 +14,23 @@ import useSafeStore from '@/hooks/useSafeStore'
 import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
 import { v4 as uuidv4 } from 'uuid'
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import Button from '@/components/ui/Button'
 import Toggle from '@/components/ui/Toggle'
 import Select from '@/components/ui/Select'

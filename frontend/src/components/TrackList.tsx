@@ -4,7 +4,25 @@ import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import TrackForm from './TrackForm'
 import { v4 as uuidv4 } from 'uuid'
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable'
+import {
+  useSortable
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 
 interface TrackArtist {
   id: string
@@ -112,15 +130,15 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
   }
 
   // Handle drag and drop
-  const handleDragEnd = (result: any) => {
-    if (!result.destination) return
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
 
-    const items = Array.from(localTracks)
-    const [reorderedItem] = items.splice(result.source.index, 1)
-    items.splice(result.destination.index, 0, reorderedItem)
+    if (!over || active.id === over.id) return
 
-    // Update track numbers
-    const reorderedTracks = items.map((track, index) => ({
+    const oldIndex = localTracks.findIndex(track => track.id === active.id)
+    const newIndex = localTracks.findIndex(track => track.id === over.id)
+
+    const reorderedTracks = arrayMove(localTracks, oldIndex, newIndex).map((track, index) => ({
       ...track,
       number: index + 1
     }))
@@ -128,6 +146,13 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
     setLocalTracks(reorderedTracks)
     onUpdate(reorderedTracks)
   }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   // Calculate total duration
   const totalDuration = localTracks.reduce((sum, track) => {
@@ -234,41 +259,29 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
       )}
 
       {/* Track List */}
-      <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="tracks">
-          {(provided) => (
-            <div
-              {...provided.droppableProps}
-              ref={provided.innerRef}
-              className="space-y-4"
-            >
-              {localTracks.map((track, index) => (
-                <Draggable key={track.id} draggableId={track.id} index={index}>
-                  {(provided, snapshot) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
-                      {...provided.dragHandleProps}
-                      className={`${
-                        snapshot.isDragging ? 'shadow-lg' : ''
-                      }`}
-                    >
-                      <TrackForm
-                        track={track}
-                        albumArtists={albumArtists}
-                        onUpdate={updateTrack}
-                        onDelete={deleteTrack}
-                        totalTracks={localTracks.length}
-                      />
-                    </div>
-                  )}
-                </Draggable>
-              ))}
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
-      </DragDropContext>
+      <DndContext 
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext 
+          items={localTracks.map(t => t.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-4">
+            {localTracks.map((track) => (
+              <SortableTrackItem
+                key={track.id}
+                track={track}
+                albumArtists={albumArtists}
+                onUpdate={updateTrack}
+                onDelete={deleteTrack}
+                totalTracks={localTracks.length}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
 
       {/* Summary */}
       {localTracks.length > 0 && (
@@ -313,6 +326,50 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+// Sortable Track Item Component
+interface SortableTrackItemProps {
+  track: Track
+  albumArtists: TrackArtist[]
+  onUpdate: (track: Track) => void
+  onDelete: (trackId: string) => void
+  totalTracks: number
+}
+
+function SortableTrackItem({ track, albumArtists, onUpdate, onDelete, totalTracks }: SortableTrackItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: track.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className={isDragging ? 'shadow-lg' : ''}
+    >
+      <TrackForm
+        track={track}
+        albumArtists={albumArtists}
+        onUpdate={onUpdate}
+        onDelete={onDelete}
+        totalTracks={totalTracks}
+      />
     </div>
   )
 }
