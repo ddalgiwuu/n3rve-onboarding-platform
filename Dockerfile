@@ -16,7 +16,7 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 
 # Install dependencies
-RUN npm ci --silent --no-audit --no-fund
+RUN rm -rf node_modules package-lock.json 2>/dev/null || true && npm install --silent --no-audit --no-fund
 
 COPY frontend/ ./
 
