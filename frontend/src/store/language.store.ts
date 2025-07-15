@@ -1,36 +1,5 @@
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { useStore } from 'zustand'
-
-type Language = 'ko' | 'en'
-
-interface LanguageState {
-  language: Language
-  _hasHydrated: boolean
-  setHasHydrated: (state: boolean) => void
-  setLanguage: (language: Language) => void
-}
-
-export const useLanguageStore = create<LanguageState>()(
-  persist(
-    (set, get) => ({
-      language: 'ko',
-      _hasHydrated: false,
-      
-      setHasHydrated: (state) => {
-        set({ _hasHydrated: state })
-      },
-      
-      setLanguage: (language) => {
-        set({ language })
-      }
-    }),
-    {
-      name: 'language-storage',
-      skipHydration: true,
-    }
-  )
-)
+// Re-export from hooks to maintain compatibility
+export { useLanguageStore, useLanguageStoreSelector } from './language.hooks'
 
 // 번역 데이터
 export const translations = {

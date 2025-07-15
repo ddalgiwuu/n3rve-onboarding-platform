@@ -4,7 +4,6 @@ import { cn } from '@/utils/cn'
 import { useAuthStore } from '@/store/auth.store'
 import { useLanguageStore } from '@/store/language.store'
 import { useEffect, useRef } from 'react'
-import useSafeStore from '@/hooks/useSafeStore'
 
 interface SidebarProps {
   isOpen: boolean
@@ -12,9 +11,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const user = useSafeStore(useAuthStore, (state) => state.user)
-  const logout = useSafeStore(useAuthStore, (state) => state.logout)
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const { user, logout } = useAuthStore()
+  const { language } = useLanguageStore()
   const location = useLocation()
   const sidebarRef = useRef<HTMLDivElement>(null)
   const isAdmin = user?.role === 'ADMIN'
