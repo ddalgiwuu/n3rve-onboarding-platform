@@ -5,46 +5,21 @@ import toast from 'react-hot-toast'
 import LanguageToggle from '@/components/common/LanguageToggle'
 import DarkModeToggle from '@/components/common/DarkModeToggle'
 import { useLanguageStore, useTranslation } from '@/store/language.store'
-import { useHydration } from '@/hooks/useHydration'
-import useSafeStore from '@/hooks/useSafeStore'
 
 interface HeaderProps {
   onMenuClick?: () => void
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const isHydrated = useHydration()
-  const user = useSafeStore(useAuthStore, (state) => state.user)
-  const clearAuth = useSafeStore(useAuthStore, (state) => state.clearAuth)
+  const { user, clearAuth } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
   const { t } = useTranslation()
   const isAdmin = user?.role === 'ADMIN'
   const isInAdminConsole = location.pathname.startsWith('/admin')
-  
-  // Provide fallback values while not hydrated
-  if (!isHydrated) {
-    return (
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link to="/" className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-                N3RVE
-              </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <LanguageToggle />
-              <DarkModeToggle />
-            </div>
-          </div>
-        </div>
-      </header>
-    )
-  }
 
   const handleLogout = () => {
-    clearAuth?.()
+    clearAuth()
     toast.success(t('auth.logoutSuccess'))
     navigate('/login')
   }
