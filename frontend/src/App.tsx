@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Suspense, lazy, useEffect } from 'react'
 import { useAuthStore } from './store/auth.store'
 import { useLanguageStore } from './store/language.store'
+import useSafeStore from './hooks/useSafeStore'
 import Layout from './components/layout/Layout'
 import LoadingSpinner from './components/common/LoadingSpinner'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -31,10 +32,11 @@ const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
 const ReleaseFormV2 = lazy(() => import('./components/ReleaseFormV2'))
 
 function App() {
-  const hasAuthHydrated = useAuthStore(state => state._hasHydrated)
-  const hasLanguageHydrated = useLanguageStore(state => state._hasHydrated)
-  const isAuthenticated = useAuthStore(state => state.isAuthenticated)
-  const userRole = useAuthStore(state => state.user?.role)
+  // Context7 MCP solution: Use custom useStore hook to prevent useSyncExternalStore issues
+  const hasAuthHydrated = useSafeStore(useAuthStore, (state) => state._hasHydrated)
+  const hasLanguageHydrated = useSafeStore(useLanguageStore, (state) => state._hasHydrated)
+  const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated)
+  const userRole = useSafeStore(useAuthStore, (state) => state.user?.role)
 
   // Manual rehydration on mount (Context7 MCP solution)
   useEffect(() => {
