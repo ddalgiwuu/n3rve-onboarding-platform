@@ -20,7 +20,23 @@ import { DatePicker } from '@/components/DatePicker'
 import { v4 as uuidv4 } from 'uuid'
 import { contributorRoles, getRolesByCategory, searchRoles } from '@/constants/contributorRoles'
 import { instrumentList, searchInstruments, getInstrumentCategory } from '@/constants/instruments'
-import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core'
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import AudioPlayer from '@/components/AudioPlayer'
 import RegionSelector from '@/components/RegionSelector'
 import MultiSelect from '@/components/ui/MultiSelect'
@@ -587,15 +603,24 @@ export default function ReleaseSubmission() {
   }
 
   // Track reordering
-  const onDragEnd = (result: any) => {
-    if (!result.destination) return
+  const onDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event
 
-    const items = Array.from(formData.tracks)
-    const [reorderedItem] = items.splice(result.source.index, 1)
-    items.splice(result.destination.index, 0, reorderedItem)
+    if (!over || active.id === over.id) return
 
-    setFormData(prev => ({ ...prev, tracks: items }))
+    const oldIndex = formData.tracks.findIndex(track => track.id === active.id)
+    const newIndex = formData.tracks.findIndex(track => track.id === over.id)
+
+    const reorderedTracks = arrayMove(formData.tracks, oldIndex, newIndex)
+    setFormData(prev => ({ ...prev, tracks: reorderedTracks }))
   }
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  )
 
   // File upload
   const handleFileUpload = async (files: File[], trackId: string) => {
@@ -1478,216 +1503,30 @@ export default function ReleaseSubmission() {
           </button>
         </div>
 
-        <DragDropContext onDragEnd={onDragEnd}>
-          <Droppable droppableId="tracks">
-            {(provided) => (
-              <div {...provided.droppableProps} ref={provided.innerRef} className="space-y-4">
-                {formData.tracks.map((track, index) => (
-                  <Draggable key={track.id} draggableId={track.id} index={index}>
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        className="bg-white/10 dark:bg-white/5 rounded-lg p-4 space-y-4"
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div {...provided.dragHandleProps}>
-                              <GripVertical className="w-5 h-5 text-gray-400" />
-                            </div>
-                            <h4 className="font-medium">
-                              {t('트랙', 'Track')} {index + 1}
-                            </h4>
-                            {track.isTitle && (
-                              <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded">
-                                {t('타이틀', 'Title')}
-                              </span>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => removeTrack(track.id)}
-                            className="text-red-500 hover:text-red-600"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-
-                        <div className="space-y-3">
-                          <div>
-                            <label className="block text-sm font-medium mb-1">
-                              {t('트랙 제목', 'Track Title')} *
-                            </label>
-                            <input
-                              type="text"
-                              value={track.title}
-                              onChange={(e) => updateTrack(track.id, { title: e.target.value })}
-                              className="input"
-                              placeholder={t('트랙 제목 입력', 'Enter track title')}
-                            />
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <label className="text-sm font-medium">
-                                {t('트랙 제목 번역', 'Track Title Translations')}
-                              </label>
-                              <button
-                                onClick={() => addTranslation('track', track.id)}
-                                className="btn-ghost text-sm"
-                              >
-                                <Plus className="w-4 h-4 mr-1" />
-                                {t('번역 추가', 'Add Translation')}
-                              </button>
-                            </div>
-
-                            {track.translations.map((translation) => (
-                              <div key={translation.id} className="flex items-center gap-2">
-                                <select
-                                  value={translation.language}
-                                  onChange={(e) => updateTranslation('track', translation.id, { language: e.target.value }, track.id)}
-                                  className="input flex-none w-32"
-                                >
-                                  <option value="">{t('언어 선택', 'Select language')}</option>
-                                  {languageOptions.map(lang => (
-                                    <option key={lang.value} value={lang.value}>
-                                      {lang.label}
-                                    </option>
-                                  ))}
-                                </select>
-                                <input
-                                  type="text"
-                                  value={translation.text}
-                                  onChange={(e) => updateTranslation('track', translation.id, { text: e.target.value }, track.id)}
-                                  className="input flex-1"
-                                  placeholder={t('번역된 제목', 'Translated title')}
-                                />
-                                <button
-                                  onClick={() => removeTranslation('track', translation.id, track.id)}
-                                  className="text-red-500 hover:text-red-600"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-sm font-medium mb-1">
-                                {t('장르', 'Genre')}
-                              </label>
-                              <select
-                                value={track.genre || ''}
-                                onChange={(e) => updateTrack(track.id, { genre: e.target.value })}
-                                className="input"
-                              >
-                                <option value="">{t('장르 선택', 'Select genre')}</option>
-                                {genreOptions.map(genre => (
-                                  <option key={genre} value={genre}>{genre}</option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium mb-1">ISRC</label>
-                              <input
-                                type="text"
-                                value={track.isrc || ''}
-                                onChange={(e) => updateTrack(track.id, { isrc: e.target.value })}
-                                className="input"
-                                placeholder="USKRE2400001"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                            <div>
-                              <label className="block text-sm font-medium mb-1">
-                                {t('작곡가', 'Composer')}
-                              </label>
-                              <input
-                                type="text"
-                                value={track.composer || ''}
-                                onChange={(e) => updateTrack(track.id, { composer: e.target.value })}
-                                className="input"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium mb-1">
-                                {t('작사가', 'Lyricist')}
-                              </label>
-                              <input
-                                type="text"
-                                value={track.lyricist || ''}
-                                onChange={(e) => updateTrack(track.id, { lyricist: e.target.value })}
-                                className="input"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-sm font-medium mb-1">
-                                {t('편곡자', 'Arranger')}
-                              </label>
-                              <input
-                                type="text"
-                                value={track.arranger || ''}
-                                onChange={(e) => updateTrack(track.id, { arranger: e.target.value })}
-                                className="input"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={track.isTitle}
-                                onChange={(e) => {
-                                  // Only one title track allowed
-                                  setFormData(prev => ({
-                                    ...prev,
-                                    tracks: prev.tracks.map(t => ({
-                                      ...t,
-                                      isTitle: t.id === track.id ? e.target.checked : false
-                                    }))
-                                  }))
-                                }}
-                                className="rounded"
-                              />
-                              <span className="text-sm">{t('타이틀 트랙', 'Title Track')}</span>
-                            </label>
-
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={track.explicitContent || false}
-                                onChange={(e) => updateTrack(track.id, { explicitContent: e.target.checked })}
-                                className="rounded"
-                              />
-                              <span className="text-sm">{t('19금 콘텐츠', 'Explicit Content')}</span>
-                            </label>
-
-                            <label className="flex items-center gap-2">
-                              <input
-                                type="checkbox"
-                                checked={track.dolbyAtmos || false}
-                                onChange={(e) => updateTrack(track.id, { dolbyAtmos: e.target.checked })}
-                                className="rounded"
-                              />
-                              <span className="text-sm">Dolby Atmos</span>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+        <DndContext 
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={onDragEnd}
+        >
+          <SortableContext 
+            items={formData.tracks.map(t => t.id)}
+            strategy={verticalListSortingStrategy}
+          >
+            <div className="space-y-4">
+              {formData.tracks.map((track) => (
+                <SortableTrackItem 
+                  key={track.id} 
+                  track={track} 
+                  formData={formData} 
+                  setFormData={setFormData} 
+                  handleFileUpload={handleFileUpload} 
+                  removeTrack={removeTrack} 
+                  t={t} 
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       </div>
     </div>
   )
@@ -3421,3 +3260,287 @@ export default function ReleaseSubmission() {
     </div>
   )
 }
+
+// Sortable Track Item Component
+interface SortableTrackItemProps {
+  track: any
+  formData: any
+  setFormData: any
+  handleFileUpload: any
+  removeTrack: any
+  t: any
+}
+
+function SortableTrackItem({ track, formData, setFormData, handleFileUpload, removeTrack, t }: SortableTrackItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: track.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  }
+
+  const updateTrack = (trackId: string, updates: any) => {
+    setFormData((prev: any) => ({
+      ...prev,
+      tracks: prev.tracks.map((t: any) => t.id === trackId ? { ...t, ...updates } : t)
+    }))
+  }
+
+  const addTranslation = (type: string, trackId?: string) => {
+    const newTranslation = { id: uuidv4(), language: '', text: '' }
+    
+    if (type === 'track' && trackId) {
+      setFormData((prev: any) => ({
+        ...prev,
+        tracks: prev.tracks.map((t: any) => 
+          t.id === trackId 
+            ? { ...t, translations: [...(t.translations || []), newTranslation] }
+            : t
+        )
+      }))
+    }
+  }
+
+  const updateTranslation = (type: string, translationId: string, updates: any, trackId?: string) => {
+    if (type === 'track' && trackId) {
+      setFormData((prev: any) => ({
+        ...prev,
+        tracks: prev.tracks.map((t: any) => 
+          t.id === trackId 
+            ? {
+                ...t,
+                translations: t.translations.map((tr: any) => 
+                  tr.id === translationId ? { ...tr, ...updates } : tr
+                )
+              }
+            : t
+        )
+      }))
+    }
+  }
+
+  const removeTranslation = (type: string, translationId: string, trackId?: string) => {
+    if (type === 'track' && trackId) {
+      setFormData((prev: any) => ({
+        ...prev,
+        tracks: prev.tracks.map((t: any) => 
+          t.id === trackId 
+            ? {
+                ...t,
+                translations: t.translations.filter((tr: any) => tr.id !== translationId)
+              }
+            : t
+        )
+      }))
+    }
+  }
+
+  const trackIndex = formData.tracks.findIndex((t: any) => t.id === track.id)
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="bg-white/10 dark:bg-white/5 rounded-lg p-4 space-y-4"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div {...attributes} {...listeners}>
+            <GripVertical className="w-5 h-5 text-gray-400 cursor-move" />
+          </div>
+          <h4 className="font-medium">
+            {t('트랙', 'Track')} {trackIndex + 1}
+          </h4>
+          {track.isTitle && (
+            <span className="text-xs bg-purple-500/20 text-purple-300 px-2 py-1 rounded">
+              {t('타이틀', 'Title')}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={() => removeTrack(track.id)}
+          className="text-red-500 hover:text-red-600"
+        >
+          <Trash2 className="w-4 h-4" />
+        </button>
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            {t('트랙 제목', 'Track Title')} *
+          </label>
+          <input
+            type="text"
+            value={track.title}
+            onChange={(e) => updateTrack(track.id, { title: e.target.value })}
+            className="input"
+            placeholder={t('트랙 제목 입력', 'Enter track title')}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <label className="text-sm font-medium">
+              {t('트랙 제목 번역', 'Track Title Translations')}
+            </label>
+            <button
+              onClick={() => addTranslation('track', track.id)}
+              className="btn-ghost text-sm"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              {t('번역 추가', 'Add Translation')}
+            </button>
+          </div>
+
+          {track.translations?.map((translation: any) => (
+            <div key={translation.id} className="flex items-center gap-2">
+              <select
+                value={translation.language}
+                onChange={(e) => updateTranslation('track', translation.id, { language: e.target.value }, track.id)}
+                className="input flex-none w-32"
+              >
+                <option value="">{t('언어 선택', 'Select language')}</option>
+                {languageOptions.map((lang: any) => (
+                  <option key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                value={translation.text}
+                onChange={(e) => updateTranslation('track', translation.id, { text: e.target.value }, track.id)}
+                className="input flex-1"
+                placeholder={t('번역된 제목', 'Translated title')}
+              />
+              <button
+                onClick={() => removeTranslation('track', translation.id, track.id)}
+                className="text-red-500 hover:text-red-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('장르', 'Genre')}
+            </label>
+            <select
+              value={track.genre || ''}
+              onChange={(e) => updateTrack(track.id, { genre: e.target.value })}
+              className="input"
+            >
+              <option value="">{t('장르 선택', 'Select genre')}</option>
+              {genreOptions.map((genre: string) => (
+                <option key={genre} value={genre}>{genre}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">ISRC</label>
+            <input
+              type="text"
+              value={track.isrc || ''}
+              onChange={(e) => updateTrack(track.id, { isrc: e.target.value })}
+              className="input"
+              placeholder="USKRE2400001"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('작곡가', 'Composer')}
+            </label>
+            <input
+              type="text"
+              value={track.composer || ''}
+              onChange={(e) => updateTrack(track.id, { composer: e.target.value })}
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('작사가', 'Lyricist')}
+            </label>
+            <input
+              type="text"
+              value={track.lyricist || ''}
+              onChange={(e) => updateTrack(track.id, { lyricist: e.target.value })}
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">
+              {t('편곡자', 'Arranger')}
+            </label>
+            <input
+              type="text"
+              value={track.arranger || ''}
+              onChange={(e) => updateTrack(track.id, { arranger: e.target.value })}
+              className="input"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={track.isTitle}
+              onChange={(e) => {
+                // Only one title track allowed
+                setFormData((prev: any) => ({
+                  ...prev,
+                  tracks: prev.tracks.map((t: any) => ({
+                    ...t,
+                    isTitle: t.id === track.id ? e.target.checked : false
+                  }))
+                }))
+              }}
+              className="rounded"
+            />
+            <span className="text-sm">{t('타이틀 트랙', 'Title Track')}</span>
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={track.explicitContent || false}
+              onChange={(e) => updateTrack(track.id, { explicitContent: e.target.checked })}
+              className="rounded"
+            />
+            <span className="text-sm">{t('19금 콘텐츠', 'Explicit Content')}</span>
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={track.dolbyAtmos || false}
+              onChange={(e) => updateTrack(track.id, { dolbyAtmos: e.target.checked })}
+              className="rounded"
+            />
+            <span className="text-sm">Dolby Atmos</span>
+          </label>
+        </div>
+      </div>
+    </div>
+  )
+}
+
