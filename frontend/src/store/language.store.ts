@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { useStore } from 'zustand'
 
 type Language = 'ko' | 'en'
 
