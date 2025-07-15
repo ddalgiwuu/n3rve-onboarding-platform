@@ -32,6 +32,8 @@ model User {
   // Relations
   submissions       Submission[]
   reviewedSubmissions Submission[] @relation("ReviewedSubmissions")
+  savedArtists      SavedArtist[]
+  savedContributors SavedContributor[]
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -141,9 +143,11 @@ type Member {
   appleMusicUrl String? // 추가
 }
 
+// Enhanced Translation type for albums and general content
 type Translation {
-  language String
-  title    String
+  id       String
+  language String  // Language code (e.g., 'en', 'ko', 'ja')
+  title    String  // Translated title
 }
 
 // 추가: 기여자 타입
@@ -160,6 +164,10 @@ type Track {
   id                    String
   titleKo               String
   titleEn               String
+  
+  // Multi-language translations for track titles
+  translations          Translation[]   // Array of translations for track title
+  
   artists               String[]        // 추가
   featuringArtists      String[]        // 추가
   contributors          Contributor[]   // 추가
@@ -170,7 +178,11 @@ type Track {
   isTitle               Boolean @default(false)
   isrc                  String?
   explicitContent       Boolean @default(false)
-  trackVersion          String?
+  
+  // Track version management (Instrumental, Remix, etc.)
+  trackVersion          String?         // Standard or custom version
+  versionType           TrackVersionType @default(ORIGINAL)
+  
   lyricsLanguage        String?
   producer              String?
   mixer                 String?
@@ -186,7 +198,6 @@ type Track {
   metadataLanguage      String?
   playtimeStartShortClip Int?
   previewLength         Int?
-  translations          Json[]
   trackType             TrackType @default(AUDIO)
   dolbyAtmos            Boolean @default(false)
   stereo                Boolean @default(false)  // 추가
@@ -286,7 +297,14 @@ type ReleaseInfo {
   // 추가: 한국 DSP 정보
   koreanDSP                 KoreanDSPInfo?
   
-  // 추가: 모든 마케팅 필드들
+  // 추가: FUGA 호환 마케팅 필드들
+  // Project Context
+  priorityLevel             Int?            // 1-5 성급 평가
+  projectType               ProjectType?    // Frontline 또는 Catalog
+  privateListeningLink      String?         // 비공개 청취 링크
+  factSheetsUrl             String?         // Fact Sheets/Project Deck URL
+  
+  // 기존 마케팅 필드들
   albumIntroduction         String?
   albumDescription          String?
   marketingKeywords         String?
@@ -375,6 +393,26 @@ enum TrackType {
   MUSIC_VIDEO
 }
 
+enum TrackVersionType {
+  ORIGINAL
+  INSTRUMENTAL
+  ACAPELLA
+  RADIO_EDIT
+  EXTENDED_MIX
+  CLUB_MIX
+  REMIX
+  ACOUSTIC
+  LIVE
+  DEMO
+  KARAOKE
+  CLEAN
+  EXPLICIT
+  REMASTERED
+  DELUXE
+  ALTERNATIVE
+  CUSTOM
+}
+
 enum PriceType {
   FREE
   PAID
@@ -398,6 +436,11 @@ enum ReleaseFormat {
   SPECIAL
   REMASTERED
   ANNIVERSARY
+}
+
+enum ProjectType {
+  FRONTLINE
+  CATALOG
 }
 
 // Marketing information type
@@ -467,4 +510,123 @@ type PricingInfo {
   defaultPrice      String
   currency          String
   territoryPricing  Json?
+}
+
+// Saved Artist model
+model SavedArtist {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  user          User     @relation(fields: [userId], references: [id])
+  name          String
+  translations  ArtistTranslation[]
+  identifiers   ArtistIdentifier[]
+  createdAt     DateTime @default(now())
+  lastUsed      DateTime @default(now())
+  usageCount    Int      @default(1)
+  
+  @@index([userId, name])
+  @@index([userId, lastUsed])
+  @@fulltext([name])
+}
+
+// Saved Contributor model
+model SavedContributor {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String   @db.ObjectId
+  user          User     @relation(fields: [userId], references: [id])
+  name          String
+  roles         String[]
+  instruments   String[]
+  translations  ArtistTranslation[]
+  identifiers   ArtistIdentifier[]
+  createdAt     DateTime @default(now())
+  lastUsed      DateTime @default(now())
+  usageCount    Int      @default(1)
+  
+  @@index([userId, name])
+  @@index([userId, lastUsed])
+  @@index([userId, roles])
+  @@fulltext([name])
+}
+
+// Embedded types for SavedArtist and SavedContributor
+type ArtistTranslation {
+  language String
+  name     String
+}
+
+type ArtistIdentifier {
+  type  IdentifierType
+  value String
+  url   String?
+}
+
+enum IdentifierType {
+  SPOTIFY
+  APPLE_MUSIC
+  YOUTUBE
+  ISNI
+  IPI
+}
+
+// DSP (Digital Service Provider) model
+model DSP {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  dspId           String   @unique // Unique ID from FUGA
+  name            String
+  code            String?  // Short code like (A) or (via IIP-DDS)
+  description     String?  @db.String
+  contactEmail    String?
+  territories     String[] // e.g., ["World", "Americas (United States of America)"]
+  availability    String   // e.g., "Immediately"
+  isActive        Boolean  @default(true)
+  isHD            Boolean  @default(false) // For HD audio services
+  serviceType     ServiceType @default(STREAMING)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([isActive])
+  @@index([serviceType])
+  @@fulltext([name])
+}
+
+enum ServiceType {
+  STREAMING
+  DOWNLOAD
+  FINGERPRINTING
+  VIDEO
+  RADIO
+  SOCIAL
+  OTHER
+}
+
+// Territory Selection model
+model TerritorySelection {
+  id               String   @id @default(auto()) @map("_id") @db.ObjectId
+  releaseId        String   @db.ObjectId // Reference to Submission
+  selectionType    TerritorySelectionType
+  selectedCountries String[] // Country codes (e.g., ["US", "JP", "KR"])
+  excludedCountries String[] // For worldwide with exclusions
+  
+  // Per-DSP territory customization
+  dspTerritories   DSPTerritory[]
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  @@index([releaseId])
+}
+
+// Per-DSP territory customization
+type DSPTerritory {
+  dspId           String   // Reference to DSP.dspId
+  dspName         String   // DSP name for display
+  selectionType   TerritorySelectionType
+  countries       String[] // Country codes for this specific DSP
+}
+
+enum TerritorySelectionType {
+  WORLDWIDE       // All countries
+  SPECIFIC        // Only selected countries
+  WORLDWIDE_EXCEPT // All countries except excluded ones
 }

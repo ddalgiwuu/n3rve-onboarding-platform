@@ -4,7 +4,8 @@ import { useLanguageStore, useTranslation } from '@/store/language.store';
 import { useAuthStore } from '@/store/auth.store';
 
 const Settings = () => {
-  const { language, setLanguage } = useLanguageStore();
+  const language = useLanguageStore(state => state.language);
+  const setLanguage = useLanguageStore(state => state.setLanguage);
   const { t } = useTranslation();
   const { user } = useAuthStore();
   const [activeTab, setActiveTab] = useState('profile');

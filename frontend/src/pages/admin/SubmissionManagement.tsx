@@ -69,7 +69,9 @@ const Tab: React.FC<{
 )
 
 const SubmissionManagement: React.FC = () => {
-  const { language, t } = useLanguageStore()
+  const language = useLanguageStore(state => state.language)
+  // Note: t function is not available from useLanguageStore, need to create local t function
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const [submissions, setSubmissions] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')

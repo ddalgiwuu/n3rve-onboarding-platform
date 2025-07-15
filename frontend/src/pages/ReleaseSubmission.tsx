@@ -232,13 +232,18 @@ export default function ReleaseSubmission() {
     motionArtwork: false,
     soundtrackScore: '',
     instruments: [] as string[],
+    // FUGA 호환 추가 필드들
+    priorityLevel: 3,
+    projectType: 'FRONTLINE' as 'FRONTLINE' | 'CATALOG',
+    privateListeningLink: '',
+    factSheetsUrl: '',
+    
     marketingGenre: '',
     marketingSubgenre: '',
     marketingTags: [] as string[],
     similarArtists: [] as string[],
     marketingAngle: '',
     pressRelease: '',
-    marketingBudget: '',
     marketingDrivers: '',
     socialMediaPoliticalPlan: '',
     // Artist Profile fields
@@ -1350,6 +1355,109 @@ export default function ReleaseSubmission() {
               {t('한국 음원 사이트에서 앨범 정보 페이지에 표시될 소개글입니다', 'This will be displayed on the album information page on Korean music streaming platforms')}
             </p>
           </div>
+
+          {/* FUGA 마케팅 필드 - Priority Level */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('우선순위 레벨', 'Priority Level')}
+            </label>
+            <div className="flex items-center gap-1">
+              {[1, 2, 3, 4, 5].map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, priorityLevel: level })}
+                  className={`p-2 transition-colors ${
+                    formData.priorityLevel === level
+                      ? 'text-yellow-500'
+                      : 'text-gray-300 hover:text-yellow-400'
+                  }`}
+                >
+                  <svg className="w-6 h-6 fill-current" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                </button>
+              ))}
+              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
+                ({formData.priorityLevel || 3}/5)
+              </span>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {t('릴리즈의 마케팅 우선순위를 설정하세요 (1: 낮음, 5: 높음)', 'Set marketing priority for this release (1: Low, 5: High)')}
+            </p>
+          </div>
+
+          {/* FUGA 마케팅 필드 - Project Type */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('프로젝트 타입', 'Project Type')}
+            </label>
+            <div className="flex gap-4">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="projectType"
+                  value="FRONTLINE"
+                  checked={formData.projectType === 'FRONTLINE'}
+                  onChange={(e) => setFormData({ ...formData, projectType: e.target.value as 'FRONTLINE' | 'CATALOG' })}
+                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 focus:ring-n3rve-accent focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-gray-900 dark:text-white">
+                  {t('프론트라인', 'Frontline')}
+                </span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="projectType"
+                  value="CATALOG"
+                  checked={formData.projectType === 'CATALOG'}
+                  onChange={(e) => setFormData({ ...formData, projectType: e.target.value as 'FRONTLINE' | 'CATALOG' })}
+                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 focus:ring-n3rve-accent focus:ring-2"
+                />
+                <span className="ml-2 text-sm text-gray-900 dark:text-white">
+                  {t('카탈로그', 'Catalog')}
+                </span>
+              </label>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {t('프론트라인: 신규 릴리즈, 카탈로그: 기존 음원', 'Frontline: New release, Catalog: Existing music')}
+            </p>
+          </div>
+
+          {/* FUGA 마케팅 필드 - Private Listening Link */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('비공개 청취 링크', 'Private Listening Link')}
+            </label>
+            <input
+              type="url"
+              value={formData.privateListeningLink}
+              onChange={(e) => setFormData({ ...formData, privateListeningLink: e.target.value })}
+              className="input"
+              placeholder={t('https://example.com/private-link', 'https://example.com/private-link')}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {t('미리 들어볼 수 있는 비공개 링크를 입력하세요', 'Enter a private link for preview listening')}
+            </p>
+          </div>
+
+          {/* FUGA 마케팅 필드 - Fact Sheets URL */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {t('팩트시트/프로젝트 덱 URL', 'Fact Sheets/Project Deck URL')}
+            </label>
+            <input
+              type="url"
+              value={formData.factSheetsUrl}
+              onChange={(e) => setFormData({ ...formData, factSheetsUrl: e.target.value })}
+              className="input"
+              placeholder={t('https://example.com/factsheet.pdf', 'https://example.com/factsheet.pdf')}
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              {t('아티스트/앨범 정보가 담긴 팩트시트나 프로젝트 덱 URL을 입력하세요', 'Enter URL for fact sheet or project deck containing artist/album information')}
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -2217,20 +2325,8 @@ export default function ReleaseSubmission() {
             </p>
           </div>
 
-          {/* Marketing Spend & Drivers */}
+          {/* Marketing Drivers */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">
-                {t('마케팅 예산', 'Marketing Spend')}
-              </label>
-              <input
-                type="text"
-                value={formData.marketingBudget || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, marketingBudget: e.target.value }))}
-                className="input"
-                placeholder={t('예: $10,000 USD', 'e.g., $10,000 USD')}
-              />
-            </div>
 
             <div>
               <label className="block text-sm font-medium mb-1">
