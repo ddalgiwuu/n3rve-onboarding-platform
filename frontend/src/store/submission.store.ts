@@ -1,23 +1,29 @@
-// Compatibility layer for Redux migration
-import { useAppSelector, useAppDispatch } from './hooks'
+// Compatibility layer for Jotai migration
+import { useAtom, useAtomValue, useSetAtom } from 'jotai'
 import {
-  setFormData as setFormDataAction,
-  updateFormData as updateFormDataAction,
-  setCurrentStep as setCurrentStepAction,
-  resetForm as resetFormAction
-} from './submissionFormSlice'
+  submissionAtom,
+  formDataAtom,
+  currentStepAtom,
+  setFormDataAtom,
+  updateFormDataAtom,
+  setCurrentStepAtom,
+  resetFormAtom
+} from '@/atoms/submissionAtom'
 
 export function useSubmissionStore() {
-  const formData = useAppSelector(state => state.submissionForm.formData)
-  const currentStep = useAppSelector(state => state.submissionForm.currentStep)
-  const dispatch = useAppDispatch()
+  const formData = useAtomValue(formDataAtom)
+  const currentStep = useAtomValue(currentStepAtom)
+  const setFormData = useSetAtom(setFormDataAtom)
+  const updateFormData = useSetAtom(updateFormDataAtom)
+  const setCurrentStep = useSetAtom(setCurrentStepAtom)
+  const resetForm = useSetAtom(resetFormAtom)
   
   return {
     formData,
     currentStep,
-    setFormData: (data: any) => dispatch(setFormDataAction(data)),
-    updateFormData: (data: Partial<any>) => dispatch(updateFormDataAction(data)),
-    setCurrentStep: (step: number) => dispatch(setCurrentStepAction(step)),
-    resetForm: () => dispatch(resetFormAction())
+    setFormData: (data: any) => setFormData(data),
+    updateFormData: (data: Partial<any>) => updateFormData(data),
+    setCurrentStep: (step: number) => setCurrentStep(step),
+    resetForm: () => resetForm()
   }
 }
