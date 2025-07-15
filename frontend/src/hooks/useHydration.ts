@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useAuthStore } from '@/store/auth.store'
 import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
 
 /**
  * Simple hydration check hook that waits for stores to be ready

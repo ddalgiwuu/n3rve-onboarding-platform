@@ -12,8 +12,11 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks for better caching
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react/')) {
               return 'react-vendor'
+            }
+            if (id.includes('zustand')) {
+              return 'state-vendor'
             }
             if (id.includes('lucide-react')) {
               return 'icons'
