@@ -1,15 +1,22 @@
 # Multi-stage Dockerfile for N3RVE Platform
 
 # Stage 1: Build Frontend
-FROM node:20-alpine AS frontend-builder
+FROM node:20-slim AS frontend-builder
+
+# Install build dependencies for Node.js native modules
+RUN apt-get update && apt-get install -y \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app/frontend
 
 # Copy frontend files
 COPY frontend/package*.json ./
 
-# Install dependencies with increased memory and better error handling
-RUN npm ci --verbose
+# Install dependencies
+RUN npm ci --silent --no-audit --no-fund
 
 COPY frontend/ ./
 
