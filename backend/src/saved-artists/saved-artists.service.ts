@@ -30,10 +30,6 @@ export class SavedArtistsService {
         { lastUsed: 'desc' }
       ],
       take: limit,
-      include: {
-        translations: true,
-        identifiers: true,
-      }
     });
   }
 
@@ -75,10 +71,6 @@ export class SavedArtistsService {
         { lastUsed: 'desc' }
       ],
       take: limit,
-      include: {
-        translations: true,
-        identifiers: true,
-      }
     });
   }
 
@@ -106,10 +98,6 @@ export class SavedArtistsService {
           usageCount: { increment: 1 },
           lastUsed: new Date()
         },
-        include: {
-          translations: true,
-          identifiers: true,
-        }
       });
     }
 
@@ -125,10 +113,6 @@ export class SavedArtistsService {
           set: data.identifiers || []
         }
       },
-      include: {
-        translations: true,
-        identifiers: true,
-      }
     });
   }
 
@@ -169,10 +153,6 @@ export class SavedArtistsService {
       return this.prisma.savedContributor.update({
         where: { id: existingContributor.id },
         data: updateData,
-        include: {
-          translations: true,
-          identifiers: true,
-        }
       });
     }
 
@@ -190,10 +170,6 @@ export class SavedArtistsService {
           set: data.identifiers || []
         }
       },
-      include: {
-        translations: true,
-        identifiers: true,
-      }
     });
   }
 
@@ -208,10 +184,6 @@ export class SavedArtistsService {
         usageCount: { increment: 1 },
         lastUsed: new Date()
       },
-      include: {
-        translations: true,
-        identifiers: true,
-      }
     });
   }
 
@@ -226,10 +198,6 @@ export class SavedArtistsService {
         usageCount: { increment: 1 },
         lastUsed: new Date()
       },
-      include: {
-        translations: true,
-        identifiers: true,
-      }
     });
   }
 
