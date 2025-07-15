@@ -131,12 +131,17 @@ export function loadQCConfig() {
           formatting: { titleCaseSkipWords: [], featuringFormats: { valid: [], incorrect: [] }, abbreviations: {}, versionCapitalization: {} },
           rules: { 
             artist: { maxLength: 100, requireBothLanguages: false, allowSpecialChars: "", preventDoubleSpaces: true, preventLeadingTrailingSpaces: true, preventPromotionalText: true, preventGenericNames: true, preventMisleadingTerms: true, preventEmojis: true },
-            title: { maxLength: 100, requireBothLanguages: false, allowSpecialChars: "", preventDoubleSpaces: true, preventLeadingTrailingSpaces: true, preventPromotionalText: true, preventEmojis: true, enforceProperCapitalization: true },
-            genre: { maxCount: 3, required: true },
-            release: { minDaysNotice: 14, allowPastDates: false },
-            version: { allowedFormats: [] }
+            title: { maxLength: 100, requireTitleCase: false, preventDoubleSpaces: true, preventLeadingTrailingSpaces: true, preventPromotionalText: true, preventEmojis: true, checkBracketMatching: true, enforceSentenceCaseForLanguages: false },
+            format: {
+              single: { minTracks: 1, maxTracks: 1, requireSameTitle: false },
+              ep: { minTracks: 2, maxTracks: 6, requireSameTitle: false },
+              album: { minTracks: 7, maxTracks: null, requireSameTitle: false }
+            },
+            release: { minDaysNotice: 14, preventPastDates: true, requireCopyrightYear: false, preventCopyrightSymbols: false },
+            genre: { minCount: 1, maxCount: 3, requireSelection: true },
+            isrc: { format: "^[A-Z]{2}[A-Z0-9]{3}\\d{2}\\d{5}$", example: "USRC17607839", required: false }
           },
-          messages: { errors: {}, warnings: {}, info: {} }
+          messages: { error: {}, warning: {}, info: {} }
         },
         help: {
           overview: { title: "FUGA QC", description: "Quality Control process", importance: [] },
@@ -295,5 +300,5 @@ if (process.env.NODE_ENV === 'development') {
   // In development, you could implement hot reloading
   // For now, just log the loaded version
   const config = loadQCConfig()
-  console.log('[QC Config] Development mode - Version:', config.version)
+  console.log('[QC Config] Development mode - Version:', config?.version)
 }

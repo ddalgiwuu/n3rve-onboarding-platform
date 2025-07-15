@@ -3,7 +3,7 @@ import { Calendar, Clock, Info, Copy, Globe } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import { DatePicker } from '@/components/DatePicker'
-import { timezones, convertToUTC, formatUTCInTimezone } from '@/constants/timezones'
+import { timezones, convertToUTC } from '@/constants/timezones'
 
 interface ReleaseDateSettingsProps {
   consumerDate: {
@@ -103,11 +103,10 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
           <div>
             <label className="block text-sm font-medium mb-1">{t('날짜', 'Date')} *</label>
             <DatePicker
-              selected={consumerDate.date ? new Date(consumerDate.date) : new Date()}
-              onChange={(date) => handleConsumerDateChange('date', date?.toISOString().split('T')[0] || '')}
+              value={consumerDate.date}
+              onChange={(date) => handleConsumerDateChange('date', date)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
-              dateFormat="yyyy-MM-dd"
-              minDate={new Date()}
+              minDate={new Date().toISOString().split('T')[0]}
             />
           </div>
           
@@ -201,11 +200,10 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
             <div>
               <label className="block text-sm font-medium mb-1">{t('날짜', 'Date')}</label>
               <DatePicker
-                selected={originalDate.date ? new Date(originalDate.date) : null}
-                onChange={(date) => handleOriginalDateChange('date', date?.toISOString().split('T')[0] || '')}
+                value={originalDate.date}
+                onChange={(date) => handleOriginalDateChange('date', date)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
-                dateFormat="yyyy-MM-dd"
-                maxDate={new Date()}
+                maxDate={new Date().toISOString().split('T')[0]}
               />
             </div>
             
@@ -269,9 +267,9 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
           <div className="text-sm text-yellow-800 dark:text-yellow-200">
             <p className="font-medium mb-2">{t('날짜 설정 안내', 'Date Setting Guide')}</p>
             <ul className="space-y-1 text-yellow-700 dark:text-yellow-300">
-              <li>• {t('모든 시간은 UTC로 저장되며, 각 플랫폼에서 현지 시간으로 변환됩니다', 'All times are stored in UTC and converted to local time by each platform')}</li>
-              <li>• {t('금요일 오전 0시 발매가 일반적이나, 플랫폼별로 다를 수 있습니다', 'Friday 00:00 release is common, but may vary by platform')}</li>
-              <li>• {t('최소 2주 전에 발매일을 설정하는 것을 권장합니다', 'We recommend setting release date at least 2 weeks in advance')}</li>
+              <li>• {t('모든 시간은 UTC로 저장되며, 각 플랫폼에서 현지 시간으로 변환됩니다', 'All times are stored in UTC and converted to local time on each platform')}</li>
+              <li>• {t('금요일 오전 0시 발매가 일반적이나, 플랫폼별로 다를 수 있습니다', 'Friday midnight release is common, but may vary by platform')}</li>
+              <li>• {t('최소 2주 전에 발매일을 설정하는 것을 권장합니다', 'It is recommended to set the release date at least 2 weeks in advance')}</li>
             </ul>
           </div>
         </div>

@@ -1,7 +1,6 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, Music, Upload, FileText, CheckCircle, Users, TrendingUp, HelpCircle, Zap, Globe } from 'lucide-react';
-import { useTranslation } from '@/store/language.store';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const Guide = () => {
   const navigate = useNavigate();
@@ -10,29 +9,29 @@ const Guide = () => {
   const guides = [
     {
       icon: Upload,
-      title: t('guide.submission', 'Submission Process'),
-      description: t('guide.submissionDesc', 'Learn how to submit your music to N3RVE'),
+      title: t('guide.submission'),
+      description: t('guide.submissionDesc'),
       link: '/guide/submission',
       color: 'from-purple-500 to-pink-500'
     },
     {
       icon: Music,
-      title: t('guide.artistProfile', 'Artist Profile Setup'),
-      description: t('guide.artistProfileDesc', 'Create a compelling artist profile'),
+      title: t('guide.artistProfile'),
+      description: t('guide.artistProfileDesc'),
       link: '/guide/artist-profile',
       color: 'from-blue-500 to-cyan-500'
     },
     {
       icon: FileText,
-      title: t('guide.technical', 'Technical Requirements'),
-      description: t('guide.technicalDesc', 'Audio specs, formats, and guidelines'),
+      title: t('guide.technical'),
+      description: t('guide.technicalDesc'),
       link: '/guide/technical',
       color: 'from-green-500 to-emerald-500'
     },
     {
       icon: TrendingUp,
-      title: t('guide.marketing', 'Marketing Best Practices'),
-      description: t('guide.marketingDesc', 'Promote your music effectively'),
+      title: t('guide.marketing'),
+      description: t('guide.marketingDesc'),
       link: '/guide/marketing',
       color: 'from-orange-500 to-red-500'
     }
@@ -42,45 +41,45 @@ const Guide = () => {
     {
       icon: CheckCircle,
       iconColor: 'text-green-500',
-      title: t('guide.tip1Title', 'Complete Your Profile'),
-      text: t('guide.tip1Text', 'A complete profile increases your chances of approval by 80%')
+      title: t('guide.tip1Title'),
+      text: t('guide.tip1Text')
     },
     {
       icon: Zap,
       iconColor: 'text-yellow-500',
-      title: t('guide.tip2Title', 'High-Quality Audio'),
-      text: t('guide.tip2Text', 'Submit WAV files at 24-bit/48kHz or higher for best results')
+      title: t('guide.tip2Title'),
+      text: t('guide.tip2Text')
     },
     {
       icon: Globe,
       iconColor: 'text-blue-500',
-      title: t('guide.tip3Title', 'Global Reach'),
-      text: t('guide.tip3Text', 'N3RVE distributes to over 150+ streaming platforms worldwide')
+      title: t('guide.tip3Title'),
+      text: t('guide.tip3Text')
     },
     {
       icon: Users,
       iconColor: 'text-purple-500',
-      title: t('guide.tip4Title', 'Community Support'),
-      text: t('guide.tip4Text', 'Join our Discord community for tips and networking')
+      title: t('guide.tip4Title'),
+      text: t('guide.tip4Text')
     }
   ];
 
   const faqs = [
     {
-      question: t('guide.faq1Q', 'How long does the review process take?'),
-      answer: t('guide.faq1A', 'Typically 2-3 business days for initial review')
+      question: t('guide.faq1Q'),
+      answer: t('guide.faq1A')
     },
     {
-      question: t('guide.faq2Q', 'What file formats are accepted?'),
-      answer: t('guide.faq2A', 'WAV (preferred), FLAC, and high-quality MP3 (320kbps)')
+      question: t('guide.faq2Q'),
+      answer: t('guide.faq2A')
     },
     {
-      question: t('guide.faq3Q', 'Can I update my submission after sending?'),
-      answer: t('guide.faq3A', 'Yes, you can update draft submissions anytime before final submission')
+      question: t('guide.faq3Q'),
+      answer: t('guide.faq3A')
     },
     {
-      question: t('guide.faq4Q', 'Is Dolby Atmos support available?'),
-      answer: t('guide.faq4A', 'Yes! We fully support Dolby Atmos tracks for immersive audio experiences')
+      question: t('guide.faq4Q'),
+      answer: t('guide.faq4A')
     }
   ];
 
@@ -95,10 +94,10 @@ const Guide = () => {
             </div>
             <div>
               <h1 className="text-3xl font-bold gradient-text mb-2">
-                {t('guide.title', 'N3RVE Guide Center')}
+                {t('guide.title')}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {t('guide.subtitle', 'Everything you need to know about distributing your music')}
+                {t('guide.subtitle')}
               </p>
             </div>
           </div>
@@ -131,7 +130,7 @@ const Guide = () => {
 
         {/* Quick Tips */}
         <div className="glass-effect rounded-2xl p-8 animate-fade-in-delay">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('guide.quickTips', 'Quick Tips')}</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">{t('guide.quickTips')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {quickTips.map((tip, index) => {
               const Icon = tip.icon;
@@ -152,7 +151,7 @@ const Guide = () => {
         <div className="glass-effect rounded-2xl p-8 animate-fade-in-delay">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
             <HelpCircle className="w-6 h-6 text-purple-500" />
-            {t('guide.faq', 'Frequently Asked Questions')}
+            {t('guide.faq')}
           </h2>
           <div className="space-y-6">
             {faqs.map((faq, index) => (
@@ -167,16 +166,16 @@ const Guide = () => {
         {/* Contact Support */}
         <div className="glass-effect rounded-2xl p-8 text-center animate-fade-in-delay">
           <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-            {t('guide.needHelp', 'Need More Help?')}
+            {t('guide.needHelp')}
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            {t('guide.contactText', 'Our support team is here to assist you with any questions')}
+            {t('guide.contactText')}
           </p>
           <button
             onClick={() => window.location.href = 'mailto:support@n3rve.com'}
             className="btn-modern btn-primary hover-lift"
           >
-            {t('guide.contactSupport', 'Contact Support')}
+            {t('guide.contactSupport')}
           </button>
         </div>
       </div>

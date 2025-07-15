@@ -18,7 +18,7 @@ export default function DebugAuth() {
   }, [isAuthenticated, user, accessToken])
 
   const clearAllAuth = () => {
-    // Clear Jotai store
+    // Clear auth store
     clearAuth()
     
     // Clear localStorage

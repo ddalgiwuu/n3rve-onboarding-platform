@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Filter, Clock, CheckCircle, XCircle, AlertCircle, Music, Calendar, Eye } from 'lucide-react';
-import { useTranslation } from '@/store/language.store';
+import { Plus, Search, Clock, CheckCircle, XCircle, AlertCircle, Music, Calendar, Eye } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 import { format } from 'date-fns';
 import { submissionService } from '@/services/submission.service';
 import toast from 'react-hot-toast';
@@ -36,7 +36,7 @@ const Submissions = () => {
       setSubmissions(data);
     } catch (error) {
       console.error('Error fetching submissions:', error);
-      toast.error(t('submissions.fetchError', 'Failed to load submissions'));
+      toast.error(t('submissions.fetchError'));
     } finally {
       setLoading(false);
     }
@@ -57,12 +57,12 @@ const Submissions = () => {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return t('submissions.approved', 'Approved');
+        return t('submissions.approved');
       case 'REJECTED':
-        return t('submissions.rejected', 'Rejected');
+        return t('submissions.rejected');
       case 'PENDING':
       default:
-        return t('submissions.pending', 'Pending');
+        return t('submissions.pending');
     }
   };
 
@@ -93,16 +93,16 @@ const Submissions = () => {
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-3xl font-bold gradient-text mb-2">
-                {t('submissions.myTitle', 'My Submissions')}
+                {t('submissions.myTitle')}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">{t('submissions.myDescription', 'Track and manage your music submissions')}</p>
+              <p className="text-gray-600 dark:text-gray-400">{t('submissions.myDescription')}</p>
             </div>
             <button
               onClick={() => navigate('/onboarding')}
               className="btn-modern btn-primary flex items-center gap-2 hover-lift"
             >
               <Plus className="w-5 h-5" />
-              {t('submissions.newSubmission', 'New Submission')}
+              {t('submissions.newSubmission')}
             </button>
           </div>
         </div>
@@ -117,10 +117,10 @@ const Submissions = () => {
               <span className="text-3xl font-bold text-gray-900 dark:text-white">{submissions.length}</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-              {t('submissions.totalSubmissions', 'Total Submissions')}
+              {t('submissions.totalSubmissions')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('등록된 음원', 'Registered music')}
+              {t('등록된 음원')}
             </p>
           </div>
           
@@ -132,10 +132,10 @@ const Submissions = () => {
               <span className="text-3xl font-bold text-gray-900 dark:text-white">{submissions.filter(s => s.status === 'APPROVED').length}</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-              {t('submissions.approved', 'Approved')}
+              {t('submissions.approved')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('승인 완료', 'Approved releases')}
+              {t('승인 완료')}
             </p>
           </div>
           
@@ -147,10 +147,10 @@ const Submissions = () => {
               <span className="text-3xl font-bold text-gray-900 dark:text-white">{submissions.filter(s => s.status === 'PENDING').length}</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-              {t('submissions.inReview', 'In Review')}
+              {t('submissions.inReview')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('검토 중', 'Under review')}
+              {t('검토 중')}
             </p>
           </div>
           
@@ -162,10 +162,10 @@ const Submissions = () => {
               <span className="text-3xl font-bold text-gray-900 dark:text-white">{submissions.filter(s => s.status === 'REJECTED').length}</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-              {t('submissions.rejected', 'Rejected')}
+              {t('submissions.rejected')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('반려됨', 'Returned releases')}
+              {t('반려됨')}
             </p>
           </div>
         </div>
@@ -177,7 +177,7 @@ const Submissions = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder={t('submissions.searchPlaceholder', 'Search by album or artist...')}
+                placeholder={t('submissions.searchPlaceholder')}
                 className="input-modern pl-10"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -188,10 +188,10 @@ const Submissions = () => {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="all">{t('submissions.allStatuses', 'All Statuses')}</option>
-              <option value="pending">{t('submissions.pending', 'Pending')}</option>
-              <option value="approved">{t('submissions.approved', 'Approved')}</option>
-              <option value="rejected">{t('submissions.rejected', 'Rejected')}</option>
+              <option value="all">{t('submissions.allStatuses')}</option>
+              <option value="pending">{t('submissions.pending')}</option>
+              <option value="approved">{t('submissions.approved')}</option>
+              <option value="rejected">{t('submissions.rejected')}</option>
             </select>
           </div>
         </div>
@@ -205,12 +205,12 @@ const Submissions = () => {
           ) : filteredSubmissions.length === 0 ? (
             <div className="glass-effect rounded-2xl p-12 text-center">
               <Music className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 mb-6">{t('submissions.noSubmissions', 'No submissions found')}</p>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">{t('submissions.noSubmissions')}</p>
               <button
                 onClick={() => navigate('/onboarding')}
                 className="btn-modern btn-primary"
               >
-                {t('submissions.createFirst', 'Create Your First Submission')}
+                {t('submissions.createFirst')}
               </button>
             </div>
           ) : (
@@ -230,7 +230,7 @@ const Submissions = () => {
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{submission.albumTitle}</h3>
                       <p className="text-gray-600 dark:text-gray-400">{submission.artistName}</p>
                       <div className="flex items-center gap-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
-                        <span>{submission.tracks?.length || 0} {t('submissions.tracks', 'tracks')}</span>
+                        <span>{submission.tracks?.length || 0} {t('submissions.tracks')}</span>
                         <span>•</span>
                         <span>{submission.albumGenre?.join(', ') || 'N/A'}</span>
                         <span>•</span>

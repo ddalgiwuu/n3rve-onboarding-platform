@@ -4,24 +4,28 @@ import { useNavigate, useLocation, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import LanguageToggle from '@/components/common/LanguageToggle'
 import DarkModeToggle from '@/components/common/DarkModeToggle'
-import { useLanguageStore, useTranslation } from '@/store/language.store'
+import { useLanguageStore } from '@/store/language.store'
+import useSafeStore from '@/hooks/useSafeStore'
 
 interface HeaderProps {
   onMenuClick?: () => void
 }
 
 export default function Header({ onMenuClick }: HeaderProps) {
-  const user = useAuthStore((state) => state.user)
-  const clearAuth = useAuthStore((state) => state.clearAuth)
+  const user = useSafeStore(useAuthStore, (state) => state.user)
+  const clearAuth = useSafeStore(useAuthStore, (state) => state.clearAuth)
+  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en
   const navigate = useNavigate()
   const location = useLocation()
-  const { t } = useTranslation()
   const isAdmin = user?.role === 'ADMIN'
   const isInAdminConsole = location.pathname.startsWith('/admin')
 
   const handleLogout = () => {
-    clearAuth()
-    toast.success(t('auth.logoutSuccess'))
+    if (clearAuth) {
+      clearAuth()
+    }
+    toast.success(t('로그아웃되었습니다', 'Logged out successfully'))
     navigate('/login')
   }
 
@@ -110,7 +114,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
-                  {t('auth.logout')}
+                  {t('로그아웃', 'Logout')}
                 </button>
               </div>
             </div>

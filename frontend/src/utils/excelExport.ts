@@ -281,7 +281,7 @@ export const exportSubmissionReport = (submission: Submission) => {
         track.genre || submission.genre,
         track.lyricsLanguage || 'N/A',
         track.explicit ? 'Yes' : 'No',
-        track.previewStart || 'N/A',
+        track.previewStart ? String(track.previewStart) : 'N/A',
       ]);
     });
 

@@ -8,17 +8,14 @@ import ContributorForm from './ContributorForm'
 interface ArtistSelectorProps {
   type: 'artist' | 'contributor'
   onSelect: (selected: SavedArtist | SavedContributor) => void
-  onCreateNew: () => void
+  onCreateNew?: () => void  // Made optional since it's not used internally
   filterRoles?: string[]
   filterInstruments?: string[]
 }
 
 export default function ArtistSelector({ 
   type, 
-  onSelect, 
-  onCreateNew,
-  filterRoles = [],
-  filterInstruments = []
+  onSelect
 }: ArtistSelectorProps) {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
@@ -51,7 +48,7 @@ export default function ArtistSelector({
 
   const results = type === 'artist' 
     ? searchArtists(searchQuery)
-    : searchContributors(searchQuery, filterRoles, filterInstruments)
+    : searchContributors(searchQuery)
 
   const handleSelect = async (item: SavedArtist | SavedContributor) => {
     if (type === 'artist') {
@@ -131,7 +128,7 @@ export default function ArtistSelector({
             <div className="text-center py-8">
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 {searchQuery ? 
-                  t('검색 결과가 없습니다', 'No results found') :
+                  t('검색 결과가 없습니다', 'No search results') :
                   t(
                     type === 'artist' ? '저장된 아티스트가 없습니다' : '저장된 기여자가 없습니다',
                     type === 'artist' ? 'No saved artists' : 'No saved contributors'
@@ -182,7 +179,7 @@ export default function ArtistSelector({
                           {item.identifiers.length > 0 && (
                             <span className="flex items-center gap-1">
                               <LinkIcon className="w-3 h-3" />
-                              {item.identifiers.map(i => i.type).join(', ')}
+                              {item.identifiers.map((i: any) => i.type).join(', ')}
                             </span>
                           )}
                           
@@ -258,7 +255,7 @@ export default function ArtistSelector({
       {/* Create New Form */}
       {showCreateForm && (
         <ContributorForm
-          contributor={null}
+          contributor={undefined}
           onSave={handleCreateNew}
           onCancel={() => setShowCreateForm(false)}
           isArtist={type === 'artist'}

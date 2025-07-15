@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import { 
-  Music, FileText, Settings, Send, ArrowRight, ArrowLeft, 
-  CheckCircle, AlertCircle, Info, Users, Globe, Megaphone,
+  Music, FileText, Send, ArrowRight, ArrowLeft, 
+  CheckCircle, Info, Users, Globe, Megaphone,
   Upload, Calendar, Shield, UserCheck, Image
 } from 'lucide-react'
 import FormCard from '@/components/ui/FormCard'
@@ -14,7 +13,6 @@ import { cn } from '@/utils/cn'
 
 export default function ModernReleaseSubmission() {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const navigate = useNavigate()
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   const [currentStep, setCurrentStep] = useState('basic')
@@ -23,7 +21,7 @@ export default function ModernReleaseSubmission() {
     artistName: '',
     albumTitle: '',
     albumType: 'SINGLE',
-    genre: [],
+    genre: [] as string[],
     releaseDate: '',
     
     // Content
@@ -49,7 +47,7 @@ export default function ModernReleaseSubmission() {
     {
       id: 'basic',
       title: t('기본 정보', 'Basic Info'),
-      description: t('아티스트 및 앨범 정보', 'Artist & Album Details'),
+      description: t('아티스트 및 앨범 정보', 'Artist and Album Information'),
       icon: <Music />,
       sections: [
         { name: t('아티스트 정보', 'Artist Info'), icon: <Users />, fields: ['artistName', 'genre'] },
@@ -70,11 +68,11 @@ export default function ModernReleaseSubmission() {
     {
       id: 'distribution',
       title: t('배포 & 마케팅', 'Distribution & Marketing'),
-      description: t('배포 설정 및 마케팅', 'Distribution & Marketing Setup'),
+      description: t('배포 설정 및 마케팅', 'Distribution Settings & Marketing'),
       icon: <Globe />,
       sections: [
-        { name: t('배포 설정', 'Distribution'), icon: <Globe />, fields: ['territories', 'distributors'] },
-        { name: t('마케팅 정보', 'Marketing'), icon: <Megaphone />, fields: ['marketingInfo'] },
+        { name: t('배포 설정', 'Distribution Settings'), icon: <Globe />, fields: ['territories', 'distributors'] },
+        { name: t('마케팅 정보', 'Marketing Info'), icon: <Megaphone />, fields: ['marketingInfo'] },
         { name: t('릴리즈 설정', 'Release Settings'), icon: <Calendar />, fields: ['releaseSettings'] }
       ]
     },
@@ -84,13 +82,12 @@ export default function ModernReleaseSubmission() {
       description: t('최종 검토 및 제출', 'Final Review & Submission'),
       icon: <Send />,
       sections: [
-        { name: t('권리 정보', 'Rights & Legal'), icon: <Shield />, fields: ['copyrightHolder', 'copyrightYear'] },
+        { name: t('권리 정보', 'Rights Info'), icon: <Shield />, fields: ['copyrightHolder', 'copyrightYear'] },
         { name: t('최종 검토', 'Final Review'), icon: <CheckCircle />, fields: ['agreement', 'finalNotes'] }
       ]
     }
   ]
 
-  const currentStepData = steps.find(step => step.id === currentStep)
   const currentStepIndex = steps.findIndex(step => step.id === currentStep)
   const isFirstStep = currentStepIndex === 0
   const isLastStep = currentStepIndex === steps.length - 1
@@ -116,7 +113,7 @@ export default function ModernReleaseSubmission() {
       {/* Artist Section */}
       <FormCard 
         title={t('아티스트 정보', 'Artist Information')}
-        description={t('아티스트의 기본 정보를 입력해주세요', 'Enter basic artist information')}
+        description={t('아티스트의 기본 정보를 입력해주세요', 'Please enter basic artist information')}
         icon={<Users />}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -156,7 +153,7 @@ export default function ModernReleaseSubmission() {
       {/* Album Section */}
       <FormCard 
         title={t('앨범 정보', 'Album Information')}
-        description={t('앨범의 기본 정보를 입력해주세요', 'Enter basic album information')}
+        description={t('앨범의 기본 정보를 입력해주세요', 'Please enter basic album information')}
         icon={<FileText />}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -214,7 +211,7 @@ export default function ModernReleaseSubmission() {
     <div className="space-y-6">
       <FormCard 
         title={t('트랙 정보', 'Track Information')}
-        description={t('앨범에 포함될 트랙들을 추가해주세요', 'Add tracks to be included in the album')}
+        description={t('앨범에 포함될 트랙들을 추가해주세요', 'Please add tracks to include in the album')}
         icon={<Music />}
       >
         <div className="text-center py-12">
@@ -230,7 +227,7 @@ export default function ModernReleaseSubmission() {
 
       <FormCard 
         title={t('파일 업로드', 'File Upload')}
-        description={t('앨범 커버와 오디오 파일을 업로드해주세요', 'Upload album cover and audio files')}
+        description={t('앨범 커버와 오디오 파일을 업로드해주세요', 'Please upload album cover and audio files')}
         icon={<Upload />}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -241,7 +238,7 @@ export default function ModernReleaseSubmission() {
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:border-blue-400 transition-colors">
               <Image className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 dark:text-gray-400 mb-2">
-                {t('이미지를 드래그하거나 클릭하여 업로드', 'Drag & drop or click to upload image')}
+                {t('이미지를 드래그하거나 클릭하여 업로드', 'Drag or click to upload image')}
               </p>
               <p className="text-xs text-gray-400">
                 {t('최소 3000x3000px, JPG/PNG', 'Min 3000x3000px, JPG/PNG')}
@@ -256,7 +253,7 @@ export default function ModernReleaseSubmission() {
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 text-center hover:border-blue-400 transition-colors">
               <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500 dark:text-gray-400 mb-2">
-                {t('오디오 파일을 드래그하거나 클릭하여 업로드', 'Drag & drop or click to upload audio')}
+                {t('오디오 파일을 드래그하거나 클릭하여 업로드', 'Drag or click to upload audio files')}
               </p>
               <p className="text-xs text-gray-400">
                 {t('WAV, FLAC 권장 (최소 16bit/44.1kHz)', 'WAV, FLAC recommended (min 16bit/44.1kHz)')}
@@ -272,20 +269,20 @@ export default function ModernReleaseSubmission() {
     <div className="space-y-6">
       <FormCard 
         title={t('배포 설정', 'Distribution Settings')}
-        description={t('음원을 배포할 플랫폼과 지역을 선택해주세요', 'Select platforms and regions for distribution')}
+        description={t('음원을 배포할 플랫폼과 지역을 선택해주세요', 'Please select platforms and regions to distribute your music')}
         icon={<Globe />}
       >
         <div className="text-center py-12">
           <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <p className="text-gray-500 dark:text-gray-400">
-            {t('배포 설정을 구성해주세요', 'Configure distribution settings')}
+            {t('배포 설정을 구성해주세요', 'Please configure distribution settings')}
           </p>
         </div>
       </FormCard>
 
       <FormCard 
         title={t('마케팅 정보', 'Marketing Information')}
-        description={t('음원의 마케팅에 도움이 될 정보를 입력해주세요', 'Enter information to help with music marketing')}
+        description={t('음원의 마케팅에 도움이 될 정보를 입력해주세요', 'Please enter information that will help with marketing your music')}
         icon={<Megaphone />}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -324,17 +321,17 @@ export default function ModernReleaseSubmission() {
           </div>
           
           <ModernInput
-            label={t('비공개 청취 링크', 'Private Listening Link')}
+            label={t('비공개 청취 링크', 'Private Listen Link')}
             type="url"
             placeholder="https://example.com/private-link"
             hint={t('미리 들어볼 수 있는 비공개 링크', 'Private link for preview listening')}
           />
           
           <ModernInput
-            label={t('팩트시트 URL', 'Fact Sheet URL')}
+            label={t('팩트시트 URL', 'Factsheet URL')}
             type="url"
             placeholder="https://example.com/factsheet.pdf"
-            hint={t('아티스트/앨범 정보 문서', 'Artist/album information document')}
+            hint={t('아티스트/앨범 정보 문서', 'Artist/Album information document')}
           />
         </div>
       </FormCard>
@@ -345,13 +342,13 @@ export default function ModernReleaseSubmission() {
     <div className="space-y-6">
       <FormCard 
         title={t('권리 및 법적 정보', 'Rights & Legal Information')}
-        description={t('저작권 및 법적 정보를 입력해주세요', 'Enter copyright and legal information')}
+        description={t('저작권 및 법적 정보를 입력해주세요', 'Please enter copyright and legal information')}
         icon={<Shield />}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <ModernInput
             label={t('저작권자', 'Copyright Holder')}
-            placeholder={t('예: (주)하이브', 'e.g., HYBE Corporation')}
+            placeholder={t('예: (주)하이브', 'e.g., HYBE Corp.')}
             value={formData.copyrightHolder}
             onChange={(e) => setFormData({...formData, copyrightHolder: e.target.value})}
             required
@@ -370,7 +367,7 @@ export default function ModernReleaseSubmission() {
 
       <FormCard 
         title={t('최종 검토', 'Final Review')}
-        description={t('제출하기 전에 모든 정보를 다시 한 번 확인해주세요', 'Please review all information before submitting')}
+        description={t('제출하기 전에 모든 정보를 다시 한 번 확인해주세요', 'Please review all information one more time before submitting')}
         icon={<CheckCircle />}
       >
         <div className="space-y-6">
@@ -384,7 +381,7 @@ export default function ModernReleaseSubmission() {
                 <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-300">
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4" />
-                    {t('모든 필수 정보가 정확히 입력되었습니다', 'All required information is accurately entered')}
+                    {t('모든 필수 정보가 정확히 입력되었습니다', 'All required information has been entered correctly')}
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4" />
@@ -392,7 +389,7 @@ export default function ModernReleaseSubmission() {
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle className="w-4 h-4" />
-                    {t('저작권 정보가 올바르게 기재되었습니다', 'Copyright information is correctly stated')}
+                    {t('저작권 정보가 올바르게 기재되었습니다', 'Copyright information has been correctly entered')}
                   </li>
                 </ul>
               </div>

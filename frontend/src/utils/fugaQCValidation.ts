@@ -19,7 +19,7 @@ export interface QCValidationResults {
 // Common patterns and constants
 const DOUBLE_SPACE_REGEX = /  +/g
 const LEADING_TRAILING_SPACE_REGEX = /^\s+|\s+$/g
-const SPECIAL_CHARS_REGEX = /[^\p{L}\p{N}\s\-.,!?&()'+/]/gu
+// const SPECIAL_CHARS_REGEX = /[^\p{L}\p{N}\s\-.,!?&()'+/]/gu // Reserved for future use
 const PROMOTIONAL_TERMS_REGEX = /\b(NEW|HOT|EXCLUSIVE|FRESH|LATEST|BEST|TOP|SALE|FREE|DOWNLOAD|CLICK|STREAM NOW|OUT NOW|AVAILABLE NOW|LIMITED EDITION|SPECIAL EDITION|DELUXE|BONUS|PRE-ORDER|DIGITAL DOWNLOAD|STREAMING|MUST HAVE|HIT|CHART)\b/i
 const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu
 const ISRC_REGEX = /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/
@@ -30,7 +30,7 @@ const VERSION_KEYWORDS = ['Remix', 'Acoustic', 'Live', 'Instrumental', 'Demo', '
 const GENERIC_ARTIST_NAMES = ['Various Artists', 'Various', 'Unknown Artist', 'Unknown', 'Artist', 'TBD', 'TBA', 'N/A', 'None', 'Untitled']
 const MISLEADING_ARTIST_TERMS = ['feat.', 'featuring', 'with', 'vs', 'versus', 'presents', 'pres.', '&', 'and']
 const FORBIDDEN_VERSION_TERMS = ['Original', 'Original Mix', 'Original Version', 'Studio Version', 'Album Version']
-const LANGUAGE_SPECIFIC_ARTICLES = {
+const LANGUAGE_SPECIFIC_ARTICLES: Record<string, string[]> = {
   french: ['le', 'la', 'les', 'un', 'une', 'des', 'du', 'de'],
   italian: ['il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'uno', 'una', 'del', 'dello', 'della', 'dei', 'degli', 'delle'],
   spanish: ['el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'del', 'al'],
@@ -348,7 +348,7 @@ export function validateVersionNaming(title: string, version: string): QCValidat
     // Version format validation
     if (version !== 'original') {
       // Check proper capitalization for common versions
-      const properVersions = {
+      const properVersions: Record<string, string> = {
         'remix': 'Remix',
         'acoustic': 'Acoustic',
         'live': 'Live',
@@ -585,12 +585,13 @@ export function validateGermanOrthography(text: string): QCValidationResult[] {
   if (!text) return results
 
   // Check for incorrect German character replacements
-  const incorrectReplacements = [
-    { incorrect: 'ae', correct: 'ä', pattern: /\b\w*ae\w*\b/gi },
-    { incorrect: 'oe', correct: 'ö', pattern: /\b\w*oe\w*\b/gi },
-    { incorrect: 'ue', correct: 'ü', pattern: /\b\w*ue\w*\b/gi },
-    { incorrect: 'ss', correct: 'ß', pattern: /\b\w*ss\w*\b/gi }
-  ]
+  // Note: These replacements are context-dependent and should be manually verified
+  // const incorrectReplacements = [
+  //   { incorrect: 'ae', correct: 'ä', pattern: /\b\w*ae\w*\b/gi },
+  //   { incorrect: 'oe', correct: 'ö', pattern: /\b\w*oe\w*\b/gi },
+  //   { incorrect: 'ue', correct: 'ü', pattern: /\b\w*ue\w*\b/gi },
+  //   { incorrect: 'ss', correct: 'ß', pattern: /\b\w*ss\w*\b/gi }
+  // ]
 
   // Common German words that should use proper characters
   const germanWords = {

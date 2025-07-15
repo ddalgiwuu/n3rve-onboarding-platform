@@ -1,24 +1,13 @@
-import { useState, useEffect, useMemo } from 'react'
-import { ChevronDown, ChevronUp, Globe, X, Search, Filter } from 'lucide-react'
+import { useState, useMemo } from 'react'
+import { ChevronDown, ChevronUp, Globe, Search, Filter } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
-import { TERRITORY_DATA, Country, Continent } from '@/data/territory-data'
+import { TERRITORY_DATA, Continent } from '@/data/territory-data'
 
 export interface TerritorySelection {
   selectionType: 'WORLDWIDE' | 'SPECIFIC' | 'WORLDWIDE_EXCEPT'
   selectedCountries: string[]
   excludedCountries: string[]
-}
-
-interface TerritorySelectionWithDSP extends TerritorySelection {
-  dspTerritories: DSPTerritory[]
-}
-
-interface DSPTerritory {
-  dspId: string
-  dspName: string
-  selectionType: 'WORLDWIDE' | 'SPECIFIC' | 'WORLDWIDE_EXCEPT'
-  countries: string[]
 }
 
 interface TerritorySelectorProps {
@@ -185,7 +174,7 @@ export default function TerritorySelector({
           className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800"
         >
           <Filter className="w-4 h-4" />
-          {t('고급 설정', 'Advanced')}
+          {t('고급 설정', 'Advanced Settings')}
         </button>
       </div>
 
@@ -209,7 +198,7 @@ export default function TerritorySelector({
                 <span className="font-medium">{t('전세계', 'Worldwide')}</span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {t('모든 국가에 배포 (일부 제외 가능)', 'Distribute to all countries (with optional exclusions)')}
+                {t('모든 국가에 배포 (일부 제외 가능)', 'Distribute to all countries (with exclusions allowed)')}
               </p>
             </div>
           </label>
@@ -225,7 +214,7 @@ export default function TerritorySelector({
             <div>
               <div className="font-medium">{t('특정 국가만', 'Specific Countries Only')}</div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {t('선택한 국가들에만 배포', 'Distribute only to selected countries')}
+                {t('선택한 국가들에만 배포', 'Distribute to selected countries only')}
               </p>
             </div>
           </label>
@@ -239,9 +228,9 @@ export default function TerritorySelector({
               className="text-purple-600 focus:ring-purple-500"
             />
             <div>
-              <div className="font-medium">{t('전세계 (일부 제외)', 'Worldwide Except')}</div>
+              <div className="font-medium">{t('전세계 (일부 제외)', 'Worldwide (Excluding Some)')}</div>
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {t('선택한 국가들을 제외하고 전세계 배포', 'Distribute worldwide except selected countries')}
+                {t('선택한 국가들을 제외하고 전세계 배포', 'Distribute worldwide excluding selected countries')}
               </p>
             </div>
           </label>
@@ -254,7 +243,7 @@ export default function TerritorySelector({
           <div className="flex items-center justify-between">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {value.selectionType === 'SPECIFIC' 
-                ? t('선택할 국가', 'Countries to Include')
+                ? t('선택할 국가', 'Countries to Select')
                 : t('제외할 국가', 'Countries to Exclude')
               }
             </label>
@@ -363,7 +352,7 @@ export default function TerritorySelector({
         <div className="space-y-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
           <div className="flex items-center justify-between">
             <h4 className="text-md font-medium text-gray-900 dark:text-white">
-              {t('DSP별 지역 설정', 'Per-DSP Territory Settings')}
+              {t('DSP별 지역 설정', 'DSP Territory Settings')}
             </h4>
             <span className="text-xs text-gray-500 dark:text-gray-400">
               {t('선택사항', 'Optional')}
@@ -402,7 +391,7 @@ export default function TerritorySelector({
                     </p>
                     {/* This would contain a nested TerritorySelector for the specific DSP */}
                     <div className="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {t('DSP별 설정 기능 준비 중...', 'Per-DSP settings coming soon...')}
+                      {t('DSP별 설정 기능 준비 중...', 'DSP-specific settings coming soon...')}
                     </div>
                   </div>
                 )}

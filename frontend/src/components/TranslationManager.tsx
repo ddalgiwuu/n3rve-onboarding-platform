@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react'
 import { Plus, X, Edit2, Globe, Search, Check } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
-import { SUPPORTED_LANGUAGES, getLanguageByCode, getLanguageDisplay, getCommonLanguages } from '@/data/languages'
+import { SUPPORTED_LANGUAGES, getLanguageByCode, getCommonLanguages } from '@/data/languages'
 
 export interface Translation {
   id: string
@@ -247,8 +247,8 @@ export default function TranslationManager({
             {availableLanguages.length === 0 && (
               <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
                 {searchQuery 
-                  ? t('검색 결과가 없습니다', 'No languages found')
-                  : t('추가할 수 있는 언어가 없습니다', 'No more languages available')
+                  ? t('검색 결과가 없습니다', 'No search results')
+                  : t('추가할 수 있는 언어가 없습니다', 'No available languages')
                 }
               </p>
             )}
@@ -302,7 +302,7 @@ export default function TranslationManager({
         <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
           <Globe className="w-8 h-8 text-gray-400 mx-auto mb-3" />
           <p className="text-gray-500 dark:text-gray-400 mb-4">
-            {t('아직 번역이 추가되지 않았습니다', 'No translations added yet')}
+            {t('아직 번역이 추가되지 않았습니다', 'No translations have been added yet')}
           </p>
           {canAddMore && (
             <button

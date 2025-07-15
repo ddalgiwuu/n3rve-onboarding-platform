@@ -17,9 +17,9 @@ export default function ReleaseSubmissionTest() {
   
   // Simple steps configuration to test
   const steps = [
-    { id: 0, label: t('아티스트 정보', 'Artist Info'), icon: Users },
-    { id: 1, label: t('앨범 기본 정보', 'Album Basic Info'), icon: FileText },
-    { id: 2, label: t('트랙 정보', 'Track Info'), icon: Music },
+    { id: 0, label: t('아티스트 정보', 'Artist Information'), icon: Users },
+    { id: 1, label: t('앨범 기본 정보', 'Album Basic Information'), icon: FileText },
+    { id: 2, label: t('트랙 정보', 'Track Information'), icon: Music },
   ]
 
   return (

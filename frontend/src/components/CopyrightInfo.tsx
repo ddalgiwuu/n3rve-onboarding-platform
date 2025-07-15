@@ -45,7 +45,7 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
             <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">℗</div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-2">
-                <h4 className="font-medium">{t('음반 제작권 (P-line)', 'Sound Recording Copyright (P-line)')}</h4>
+                <h4 className="font-medium">{t('음반 제작권 (P-line)', 'Recording Rights (P-line)')}</h4>
                 <button
                   onMouseEnter={() => setShowTooltip('production')}
                   onMouseLeave={() => setShowTooltip(null)}
@@ -57,7 +57,7 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
                       <div className="text-sm space-y-2">
                         <p className="font-medium flex items-center gap-2">
                           <Music className="w-4 h-4" />
-                          {t('음반 제작권이란?', 'What is P-line?')}
+                          {t('음반 제작권이란?', 'What is Recording Rights?')}
                         </p>
                         <p className="text-gray-300">
                           {t(
@@ -90,7 +90,7 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
                     value={copyrightData.productionHolder}
                     onChange={(e) => handleChange('productionHolder', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
-                    placeholder={t('예: N3RVE Records', 'e.g., N3RVE Records')}
+                    placeholder={t('예: N3RVE Records', 'e.g. N3RVE Records')}
                     required
                   />
                   <p className="text-xs text-gray-500 mt-1">
@@ -114,7 +114,7 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {t('음반이 처음 제작된 연도', 'Year when the recording was first produced')}
+                    {t('음반이 처음 제작된 연도', 'Year the recording was first produced')}
                   </p>
                 </div>
               </div>
@@ -140,7 +140,7 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
                       <div className="text-sm space-y-2">
                         <p className="font-medium flex items-center gap-2">
                           <Disc className="w-4 h-4" />
-                          {t('저작권이란?', 'What is C-line?')}
+                          {t('저작권이란?', 'What is Copyright?')}
                         </p>
                         <p className="text-gray-300">
                           {t(
@@ -153,7 +153,7 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
                           <ul className="text-xs space-y-1 text-gray-400">
                             <li>• © 2025 {t('작곡가명', 'Composer Name')}</li>
                             <li>• © 2025 Universal Music Publishing</li>
-                            <li>• © 2025 {t('아티스트명 (자작곡)', 'Artist Name (Self-composed)')}</li>
+                            <li>• © 2025 {t('아티스트명 (자작곡)', 'Artist Name (Original Composition)')}</li>
                           </ul>
                         </div>
                       </div>
@@ -173,11 +173,11 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
                     value={copyrightData.copyrightHolder}
                     onChange={(e) => handleChange('copyrightHolder', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
-                    placeholder={t('예: 아티스트명 또는 출판사', 'e.g., Artist Name or Publisher')}
+                    placeholder={t('예: 아티스트명 또는 출판사', 'e.g. Artist Name or Publisher')}
                     required
                   />
                   <p className="text-xs text-gray-500 mt-1">
-                    {t('작곡/작사 권리를 소유한 개인 또는 회사', 'Individual or company who owns composition rights')}
+                    {t('작곡/작사 권리를 소유한 개인 또는 회사', 'Individual or company who owns composition/lyrics rights')}
                   </p>
                 </div>
                 <div>
@@ -197,7 +197,7 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
                     />
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    {t('작품이 처음 만들어진 연도', 'Year when the work was first created')}
+                    {t('작품이 처음 만들어진 연도', 'Year the work was first created')}
                   </p>
                 </div>
               </div>
@@ -214,7 +214,7 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs text-gray-600 dark:text-gray-400">
             <div>
               <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('자체 제작 아티스트', 'Independent Artist')}
+                {t('자체 제작 아티스트', 'Self-producing Artist')}
               </p>
               <ul className="space-y-1">
                 <li>℗ 2025 {t('아티스트명', 'Artist Name')}</li>
@@ -223,11 +223,11 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
             </div>
             <div>
               <p className="font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('레이블 소속 아티스트', 'Label Artist')}
+                {t('레이블 소속 아티스트', 'Label-signed Artist')}
               </p>
               <ul className="space-y-1">
                 <li>℗ 2025 {t('레이블명', 'Label Name')}</li>
-                <li>© 2025 {t('아티스트명 또는 출판사', 'Artist or Publisher')}</li>
+                <li>© 2025 {t('아티스트명 또는 출판사', 'Artist Name or Publisher')}</li>
               </ul>
             </div>
           </div>
