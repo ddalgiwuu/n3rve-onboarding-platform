@@ -2,8 +2,6 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { Suspense, lazy, useEffect } from 'react'
 import { useAuthStore } from './store/auth.store'
 import { useLanguageStore } from './store/language.store'
-import { authStore } from './store/auth.vanilla'
-import { languageStore } from './store/language.vanilla'
 import Layout from './components/layout/Layout'
 import LoadingSpinner from './components/common/LoadingSpinner'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -33,13 +31,30 @@ const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
 const ReleaseFormV2 = lazy(() => import('./components/ReleaseFormV2'))
 
 function App() {
-  // Use vanilla store hooks that don't rely on useSyncExternalStore
-  const { _hasHydrated: hasAuthHydrated, isAuthenticated, user } = useAuthStore()
-  const { _hasHydrated: hasLanguageHydrated } = useLanguageStore()
-  const userRole = user?.role
+  const hasAuthHydrated = useAuthStore((state) => state._hasHydrated)
+  const hasLanguageHydrated = useLanguageStore((state) => state._hasHydrated)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const userRole = useAuthStore((state) => state.user?.role)
 
-  // Stores are already initialized from localStorage in vanilla store files
-  // No need for manual rehydration
+  // Manual rehydration on mount
+  useEffect(() => {
+    const rehydrateStores = async () => {
+      try {
+        await useAuthStore.persist.rehydrate()
+        useAuthStore.getState().setHasHydrated(true)
+        
+        await useLanguageStore.persist.rehydrate()
+        useLanguageStore.getState().setHasHydrated(true)
+      } catch (error) {
+        console.warn('Store rehydration failed:', error)
+        // Fallback: mark as hydrated anyway to prevent infinite loading
+        useAuthStore.getState().setHasHydrated(true)
+        useLanguageStore.getState().setHasHydrated(true)
+      }
+    }
+    
+    rehydrateStores()
+  }, [])
 
   // Wait for both stores to hydrate
   if (!hasAuthHydrated || !hasLanguageHydrated) {
