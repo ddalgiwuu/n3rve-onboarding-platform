@@ -131,7 +131,7 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
             >
               {timezones.map(tz => (
                 <option key={tz.value} value={tz.value}>
-                  {language === 'ko' ? tz.label : tz.labelEn}
+                  {tz.label}
                 </option>
               ))}
             </select>
@@ -162,7 +162,7 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
             <p className="text-xs text-gray-500 mt-2">
               {t(
                 `${consumerDate.date} ${consumerDate.time} ${timezones.find(tz => tz.value === consumerDate.timezone)?.label || consumerDate.timezone} = ${consumerUTC.toISOString().replace('T', ' ').split('.')[0]} UTC`,
-                `${consumerDate.date} ${consumerDate.time} ${timezones.find(tz => tz.value === consumerDate.timezone)?.labelEn || consumerDate.timezone} = ${consumerUTC.toISOString().replace('T', ' ').split('.')[0]} UTC`
+                `${consumerDate.date} ${consumerDate.time} ${timezones.find(tz => tz.value === consumerDate.timezone)?.label || consumerDate.timezone} = ${consumerUTC.toISOString().replace('T', ' ').split('.')[0]} UTC`
               )}
             </p>
           </div>
@@ -229,7 +229,7 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
               >
                 {timezones.map(tz => (
                   <option key={tz.value} value={tz.value}>
-                    {language === 'ko' ? tz.label : tz.labelEn}
+                    {tz.label}
                   </option>
                 ))}
               </select>
