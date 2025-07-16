@@ -84,17 +84,19 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
   return (
     <div className="space-y-6">
       {/* Consumer Release Date */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl p-6 border border-blue-200 dark:border-blue-800">
         <div className="flex items-start gap-3 mb-4">
-          <Calendar className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+            <Calendar className="w-5 h-5 text-white" />
+          </div>
           <div className="flex-1">
-            <h4 className="font-medium text-blue-900 dark:text-blue-100">
-              {t('컨수머 발매일', 'Consumer Release Date')} *
+            <h4 className="text-lg font-bold text-blue-900 dark:text-blue-100">
+              {t('컨수머 발매일', 'Consumer Release Date')} <span className="text-red-500">*</span>
             </h4>
             <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
               {t(
-                '음원이 스트리밍 플랫폼에 공개되는 날짜와 시간입니다. 실제로 리스너가 음원을 들을 수 있게 되는 시점입니다.',
-                'The date and time when your music becomes available on streaming platforms. This is when listeners can actually play your music.'
+                '음원이 스트리밍 플랫폼(스포티파이, 애플뮤직 등)에 공개되는 날짜와 시간입니다. 리스너가 실제로 음원을 들을 수 있게 되는 시점입니다.',
+                'The date and time when your music becomes available on streaming platforms (Spotify, Apple Music, etc.). This is when listeners can actually play your music.'
               )}
             </p>
           </div>
@@ -168,28 +170,30 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
       </div>
 
       {/* Original Release Date */}
-      <div className="bg-gray-50 dark:bg-gray-900/20 rounded-xl p-6">
+      <div className="bg-gradient-to-br from-gray-50 to-slate-50 dark:from-gray-900/20 dark:to-slate-900/20 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-start gap-3 mb-4">
-          <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5" />
+          <div className="w-10 h-10 bg-gradient-to-br from-gray-500 to-slate-600 rounded-lg flex items-center justify-center">
+            <Clock className="w-5 h-5 text-white" />
+          </div>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-medium text-gray-900 dark:text-gray-100">
-                {t('원곡 발매일', 'Original Release Date')}
+              <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+                {t('오리지널 발매일', 'Original Release Date')}
               </h4>
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className="flex items-center gap-2 cursor-pointer bg-purple-100 dark:bg-purple-900/30 px-3 py-1.5 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/40 transition-colors">
                 <input
                   type="checkbox"
                   checked={originalDate.isReRelease}
                   onChange={(e) => handleOriginalDateChange('isReRelease', e.target.checked)}
-                  className="rounded text-purple-500"
+                  className="rounded text-purple-600 focus:ring-purple-500"
                 />
-                <span className="text-sm">{t('재발매/리마스터', 'Re-release/Remaster')}</span>
+                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">{t('재발매/리마스터', 'Re-release/Remaster')}</span>
               </label>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {t(
-                '이 음원이 과거에 발매된 적이 있는 경우, 최초 발매된 날짜를 입력합니다. 신곡인 경우 컨수머 발매일과 동일하게 자동 설정됩니다.',
-                'If this music was previously released, enter the original release date. For new releases, this is automatically set to match the consumer release date.'
+                '음원이 최초로 발매된 날짜입니다. 재발매, 리마스터, 리믹스가 아닌 신곡의 경우 컨수머 발매일과 동일하게 자동 설정됩니다.',
+                'The date when the music was first released. For new releases (not re-releases, remasters, or remixes), this is automatically set to match the consumer release date.'
               )}
             </p>
           </div>
@@ -232,14 +236,41 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
             </div>
           </div>
         ) : (
-          <div className="p-4 bg-white dark:bg-gray-800 rounded-lg">
-            <p className="text-sm text-gray-500 flex items-center gap-2">
-              <Info className="w-4 h-4" />
-              {t(
-                '신곡이므로 원곡 발매일이 컨수머 발매일과 동일하게 설정됩니다.',
-                'As a new release, the original release date is set to match the consumer release date.'
-              )}
-            </p>
+          <div className="relative overflow-hidden">
+            {/* Auto-sync indicator */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-100/50 to-purple-100/50 dark:from-blue-900/20 dark:to-purple-900/20 animate-pulse" />
+            <div className="relative p-4 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg border-2 border-dashed border-blue-300 dark:border-blue-700">
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Info className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  <div className="absolute -top-1 -right-1 w-2 h-2 bg-blue-600 rounded-full animate-ping" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                    <span>{t('자동 동기화 활성화', 'Auto-sync Enabled')}</span>
+                    <span className="text-xs bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-full">
+                      {t('신곡', 'New Release')}
+                    </span>
+                  </p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    {t(
+                      '오리지널 발매일이 컨수머 발매일과 동일하게 자동으로 설정됩니다. 재발매나 리마스터인 경우 위의 체크박스를 선택하세요.',
+                      'Original release date is automatically synced with consumer release date. Check the box above if this is a re-release or remaster.'
+                    )}
+                  </p>
+                </div>
+              </div>
+              {/* Visual sync indicator */}
+              <div className="mt-3 flex items-center justify-center gap-2 text-xs text-gray-500">
+                <span className="font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                  {consumerDate.date || 'YYYY-MM-DD'} {consumerDate.time || 'HH:MM'}
+                </span>
+                <span>→</span>
+                <span className="font-mono bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">
+                  {t('오리지널 발매일', 'Original Date')}
+                </span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -260,16 +291,51 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
       </div>
 
       {/* Info Box */}
-      <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl p-4">
+      <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 rounded-xl p-5 border border-yellow-200 dark:border-yellow-800">
         <div className="flex items-start gap-3">
-          <Info className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5" />
+          <div className="w-8 h-8 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+            <Info className="w-4 h-4 text-white" />
+          </div>
           <div className="text-sm text-yellow-800 dark:text-yellow-200">
-            <p className="font-medium mb-2">{t('날짜 설정 안내', 'Date Setting Guide')}</p>
-            <ul className="space-y-1 text-yellow-700 dark:text-yellow-300">
-              <li>• {t('모든 시간은 UTC로 저장되며, 각 플랫폼에서 현지 시간으로 변환됩니다', 'All times are stored in UTC and converted to local time on each platform')}</li>
-              <li>• {t('금요일 오전 0시 발매가 일반적이나, 플랫폼별로 다를 수 있습니다', 'Friday midnight release is common, but may vary by platform')}</li>
-              <li>• {t('최소 2주 전에 발매일을 설정하는 것을 권장합니다', 'It is recommended to set the release date at least 2 weeks in advance')}</li>
-            </ul>
+            <p className="font-bold mb-3 text-base">{t('날짜 설정 가이드', 'Release Date Guide')}</p>
+            <div className="space-y-3">
+              <div className="flex items-start gap-2">
+                <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-blue-600 dark:text-blue-400">1</span>
+                </span>
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{t('컨수머 발매일', 'Consumer Release Date')}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                    {t('스트리밍 서비스에 음원이 공개되는 날짜 (필수)', 'Date when music becomes available on streaming services (Required)')}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-900/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <span className="text-xs font-bold text-gray-600 dark:text-gray-400">2</span>
+                </span>
+                <div>
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{t('오리지널 발매일', 'Original Release Date')}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                    {t('음원이 최초로 발매된 날짜 (신곡은 자동 동기화)', 'Date of first release (Auto-synced for new releases)')}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-yellow-300 dark:border-yellow-700 space-y-1">
+              <p className="text-xs text-yellow-700 dark:text-yellow-300 flex items-center gap-1">
+                <span className="w-1 h-1 bg-yellow-600 dark:bg-yellow-400 rounded-full" />
+                {t('모든 시간은 UTC로 저장되며, 각 플랫폼에서 현지 시간으로 변환됩니다', 'All times are stored in UTC and converted to local time on each platform')}
+              </p>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300 flex items-center gap-1">
+                <span className="w-1 h-1 bg-yellow-600 dark:bg-yellow-400 rounded-full" />
+                {t('금요일 오전 0시 발매가 일반적이나, 플랫폼별로 다를 수 있습니다', 'Friday midnight release is common, but may vary by platform')}
+              </p>
+              <p className="text-xs text-yellow-700 dark:text-yellow-300 flex items-center gap-1">
+                <span className="w-1 h-1 bg-yellow-600 dark:bg-yellow-400 rounded-full" />
+                {t('최소 2주 전에 발매일을 설정하는 것을 권장합니다', 'It is recommended to set the release date at least 2 weeks in advance')}
+              </p>
+            </div>
           </div>
         </div>
       </div>
