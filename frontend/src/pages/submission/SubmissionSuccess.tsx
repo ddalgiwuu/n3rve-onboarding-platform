@@ -72,7 +72,7 @@ export default function SubmissionSuccess() {
             {language === 'ko' ? '대시보드로 이동' : 'Go to Dashboard'}
           </button>
           <button
-            onClick={() => navigate('/onboarding')}
+            onClick={() => navigate('/release-submission-modern')}
             className="px-8 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
           >
             {language === 'ko' ? '새 음원 등록' : 'Register New Release'}
