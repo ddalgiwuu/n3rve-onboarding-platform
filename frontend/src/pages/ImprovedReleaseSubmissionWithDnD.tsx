@@ -609,6 +609,15 @@ const ImprovedReleaseSubmission: React.FC = () => {
       // Prepare submission data
       const submissionData = new FormData()
       
+      // UTC 변환 계산
+      const releaseUTC = formData.releaseDate && formData.releaseTime && formData.timezone
+        ? convertToUTC(formData.releaseDate, formData.releaseTime, formData.timezone)
+        : null
+
+      const originalReleaseUTC = formData.originalReleaseDate && formData.releaseTime && formData.timezone
+        ? convertToUTC(formData.originalReleaseDate, formData.releaseTime, formData.timezone)
+        : null
+
       // Add form data
       submissionData.append('releaseData', JSON.stringify({
         albumTitle: formData.albumTitle,
@@ -622,6 +631,11 @@ const ImprovedReleaseSubmission: React.FC = () => {
         language: formData.language,
         releaseDate: formData.releaseDate,
         originalReleaseDate: formData.originalReleaseDate,
+        releaseTime: formData.releaseTime,
+        timezone: formData.timezone,
+        // UTC 변환값 추가
+        releaseUTC: releaseUTC?.toISOString(),
+        originalReleaseUTC: originalReleaseUTC?.toISOString(),
         upc: formData.upc,
         ean: formData.ean,
         catalogNumber: formData.catalogNumber,
@@ -1226,48 +1240,119 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 />
               </div>
               
-              {/* Release Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('발매일', 'Release Date')} *
-                </label>
-                <DatePicker
-                  value={formData.releaseDate}
-                  onChange={(date) => setFormData(prev => ({ ...prev, releaseDate: date }))}
-                  minDate={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-              
-              {/* Release Time */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('발매 시간', 'Release Time')} *
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="time"
-                    value={formData.releaseTime}
-                    onChange={(e) => setFormData(prev => ({ ...prev, releaseTime: e.target.value }))}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  />
-                  <SearchableSelect
-                    options={timezones.map(tz => ({ 
-                      value: tz.value, 
-                      label: `${tz.label} (${tz.offset})` 
-                    }))}
-                    value={formData.timezone}
-                    onChange={(value) => setFormData(prev => ({ ...prev, timezone: value }))}
-                    placeholder={t('시간대 선택', 'Select timezone')}
-                    searchPlaceholder={t('시간대 검색...', 'Search timezones...')}
-                    className="min-w-[200px]"
-                  />
+              {/* Release Date and Time */}
+              <div className="md:col-span-2">
+                <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl p-6 border border-purple-200 dark:border-purple-700">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold text-sm">📅</span>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {t('발매일 및 시간 설정', 'Release Date & Time Settings')}
+                    </h3>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {/* Marketing Notice */}
+                    <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
+                            {t('마케팅 기회 안내', 'Marketing Opportunity Notice')}
+                          </p>
+                          <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
+                            {t(
+                              '발매일 최소 3-4주 전에 제출해야 마케팅 기회를 얻을 수 있습니다. Apple Music은 4주 전 제출 시 마케팅 기회가 주어지나 보장되지는 않습니다.',
+                              'Submit at least 3-4 weeks before release date for marketing opportunities. Apple Music provides marketing opportunities for submissions 4 weeks in advance, but it is not guaranteed.'
+                            )}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Release Date */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('발매일', 'Release Date')} <span className="text-red-500">*</span>
+                        </label>
+                        <DatePicker
+                          value={formData.releaseDate}
+                          onChange={(date) => setFormData(prev => ({ ...prev, releaseDate: date }))}
+                          minDate={new Date().toISOString().split('T')[0]}
+                        />
+                      </div>
+                      
+                      {/* Release Time */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('발매 시간', 'Release Time')} 
+                          <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
+                            ({t('선택사항', 'Optional')})
+                          </span>
+                        </label>
+                        <div className="space-y-2">
+                          <input
+                            type="time"
+                            value={formData.releaseTime}
+                            onChange={(e) => setFormData(prev => ({ ...prev, releaseTime: e.target.value }))}
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                          />
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {t('비워두면 자정(00:00)에 발매됩니다', 'Leave empty for midnight (00:00) release')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Timezone Selection */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('타임존 (시간대)', 'Timezone')} <span className="text-red-500">*</span>
+                      </label>
+                      <SearchableSelect
+                        options={timezones.map(tz => ({ 
+                          value: tz.value, 
+                          label: `${tz.label} (${tz.offset})` 
+                        }))}
+                        value={formData.timezone}
+                        onChange={(value) => setFormData(prev => ({ ...prev, timezone: value }))}
+                        placeholder={t('시간대 선택', 'Select timezone')}
+                        searchPlaceholder={t('시간대 검색...', 'Search timezones...')}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {t('선택한 시간대를 기준으로 발매 시간이 설정됩니다', 'Release time will be set based on selected timezone')}
+                      </p>
+                    </div>
+
+                    {/* UTC Conversion Display */}
+                    {formData.releaseDate && formData.releaseTime && formData.timezone && (
+                      <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                          <h4 className="text-sm font-medium text-purple-800 dark:text-purple-200">
+                            {t('UTC 변환 정보', 'UTC Conversion Info')}
+                          </h4>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm text-purple-700 dark:text-purple-300">
+                            <span className="font-medium">{t('설정한 시간', 'Your Time')}:</span> {formData.releaseDate} {formData.releaseTime} ({formData.timezone})
+                          </p>
+                          <p className="text-sm text-purple-700 dark:text-purple-300">
+                            <span className="font-medium">{t('UTC 변환', 'UTC Time')}:</span> {
+                              (() => {
+                                const utcDate = convertToUTC(formData.releaseDate, formData.releaseTime, formData.timezone);
+                                return `${utcDate.getUTCFullYear()}-${String(utcDate.getUTCMonth() + 1).padStart(2, '0')}-${String(utcDate.getUTCDate()).padStart(2, '0')} ${String(utcDate.getUTCHours()).padStart(2, '0')}:${String(utcDate.getUTCMinutes()).padStart(2, '0')} UTC`;
+                              })()
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
-                  {t('UTC 변환: ', 'UTC: ')}
-                  {formData.releaseDate && formData.releaseTime && formData.timezone
-                    ? convertToUTC(formData.releaseDate, formData.releaseTime, formData.timezone).toISOString()
-                    : '-'}
-                </p>
               </div>
               
               {/* Original/Consumer Release Date */}

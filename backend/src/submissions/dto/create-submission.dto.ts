@@ -147,13 +147,18 @@ export class CreateSubmissionDto {
     catalogNumber?: string;
     territories: string[];
     notes?: string;
-    originalReleaseDate: string;
-    consumerReleaseDate: string;
-    releaseTime?: string;
-    selectedTimezone?: string;
-    consumerReleaseTime?: string;
-    originalReleaseTime?: string;
-    timezone?: string;
+    // Release dates - consumerReleaseDate is primary, originalReleaseDate auto-filled
+    consumerReleaseDate: string; // Primary release date (when music becomes available)
+    originalReleaseDate: string; // Original release date (auto-filled from consumer, can be modified)
+    releaseTime?: string; // Optional release time
+    selectedTimezone?: string; // Timezone for release time
+    // UTC 변환 필드들 추가
+    releaseUTC?: Date; // UTC로 변환된 정확한 발매일시
+    originalReleaseUTC?: Date; // UTC로 변환된 원본 발매일시
+    consumerReleaseUTC?: Date; // UTC로 변환된 소비자 발매일시
+    consumerReleaseTime?: string; // Legacy field - can be removed
+    originalReleaseTime?: string; // Legacy field - can be removed  
+    timezone?: string; // Legacy field - can be removed
     isRerelease?: boolean;
     cRights: string;
     pRights: string;
