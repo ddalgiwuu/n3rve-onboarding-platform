@@ -8,7 +8,7 @@ import {
   GripVertical,
   HelpCircle, AlertTriangle, Star,
   ExternalLink,
-  ChevronUp, ChevronDown
+  ChevronUp, ChevronDown, User
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { submissionService } from '@/services/submission.service'
@@ -21,6 +21,8 @@ import { v4 as uuidv4 } from 'uuid'
 import RegionSelector from '@/components/RegionSelector'
 import MultiSelect from '@/components/ui/MultiSelect'
 import SearchableSelect from '@/components/ui/SearchableSelect'
+import ArtistManagementModal from '@/components/ArtistManagementModal'
+import ContributorManagementModal from '@/components/ContributorManagementModal'
 import { genreList, subgenreList } from '@/constants/genres'
 import { countries } from '@/constants/countries'
 import { timezones, convertToUTC } from '@/constants/timezones'
@@ -107,21 +109,34 @@ const RadioGroup: React.FC<{
 }
 
 // Types
+interface Artist {
+  id: string
+  name: string
+  role: 'main' | 'featured' | 'additional'
+  spotifyId?: string
+  appleId?: string
+}
+
+interface Contributor {
+  id: string
+  name: string
+  role: 'composer' | 'lyricist' | 'arranger' | 'producer' | 'engineer' | 'performer'
+  instrument?: string
+  description?: string
+}
+
 interface Track {
   id: string
   title: string
   titleTranslation?: string
-  artist: string
-  featuringArtists?: string[]
+  artists: Artist[]
+  contributors: Contributor[]
   isrc?: string
   duration?: string
   genre?: string
   subgenre?: string
   language?: string
   lyrics?: string
-  composer?: string
-  lyricist?: string
-  producer?: string
   explicit?: boolean
   remixVersion?: string
   titleLanguage?: 'Korean' | 'English' | 'Japanese' | 'Chinese' | 'Other'
@@ -133,9 +148,8 @@ interface FormData {
   // Album Info
   albumTitle: string
   albumTitleTranslation?: string
-  albumArtist: string
-  albumArtists?: string[]
-  featuringArtists?: string[]
+  albumArtist?: string // For backward compatibility
+  albumArtists: Artist[]
   releaseType: 'single' | 'album' | 'ep'
   primaryGenre: string
   primarySubgenre: string
@@ -245,7 +259,6 @@ const ImprovedReleaseSubmission: React.FC = () => {
     albumTitleTranslation: '',
     albumArtist: '',
     albumArtists: [],
-    featuringArtists: [],
     releaseType: 'single',
     primaryGenre: '',
     primarySubgenre: '',
@@ -269,6 +282,11 @@ const ImprovedReleaseSubmission: React.FC = () => {
     previouslyReleased: false,
     marketingInfo: {}
   })
+  
+  // Modal states
+  const [showAlbumArtistModal, setShowAlbumArtistModal] = useState(false)
+  const [showTrackArtistModal, setShowTrackArtistModal] = useState<string | null>(null)
+  const [showContributorModal, setShowContributorModal] = useState<string | null>(null)
 
   // Generate identifiers
   const handleGenerateUPC = () => {
@@ -339,13 +357,12 @@ const ImprovedReleaseSubmission: React.FC = () => {
 
   // Track management
   const addTrack = () => {
-    const allArtists = [formData.albumArtist, ...(formData.albumArtists || [])].filter(Boolean).join(', ')
     const newTrack: Track = {
       id: uuidv4(),
       title: '',
       titleTranslation: '',
-      artist: allArtists,
-      featuringArtists: [],
+      artists: [...formData.albumArtists], // Copy album artists as default
+      contributors: [],
       trackNumber: formData.tracks.length + 1,
       titleLanguage: 'Korean',
       dolbyAtmos: false
@@ -440,7 +457,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1: // Album Info
-        if (!formData.albumTitle || !formData.albumArtist) {
+        if (!formData.albumTitle || formData.albumArtists.length === 0) {
           toast.error(t('앨범 제목과 아티스트명을 입력해주세요', 'Please enter album title and artist name'))
           return false
         }
@@ -460,7 +477,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
           return false
         }
         for (const track of formData.tracks) {
-          if (!track.title || !track.artist) {
+          if (!track.title || track.artists.length === 0) {
             toast.error(t('모든 트랙의 제목과 아티스트를 입력해주세요', 'Please enter title and artist for all tracks'))
             return false
           }
@@ -519,8 +536,11 @@ const ImprovedReleaseSubmission: React.FC = () => {
       // Run QC validation
       const results = await validateSubmission({
         albumTitle: formData.albumTitle,
-        albumArtist: formData.albumArtist,
-        tracks: formData.tracks,
+        albumArtist: formData.albumArtist || formData.albumArtists.find(a => a.role === 'main')?.name || '',
+        tracks: formData.tracks.map(t => ({
+          ...t,
+          artist: t.artists.map(a => a.name).join(', ')
+        })),
         coverArt: formData.coverArt,
         audioFiles: formData.audioFiles,
         upc: formData.upc,
@@ -557,7 +577,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
       // Add form data
       submissionData.append('releaseData', JSON.stringify({
         albumTitle: formData.albumTitle,
-        albumArtist: formData.albumArtist,
+        albumArtist: formData.albumArtist || formData.albumArtists.find(a => a.role === 'main')?.name || '',
+        albumArtists: formData.albumArtists,
         releaseType: formData.releaseType,
         primaryGenre: formData.primaryGenre,
         primarySubgenre: formData.primarySubgenre,
@@ -663,34 +684,73 @@ const ImprovedReleaseSubmission: React.FC = () => {
               />
             </div>
             
-            {/* Track Artist */}
-            <div>
+            {/* Track Artists */}
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('트랙 아티스트', 'Track Artists')} *
               </label>
-              <input
-                type="text"
-                value={track.artist}
-                onChange={(e) => updateTrack(track.id, { artist: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                placeholder={t('콤마로 구분 (예: Artist1, Artist2)', 'Comma separated (e.g., Artist1, Artist2)')}
-              />
+              
+              {/* Artist List */}
+              {track.artists.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2">
+                  {track.artists.map((artist) => (
+                    <span
+                      key={artist.id}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-full text-sm"
+                    >
+                      {artist.name}
+                      {artist.role === 'featured' && <span className="text-xs">(Feat.)</span>}
+                    </span>
+                  ))}
+                </div>
+              )}
+              
+              <button
+                type="button"
+                onClick={() => setShowTrackArtistModal(track.id)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+              >
+                <Plus className="w-4 h-4 inline-block mr-1" />
+                {t('아티스트 관리', 'Manage Artists')}
+              </button>
             </div>
             
-            {/* Featuring Artists */}
-            <div>
+            {/* Contributors */}
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('피처링 아티스트', 'Featuring Artists')}
+                {t('기여자', 'Contributors')}
               </label>
-              <input
-                type="text"
-                value={track.featuringArtists?.join(', ') || ''}
-                onChange={(e) => updateTrack(track.id, { 
-                  featuringArtists: e.target.value.split(',').map(a => a.trim()).filter(Boolean) 
-                })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                placeholder={t('콤마로 구분 (예: Feat1, Feat2)', 'Comma separated (e.g., Feat1, Feat2)')}
-              />
+              
+              {/* Contributor List */}
+              {track.contributors.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2">
+                  {track.contributors.map((contributor) => (
+                    <span
+                      key={contributor.id}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-full text-sm"
+                    >
+                      {contributor.name}
+                      <span className="text-xs">
+                        ({contributor.role === 'composer' && t('작곡', 'Composer')}
+                        {contributor.role === 'lyricist' && t('작사', 'Lyricist')}
+                        {contributor.role === 'arranger' && t('편곡', 'Arranger')}
+                        {contributor.role === 'producer' && t('프로듀서', 'Producer')}
+                        {contributor.role === 'engineer' && t('엔지니어', 'Engineer')}
+                        {contributor.role === 'performer' && `${t('연주', 'Performer')} - ${contributor.instrument}`})
+                      </span>
+                    </span>
+                  ))}
+                </div>
+              )}
+              
+              <button
+                type="button"
+                onClick={() => setShowContributorModal(track.id)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+              >
+                <Plus className="w-4 h-4 inline-block mr-1" />
+                {t('기여자 관리', 'Manage Contributors')}
+              </button>
             </div>
             
             {/* ISRC */}
@@ -809,36 +869,62 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 />
               </div>
               
-              {/* Album Artist */}
-              <div>
+              {/* Album Artists */}
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('메인 아티스트', 'Main Artist')} *
+                  {t('앨범 아티스트', 'Album Artists')} *
                 </label>
-                <input
-                  type="text"
-                  value={formData.albumArtist}
-                  onChange={(e) => setFormData(prev => ({ ...prev, albumArtist: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  placeholder={t('메인 아티스트명', 'Main artist name')}
-                />
+                
+                {/* Artist List Display */}
+                {formData.albumArtists.length > 0 && (
+                  <div className="mb-3 space-y-2">
+                    {formData.albumArtists.map((artist) => (
+                      <div
+                        key={artist.id}
+                        className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 bg-purple-100 dark:bg-purple-900/20 rounded">
+                            {artist.role === 'main' ? (
+                              <User className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                            ) : artist.role === 'featured' ? (
+                              <Music className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                            ) : (
+                              <Users className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              {artist.name}
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {artist.role === 'main' && t('메인 아티스트', 'Main Artist')}
+                              {artist.role === 'featured' && t('피처링', 'Featured')}
+                              {artist.role === 'additional' && t('참여 아티스트', 'Additional Artist')}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                          {artist.spotifyId && <span className="flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Spotify</span>}
+                          {artist.appleId && <span className="flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Apple</span>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {/* Add Artist Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowAlbumArtistModal(true)}
+                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+                >
+                  <Plus className="w-5 h-5" />
+                  {t('아티스트 관리', 'Manage Artists')}
+                </button>
               </div>
               
               {/* Additional Artists */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('추가 아티스트', 'Additional Artists')}
-                </label>
-                <input
-                  type="text"
-                  value={formData.albumArtists?.join(', ') || ''}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    albumArtists: e.target.value.split(',').map(a => a.trim()).filter(Boolean)
-                  }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  placeholder={t('콤마로 구분 (예: Artist2, Artist3)', 'Comma separated (e.g., Artist2, Artist3)')}
-                />
-              </div>
               
               {/* Featuring Artists */}
               <div>
@@ -1529,7 +1615,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   </div>
                   <div>
                     <dt className="text-gray-600 dark:text-gray-400">{t('아티스트', 'Artist')}:</dt>
-                    <dd className="font-medium">{formData.albumArtist}</dd>
+                    <dd className="font-medium">{formData.albumArtists.map(a => a.name).join(', ') || formData.albumArtist}</dd>
                   </div>
                   <div>
                     <dt className="text-gray-600 dark:text-gray-400">{t('발매일', 'Release Date')}:</dt>
@@ -1550,7 +1636,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 <ol className="list-decimal list-inside space-y-1 text-sm">
                   {formData.tracks.map((track, index) => (
                     <li key={track.id}>
-                      {track.title} - {track.artist}
+                      {track.title} - {track.artists.map(a => a.name).join(', ')}
                       {track.dolbyAtmos && (
                         <span className="ml-2 text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded">
                           Dolby Atmos
@@ -1740,6 +1826,67 @@ const ImprovedReleaseSubmission: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Artist Management Modal */}
+      {showAlbumArtistModal && (
+        <ArtistManagementModal
+          isOpen={showAlbumArtistModal}
+          onClose={() => setShowAlbumArtistModal(false)}
+          artists={formData.albumArtists}
+          onSave={(artists) => {
+            setFormData(prev => ({ 
+              ...prev, 
+              albumArtists: artists,
+              // Update albumArtist for backward compatibility
+              albumArtist: artists.find(a => a.role === 'main')?.name || ''
+            }))
+            setShowAlbumArtistModal(false)
+          }}
+          albumLevel={true}
+        />
+      )}
+      
+      {/* Track Artist Management Modal */}
+      {showTrackArtistModal && (
+        <ArtistManagementModal
+          isOpen={!!showTrackArtistModal}
+          onClose={() => setShowTrackArtistModal(null)}
+          artists={formData.tracks.find(t => t.id === showTrackArtistModal)?.artists || []}
+          onSave={(artists) => {
+            setFormData(prev => ({
+              ...prev,
+              tracks: prev.tracks.map(t => 
+                t.id === showTrackArtistModal 
+                  ? { ...t, artists }
+                  : t
+              )
+            }))
+            setShowTrackArtistModal(null)
+          }}
+          albumLevel={false}
+        />
+      )}
+      
+      {/* Contributor Management Modal */}
+      {showContributorModal && (
+        <ContributorManagementModal
+          isOpen={!!showContributorModal}
+          onClose={() => setShowContributorModal(null)}
+          contributors={formData.tracks.find(t => t.id === showContributorModal)?.contributors || []}
+          onSave={(contributors) => {
+            setFormData(prev => ({
+              ...prev,
+              tracks: prev.tracks.map(t => 
+                t.id === showContributorModal 
+                  ? { ...t, contributors }
+                  : t
+              )
+            }))
+            setShowContributorModal(null)
+          }}
+          trackTitle={formData.tracks.find(t => t.id === showContributorModal)?.title}
+        />
+      )}
     </div>
   )
 }
