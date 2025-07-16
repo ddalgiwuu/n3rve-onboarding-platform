@@ -406,7 +406,7 @@ export default function ArtistManagementModal({
                 </div>
                 
                 {showAppleHelp && (
-                  <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-900 rounded-lg text-sm">
+                  <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-sm border border-gray-200 dark:border-gray-700">
                     <p className="font-medium text-gray-800 dark:text-gray-200 mb-2">
                       {t('Apple Music Artist ID 찾는 방법', 'How to find Apple Music Artist ID')}
                     </p>
