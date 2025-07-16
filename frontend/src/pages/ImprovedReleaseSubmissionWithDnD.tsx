@@ -610,8 +610,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
       const submissionData = new FormData()
       
       // UTC 변환 계산
-      const releaseUTC = formData.releaseDate && formData.releaseTime && formData.timezone
-        ? convertToUTC(formData.releaseDate, formData.releaseTime, formData.timezone)
+      const consumerReleaseUTC = formData.consumerReleaseDate && formData.releaseTime && formData.timezone
+        ? convertToUTC(formData.consumerReleaseDate, formData.releaseTime, formData.timezone)
         : null
 
       const originalReleaseUTC = formData.originalReleaseDate && formData.releaseTime && formData.timezone
@@ -629,12 +629,12 @@ const ImprovedReleaseSubmission: React.FC = () => {
         secondaryGenre: formData.secondaryGenre,
         secondarySubgenre: formData.secondarySubgenre,
         language: formData.language,
-        releaseDate: formData.releaseDate,
+        consumerReleaseDate: formData.consumerReleaseDate,
         originalReleaseDate: formData.originalReleaseDate,
         releaseTime: formData.releaseTime,
         timezone: formData.timezone,
         // UTC 변환값 추가
-        releaseUTC: releaseUTC?.toISOString(),
+        consumerReleaseUTC: consumerReleaseUTC?.toISOString(),
         originalReleaseUTC: originalReleaseUTC?.toISOString(),
         upc: formData.upc,
         ean: formData.ean,
@@ -1272,20 +1272,38 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {/* Release Date */}
+                      {/* Consumer Release Date */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('발매일', 'Release Date')} <span className="text-red-500">*</span>
+                          {t('컨슈머 발매일', 'Consumer Release Date')} <span className="text-red-500">*</span>
                         </label>
                         <DatePicker
-                          value={formData.releaseDate}
-                          onChange={(date) => setFormData(prev => ({ ...prev, releaseDate: date }))}
+                          value={formData.consumerReleaseDate || ''}
+                          onChange={(date) => setFormData(prev => ({ ...prev, consumerReleaseDate: date }))}
                           minDate={new Date().toISOString().split('T')[0]}
                         />
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {t('실제 발매될 날짜', 'Actual release date')}
+                        </p>
+                      </div>
+                      
+                      {/* Original Release Date */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('오리지널 발매일', 'Original Release Date')} <span className="text-red-500">*</span>
+                        </label>
+                        <DatePicker
+                          value={formData.originalReleaseDate || ''}
+                          onChange={(date) => setFormData(prev => ({ ...prev, originalReleaseDate: date }))}
+                          maxDate={new Date().toISOString().split('T')[0]}
+                        />
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          {t('최초 발매된 날짜', 'First release date')}
+                        </p>
                       </div>
                       
                       {/* Release Time */}
-                      <div>
+                      <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {t('발매 시간', 'Release Time')} 
                           <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
@@ -1328,7 +1346,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     </div>
 
                     {/* UTC Conversion Display */}
-                    {formData.releaseDate && formData.releaseTime && formData.timezone && (
+                    {formData.consumerReleaseDate && formData.releaseTime && formData.timezone && (
                       <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-700 rounded-lg p-4">
                         <div className="flex items-center gap-2 mb-2">
                           <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
@@ -1338,12 +1356,12 @@ const ImprovedReleaseSubmission: React.FC = () => {
                         </div>
                         <div className="space-y-1">
                           <p className="text-sm text-purple-700 dark:text-purple-300">
-                            <span className="font-medium">{t('설정한 시간', 'Your Time')}:</span> {formData.releaseDate} {formData.releaseTime} ({formData.timezone})
+                            <span className="font-medium">{t('컨슈머 발매시간', 'Consumer Release Time')}:</span> {formData.consumerReleaseDate} {formData.releaseTime} ({formData.timezone})
                           </p>
                           <p className="text-sm text-purple-700 dark:text-purple-300">
                             <span className="font-medium">{t('UTC 변환', 'UTC Time')}:</span> {
                               (() => {
-                                const utcDate = convertToUTC(formData.releaseDate, formData.releaseTime, formData.timezone);
+                                const utcDate = convertToUTC(formData.consumerReleaseDate, formData.releaseTime, formData.timezone);
                                 return `${utcDate.getUTCFullYear()}-${String(utcDate.getUTCMonth() + 1).padStart(2, '0')}-${String(utcDate.getUTCDate()).padStart(2, '0')} ${String(utcDate.getUTCHours()).padStart(2, '0')}:${String(utcDate.getUTCMinutes()).padStart(2, '0')} UTC`;
                               })()
                             }
@@ -1353,29 +1371,6 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     )}
                   </div>
                 </div>
-              </div>
-              
-              {/* Original/Consumer Release Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('오리지널 발매일', 'Original Release Date')}
-                </label>
-                <DatePicker
-                  value={formData.originalReleaseDate || ''}
-                  onChange={(date) => setFormData(prev => ({ ...prev, originalReleaseDate: date }))}
-                  maxDate={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('컨슈머 발매일', 'Consumer Release Date')}
-                </label>
-                <DatePicker
-                  value={formData.consumerReleaseDate || ''}
-                  onChange={(date) => setFormData(prev => ({ ...prev, consumerReleaseDate: date }))}
-                  maxDate={new Date().toISOString().split('T')[0]}
-                />
               </div>
               
               {/* UPC */}
