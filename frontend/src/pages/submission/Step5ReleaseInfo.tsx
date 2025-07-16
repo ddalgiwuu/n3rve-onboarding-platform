@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
-import { Calendar, Globe, Music, Shield, Clock, FileText, Info, ChevronDown, ChevronRight, AlertCircle, Tag, AlertTriangle, ExternalLink, Camera, Link, Headphones, Film } from 'lucide-react'
+import { Calendar, Globe, Music, Shield, Clock, FileText, Info, ChevronDown, ChevronRight, AlertCircle, Tag, AlertTriangle, ExternalLink, Camera, Link, Headphones, Film, Disc } from 'lucide-react'
 import { continents, allCountries, getExcludedCountriesForDSPs, getCountryByCode, dspExclusions } from '@/data/territories'
 import { validateField } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
@@ -17,8 +17,8 @@ const releaseSchema = (language: 'ko' | 'en') => z.object({
   distributors: z.array(z.string()).min(1, language === 'ko' ? '최소 1개의 유통사를 선택해주세요' : 'Please select at least one distributor'),
   
   // 발매일 정보
-  originalReleaseDate: z.string().min(1, language === 'ko' ? 'Original Release Date는 필수입니다' : 'Original Release Date is required'),
   consumerReleaseDate: z.string().min(1, language === 'ko' ? 'Consumer Release Date는 필수입니다' : 'Consumer Release Date is required'),
+  originalReleaseDate: z.string().min(1, language === 'ko' ? 'Original Release Date는 필수입니다' : 'Original Release Date is required'),
   releaseTime: z.string().optional(),
   selectedTimezone: z.string().optional(),
   
@@ -49,7 +49,8 @@ const releaseSchema = (language: 'ko' | 'en') => z.object({
   parentalAdvisory: z.enum(['none', 'explicit', 'clean']).default('none'),
   preOrderEnabled: z.boolean().default(false),
   preOrderDate: z.string().optional(),
-  releaseFormat: z.enum(['standard', 'deluxe', 'special', 'remastered', 'anniversary']).default('standard'),
+  releaseFormat: z.enum(['standard', 'deluxe', 'special', 'remastered', 'anniversary', 'remix', 'acoustic', 'live', 'instrumental']).default('standard'),
+  releaseVersion: z.string().optional(), // e.g., "Radio Edit", "Extended Mix", "Club Mix"
   isCompilation: z.boolean().default(false),
   previouslyReleased: z.boolean().default(false),
   previousReleaseDate: z.string().optional(),
@@ -125,21 +126,28 @@ const languages = [
   { code: 'other', name: '기타' }
 ]
 
-// Common timezones for music release
+// Common timezones for music release - organized by region
 const timezones = [
-  { value: 'Pacific/Auckland', label: 'New Zealand (UTC+12/+13)', offset: 12 },
-  { value: 'Australia/Sydney', label: 'Sydney (UTC+10/+11)', offset: 10 },
-  { value: 'Asia/Tokyo', label: 'Tokyo (UTC+9)', offset: 9 },
-  { value: 'Asia/Seoul', label: 'Seoul (UTC+9)', offset: 9 },
-  { value: 'Asia/Shanghai', label: 'Beijing/Shanghai (UTC+8)', offset: 8 },
-  { value: 'Asia/Singapore', label: 'Singapore (UTC+8)', offset: 8 },
-  { value: 'Asia/Dubai', label: 'Dubai (UTC+4)', offset: 4 },
-  { value: 'Europe/London', label: 'London (UTC+0/+1)', offset: 0 },
-  { value: 'Europe/Paris', label: 'Paris/Berlin (UTC+1/+2)', offset: 1 },
-  { value: 'America/New_York', label: 'New York (UTC-5/-4)', offset: -5 },
-  { value: 'America/Chicago', label: 'Chicago (UTC-6/-5)', offset: -6 },
-  { value: 'America/Los_Angeles', label: 'Los Angeles (UTC-8/-7)', offset: -8 },
-  { value: 'UTC', label: 'UTC (Universal Time)', offset: 0 }
+  // Most common/recommended
+  { value: 'Asia/Seoul', label: '🇰🇷 Seoul (UTC+9) - Recommended', offset: 9 },
+  { value: 'UTC', label: '🌍 UTC (Universal Time)', offset: 0 },
+  
+  // Asia-Pacific
+  { value: 'Pacific/Auckland', label: '🇳🇿 Auckland (UTC+12/+13)', offset: 12 },
+  { value: 'Australia/Sydney', label: '🇦🇺 Sydney (UTC+10/+11)', offset: 10 },
+  { value: 'Asia/Tokyo', label: '🇯🇵 Tokyo (UTC+9)', offset: 9 },
+  { value: 'Asia/Shanghai', label: '🇨🇳 Beijing/Shanghai (UTC+8)', offset: 8 },
+  { value: 'Asia/Singapore', label: '🇸🇬 Singapore (UTC+8)', offset: 8 },
+  { value: 'Asia/Dubai', label: '🇦🇪 Dubai (UTC+4)', offset: 4 },
+  
+  // Europe
+  { value: 'Europe/London', label: '🇬🇧 London (UTC+0/+1)', offset: 0 },
+  { value: 'Europe/Paris', label: '🇫🇷 Paris/Berlin (UTC+1/+2)', offset: 1 },
+  
+  // Americas
+  { value: 'America/New_York', label: '🇺🇸 New York (UTC-5/-4)', offset: -5 },
+  { value: 'America/Chicago', label: '🇺🇸 Chicago (UTC-6/-5)', offset: -6 },
+  { value: 'America/Los_Angeles', label: '🇺🇸 Los Angeles (UTC-8/-7)', offset: -8 }
 ]
 
 interface Props {
@@ -170,6 +178,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
       copyrightYear: new Date().getFullYear().toString(),
       territoryType: 'worldwide',
       previewStart: 0,
+      selectedTimezone: 'Asia/Seoul', // Default to Seoul timezone
       koreanDSP: {
         lyricsAttached: false,
         newArtist: false,
@@ -460,11 +469,25 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         <div id="release-date-section" className="bg-gray-50 dark:bg-gray-700 rounded-xl p-5 mb-4 transition-all">
           <div className="flex items-center gap-2 mb-3">
             <Calendar className="w-5 h-5 text-purple-600" />
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{language === 'ko' ? '발매일 및 시간 정보' : 'Release Date & Time'}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{language === 'ko' ? '발매일 및 시간 정보' : 'Release Date & Time Information'}</h3>
+          </div>
+          
+          <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3 mb-4 border border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-2">
+              <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div className="text-sm text-blue-800 dark:text-blue-200">
+                <p className="font-medium mb-1">
+                  {language === 'ko' ? '발매일 설정 순서' : 'Release Date Setup Order'}
+                </p>
+                <p>
+                  {language === 'ko' ? '1. Consumer Release Date 먼저 입력 → 2. Original Release Date 자동 설정 → 3. 필요시 Original Date 수정' : '1. Enter Consumer Release Date first → 2. Original Release Date auto-filled → 3. Modify Original Date if needed'}
+                </p>
+              </div>
+            </div>
           </div>
           
           {/* Date Fields */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Consumer Release Date <span className="text-red-500">*</span>
@@ -480,7 +503,9 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
               />
-              <p className="mt-1 text-xs text-gray-500">{language === 'ko' ? '실제 공개일' : 'Actual release date'}</p>
+              <p className="mt-1 text-xs text-gray-500">
+                {language === 'ko' ? '실제 공개일 (스트리밍 서비스에서 음악이 공개되는 날짜)' : 'Actual release date (When music becomes available on streaming services)'}
+              </p>
               {errors.consumerReleaseDate && (
                 <p className="text-xs text-red-500">{errors.consumerReleaseDate.message}</p>
               )}
@@ -499,7 +524,9 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
               />
-              <p className="mt-1 text-xs text-gray-500">{language === 'ko' ? '최초 발매일' : 'Original release date'}</p>
+              <p className="mt-1 text-xs text-gray-500">
+                {language === 'ko' ? '최초 발매일 (음악이 처음 발매된 날짜, 신곡이면 Consumer와 동일)' : 'Original release date (When music was first released, same as Consumer for new releases)'}
+              </p>
               {errors.originalReleaseDate && (
                 <p className="text-xs text-red-500">{errors.originalReleaseDate.message}</p>
               )}
@@ -508,63 +535,94 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
 
           {/* Time Settings */}
           <div className="border-t border-gray-200 dark:border-gray-600 pt-4">
-            <div className="mb-3">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('release.timezone', 'Timezone')}
-              </label>
-              <select
-                value={selectedTimezone}
-                onChange={(e) => setSelectedTimezone(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-              >
-                {timezones.map(tz => (
-                  <option key={tz.value} value={tz.value}>
-                    {tz.label}
-                  </option>
-                ))}
-              </select>
-              <p className="mt-1 text-xs text-gray-500">
-                {t('release.timezoneHelp', 'Choose the timezone for your release time')}
+            <div className="mb-4">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+                <Clock className="w-4 h-4 text-purple-600" />
+                {language === 'ko' ? '발매 시간 설정' : 'Release Time Settings'}
+              </h4>
+              <p className="text-xs text-gray-500 mb-3">
+                {language === 'ko' ? '선택사항: 특정 시간에 발매하려면 설정하세요. 비워두면 자정(00:00)에 발매됩니다.' : 'Optional: Set if you want to release at a specific time. Leave empty to release at midnight (00:00).'}
               </p>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('release.releaseTime', 'Release Time')}
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {language === 'ko' ? '타임존 선택' : 'Select Timezone'}
+                </label>
+                <select
+                  value={selectedTimezone}
+                  onChange={(e) => setSelectedTimezone(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                >
+                  {timezones.map(tz => (
+                    <option key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-gray-500">
+                  {language === 'ko' ? '발매 시간의 기준 타임존을 선택하세요. 한국 시간(KST)이 기본값입니다.' : 'Choose the timezone for your release time. Korea Time (KST) is the default.'}
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {language === 'ko' ? '발매 시간' : 'Release Time'}
+                  <span className="text-xs text-gray-500 ml-2">({language === 'ko' ? '선택사항' : 'Optional'})</span>
                 </label>
                 <input
                   {...register('releaseTime')}
                   type="time"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                  placeholder="00:00"
                 />
-                <p className="mt-0.5 text-[10px] text-gray-500">
-                  {t('release.timeInTimezone', `Time in ${timezones.find(tz => tz.value === selectedTimezone)?.label.split(' ')[0] || selectedTimezone}`)}
+                <p className="mt-1 text-xs text-gray-500">
+                  {language === 'ko' ? `${timezones.find(tz => tz.value === selectedTimezone)?.label.split(' ')[0] || selectedTimezone} 기준 시간 (비워두면 00:00 자정)` : `Time in ${timezones.find(tz => tz.value === selectedTimezone)?.label.split(' ')[0] || selectedTimezone} (leave empty for 00:00 midnight)`}
                 </p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('release.timezoneConversion', 'UTC Conversion')}
-                </label>
-                {releaseTime && consumerReleaseDate ? (
-                  <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded text-xs h-[38px] flex items-center">
-                    <p className="text-gray-700 dark:text-gray-300">{getUTCTimeDisplay()}</p>
-                  </div>
-                ) : (
-                  <div className="p-2 bg-gray-100 dark:bg-gray-600 rounded text-xs h-[38px] flex items-center">
-                    <p className="text-gray-400 dark:text-gray-500">{t('release.timezoneNote', 'Select time to see UTC conversion')}</p>
-                  </div>
-                )}
-              </div>
             </div>
+            
+            {/* UTC Conversion Display */}
+            {releaseTime && consumerReleaseDate && (
+              <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
+                <div className="flex items-center gap-2 mb-1">
+                  <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <h5 className="text-sm font-medium text-purple-900 dark:text-purple-100">
+                    {language === 'ko' ? 'UTC 변환' : 'UTC Conversion'}
+                  </h5>
+                </div>
+                <p className="text-sm text-purple-800 dark:text-purple-200">
+                  {language === 'ko' ? '전 세계 기준시(UTC)로 변환하면' : 'Converted to Universal Time (UTC)'}: <span className="font-bold">{getUTCTimeDisplay()}</span>
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* 발매일 안내 - 간단하게 */}
-        <div className="text-xs text-gray-600 dark:text-gray-400 mb-3 p-2 bg-blue-50 dark:bg-blue-900/10 rounded">
-          💡 {language === 'ko' 
-            ? '신곡: Consumer와 Original 동일 | 재발매: Original은 원곡일, Consumer는 재발매일'
-            : 'New release: Consumer & Original same | Re-release: Original is original date, Consumer is re-release date'}
+        {/* 발매일 안내 - 개선된 설명 */}
+        <div className="bg-blue-50 dark:bg-blue-900/10 rounded-xl p-4 mb-4 border border-blue-200 dark:border-blue-800">
+          <div className="flex items-start gap-2">
+            <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                {language === 'ko' ? '발매일 설정 안내' : 'Release Date Guide'}
+              </h4>
+              <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                <p>
+                  <span className="font-medium">Consumer Release Date:</span> {language === 'ko' ? '실제 음악이 공개되는 날짜' : 'When music becomes available to consumers'}
+                </p>
+                <p>
+                  <span className="font-medium">Original Release Date:</span> {language === 'ko' ? '음악이 처음 발매된 날짜' : 'When music was first released'}
+                </p>
+                <div className="mt-2 text-xs bg-blue-100 dark:bg-blue-800/30 rounded p-2">
+                  <p className="font-medium mb-1">{language === 'ko' ? '자동 설정:' : 'Auto-fill:'}</p>
+                  <p>• {language === 'ko' ? 'Consumer 날짜 입력 시 Original도 자동으로 같은 날짜로 설정됩니다' : 'When you enter Consumer date, Original is automatically set to the same date'}</p>
+                  <p>• {language === 'ko' ? 'Original 날짜는 필요시 별도로 수정 가능합니다' : 'Original date can be modified separately if needed'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Timed Release Information Warning */}
@@ -1064,16 +1122,64 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('릴리즈 포맷', 'Release Format')}
               </label>
-              <select
-                {...register('releaseFormat')}
-                className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              >
-                <option value="standard">{t('스탠다드', 'Standard')}</option>
-                <option value="deluxe">{t('디럭스', 'Deluxe')}</option>
-                <option value="special">{t('스페셜', 'Special')}</option>
-                <option value="remastered">{t('리마스터드', 'Remastered')}</option>
-                <option value="anniversary">{t('기념판', 'Anniversary')}</option>
-              </select>
+              <div className="relative">
+                <select
+                  {...register('releaseFormat')}
+                  className="w-full px-4 py-3 pr-10 border-2 border-gray-200 dark:border-gray-600 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white font-medium transition-all appearance-none"
+                >
+                  <option value="standard">{t('스탠다드', 'Standard')}</option>
+                  <option value="deluxe">{t('디럭스', 'Deluxe')}</option>
+                  <option value="special">{t('스페셜', 'Special')}</option>
+                  <option value="remastered">{t('리마스터드', 'Remastered')}</option>
+                  <option value="anniversary">{t('기념판', 'Anniversary')}</option>
+                  <option value="remix">{t('리믹스', 'Remix')}</option>
+                  <option value="acoustic">{t('어쿠스틱', 'Acoustic')}</option>
+                  <option value="live">{t('라이브', 'Live')}</option>
+                  <option value="instrumental">{t('인스트루멘탈', 'Instrumental')}</option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              </div>
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                {t('앨범의 형식을 선택하세요. 리믹스, 리마스터, 어쿠스틱 등', 'Select the album format. Remix, remaster, acoustic, etc.')}
+              </p>
+            </div>
+          </div>
+          
+          {/* Release Version Field */}
+          {(watch('releaseFormat') === 'remix' || watch('releaseFormat') === 'remastered' || watch('releaseFormat') === 'special') && (
+            <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('릴리즈 버전', 'Release Version')}
+                <span className="text-xs text-gray-500 ml-2">({t('선택사항', 'Optional')})</span>
+              </label>
+              <input
+                {...register('releaseVersion')}
+                type="text"
+                className="w-full px-4 py-3 border-2 border-purple-200 dark:border-purple-700 rounded-xl focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
+                placeholder={t('예: Radio Edit, Extended Mix, Club Mix, Acoustic Version', 'e.g., Radio Edit, Extended Mix, Club Mix, Acoustic Version')}
+              />
+              <p className="mt-2 text-xs text-purple-600 dark:text-purple-400">
+                {t('릴리즈의 특정 버전을 명시할 수 있습니다. 예: 라디오 편집판, 확장판, 클럽 믹스 등', 'You can specify the specific version of the release. e.g., Radio Edit, Extended Version, Club Mix, etc.')}
+              </p>
+            </div>
+          )}
+          
+          {/* Release Format Info Box */}
+          <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+            <div className="flex items-start gap-3">
+              <Disc className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h4 className="text-sm font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                  {t('릴리즈 포맷 가이드', 'Release Format Guide')}
+                </h4>
+                <div className="text-xs text-blue-800 dark:text-blue-200 space-y-1">
+                  <p><span className="font-medium">{t('스탠다드', 'Standard')}:</span> {t('일반적인 앨범 발매', 'Regular album release')}</p>
+                  <p><span className="font-medium">{t('리믹스', 'Remix')}:</span> {t('기존 곡을 재해석한 버전', 'Reinterpreted version of existing tracks')}</p>
+                  <p><span className="font-medium">{t('리마스터', 'Remaster')}:</span> {t('음질 개선된 재발매', 'Re-release with improved sound quality')}</p>
+                  <p><span className="font-medium">{t('어쿠스틱', 'Acoustic')}:</span> {t('어쿠스틱 악기 버전', 'Acoustic instrument version')}</p>
+                  <p><span className="font-medium">{t('라이브', 'Live')}:</span> {t('라이브 공연 녹음', 'Live performance recording')}</p>
+                </div>
+              </div>
             </div>
           </div>
           
