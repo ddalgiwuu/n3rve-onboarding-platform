@@ -1,8 +1,9 @@
-import { createContext, useContext, ReactNode } from 'react'
+import { createContext, useContext, ReactNode, useState, useEffect } from 'react'
+import { savedArtistsService, SavedArtist, SavedContributor } from '@/services/savedArtists.service'
 
 interface SavedArtistsState {
-  artists: any[]
-  contributors: any[]
+  artists: SavedArtist[]
+  contributors: SavedContributor[]
   loading: boolean
   error: any
 }
@@ -10,16 +11,16 @@ interface SavedArtistsState {
 interface SavedArtistsContextType extends SavedArtistsState {
   fetchArtists: () => Promise<void>
   fetchContributors: () => Promise<void>
-  addArtist: (artist: any) => Promise<any>
-  updateArtist: (id: string, updates: any) => Promise<void>
+  addArtist: (artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => Promise<SavedArtist>
+  updateArtist: (id: string, updates: Partial<SavedArtist>) => Promise<void>
   deleteArtist: (id: string) => Promise<void>
-  useArtist: (id: string) => Promise<any>
-  searchArtists: (query: string) => any[]
-  addContributor: (contributor: any) => Promise<any>
-  updateContributor: (id: string, updates: any) => Promise<void>
+  useArtist: (id: string) => Promise<SavedArtist>
+  searchArtists: (query: string) => SavedArtist[]
+  addContributor: (contributor: Omit<SavedContributor, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => Promise<SavedContributor>
+  updateContributor: (id: string, updates: Partial<SavedContributor>) => Promise<void>
   deleteContributor: (id: string) => Promise<void>
-  useContributor: (id: string) => Promise<any>
-  searchContributors: (query: string) => any[]
+  useContributor: (id: string) => Promise<SavedContributor>
+  searchContributors: (query: string) => SavedContributor[]
 }
 
 const SavedArtistsContext = createContext<SavedArtistsContextType | undefined>(undefined)
@@ -32,75 +33,168 @@ const initialState: SavedArtistsState = {
 }
 
 export function SavedArtistsProvider({ children }: { children: ReactNode }) {
-  // Stub implementation - savedArtists functionality is not implemented yet
+  const [state, setState] = useState<SavedArtistsState>(initialState)
+
   const fetchArtists = async () => {
-    // No-op
+    try {
+      setState(prev => ({ ...prev, loading: true, error: null }))
+      const artists = await savedArtistsService.getArtists()
+      setState(prev => ({ ...prev, artists, loading: false }))
+    } catch (error) {
+      console.error('Error fetching artists:', error)
+      setState(prev => ({ ...prev, error, loading: false }))
+      // Don't throw here, let the UI handle the error state
+    }
   }
 
   const fetchContributors = async () => {
-    // No-op
-  }
-
-  const addArtist = async (_artist: any) => {
-    return { 
-      id: '', 
-      name: '', 
-      translations: [], 
-      identifiers: [], 
-      createdAt: '', 
-      lastUsed: '', 
-      usageCount: 0 
+    try {
+      setState(prev => ({ ...prev, loading: true, error: null }))
+      const contributors = await savedArtistsService.getContributors()
+      setState(prev => ({ ...prev, contributors, loading: false }))
+    } catch (error) {
+      console.error('Error fetching contributors:', error)
+      setState(prev => ({ ...prev, error, loading: false }))
+      // Don't throw here, let the UI handle the error state
     }
   }
 
-  const updateArtist = async (_id: string, _updates: any) => {
-    // No-op
-  }
-
-  const deleteArtist = async (_id: string) => {
-    // No-op
-  }
-
-  const useArtist = async (_id: string) => {
-    return undefined
-  }
-
-  const searchArtists = (_query: string) => {
-    return []
-  }
-
-  const addContributor = async (_contributor: any) => {
-    return { 
-      id: '', 
-      name: '', 
-      roles: [], 
-      instruments: [], 
-      translations: [], 
-      identifiers: [], 
-      createdAt: '', 
-      lastUsed: '', 
-      usageCount: 0 
+  const addArtist = async (artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
+    try {
+      const newArtist = await savedArtistsService.addArtist(artist)
+      setState(prev => ({ ...prev, artists: [...prev.artists, newArtist] }))
+      // Refetch artists to ensure consistency
+      await fetchArtists()
+      return newArtist
+    } catch (error) {
+      console.error('Error adding artist:', error)
+      setState(prev => ({ ...prev, error }))
+      throw error
     }
   }
 
-  const updateContributor = async (_id: string, _updates: any) => {
-    // No-op
+  const updateArtist = async (id: string, updates: Partial<SavedArtist>) => {
+    try {
+      const updatedArtist = await savedArtistsService.updateArtist(id, updates)
+      setState(prev => ({
+        ...prev,
+        artists: prev.artists.map(a => a.id === id ? updatedArtist : a)
+      }))
+    } catch (error) {
+      setState(prev => ({ ...prev, error }))
+      throw error
+    }
   }
 
-  const deleteContributor = async (_id: string) => {
-    // No-op
+  const deleteArtist = async (id: string) => {
+    try {
+      await savedArtistsService.deleteArtist(id)
+      setState(prev => ({
+        ...prev,
+        artists: prev.artists.filter(a => a.id !== id)
+      }))
+    } catch (error) {
+      setState(prev => ({ ...prev, error }))
+      throw error
+    }
   }
 
-  const useContributor = async (_id: string) => {
-    return undefined
+  const useArtist = async (id: string) => {
+    try {
+      const artist = await savedArtistsService.useArtist(id)
+      setState(prev => ({
+        ...prev,
+        artists: prev.artists.map(a => a.id === id ? artist : a)
+      }))
+      return artist
+    } catch (error) {
+      setState(prev => ({ ...prev, error }))
+      throw error
+    }
   }
 
-  const searchContributors = (_query: string) => {
-    return []
+  const searchArtists = (query: string) => {
+    if (!query.trim()) return state.artists
+    
+    return state.artists.filter(artist => 
+      artist.name.toLowerCase().includes(query.toLowerCase()) ||
+      artist.translations.some(t => t.name.toLowerCase().includes(query.toLowerCase()))
+    )
   }
+
+  const addContributor = async (contributor: Omit<SavedContributor, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
+    try {
+      const newContributor = await savedArtistsService.addContributor(contributor)
+      setState(prev => ({ ...prev, contributors: [...prev.contributors, newContributor] }))
+      // Refetch contributors to ensure consistency
+      await fetchContributors()
+      return newContributor
+    } catch (error) {
+      console.error('Error adding contributor:', error)
+      setState(prev => ({ ...prev, error }))
+      throw error
+    }
+  }
+
+  const updateContributor = async (id: string, updates: Partial<SavedContributor>) => {
+    try {
+      const updatedContributor = await savedArtistsService.updateContributor(id, updates)
+      setState(prev => ({
+        ...prev,
+        contributors: prev.contributors.map(c => c.id === id ? updatedContributor : c)
+      }))
+    } catch (error) {
+      setState(prev => ({ ...prev, error }))
+      throw error
+    }
+  }
+
+  const deleteContributor = async (id: string) => {
+    try {
+      await savedArtistsService.deleteContributor(id)
+      setState(prev => ({
+        ...prev,
+        contributors: prev.contributors.filter(c => c.id !== id)
+      }))
+    } catch (error) {
+      setState(prev => ({ ...prev, error }))
+      throw error
+    }
+  }
+
+  const useContributor = async (id: string) => {
+    try {
+      const contributor = await savedArtistsService.useContributor(id)
+      setState(prev => ({
+        ...prev,
+        contributors: prev.contributors.map(c => c.id === id ? contributor : c)
+      }))
+      return contributor
+    } catch (error) {
+      setState(prev => ({ ...prev, error }))
+      throw error
+    }
+  }
+
+  const searchContributors = (query: string) => {
+    if (!query.trim()) return state.contributors
+    
+    return state.contributors.filter(contributor => 
+      contributor.name.toLowerCase().includes(query.toLowerCase()) ||
+      contributor.translations.some(t => t.name.toLowerCase().includes(query.toLowerCase())) ||
+      contributor.roles.some(r => r.toLowerCase().includes(query.toLowerCase())) ||
+      contributor.instruments.some(i => i.toLowerCase().includes(query.toLowerCase()))
+    )
+  }
+
+  // Load data on mount
+  useEffect(() => {
+    fetchArtists()
+    fetchContributors()
+  }, [])
 
   const value: SavedArtistsContextType = {
-    ...initialState,
+    ...state,
     fetchArtists,
     fetchContributors,
     addArtist,

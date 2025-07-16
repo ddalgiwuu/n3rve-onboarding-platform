@@ -10,6 +10,50 @@ export class SubmissionsService {
     private filesService: FilesService,
   ) {}
 
+  /**
+   * 발매일, 시간, 타임존을 UTC DateTime으로 변환
+   * @param releaseDate 발매일 (YYYY-MM-DD 형식)
+   * @param releaseTime 발매 시간 (HH:MM 형식, 선택적)
+   * @param timezone 타임존 (예: 'Asia/Seoul', 선택적)
+   * @returns UTC DateTime 또는 null
+   */
+  private convertToUTC(releaseDate: string, releaseTime?: string, timezone?: string): Date | null {
+    if (!releaseDate) return null;
+    
+    try {
+      // 기본 시간은 00:00 (자정)
+      const timeString = releaseTime || '00:00';
+      const timezoneString = timezone || 'UTC';
+      
+      // 날짜와 시간을 조합하여 ISO 문자열 생성
+      const dateTimeString = `${releaseDate}T${timeString}:00`;
+      
+      // 지정된 타임존에서 Date 객체 생성
+      const localDateTime = new Date(dateTimeString);
+      
+      // 타임존 오프셋 계산
+      if (timezoneString !== 'UTC') {
+        // 간단한 타임존 처리 (실제 운영에서는 moment-timezone 등 라이브러리 사용 권장)
+        const timezoneOffsets: { [key: string]: number } = {
+          'Asia/Seoul': 9 * 60, // UTC+9 (분 단위)
+          'America/New_York': -5 * 60, // UTC-5 (분 단위)
+          'Europe/London': 0, // UTC+0 (분 단위)
+          'America/Los_Angeles': -8 * 60, // UTC-8 (분 단위)
+          'Asia/Tokyo': 9 * 60, // UTC+9 (분 단위)
+        };
+        
+        const offsetMinutes = timezoneOffsets[timezoneString] || 0;
+        const utcDateTime = new Date(localDateTime.getTime() - (offsetMinutes * 60 * 1000));
+        return utcDateTime;
+      }
+      
+      return localDateTime;
+    } catch (error) {
+      console.error('UTC 변환 오류:', error);
+      return null;
+    }
+  }
+
   async create(userId: string, data: any) {
     // Transform the frontend data structure to match Prisma schema
     const submissionData: Prisma.SubmissionCreateInput = {
@@ -99,6 +143,10 @@ export class SubmissionsService {
         consumerReleaseDate: data.consumerReleaseDate || data.releaseDate,
         releaseTime: data.releaseTime,
         selectedTimezone: data.selectedTimezone,
+        // UTC 변환 필드들 추가
+        releaseUTC: this.convertToUTC(data.consumerReleaseDate || data.releaseDate, data.releaseTime, data.selectedTimezone),
+        originalReleaseUTC: this.convertToUTC(data.releaseDate, data.releaseTime, data.selectedTimezone),
+        consumerReleaseUTC: this.convertToUTC(data.consumerReleaseDate || data.releaseDate, data.releaseTime, data.selectedTimezone),
         cRights: data.cRights,
         pRights: data.pRights,
         
@@ -234,6 +282,10 @@ export class SubmissionsService {
       updateData.release = {
         ...submission.release as any,
         ...data.releaseInfo,
+        // UTC 변환 필드들 업데이트
+        releaseUTC: this.convertToUTC(data.releaseInfo.consumerReleaseDate || data.releaseInfo.releaseDate, data.releaseInfo.releaseTime, data.releaseInfo.selectedTimezone),
+        originalReleaseUTC: this.convertToUTC(data.releaseInfo.originalReleaseDate || data.releaseInfo.releaseDate, data.releaseInfo.releaseTime, data.releaseInfo.selectedTimezone),
+        consumerReleaseUTC: this.convertToUTC(data.releaseInfo.consumerReleaseDate || data.releaseInfo.releaseDate, data.releaseInfo.releaseTime, data.releaseInfo.selectedTimezone),
       };
     }
 
