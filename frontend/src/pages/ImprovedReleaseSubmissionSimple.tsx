@@ -931,10 +931,13 @@ function AlbumStep({ formData, setFormData }: any) {
   )
 }
 
-// Step 3: Track Information (Without Drag-and-Drop)
+// Step 3: Track Information with Native Drag and Drop
 function TrackStep({ formData, setFormData }: any) {
   const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
 
   const addTrack = () => {
     const newTrack = {
@@ -988,6 +991,50 @@ function TrackStep({ formData, setFormData }: any) {
       [newTracks[index], newTracks[newIndex]] = [newTracks[newIndex], newTracks[index]]
       setFormData({ ...formData, tracks: newTracks })
     }
+  }
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    setDragOverIndex(index)
+  }
+
+  const handleDragLeave = () => {
+    setDragOverIndex(null)
+  }
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null)
+      setDragOverIndex(null)
+      return
+    }
+
+    const newTracks = [...formData.tracks]
+    const draggedTrack = newTracks[draggedIndex]
+    
+    // Remove the dragged track
+    newTracks.splice(draggedIndex, 1)
+    
+    // Insert at new position
+    const insertIndex = dropIndex > draggedIndex ? dropIndex - 1 : dropIndex
+    newTracks.splice(insertIndex, 0, draggedTrack)
+    
+    setFormData({ ...formData, tracks: newTracks })
+    setDraggedIndex(null)
+    setDragOverIndex(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+    setDragOverIndex(null)
   }
 
   return (

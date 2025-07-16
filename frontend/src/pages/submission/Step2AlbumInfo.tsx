@@ -13,7 +13,8 @@ const createAlbumSchema = (t: (ko: string, en: string) => string) => z.object({
   hasTranslation: z.boolean().default(false),
   translationLanguage: z.string().optional(),
   translatedTitle: z.string().optional(),
-  type: z.enum(['single', 'ep', 'album'])
+  type: z.enum(['single', 'ep', 'album']),
+  releaseVersion: z.string().optional()
 }).refine((data) => {
   if (data.hasTranslation && !data.translationLanguage) {
     return false
@@ -55,7 +56,8 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
     resolver: zodResolver(createAlbumSchema(t)),
     defaultValues: data?.album || {
       type: 'single',
-      hasTranslation: false
+      hasTranslation: false,
+      releaseVersion: ''
     }
   })
 
@@ -346,6 +348,22 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('발매 형태', 'Release Type')}</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400">{language === 'ko' ? '앨범 형식을 선택하세요' : 'Choose your release format'}</p>
               </div>
+            </div>
+            
+            {/* Release Version Field */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('릴리즈 버전', 'Release Version')}
+              </label>
+              <input
+                {...register('releaseVersion')}
+                type="text"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                placeholder={t('예: Deluxe Edition, Remastered, Radio Edit', 'e.g., Deluxe Edition, Remastered, Radio Edit')}
+              />
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {t('특별한 버전이나 에디션이 있는 경우 입력하세요', 'Enter if this is a special version or edition')}
+              </p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
