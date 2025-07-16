@@ -44,7 +44,7 @@ export default function ArtistSelector({
     } else {
       fetchContributors()
     }
-  }, [type])
+  }, [type, fetchArtists, fetchContributors])
 
   const results = type === 'artist' 
     ? searchArtists(searchQuery)

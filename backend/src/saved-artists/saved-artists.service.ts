@@ -26,6 +26,7 @@ export class SavedArtistsService {
     return this.prisma.savedArtist.findMany({
       where,
       orderBy: [
+        { createdAt: 'desc' },  // Show recently created artists first
         { usageCount: 'desc' },
         { lastUsed: 'desc' }
       ],
@@ -67,6 +68,7 @@ export class SavedArtistsService {
     return this.prisma.savedContributor.findMany({
       where,
       orderBy: [
+        { createdAt: 'desc' },  // Show recently created contributors first
         { usageCount: 'desc' },
         { lastUsed: 'desc' }
       ],

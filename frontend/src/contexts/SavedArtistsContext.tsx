@@ -62,8 +62,7 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
   const addArtist = async (artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
     try {
       const newArtist = await savedArtistsService.addArtist(artist)
-      setState(prev => ({ ...prev, artists: [...prev.artists, newArtist] }))
-      // Refetch artists to ensure consistency
+      // Refetch the entire list to ensure proper sorting and synchronization
       await fetchArtists()
       return newArtist
     } catch (error) {
@@ -125,8 +124,7 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
   const addContributor = async (contributor: Omit<SavedContributor, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
     try {
       const newContributor = await savedArtistsService.addContributor(contributor)
-      setState(prev => ({ ...prev, contributors: [...prev.contributors, newContributor] }))
-      // Refetch contributors to ensure consistency
+      // Refetch the entire list to ensure proper sorting and synchronization
       await fetchContributors()
       return newContributor
     } catch (error) {
