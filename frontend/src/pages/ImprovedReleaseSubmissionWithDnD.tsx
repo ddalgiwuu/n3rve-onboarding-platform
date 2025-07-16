@@ -167,11 +167,10 @@ interface FormData {
   secondaryGenre?: string
   secondarySubgenre?: string
   language: string
-  releaseDate: string
   releaseTime: string
   timezone: string
-  originalReleaseDate?: string
-  consumerReleaseDate?: string
+  originalReleaseDate: string
+  consumerReleaseDate: string
   upc?: string
   ean?: string
   catalogNumber?: string
@@ -289,9 +288,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
     primaryGenre: '',
     primarySubgenre: '',
     language: '',
-    releaseDate: '',
-    releaseTime: '00:00',
+    releaseTime: '',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Seoul',
+    consumerReleaseDate: '',
+    originalReleaseDate: '',
     recordLabel: user?.company || '',
     copyrightHolder: user?.company || '',
     copyrightYear: new Date().getFullYear().toString(),
@@ -563,10 +563,75 @@ const ImprovedReleaseSubmission: React.FC = () => {
     }
   }
 
+  // Calculate days until release
+  const calculateDaysUntilRelease = (releaseDate: string) => {
+    if (!releaseDate) return null
+    
+    const today = new Date()
+    const release = new Date(releaseDate)
+    const timeDiff = release.getTime() - today.getTime()
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24))
+    
+    return daysDiff
+  }
+
+  // Get marketing opportunity message
+  const getMarketingMessage = (daysUntilRelease: number | null) => {
+    if (daysUntilRelease === null) return null
+    
+    if (daysUntilRelease < 0) {
+      return {
+        type: 'error',
+        message: t('과거 날짜는 선택할 수 없습니다', 'Cannot select past dates')
+      }
+    } else if (daysUntilRelease < 7) {
+      return {
+        type: 'warning',
+        message: t('발매일까지 일주일 미만입니다. 마케팅 기회가 매우 제한적입니다.', 'Less than a week until release. Marketing opportunities are very limited.')
+      }
+    } else if (daysUntilRelease < 21) {
+      return {
+        type: 'warning',
+        message: t(`발매일까지 ${daysUntilRelease}일 남았습니다. 마케팅 기회가 제한적일 수 있습니다.`, `${daysUntilRelease} days until release. Marketing opportunities may be limited.`)
+      }
+    } else if (daysUntilRelease < 28) {
+      return {
+        type: 'caution',
+        message: t(`발매일까지 ${daysUntilRelease}일 남았습니다. 마케팅 기회를 위해 빠른 제출을 권장합니다.`, `${daysUntilRelease} days until release. Quick submission recommended for marketing opportunities.`)
+      }
+    } else {
+      return {
+        type: 'success',
+        message: t(`발매일까지 ${daysUntilRelease}일 남았습니다. 충분한 마케팅 기회가 있습니다!`, `${daysUntilRelease} days until release. Great marketing opportunities available!`)
+      }
+    }
+  }
+
   // Submit
   const handleSubmit = async () => {
     try {
       setIsSubmitting(true)
+      
+      // Basic form validation
+      if (!formData.consumerReleaseDate) {
+        toast.error(t('컨슈머 발매일을 선택해주세요', 'Please select consumer release date'))
+        return
+      }
+      
+      if (!formData.originalReleaseDate) {
+        toast.error(t('오리지널 발매일을 선택해주세요', 'Please select original release date'))
+        return
+      }
+      
+      if (!formData.releaseTime) {
+        toast.error(t('발매 시간을 입력해주세요', 'Please enter release time'))
+        return
+      }
+      
+      if (!formData.timezone) {
+        toast.error(t('타임존을 선택해주세요', 'Please select timezone'))
+        return
+      }
       
       // Run QC validation
       const results = await validateSubmission({
@@ -580,7 +645,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
         audioFiles: formData.audioFiles,
         upc: formData.upc,
         ean: formData.ean,
-        releaseDate: formData.releaseDate,
+        releaseDate: formData.consumerReleaseDate,
         recordLabel: formData.recordLabel,
         copyrightHolder: formData.copyrightHolder,
         copyrightYear: formData.copyrightYear,
@@ -1285,6 +1350,46 @@ const ImprovedReleaseSubmission: React.FC = () => {
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                           {t('실제 발매될 날짜', 'Actual release date')}
                         </p>
+                        
+                        {/* Days until release and marketing message */}
+                        {formData.consumerReleaseDate && (() => {
+                          const daysUntilRelease = calculateDaysUntilRelease(formData.consumerReleaseDate)
+                          const marketingMessage = getMarketingMessage(daysUntilRelease)
+                          
+                          if (!marketingMessage) return null
+                          
+                          const bgColor = {
+                            error: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700',
+                            warning: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-700',
+                            caution: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-700',
+                            success: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-700'
+                          }
+                          
+                          const textColor = {
+                            error: 'text-red-700 dark:text-red-300',
+                            warning: 'text-orange-700 dark:text-orange-300',
+                            caution: 'text-yellow-700 dark:text-yellow-300',
+                            success: 'text-green-700 dark:text-green-300'
+                          }
+                          
+                          const icon = {
+                            error: '❌',
+                            warning: '⚠️',
+                            caution: '⏰',
+                            success: '✅'
+                          }
+                          
+                          return (
+                            <div className={`mt-2 p-2 rounded-lg border ${bgColor[marketingMessage.type as keyof typeof bgColor]}`}>
+                              <div className="flex items-start gap-2">
+                                <span className="text-sm">{icon[marketingMessage.type as keyof typeof icon]}</span>
+                                <p className={`text-xs font-medium ${textColor[marketingMessage.type as keyof typeof textColor]}`}>
+                                  {marketingMessage.message}
+                                </p>
+                              </div>
+                            </div>
+                          )
+                        })()}
                       </div>
                       
                       {/* Original Release Date */}
@@ -1305,10 +1410,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                       {/* Release Time */}
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('발매 시간', 'Release Time')} 
-                          <span className="text-xs text-gray-500 dark:text-gray-400 ml-1">
-                            ({t('선택사항', 'Optional')})
-                          </span>
+                          {t('발매 시간', 'Release Time')} <span className="text-red-500">*</span>
                         </label>
                         <div className="space-y-2">
                           <input
@@ -1316,9 +1418,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
                             value={formData.releaseTime}
                             onChange={(e) => setFormData(prev => ({ ...prev, releaseTime: e.target.value }))}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                            required
                           />
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {t('비워두면 자정(00:00)에 발매됩니다', 'Leave empty for midnight (00:00) release')}
+                            {t('정확한 발매 시간을 입력해주세요', 'Please enter the exact release time')}
                           </p>
                         </div>
                       </div>
