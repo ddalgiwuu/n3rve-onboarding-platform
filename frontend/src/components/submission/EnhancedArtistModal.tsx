@@ -154,9 +154,10 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
           toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'))
         } catch (error) {
           console.error('EnhancedArtistModal: Error saving artist:', error)
-          console.error('EnhancedArtistModal: Error details:', error.message)
-          console.error('EnhancedArtistModal: Error stack:', error.stack)
-          toast.error(t(`아티스트 저장에 실패했습니다: ${error.message}`, `Failed to save artist: ${error.message}`))
+          console.error('EnhancedArtistModal: Error details:', error instanceof Error ? error.message : 'Unknown error')
+          console.error('EnhancedArtistModal: Error stack:', error instanceof Error ? error.stack : 'No stack trace')
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+          toast.error(t(`아티스트 저장에 실패했습니다: ${errorMessage}`, `Failed to save artist: ${errorMessage}`))
           return // Don't close modal if save failed
         }
       }
