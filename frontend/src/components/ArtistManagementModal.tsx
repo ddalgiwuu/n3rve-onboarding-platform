@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Trash2, Users, User, Music, ExternalLink, HelpCircle, Globe, Search } from 'lucide-react'
+import { X, Plus, Trash2, Users, User, Music, ExternalLink, HelpCircle, Globe, Search, ChevronDown } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 
 interface Artist {
@@ -139,24 +139,46 @@ export default function ArtistManagementModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {isFeaturing 
-              ? t('피처링 아티스트 관리', 'Manage Featuring Artists')
-              : albumLevel 
-              ? t('앨범 아티스트 관리', 'Manage Album Artists')
-              : t('트랙 아티스트 관리', 'Manage Track Artists')
-            }
-          </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
-          </button>
+        <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                {isFeaturing ? (
+                  <>
+                    <Music className="w-6 h-6" />
+                    {t('피처링 아티스트 관리', 'Manage Featuring Artists')}
+                  </>
+                ) : albumLevel ? (
+                  <>
+                    <Users className="w-6 h-6" />
+                    {t('앨범 아티스트 관리', 'Manage Album Artists')}
+                  </>
+                ) : (
+                  <>
+                    <User className="w-6 h-6" />
+                    {t('트랙 아티스트 관리', 'Manage Track Artists')}
+                  </>
+                )}
+              </h2>
+              <p className="text-purple-100 text-sm mt-1">
+                {isFeaturing 
+                  ? t('피처링 아티스트를 추가하고 관리하세요', 'Add and manage featuring artists')
+                  : albumLevel 
+                  ? t('앨범의 메인 아티스트를 추가하고 관리하세요', 'Add and manage main album artists')
+                  : t('트랙의 아티스트를 추가하고 관리하세요', 'Add and manage track artists')
+                }
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-white" />
+            </button>
+          </div>
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
@@ -201,64 +223,91 @@ export default function ArtistManagementModal({
               </div>
 
               {/* Artist Translations */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('아티스트명 번역', 'Artist Name Translations')}
-                </label>
+              <div className="md:col-span-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                    {t('아티스트명 번역', 'Artist Name Translations')}
+                  </label>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('선택사항', 'Optional')}
+                  </span>
+                </div>
                 
                 {/* Active translations */}
-                {activeTranslations.map(langCode => {
-                  const lang = translationLanguages.find(l => l.code === langCode)
-                  return (
-                    <div key={langCode} className="flex items-center gap-2 mb-2">
-                      <span className="text-sm text-gray-600 dark:text-gray-400 w-24">
-                        {lang?.name}:
-                      </span>
-                      <input
-                        type="text"
-                        value={newArtist.translations?.[langCode] || ''}
-                        onChange={(e) => setNewArtist({
-                          ...newArtist,
-                          translations: {
-                            ...newArtist.translations,
-                            [langCode]: e.target.value
-                          }
-                        })}
-                        placeholder={t('번역 입력', 'Enter translation')}
-                        className="flex-1 px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                      />
-                      <button
-                        onClick={() => removeTranslation(langCode)}
-                        className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
+                <div className="space-y-2">
+                  {activeTranslations.map(langCode => {
+                    const lang = translationLanguages.find(l => l.code === langCode)
+                    return (
+                      <div key={langCode} className="group bg-white dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-600 transition-colors">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 min-w-[120px]">
+                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                              {lang?.code}
+                            </span>
+                            <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                              {lang?.name}
+                            </span>
+                          </div>
+                          <input
+                            type="text"
+                            value={newArtist.translations?.[langCode] || ''}
+                            onChange={(e) => setNewArtist({
+                              ...newArtist,
+                              translations: {
+                                ...newArtist.translations,
+                                [langCode]: e.target.value
+                              }
+                            })}
+                            placeholder={t(`${lang?.name}로 아티스트명 입력`, `Enter artist name in ${lang?.name}`)}
+                            className="flex-1 px-3 py-1.5 text-sm border-0 bg-transparent focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeTranslation(langCode)}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                  
+                  {activeTranslations.length === 0 && (
+                    <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm">
+                      {t('번역을 추가하려면 아래 버튼을 클릭하세요', 'Click below to add translations')}
                     </div>
-                  )
-                })}
+                  )}
+                </div>
                 
-                {/* Add translation dropdown */}
-                <div className="flex items-center gap-2">
-                  <select
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        addTranslation(e.target.value)
-                        e.target.value = ''
+                {/* Add translation button */}
+                <div className="mt-3">
+                  <div className="relative">
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          addTranslation(e.target.value)
+                          e.target.value = ''
+                        }
+                      }}
+                      className="w-full appearance-none text-sm px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
+                    >
+                      <option value="">{t('+ 언어 추가', '+ Add Language')}</option>
+                      {translationLanguages
+                        .filter(lang => !activeTranslations.includes(lang.code))
+                        .map(lang => (
+                          <option key={lang.code} value={lang.code}>
+                            {lang.name} ({lang.code.toUpperCase()})
+                          </option>
+                        ))
                       }
-                    }}
-                    className="text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                  >
-                    <option value="">{t('언어 추가...', 'Add language...')}</option>
-                    {translationLanguages
-                      .filter(lang => !activeTranslations.includes(lang.code))
-                      .map(lang => (
-                        <option key={lang.code} value={lang.code}>
-                          {lang.name}
-                        </option>
-                      ))
-                    }
-                  </select>
-                  <Globe className="w-4 h-4 text-gray-400" />
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <ChevronDown className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -300,12 +349,20 @@ export default function ArtistManagementModal({
                     </p>
                     <div className="space-y-2 text-green-700 dark:text-green-300">
                       <div>
-                        <p className="font-medium">{t('Mac/PC:', 'Mac/PC:')}</p>
+                        <p className="font-medium">{t('Mac:', 'Mac:')}</p>
+                        <ol className="list-decimal list-inside ml-2">
+                          <li>{t('Spotify 앱에서 아티스트 페이지 열기', 'Open artist page in Spotify app')}</li>
+                          <li>{t('Option(⌥) 키를 누른 상태에서 아티스트 이름 옆 ⋯ 클릭', 'Hold Option(⌥) key and click ⋯ next to artist name')}</li>
+                          <li>{t('"Copy Spotify URI" 선택', 'Select "Copy Spotify URI"')}</li>
+                          <li>{t('복사된 URI 예시: spotify:artist:XXXXXXXXX', 'Copied URI example: spotify:artist:XXXXXXXXX')}</li>
+                        </ol>
+                        <p className="font-medium mt-2">{t('Windows:', 'Windows:')}</p>
                         <ol className="list-decimal list-inside ml-2">
                           <li>{t('Spotify 앱에서 아티스트 페이지 열기', 'Open artist page in Spotify app')}</li>
                           <li>{t('아티스트 이름 옆 ⋯ 클릭', 'Click ⋯ next to artist name')}</li>
                           <li>{t('"Share" → "Copy link to artist" 선택', 'Select "Share" → "Copy link to artist"')}</li>
                           <li>{t('URL에서 ID 추출: open.spotify.com/artist/[이 부분이 ID]', 'Extract ID from URL: open.spotify.com/artist/[this is the ID]')}</li>
+                          <li>{t('또는 spotify:artist:XXXXXXXXX 형식으로 입력', 'Or enter as spotify:artist:XXXXXXXXX format')}</li>
                         </ol>
                       </div>
                       <p className="text-xs italic">
@@ -399,20 +456,32 @@ export default function ArtistManagementModal({
 
           {/* Artist List */}
           <div>
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-              {t('등록된 아티스트', 'Registered Artists')} ({artists.length})
-            </h3>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                {t('등록된 아티스트', 'Registered Artists')}
+              </h3>
+              <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
+                {artists.length}
+              </span>
+            </div>
             
             {artists.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                {t('등록된 아티스트가 없습니다', 'No artists registered')}
+              <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
+                <Users className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" />
+                <p className="text-gray-500 dark:text-gray-400">
+                  {t('등록된 아티스트가 없습니다', 'No artists registered')}
+                </p>
+                <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                  {t('위에서 아티스트를 추가해주세요', 'Add artists above to get started')}
+                </p>
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {artists.map((artist) => (
                   <div
                     key={artist.id}
-                    className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg"
+                    className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600 transition-all"
                   >
                     <div className="flex items-center gap-3">
                       {!albumLevel && (
@@ -429,35 +498,56 @@ export default function ArtistManagementModal({
                             {getRoleLabel(artist.role)}
                           </p>
                         )}
-                        <div className="flex items-center gap-3 mt-1">
-                          {artist.spotifyId && artist.spotifyId !== 'MAKE_NEW' && (
-                            <span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
-                              <ExternalLink className="w-3 h-3" />
-                              Spotify
+                        <div className="flex items-center gap-2 mt-2">
+                          {/* Spotify Status */}
+                          {artist.spotifyId === 'MAKE_NEW' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-md text-xs font-medium">
+                              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                              Spotify: NEW
+                            </span>
+                          ) : artist.spotifyId ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-md text-xs font-medium">
+                              <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                              Spotify ✓
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-md text-xs">
+                              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                              Spotify -
                             </span>
                           )}
-                          {artist.spotifyId === 'MAKE_NEW' && (
-                            <span className="text-xs text-orange-600 dark:text-orange-400">
-                              Spotify: {t('신규 생성 필요', 'New profile needed')}
+                          
+                          {/* Apple Music Status */}
+                          {artist.appleId === 'MAKE_NEW' ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-md text-xs font-medium">
+                              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                              Apple: NEW
                             </span>
-                          )}
-                          {artist.appleId && artist.appleId !== 'MAKE_NEW' && (
-                            <span className="text-xs text-gray-600 dark:text-gray-400 flex items-center gap-1">
-                              <ExternalLink className="w-3 h-3" />
-                              Apple Music
+                          ) : artist.appleId ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md text-xs font-medium">
+                              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
+                              Apple ✓
                             </span>
-                          )}
-                          {artist.appleId === 'MAKE_NEW' && (
-                            <span className="text-xs text-orange-600 dark:text-orange-400">
-                              Apple Music: {t('신규 생성 필요', 'New profile needed')}
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-md text-xs">
+                              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
+                              Apple -
                             </span>
                           )}
                         </div>
                         {artist.translations && Object.keys(artist.translations).length > 0 && (
-                          <div className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          <div className="mt-2 flex flex-wrap gap-2">
                             {Object.entries(artist.translations).map(([lang, translation]) => (
-                              <span key={lang} className="mr-2">
-                                {lang.toUpperCase()}: {translation}
+                              <span 
+                                key={lang} 
+                                className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-full text-xs"
+                              >
+                                <span className="font-medium text-gray-600 dark:text-gray-400">
+                                  {lang.toUpperCase()}
+                                </span>
+                                <span className="text-gray-700 dark:text-gray-300">
+                                  {translation}
+                                </span>
                               </span>
                             ))}
                           </div>
