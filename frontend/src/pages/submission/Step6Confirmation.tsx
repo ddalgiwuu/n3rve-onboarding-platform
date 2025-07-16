@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { CheckCircle, AlertTriangle, Info, Music, User, Disc, Calendar, Shield, ChevronDown, ChevronRight, FileText, Star, AlertCircle } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
-import type { SubmissionData } from '../ReleaseSubmission'
+import type { SubmissionData } from '@/services/submission.service'
 import AdminEmailPreview from '@/components/submission/AdminEmailPreview'
 import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation'
 import QCWarnings, { QCStatusBadge } from '@/components/submission/QCWarnings'
@@ -23,7 +23,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
   const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([])
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [qcResults, setQcResults] = useState<QCValidationResults | null>(null)
-  const language = useLanguageStore((state: any) => state.language)
+  const language = useLanguageStore((state: any) => state.language) || 'ko'
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
     const issues: ValidationIssue[] = []
 
     // 트랙 검증
-    const trackList = data.tracks?.tracks || data.tracks
+    const trackList = (data as any).tracks?.tracks || (data as any).tracks
     if (Array.isArray(trackList)) {
       const titleTracks = trackList.filter(t => t.isTitle)
       if (titleTracks.length === 0) {
@@ -107,7 +107,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
       })
     }
 
-    const trackCount = data.tracks?.tracks?.length || data.tracks?.length || 0
+    const trackCount = (data as any).tracks?.tracks?.length || (data as any).tracks?.length || 0
     if (!data.files?.audioFiles || data.files.audioFiles.length !== trackCount) {
       issues.push({
         type: 'error',
@@ -423,10 +423,10 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
             )}
           </button>
 
-          {expandedSections.includes('tracks') && data.tracks && (
+          {expandedSections.includes('tracks') && (data as any).tracks && (
             <div className="p-6">
               <div className="space-y-4">
-                {(data.tracks?.tracks || (Array.isArray(data.tracks) ? data.tracks : []) || []).map((track: any, index: number) => (
+                {(((data as any).tracks?.tracks || (Array.isArray((data as any).tracks) ? (data as any).tracks : []) || [])).map((track: any, index: number) => (
                   <div key={track.id} className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -698,7 +698,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
 
         {/* Korean DSP Email Preview */}
         {data.release?.koreanDSP && 
-          data.release.distributors?.some(d => ['melon', 'genie', 'bugs', 'flo', 'vibe'].includes(d)) && (
+          data.release.distributors?.some((d: string) => ['melon', 'genie', 'bugs', 'flo', 'vibe'].includes(d)) && (
           <div className="mb-6">
             <AdminEmailPreview data={data} />
           </div>

@@ -194,7 +194,7 @@ const TranslationManager: React.FC<{
         </button>
       </div>
       
-      {translations.map((translation, index) => (
+      {translations.map((translation) => (
         <div key={translation.id} className="flex gap-2">
           <select
             value={translation.language}
@@ -368,7 +368,7 @@ export default function ImprovedReleaseSubmission() {
 
     const currentStepFields = stepFields[currentStep] || []
     return !currentStepFields.some(field => 
-      validationResults.fieldErrors[field]?.some(error => error.severity === 'error')
+      validationResults.errors.some((error: any) => error.field === field && error.severity === 'error')
     )
   }
 
@@ -390,7 +390,51 @@ export default function ImprovedReleaseSubmission() {
   const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
-      const response = await submissionService.createSubmission(formData)
+      const submissionData = {
+        artist: {
+          name: formData.artistName,
+          displayName: formData.displayArtistName,
+          type: formData.artistType,
+          labelName: formData.labelName,
+          country: formData.artistCountry,
+          translations: formData.artistTranslations
+        },
+        album: {
+          title: formData.albumTitle,
+          titleEn: formData.albumTitleEn,
+          type: formData.albumType,
+          translations: formData.albumTranslations,
+          upc: formData.upc,
+          catalogNumber: formData.catalogNumber
+        },
+        tracks: formData.tracks,
+        release: {
+          originalReleaseDate: formData.originalReleaseDate,
+          consumerReleaseDate: formData.consumerReleaseDate,
+          releaseTime: formData.releaseTime,
+          timezone: formData.selectedTimezone,
+          genre: formData.genre,
+          subgenre: formData.subgenre,
+          copyrightHolder: formData.copyrightHolder,
+          copyrightYear: formData.copyrightYear,
+          productionHolder: formData.productionHolder,
+          productionYear: formData.productionYear,
+          parentalAdvisory: formData.parentalAdvisory,
+          territories: formData.territories,
+          selectedDSPs: formData.selectedDSPs,
+          priceType: formData.priceType
+        },
+        files: {
+          coverImage: formData.coverArt || undefined,
+          audioFiles: formData.audioFiles.map((file: File, index: number) => ({
+            trackId: formData.tracks[index]?.id || index.toString(),
+            file: file,
+            fileName: file.name,
+            fileSize: file.size
+          }))
+        }
+      }
+      const response = await submissionService.createSubmission(submissionData)
       toast.success(t('제출이 완료되었습니다!', 'Submission completed!'))
       navigate('/submission-success', { state: { submissionId: response.id } })
     } catch (error) {
@@ -509,9 +553,9 @@ export default function ImprovedReleaseSubmission() {
       </div>
 
       {/* QC Warnings */}
-      {validationResults && validationResults.hasErrors && (
+      {validationResults && validationResults.errors.length > 0 && (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-          <QCWarnings results={validationResults} currentStep={currentStep} />
+          <QCWarnings results={validationResults.errors} />
         </div>
       )}
 
@@ -912,7 +956,7 @@ function AlbumInfoStep({ formData, setFormData }: any) {
             </label>
             <DatePicker
               value={formData.originalReleaseDate}
-              onChange={(date) => setFormData({ ...formData, originalReleaseDate: date })}
+              onChange={(date) => setFormData({ ...formData, originalReleaseDate: typeof date === 'string' ? date : date ? date.toISOString().split('T')[0] : '' })}
               minDate={new Date('1900-01-01')}
               maxDate={new Date()}
             />
@@ -929,7 +973,7 @@ function AlbumInfoStep({ formData, setFormData }: any) {
             </label>
             <DatePicker
               value={formData.consumerReleaseDate}
-              onChange={(date) => setFormData({ ...formData, consumerReleaseDate: date })}
+              onChange={(date) => setFormData({ ...formData, consumerReleaseDate: typeof date === 'string' ? date : date ? date.toISOString().split('T')[0] : '' })}
               minDate={new Date()}
             />
           </div>
@@ -994,7 +1038,7 @@ function AlbumInfoStep({ formData, setFormData }: any) {
                 value={formData.genre}
                 onChange={(genres) => setFormData({ ...formData, genre: genres })}
                 placeholder={t('장르 선택', 'Select genres')}
-                maxItems={3}
+                max={3}
               />
             </div>
 
@@ -1004,11 +1048,11 @@ function AlbumInfoStep({ formData, setFormData }: any) {
                 {t('서브장르', 'Subgenre')}
               </label>
               <MultiSelect
-                options={subgenreList.map(subgenre => ({ value: subgenre, label: subgenre }))}
+                options={subgenreList}
                 value={formData.subgenre}
-                onChange={(subgenres) => setFormData({ ...formData, subgenre: subgenres })}
+                onChange={(subgenres: string[]) => setFormData({ ...formData, subgenre: subgenres })}
                 placeholder={t('서브장르 선택', 'Select subgenres')}
-                maxItems={3}
+                max={3}
               />
             </div>
 
@@ -1520,7 +1564,7 @@ function SortableTrackItem({ track, updateTrack, removeTrack, setFocusTrack, isF
 function FileUploadStep({ formData, setFormData }: any) {
   const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({})
+  const [uploadProgress] = useState<{ [key: string]: number }>({})
 
   const handleCoverArtUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -1759,8 +1803,7 @@ function DistributionStep({ formData, setFormData }: any) {
           <RegionSelector
             selectedRegions={formData.territories}
             onRegionsChange={(territories) => setFormData({ ...formData, territories })}
-            excludedRegions={formData.excludedTerritories}
-            onExcludedRegionsChange={(excluded) => setFormData({ ...formData, excludedTerritories: excluded })}
+            onExcludedRegionsChange={(excluded: string[]) => setFormData({ ...formData, excludedTerritories: excluded })}
           />
         </div>
 
@@ -1811,7 +1854,7 @@ function DistributionStep({ formData, setFormData }: any) {
                   className="sr-only"
                 />
                 <div className="flex items-center gap-2">
-                  {dsp.icon && <img src={dsp.icon} alt={dsp.name} className="w-5 h-5" />}
+                  {dsp.logo && <img src={dsp.logo} alt={dsp.name} className="w-5 h-5" />}
                   <span className="text-sm font-medium">{dsp.name}</span>
                 </div>
                 {dsp.regions && (
@@ -1922,7 +1965,7 @@ function ReviewStep({ formData, validationResults }: any) {
               <h3 className="font-medium text-gray-900 dark:text-white">
                 {t('품질 검사 결과', 'Quality Check Results')}
               </h3>
-              {validationResults.hasErrors ? (
+              {validationResults.errors.length > 0 ? (
                 <span className="flex items-center gap-2 text-red-600 dark:text-red-400">
                   <AlertTriangle className="w-5 h-5" />
                   {t('오류 발견', 'Errors Found')}
@@ -1935,7 +1978,7 @@ function ReviewStep({ formData, validationResults }: any) {
               )}
             </div>
             
-            {validationResults.hasErrors && (
+            {validationResults.errors.length > 0 && (
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 <p>{t('제출 전에 모든 오류를 수정해야 합니다.', 'All errors must be fixed before submission.')}</p>
               </div>
