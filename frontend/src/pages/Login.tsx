@@ -27,7 +27,7 @@ export default function LoginPage() {
     const error = urlParams.get('error')
     
     if (error === 'oauth_failed') {
-      toast.error(t('OAuth 인증에 실패했습니다. 다시 시도해주세요.'))
+      toast.error(t('auth.oauthFailed'))
     }
   }, [location, t])
   
@@ -49,7 +49,7 @@ export default function LoginPage() {
           navigate(`/auth/callback?${params.toString()}`)
         } else {
           setIsLoading(false)
-          toast.error('로그인에 실패했습니다')
+          toast.error(t('auth.loginFailed'))
         }
       }
     }
@@ -87,7 +87,7 @@ export default function LoginPage() {
       )
       
       if (!popupRef.current) {
-        toast.error('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.')
+        toast.error(t('auth.popupBlocked'))
         setIsLoading(false)
         return
       }
@@ -101,42 +101,42 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 flex items-center justify-center p-4 sm:p-6 lg:p-8">
       {/* Background decoration */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-40 -right-40 w-60 h-60 sm:w-80 sm:h-80 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute -bottom-40 -left-40 w-60 h-60 sm:w-80 sm:h-80 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-60 h-60 sm:w-80 sm:h-80 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 z-10">
         <LanguageToggle />
       </div>
       <div className="w-full max-w-md animate-scale-in">
-        <div className="glass-effect-strong rounded-2xl shadow-2xl p-8 backdrop-blur-xl">
-          <div className="text-center mb-8">
+        <div className="glass-effect-strong rounded-2xl shadow-2xl p-6 sm:p-8 backdrop-blur-xl">
+          <div className="text-center mb-6 sm:mb-8">
             <img 
               src="/assets/logos/n3rve-logo.svg" 
               alt="N3RVE" 
-              className="h-12 w-auto mx-auto mb-4 dark:hidden"
+              className="h-10 sm:h-12 w-auto mx-auto mb-4 dark:hidden"
             />
             <img 
               src="/assets/logos/n3rve-logo-white.svg" 
               alt="N3RVE" 
-              className="h-12 w-auto mx-auto mb-4 hidden dark:block"
+              className="h-10 sm:h-12 w-auto mx-auto mb-4 hidden dark:block"
             />
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white leading-tight">
               {t('auth.welcomeTitle')}
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mt-2">
+            <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm sm:text-base">
               {t('auth.welcomeSubtitle')}
             </p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <button
               onClick={handleGoogleLogin}
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-3 py-3 px-4 btn-glass text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-3 py-3 sm:py-4 px-4 btn-glass text-gray-700 dark:text-gray-300 rounded-xl font-medium hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -160,7 +160,7 @@ export default function LoginPage() {
             </div>
 
             <div className="text-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
                 {t('auth.googleLoginDescription')}
               </p>
             </div>
