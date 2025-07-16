@@ -13,6 +13,7 @@ const DashboardPage = lazy(() => import('./pages/Dashboard'))
 const ReleaseSubmissionPage = lazy(() => import('./pages/ReleaseSubmission'))
 const ReleaseSubmissionV2Page = lazy(() => import('./pages/ReleaseSubmissionV2'))
 const ModernReleaseSubmissionPage = lazy(() => import('./pages/ModernReleaseSubmission'))
+const ImprovedReleaseSubmissionPage = lazy(() => import('./pages/ImprovedReleaseSubmission'))
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminSubmissionsPage = lazy(() => import('./pages/admin/AdminSubmissions'))
 const SubmissionManagementPage = lazy(() => import('./pages/admin/SubmissionManagement'))
@@ -126,6 +127,13 @@ function App() {
                 <ModernReleaseSubmissionPage />
               </ErrorBoundary>
             ) : <Navigate to="/login" state={{ from: '/release-submission-modern' }} />
+          } />
+          <Route path="/release-submission-improved" element={
+            isAuthenticated ? (
+              <ErrorBoundary>
+                <ImprovedReleaseSubmissionPage />
+              </ErrorBoundary>
+            ) : <Navigate to="/login" state={{ from: '/release-submission-improved' }} />
           } />
           <Route path="/artist-profile-guide" element={
             isAuthenticated ? <ArtistProfileGuidePage /> : <Navigate to="/login" state={{ from: '/artist-profile-guide' }} />
