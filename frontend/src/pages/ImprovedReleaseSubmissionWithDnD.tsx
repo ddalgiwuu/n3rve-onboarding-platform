@@ -115,6 +115,9 @@ interface Artist {
   role: 'main' | 'featured' | 'additional'
   spotifyId?: string
   appleId?: string
+  translations?: {
+    [language: string]: string
+  }
 }
 
 interface Contributor {
@@ -129,7 +132,11 @@ interface Track {
   id: string
   title: string
   titleTranslation?: string
+  titleTranslations?: {
+    [language: string]: string
+  }
   artists: Artist[]
+  featuringArtists: Artist[]
   contributors: Contributor[]
   isrc?: string
   duration?: string
@@ -148,6 +155,9 @@ interface FormData {
   // Album Info
   albumTitle: string
   albumTitleTranslation?: string
+  albumTitleTranslations?: {
+    [language: string]: string
+  }
   albumArtist?: string // For backward compatibility
   albumArtists: Artist[]
   releaseType: 'single' | 'album' | 'ep'
@@ -233,6 +243,19 @@ const languageList = [
   { code: 'instrumental', name: '인스트루멘탈 (Instrumental)' }
 ]
 
+// Translation languages for titles (exclude instrumental)
+const translationLanguages = [
+  { code: 'en', name: 'English' },
+  { code: 'ja', name: '日本語 (Japanese)' },
+  { code: 'zh', name: '中文 (Chinese)' },
+  { code: 'es', name: 'Español (Spanish)' },
+  { code: 'fr', name: 'Français (French)' },
+  { code: 'de', name: 'Deutsch (German)' },
+  { code: 'it', name: 'Italiano (Italian)' },
+  { code: 'pt', name: 'Português (Portuguese)' },
+  { code: 'ru', name: 'Русский (Russian)' }
+]
+
 const ImprovedReleaseSubmission: React.FC = () => {
   const navigate = useNavigate()
   const { language } = useLanguageStore()
@@ -257,6 +280,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     albumTitle: '',
     albumTitleTranslation: '',
+    albumTitleTranslations: {},
     albumArtist: '',
     albumArtists: [],
     releaseType: 'single',
@@ -286,7 +310,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
   // Modal states
   const [showAlbumArtistModal, setShowAlbumArtistModal] = useState(false)
   const [showTrackArtistModal, setShowTrackArtistModal] = useState<string | null>(null)
+  const [showFeaturingArtistModal, setShowFeaturingArtistModal] = useState<string | null>(null)
   const [showContributorModal, setShowContributorModal] = useState<string | null>(null)
+  
+  // Translation states
+  const [showAlbumTranslations, setShowAlbumTranslations] = useState(false)
+  const [activeAlbumTranslations, setActiveAlbumTranslations] = useState<string[]>([])
+  const [trackTranslations, setTrackTranslations] = useState<{ [trackId: string]: string[] }>({})
+  const [showTrackTranslations, setShowTrackTranslations] = useState<{ [trackId: string]: boolean }>({})
 
   // Generate identifiers
   const handleGenerateUPC = () => {
@@ -362,6 +393,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
       title: '',
       titleTranslation: '',
       artists: [...formData.albumArtists], // Copy album artists as default
+      featuringArtists: [],
       contributors: [],
       trackNumber: formData.tracks.length + 1,
       titleLanguage: 'Korean',
@@ -656,11 +688,28 @@ const ImprovedReleaseSubmission: React.FC = () => {
           
           {/* Track Content */}
           <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Track Title */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('트랙 제목', 'Track Title')} *
-              </label>
+            {/* Track Title with Translation Toggle */}
+            <div className="md:col-span-2">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t('트랙 제목', 'Track Title')} *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentTranslations = trackTranslations[track.id] || []
+                    setTrackTranslations({
+                      ...trackTranslations,
+                      [track.id]: currentTranslations.length > 0 ? [] : ['en']
+                    })
+                  }}
+                  className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 flex items-center gap-1"
+                >
+                  <Globe className="w-3 h-3" />
+                  {trackTranslations[track.id]?.length > 0 ? t('번역 숨기기', 'Hide translations') : t('번역 추가', 'Add translations')}
+                </button>
+              </div>
+              
               <input
                 type="text"
                 value={track.title}
@@ -668,24 +717,85 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
                 placeholder={t('트랙 제목 입력', 'Enter track title')}
               />
-            </div>
-            
-            {/* Track Title Translation */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('트랙 제목 번역', 'Track Title Translation')}
-              </label>
-              <input
-                type="text"
-                value={track.titleTranslation || ''}
-                onChange={(e) => updateTrack(track.id, { titleTranslation: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                placeholder={t('번역된 트랙 제목 (선택사항)', 'Translated track title (optional)')}
-              />
+              
+              {/* Track Title Translations */}
+              {trackTranslations[track.id]?.length > 0 && (
+                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-3">
+                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                    <Globe className="w-4 h-4" />
+                    {t('제목 번역', 'Title Translations')}
+                  </h4>
+                  
+                  {/* Active translations */}
+                  {(trackTranslations[track.id] || []).map(langCode => {
+                    const lang = translationLanguages.find(l => l.code === langCode)
+                    return (
+                      <div key={langCode} className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600 dark:text-gray-400 w-24">
+                          {lang?.name}:
+                        </span>
+                        <input
+                          type="text"
+                          value={track.titleTranslations?.[langCode] || ''}
+                          onChange={(e) => updateTrack(track.id, {
+                            titleTranslations: {
+                              ...track.titleTranslations,
+                              [langCode]: e.target.value
+                            }
+                          })}
+                          placeholder={t('번역 입력', 'Enter translation')}
+                          className="flex-1 px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setTrackTranslations({
+                              ...trackTranslations,
+                              [track.id]: trackTranslations[track.id].filter(l => l !== langCode)
+                            })
+                            const newTranslations = { ...track.titleTranslations }
+                            delete newTranslations[langCode]
+                            updateTrack(track.id, { titleTranslations: newTranslations })
+                          }}
+                          className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )
+                  })}
+                  
+                  {/* Add translation dropdown */}
+                  <div className="flex items-center gap-2">
+                    <select
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          setTrackTranslations({
+                            ...trackTranslations,
+                            [track.id]: [...(trackTranslations[track.id] || []), e.target.value]
+                          })
+                          e.target.value = ''
+                        }
+                      }}
+                      className="text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
+                    >
+                      <option value="">{t('언어 추가...', 'Add language...')}</option>
+                      {translationLanguages
+                        .filter(lang => !(trackTranslations[track.id] || []).includes(lang.code))
+                        .map(lang => (
+                          <option key={lang.code} value={lang.code}>
+                            {lang.name}
+                          </option>
+                        ))
+                      }
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
             
             {/* Track Artists */}
-            <div className="md:col-span-2">
+            <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 {t('트랙 아티스트', 'Track Artists')} *
               </label>
@@ -699,7 +809,6 @@ const ImprovedReleaseSubmission: React.FC = () => {
                       className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-full text-sm"
                     >
                       {artist.name}
-                      {artist.role === 'featured' && <span className="text-xs">(Feat.)</span>}
                     </span>
                   ))}
                 </div>
@@ -712,6 +821,36 @@ const ImprovedReleaseSubmission: React.FC = () => {
               >
                 <Plus className="w-4 h-4 inline-block mr-1" />
                 {t('아티스트 관리', 'Manage Artists')}
+              </button>
+            </div>
+            
+            {/* Featuring Artists */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('피처링 아티스트', 'Featuring Artists')}
+              </label>
+              
+              {/* Featuring Artist List */}
+              {track.featuringArtists.length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2">
+                  {track.featuringArtists.map((artist) => (
+                    <span
+                      key={artist.id}
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-pink-100 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 rounded-full text-sm"
+                    >
+                      {artist.name}
+                    </span>
+                  ))}
+                </div>
+              )}
+              
+              <button
+                type="button"
+                onClick={() => setShowFeaturingArtistModal(track.id)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+              >
+                <Plus className="w-4 h-4 inline-block mr-1" />
+                {t('피처링 관리', 'Manage Featuring')}
               </button>
             </div>
             
@@ -842,10 +981,20 @@ const ImprovedReleaseSubmission: React.FC = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Album Title */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('앨범 제목', 'Album Title')} *
-                </label>
+              <div className="md:col-span-2">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t('앨범 제목', 'Album Title')} *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowAlbumTranslations(!showAlbumTranslations)}
+                    className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 flex items-center gap-1"
+                  >
+                    <Globe className="w-4 h-4" />
+                    {t('번역 추가', 'Add translations')}
+                  </button>
+                </div>
                 <input
                   type="text"
                   value={formData.albumTitle}
@@ -853,20 +1002,79 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
                   placeholder={t('앨범 제목을 입력하세요', 'Enter album title')}
                 />
-              </div>
-              
-              {/* Album Title Translation */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('앨범 제목 번역', 'Album Title Translation')}
-                </label>
-                <input
-                  type="text"
-                  value={formData.albumTitleTranslation || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, albumTitleTranslation: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  placeholder={t('번역된 앨범 제목 (선택사항)', 'Translated album title (optional)')}
-                />
+                
+                {/* Album Title Translations */}
+                {showAlbumTranslations && (
+                  <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-3">
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                      <Globe className="w-4 h-4" />
+                      {t('앨범 제목 번역', 'Album Title Translations')}
+                    </h4>
+                    
+                    {/* Active translations */}
+                    {activeAlbumTranslations.map(langCode => {
+                      const lang = translationLanguages.find(l => l.code === langCode)
+                      return (
+                        <div key={langCode} className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600 dark:text-gray-400 w-32">
+                            {lang?.name}:
+                          </span>
+                          <input
+                            type="text"
+                            value={formData.albumTitleTranslations?.[langCode] || ''}
+                            onChange={(e) => setFormData(prev => ({
+                              ...prev,
+                              albumTitleTranslations: {
+                                ...prev.albumTitleTranslations,
+                                [langCode]: e.target.value
+                              }
+                            }))}
+                            placeholder={t('번역 입력', 'Enter translation')}
+                            className="flex-1 px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveAlbumTranslations(activeAlbumTranslations.filter(l => l !== langCode))
+                              const newTranslations = { ...formData.albumTitleTranslations }
+                              delete newTranslations[langCode]
+                              setFormData(prev => ({ ...prev, albumTitleTranslations: newTranslations }))
+                            }}
+                            className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )
+                    })}
+                    
+                    {/* Add translation dropdown */}
+                    <div className="flex items-center gap-2">
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setActiveAlbumTranslations([...activeAlbumTranslations, e.target.value])
+                            e.target.value = ''
+                          }
+                        }}
+                        className="text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
+                      >
+                        <option value="">{t('언어 선택...', 'Select language...')}</option>
+                        {translationLanguages
+                          .filter(lang => !activeAlbumTranslations.includes(lang.code))
+                          .map(lang => (
+                            <option key={lang.code} value={lang.code}>
+                              {lang.name}
+                            </option>
+                          ))
+                        }
+                      </select>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('각 언어별 앨범 제목을 입력하세요', 'Enter album title for each language')}
+                      </span>
+                    </div>
+                  </div>
+                )}
               </div>
               
               {/* Album Artists */}
@@ -903,10 +1111,6 @@ const ImprovedReleaseSubmission: React.FC = () => {
                               {artist.role === 'additional' && t('참여 아티스트', 'Additional Artist')}
                             </p>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                          {artist.spotifyId && <span className="flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Spotify</span>}
-                          {artist.appleId && <span className="flex items-center gap-1"><ExternalLink className="w-3 h-3" /> Apple</span>}
                         </div>
                       </div>
                     ))}
@@ -1864,6 +2068,28 @@ const ImprovedReleaseSubmission: React.FC = () => {
             setShowTrackArtistModal(null)
           }}
           albumLevel={false}
+        />
+      )}
+      
+      {/* Featuring Artist Management Modal */}
+      {showFeaturingArtistModal && (
+        <ArtistManagementModal
+          isOpen={!!showFeaturingArtistModal}
+          onClose={() => setShowFeaturingArtistModal(null)}
+          artists={formData.tracks.find(t => t.id === showFeaturingArtistModal)?.featuringArtists || []}
+          onSave={(artists) => {
+            setFormData(prev => ({
+              ...prev,
+              tracks: prev.tracks.map(t => 
+                t.id === showFeaturingArtistModal 
+                  ? { ...t, featuringArtists: artists }
+                  : t
+              )
+            }))
+            setShowFeaturingArtistModal(null)
+          }}
+          albumLevel={false}
+          isFeaturing={true}
         />
       )}
       
