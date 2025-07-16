@@ -20,6 +20,7 @@ import DatePicker from '@/components/DatePicker'
 import { v4 as uuidv4 } from 'uuid'
 import RegionSelector from '@/components/RegionSelector'
 import MultiSelect from '@/components/ui/MultiSelect'
+import SearchableSelect from '@/components/ui/SearchableSelect'
 import { genreList, subgenreList } from '@/constants/genres'
 import { countries } from '@/constants/countries'
 import { timezones, convertToUTC } from '@/constants/timezones'
@@ -55,11 +56,11 @@ const Toggle: React.FC<{
       </button>
       {label && (
         <div className="flex-1">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {label}
           </label>
           {helpText && (
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{helpText}</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">{helpText}</p>
           )}
         </div>
       )}
@@ -109,7 +110,9 @@ const RadioGroup: React.FC<{
 interface Track {
   id: string
   title: string
+  titleTranslation?: string
   artist: string
+  featuringArtists?: string[]
   isrc?: string
   duration?: string
   genre?: string
@@ -129,7 +132,10 @@ interface Track {
 interface FormData {
   // Album Info
   albumTitle: string
+  albumTitleTranslation?: string
   albumArtist: string
+  albumArtists?: string[]
+  featuringArtists?: string[]
   releaseType: 'single' | 'album' | 'ep'
   primaryGenre: string
   primarySubgenre: string
@@ -137,8 +143,10 @@ interface FormData {
   secondarySubgenre?: string
   language: string
   releaseDate: string
+  releaseTime: string
   timezone: string
   originalReleaseDate?: string
+  consumerReleaseDate?: string
   upc?: string
   ean?: string
   catalogNumber?: string
@@ -155,6 +163,9 @@ interface FormData {
   // Files
   coverArt?: File
   audioFiles: File[]
+  dolbyAtmosFiles?: File[]
+  motionArtFile?: File
+  musicVideoFile?: File
   
   // Distribution
   distributionType: 'all' | 'selected'
@@ -176,6 +187,37 @@ interface FormData {
     internal_note?: string
   }
 }
+
+// Language list
+const languageList = [
+  { code: 'ko', name: '한국어 (Korean)' },
+  { code: 'en', name: '영어 (English)' },
+  { code: 'ja', name: '일본어 (Japanese)' },
+  { code: 'zh', name: '중국어 (Chinese)' },
+  { code: 'es', name: '스페인어 (Spanish)' },
+  { code: 'fr', name: '프랑스어 (French)' },
+  { code: 'de', name: '독일어 (German)' },
+  { code: 'it', name: '이탈리아어 (Italian)' },
+  { code: 'pt', name: '포르투갈어 (Portuguese)' },
+  { code: 'ru', name: '러시아어 (Russian)' },
+  { code: 'ar', name: '아랍어 (Arabic)' },
+  { code: 'hi', name: '힌디어 (Hindi)' },
+  { code: 'th', name: '태국어 (Thai)' },
+  { code: 'vi', name: '베트남어 (Vietnamese)' },
+  { code: 'id', name: '인도네시아어 (Indonesian)' },
+  { code: 'ms', name: '말레이어 (Malay)' },
+  { code: 'tl', name: '타갈로그어 (Filipino)' },
+  { code: 'tr', name: '터키어 (Turkish)' },
+  { code: 'pl', name: '폴란드어 (Polish)' },
+  { code: 'nl', name: '네덜란드어 (Dutch)' },
+  { code: 'sv', name: '스웨덴어 (Swedish)' },
+  { code: 'no', name: '노르웨이어 (Norwegian)' },
+  { code: 'da', name: '덴마크어 (Danish)' },
+  { code: 'fi', name: '핀란드어 (Finnish)' },
+  { code: 'el', name: '그리스어 (Greek)' },
+  { code: 'he', name: '히브리어 (Hebrew)' },
+  { code: 'instrumental', name: '인스트루멘탈 (Instrumental)' }
+]
 
 const ImprovedReleaseSubmission: React.FC = () => {
   const navigate = useNavigate()
@@ -200,12 +242,16 @@ const ImprovedReleaseSubmission: React.FC = () => {
   // Form Data
   const [formData, setFormData] = useState<FormData>({
     albumTitle: '',
+    albumTitleTranslation: '',
     albumArtist: '',
+    albumArtists: [],
+    featuringArtists: [],
     releaseType: 'single',
     primaryGenre: '',
     primarySubgenre: '',
     language: '',
     releaseDate: '',
+    releaseTime: '00:00',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Seoul',
     recordLabel: user?.company || '',
     copyrightHolder: user?.company || '',
@@ -214,12 +260,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
     productionYear: new Date().getFullYear().toString(),
     tracks: [],
     audioFiles: [],
+    dolbyAtmosFiles: [],
     distributionType: 'all',
     selectedStores: [],
     excludedStores: [],
     territories: [],
     excludedTerritories: [],
-    previouslyReleased: false
+    previouslyReleased: false,
+    marketingInfo: {}
   })
 
   // Generate identifiers
@@ -291,10 +339,13 @@ const ImprovedReleaseSubmission: React.FC = () => {
 
   // Track management
   const addTrack = () => {
+    const allArtists = [formData.albumArtist, ...(formData.albumArtists || [])].filter(Boolean).join(', ')
     const newTrack: Track = {
       id: uuidv4(),
       title: '',
-      artist: formData.albumArtist,
+      titleTranslation: '',
+      artist: allArtists,
+      featuringArtists: [],
       trackNumber: formData.tracks.length + 1,
       titleLanguage: 'Korean',
       dolbyAtmos: false
@@ -598,17 +649,47 @@ const ImprovedReleaseSubmission: React.FC = () => {
               />
             </div>
             
+            {/* Track Title Translation */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('트랙 제목 번역', 'Track Title Translation')}
+              </label>
+              <input
+                type="text"
+                value={track.titleTranslation || ''}
+                onChange={(e) => updateTrack(track.id, { titleTranslation: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                placeholder={t('번역된 트랙 제목 (선택사항)', 'Translated track title (optional)')}
+              />
+            </div>
+            
             {/* Track Artist */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('아티스트', 'Artist')} *
+                {t('트랙 아티스트', 'Track Artists')} *
               </label>
               <input
                 type="text"
                 value={track.artist}
                 onChange={(e) => updateTrack(track.id, { artist: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                placeholder={t('아티스트명 입력', 'Enter artist name')}
+                placeholder={t('콤마로 구분 (예: Artist1, Artist2)', 'Comma separated (e.g., Artist1, Artist2)')}
+              />
+            </div>
+            
+            {/* Featuring Artists */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('피처링 아티스트', 'Featuring Artists')}
+              </label>
+              <input
+                type="text"
+                value={track.featuringArtists?.join(', ') || ''}
+                onChange={(e) => updateTrack(track.id, { 
+                  featuringArtists: e.target.value.split(',').map(a => a.trim()).filter(Boolean) 
+                })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                placeholder={t('콤마로 구분 (예: Feat1, Feat2)', 'Comma separated (e.g., Feat1, Feat2)')}
               />
             </div>
             
@@ -714,18 +795,100 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 />
               </div>
               
+              {/* Album Title Translation */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('앨범 제목 번역', 'Album Title Translation')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.albumTitleTranslation || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, albumTitleTranslation: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder={t('번역된 앨범 제목 (선택사항)', 'Translated album title (optional)')}
+                />
+              </div>
+              
               {/* Album Artist */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('앨범 아티스트', 'Album Artist')} *
+                  {t('메인 아티스트', 'Main Artist')} *
                 </label>
                 <input
                   type="text"
                   value={formData.albumArtist}
                   onChange={(e) => setFormData(prev => ({ ...prev, albumArtist: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  placeholder={t('아티스트명을 입력하세요', 'Enter artist name')}
+                  placeholder={t('메인 아티스트명', 'Main artist name')}
                 />
+              </div>
+              
+              {/* Additional Artists */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('추가 아티스트', 'Additional Artists')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.albumArtists?.join(', ') || ''}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    albumArtists: e.target.value.split(',').map(a => a.trim()).filter(Boolean)
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder={t('콤마로 구분 (예: Artist2, Artist3)', 'Comma separated (e.g., Artist2, Artist3)')}
+                />
+              </div>
+              
+              {/* Featuring Artists */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('피처링 아티스트', 'Featuring Artists')}
+                </label>
+                <input
+                  type="text"
+                  value={formData.featuringArtists?.join(', ') || ''}
+                  onChange={(e) => setFormData(prev => ({ 
+                    ...prev, 
+                    featuringArtists: e.target.value.split(',').map(a => a.trim()).filter(Boolean)
+                  }))}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  placeholder={t('콤마로 구분 (예: Feat1, Feat2)', 'Comma separated (e.g., Feat1, Feat2)')}
+                />
+              </div>
+              
+              {/* Artist IDs */}
+              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('Spotify 아티스트 ID', 'Spotify Artist ID')}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.marketingInfo?.artist_spotify_id || ''}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      marketingInfo: { ...prev.marketingInfo, artist_spotify_id: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="spotify:artist:XXXXXXXXX"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('Apple Music 아티스트 ID', 'Apple Music Artist ID')}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.marketingInfo?.artist_apple_id || ''}
+                    onChange={(e) => setFormData(prev => ({ 
+                      ...prev, 
+                      marketingInfo: { ...prev.marketingInfo, artist_apple_id: e.target.value }
+                    }))}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                    placeholder="123456789"
+                  />
+                </div>
               </div>
               
               {/* Release Type */}
@@ -747,39 +910,50 @@ const ImprovedReleaseSubmission: React.FC = () => {
               
               {/* Primary Genre */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('주 장르', 'Primary Genre')} *
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                  {t('주 장르', 'Primary Genre')} <span className="text-red-500">*</span>
                 </label>
-                <select
+                <SearchableSelect
+                  options={genreList}
                   value={formData.primaryGenre}
-                  onChange={(e) => setFormData(prev => ({ ...prev, primaryGenre: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="">{t('장르 선택', 'Select genre')}</option>
-                  {genreList.map(genre => (
-                    <option key={genre.value} value={genre.value}>{genre.label}</option>
-                  ))}
-                </select>
+                  onChange={(value) => {
+                    setFormData(prev => ({ ...prev, primaryGenre: value, primarySubgenre: '' }))
+                  }}
+                  placeholder={t('장르 선택', 'Select genre')}
+                  searchPlaceholder={t('장르 검색...', 'Search genres...')}
+                />
+              </div>
+              
+              {/* Primary Subgenre */}
+              <div>
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                  {t('주 서브장르', 'Primary Subgenre')}
+                </label>
+                <SearchableSelect
+                  options={formData.primaryGenre && subgenreList[formData.primaryGenre] ? subgenreList[formData.primaryGenre] : []}
+                  value={formData.primarySubgenre}
+                  onChange={(value) => setFormData(prev => ({ ...prev, primarySubgenre: value }))}
+                  placeholder={t('서브장르 선택', 'Select subgenre')}
+                  searchPlaceholder={t('서브장르 검색...', 'Search subgenres...')}
+                  disabled={!formData.primaryGenre}
+                />
               </div>
               
               {/* Language */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('언어', 'Language')} *
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                  {t('주요 가사 언어', 'Primary Lyrics Language')} <span className="text-red-500">*</span>
+                  <span className="ml-1 text-xs text-gray-600 dark:text-gray-400">
+                    {t('(가장 많이 사용된 언어)', '(Most used language)')}
+                  </span>
                 </label>
-                <select
+                <SearchableSelect
+                  options={languageList.map(lang => ({ value: lang.code, label: lang.name }))}
                   value={formData.language}
-                  onChange={(e) => setFormData(prev => ({ ...prev, language: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                >
-                  <option value="">{t('언어 선택', 'Select language')}</option>
-                  <option value="ko">{t('한국어', 'Korean')}</option>
-                  <option value="en">{t('영어', 'English')}</option>
-                  <option value="ja">{t('일본어', 'Japanese')}</option>
-                  <option value="zh">{t('중국어', 'Chinese')}</option>
-                  <option value="instrumental">{t('인스트루멘탈', 'Instrumental')}</option>
-                  <option value="other">{t('기타', 'Other')}</option>
-                </select>
+                  onChange={(value) => setFormData(prev => ({ ...prev, language: value }))}
+                  placeholder={t('언어 선택', 'Select language')}
+                  searchPlaceholder={t('언어 검색...', 'Search languages...')}
+                />
               </div>
               
               {/* Release Date */}
@@ -791,6 +965,61 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   value={formData.releaseDate}
                   onChange={(date) => setFormData(prev => ({ ...prev, releaseDate: date }))}
                   minDate={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              
+              {/* Release Time */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('발매 시간', 'Release Time')} *
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="time"
+                    value={formData.releaseTime}
+                    onChange={(e) => setFormData(prev => ({ ...prev, releaseTime: e.target.value }))}
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                  />
+                  <SearchableSelect
+                    options={timezones.map(tz => ({ 
+                      value: tz.value, 
+                      label: `${tz.label} (${tz.offset})` 
+                    }))}
+                    value={formData.timezone}
+                    onChange={(value) => setFormData(prev => ({ ...prev, timezone: value }))}
+                    placeholder={t('시간대 선택', 'Select timezone')}
+                    searchPlaceholder={t('시간대 검색...', 'Search timezones...')}
+                    className="min-w-[200px]"
+                  />
+                </div>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                  {t('UTC 변환: ', 'UTC: ')}
+                  {formData.releaseDate && formData.releaseTime && formData.timezone
+                    ? convertToUTC(formData.releaseDate, formData.releaseTime, formData.timezone).toISOString()
+                    : '-'}
+                </p>
+              </div>
+              
+              {/* Original/Consumer Release Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('오리지널 발매일', 'Original Release Date')}
+                </label>
+                <DatePicker
+                  value={formData.originalReleaseDate || ''}
+                  onChange={(date) => setFormData(prev => ({ ...prev, originalReleaseDate: date }))}
+                  maxDate={new Date().toISOString().split('T')[0]}
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('컨슈머 발매일', 'Consumer Release Date')}
+                </label>
+                <DatePicker
+                  value={formData.consumerReleaseDate || ''}
+                  onChange={(date) => setFormData(prev => ({ ...prev, consumerReleaseDate: date }))}
+                  maxDate={new Date().toISOString().split('T')[0]}
                 />
               </div>
               
@@ -817,30 +1046,67 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 </div>
               </div>
               
-              {/* Copyright Info */}
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('저작권자', 'Copyright Holder')} *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.copyrightHolder}
-                    onChange={(e) => setFormData(prev => ({ ...prev, copyrightHolder: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  />
+              {/* Copyright Info (P&C) */}
+              <div className="md:col-span-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  {t('저작권 정보 (P&C)', 'Copyright Information (P&C)')}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('© 저작권자 (Copyright)', '© Copyright Holder')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.copyrightHolder}
+                      onChange={(e) => setFormData(prev => ({ ...prev, copyrightHolder: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                      placeholder={t('저작권 소유자명', 'Copyright holder name')}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('© 저작권 연도', '© Copyright Year')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.copyrightYear}
+                      onChange={(e) => setFormData(prev => ({ ...prev, copyrightYear: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="2024"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('℗ 제작권자 (Production)', '℗ Production Holder')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.productionHolder}
+                      onChange={(e) => setFormData(prev => ({ ...prev, productionHolder: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                      placeholder={t('음원 제작권 소유자명', 'Production rights holder name')}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('℗ 제작권 연도', '℗ Production Year')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.productionYear}
+                      onChange={(e) => setFormData(prev => ({ ...prev, productionYear: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="2024"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('저작권 연도', 'Copyright Year')} *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.copyrightYear}
-                    onChange={(e) => setFormData(prev => ({ ...prev, copyrightYear: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                  {t(
+                    '© (Copyright)는 작곡/작사 권리, ℗ (Production)는 녹음/제작 권리를 의미합니다',
+                    '© (Copyright) refers to composition/lyrics rights, ℗ (Production) refers to recording/production rights'
+                  )}
+                </p>
               </div>
             </div>
           </div>
@@ -892,24 +1158,44 @@ const ImprovedReleaseSubmission: React.FC = () => {
               {t('파일 업로드', 'File Upload')}
             </h2>
             
+            {/* File Guidelines */}
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-start gap-3">
+                <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                <div className="text-sm">
+                  <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
+                    {t('파일 형식 가이드라인', 'File Format Guidelines')}
+                  </p>
+                  <ul className="space-y-1 text-blue-800 dark:text-blue-300">
+                    <li>• {t('커버 아트: 3000x3000px 이상, JPG/PNG, RGB 색상 모드', 'Cover Art: Min 3000x3000px, JPG/PNG, RGB color mode')}</li>
+                    <li>• {t('오디오: WAV/FLAC, 24bit/96kHz 이상 권장, 스테레오', 'Audio: WAV/FLAC, 24bit/96kHz+ recommended, Stereo')}</li>
+                    <li>• {t('Dolby Atmos: ADM BWF 또는 .atmos 파일', 'Dolby Atmos: ADM BWF or .atmos file')}</li>
+                    <li>• {t('모션 아트: MP4/MOV, 3-10초, 최대 100MB', 'Motion Art: MP4/MOV, 3-10 seconds, Max 100MB')}</li>
+                    <li>• {t('뮤직비디오: MP4/MOV, H.264, 1920x1080 이상', 'Music Video: MP4/MOV, H.264, 1920x1080+')}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
             {/* Cover Art */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('커버 아트', 'Cover Art')} *
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                {t('커버 아트', 'Cover Art')} 
+                <span className="text-red-500 ml-1">*</span>
               </label>
               {formData.coverArt ? (
-                <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
+                <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
                   <Image className="w-8 h-8 text-gray-600 dark:text-gray-400" />
                   <div className="flex-1">
-                    <p className="font-medium">{formData.coverArt.name}</p>
-                    <p className="text-sm text-gray-500">
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{formData.coverArt.name}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {(formData.coverArt.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, coverArt: undefined }))}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -918,14 +1204,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => coverArtInputRef.current?.click()}
-                  className="w-full p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 transition-colors"
+                  className="w-full p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
                 >
-                  <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <Upload className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+                  <p className="text-gray-700 dark:text-gray-300 font-medium">
                     {t('클릭하여 이미지 선택', 'Click to select image')}
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                    {t('최소 3000x3000px, JPG/PNG', 'Min 3000x3000px, JPG/PNG')}
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                    {t('최소 3000x3000px, JPG/PNG, RGB 색상 모드', 'Min 3000x3000px, JPG/PNG, RGB color mode')}
                   </p>
                 </button>
               )}
@@ -939,26 +1225,30 @@ const ImprovedReleaseSubmission: React.FC = () => {
             </div>
             
             {/* Audio Files */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('오디오 파일', 'Audio Files')} * ({formData.audioFiles.length}/{formData.tracks.length})
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                {t('오디오 파일', 'Audio Files')} 
+                <span className="text-red-500 ml-1">*</span>
+                <span className="ml-2 text-gray-600 dark:text-gray-400">
+                  ({formData.audioFiles.length}/{formData.tracks.length})
+                </span>
               </label>
               
               {formData.audioFiles.length > 0 && (
                 <div className="space-y-2 mb-4">
                   {formData.audioFiles.map((file, index) => (
-                    <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800">
+                    <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
                       <Music className="w-8 h-8 text-gray-600 dark:text-gray-400" />
                       <div className="flex-1">
-                        <p className="font-medium">{file.name}</p>
-                        <p className="text-sm text-gray-500">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{file.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
                           {(file.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                       </div>
                       <button
                         type="button"
                         onClick={() => removeAudioFile(index)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                       >
                         <X className="w-5 h-5" />
                       </button>
@@ -970,13 +1260,13 @@ const ImprovedReleaseSubmission: React.FC = () => {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 transition-colors"
+                className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
               >
-                <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-                <p className="text-gray-600 dark:text-gray-400">
+                <Upload className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+                <p className="text-gray-700 dark:text-gray-300 font-medium">
                   {t('오디오 파일 추가', 'Add audio files')}
                 </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {t('WAV, FLAC (24bit/96kHz 이상 권장)', 'WAV, FLAC (24bit/96kHz or higher recommended)')}
                 </p>
               </button>
@@ -988,6 +1278,165 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 onChange={handleAudioFileSelect}
                 className="hidden"
               />
+            </div>
+            
+            {/* Dolby Atmos Files */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                {t('Dolby Atmos 파일', 'Dolby Atmos Files')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+              </label>
+              
+              {formData.dolbyAtmosFiles && formData.dolbyAtmosFiles.length > 0 && (
+                <div className="space-y-2 mb-4">
+                  {formData.dolbyAtmosFiles.map((file, index) => (
+                    <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                      <Disc className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{file.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB • Dolby Atmos
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const newFiles = [...(formData.dolbyAtmosFiles || [])]
+                          newFiles.splice(index, 1)
+                          setFormData(prev => ({ ...prev, dolbyAtmosFiles: newFiles }))
+                        }}
+                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <button
+                type="button"
+                onClick={() => {
+                  const input = document.createElement('input')
+                  input.type = 'file'
+                  input.accept = '.atmos,.bwf'
+                  input.multiple = true
+                  input.onchange = (e) => {
+                    const files = Array.from((e.target as HTMLInputElement).files || [])
+                    setFormData(prev => ({ ...prev, dolbyAtmosFiles: [...(prev.dolbyAtmosFiles || []), ...files] }))
+                  }
+                  input.click()
+                }}
+                className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+              >
+                <Disc className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+                <p className="text-gray-700 dark:text-gray-300 font-medium">
+                  {t('Dolby Atmos 파일 추가', 'Add Dolby Atmos files')}
+                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  {t('ADM BWF 또는 .atmos 파일', 'ADM BWF or .atmos files')}
+                </p>
+              </button>
+            </div>
+            
+            {/* Motion Art */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                {t('모션 아트', 'Motion Art')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+              </label>
+              
+              {formData.motionArtFile ? (
+                <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                  <Star className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{formData.motionArtFile.name}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {(formData.motionArtFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, motionArtFile: undefined }))}
+                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = 'video/mp4,video/quicktime'
+                    input.onchange = (e) => {
+                      const file = (e.target as HTMLInputElement).files?.[0]
+                      if (file) setFormData(prev => ({ ...prev, motionArtFile: file }))
+                    }
+                    input.click()
+                  }}
+                  className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+                >
+                  <Star className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+                  <p className="text-gray-700 dark:text-gray-300 font-medium">
+                    {t('모션 아트 추가', 'Add Motion Art')}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {t('MP4/MOV, 3-10초, 최대 100MB', 'MP4/MOV, 3-10 seconds, Max 100MB')}
+                  </p>
+                </button>
+              )}
+            </div>
+            
+            {/* Music Video */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                {t('뮤직비디오', 'Music Video')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+              </label>
+              
+              {formData.musicVideoFile ? (
+                <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                  <ExternalLink className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900 dark:text-gray-100">{formData.musicVideoFile.name}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {(formData.musicVideoFile.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, musicVideoFile: undefined }))}
+                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = 'video/mp4,video/quicktime'
+                    input.onchange = (e) => {
+                      const file = (e.target as HTMLInputElement).files?.[0]
+                      if (file) setFormData(prev => ({ ...prev, musicVideoFile: file }))
+                    }
+                    input.click()
+                  }}
+                  className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+                >
+                  <ExternalLink className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+                  <p className="text-gray-700 dark:text-gray-300 font-medium">
+                    {t('뮤직비디오 추가', 'Add Music Video')}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {t('MP4/MOV, H.264, 1920x1080 이상', 'MP4/MOV, H.264, 1920x1080+')}
+                  </p>
+                </button>
+              )}
             </div>
           </div>
         )
@@ -1124,6 +1573,24 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     <CheckCircle className="w-4 h-4 text-green-600" />
                     <span>{t('오디오 파일', 'Audio Files')}: {formData.audioFiles.length}개</span>
                   </div>
+                  {formData.dolbyAtmosFiles && formData.dolbyAtmosFiles.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>{t('Dolby Atmos 파일', 'Dolby Atmos Files')}: {formData.dolbyAtmosFiles.length}개</span>
+                    </div>
+                  )}
+                  {formData.motionArtFile && (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>{t('모션 아트', 'Motion Art')}: {formData.motionArtFile.name}</span>
+                    </div>
+                  )}
+                  {formData.musicVideoFile && (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>{t('뮤직비디오', 'Music Video')}: {formData.musicVideoFile.name}</span>
+                    </div>
+                  )}
                 </div>
               </div>
               
