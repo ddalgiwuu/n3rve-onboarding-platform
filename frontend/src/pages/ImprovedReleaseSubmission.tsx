@@ -11,7 +11,6 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { submissionService } from '@/services/submission.service'
-import { useAuthStore } from '@/store/auth.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'

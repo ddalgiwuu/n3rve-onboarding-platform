@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { X, Plus, Trash2, Users, User, Music, ExternalLink, HelpCircle, Globe, Search, ChevronDown, Save, Edit2 } from 'lucide-react'
+import { useState } from 'react'
+import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, ChevronDown, Save } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import { useSavedArtistsStore } from '@/store/savedArtists.store'
 import toast from 'react-hot-toast'
@@ -65,6 +65,7 @@ export default function ArtistManagementModal({
   const [activeTranslations, setActiveTranslations] = useState<string[]>([])
   const [savedArtistSearch, setSavedArtistSearch] = useState('')
   const [showSavedArtists, setShowSavedArtists] = useState(false)
+  const [showLanguageSelector, setShowLanguageSelector] = useState(false)
 
   const validateArtist = () => {
     const errs: string[] = []

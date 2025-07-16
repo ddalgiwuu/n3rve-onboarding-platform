@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Languages, Info, Youtube, Music, Plus, User, Save, Search, ChevronDown, Globe } from 'lucide-react'
+import { X, Info, Youtube, Plus, User, Save, Search, ChevronDown, Globe } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import { useSavedArtistsStore } from '@/store/savedArtists.store'
 import useSafeStore from '@/hooks/useSafeStore'
