@@ -8,6 +8,7 @@ export class SavedArtistsService {
 
   // Get all saved artists for a user
   async findAllArtists(userId: string, search?: string, limit: number = 50) {
+    console.log('SavedArtistsService: Finding artists for userId:', userId);
     const where: Prisma.SavedArtistWhereInput = { userId };
     
     if (search) {
@@ -23,7 +24,7 @@ export class SavedArtistsService {
       ];
     }
 
-    return this.prisma.savedArtist.findMany({
+    const result = await this.prisma.savedArtist.findMany({
       where,
       orderBy: [
         { createdAt: 'desc' },  // Show recently created artists first
@@ -32,6 +33,9 @@ export class SavedArtistsService {
       ],
       take: limit,
     });
+    
+    console.log('SavedArtistsService: Found artists:', result.length);
+    return result;
   }
 
   // Get all saved contributors for a user
@@ -78,44 +82,61 @@ export class SavedArtistsService {
 
   // Create or update an artist
   async createOrUpdateArtist(userId: string, data: any) {
-    // Check if artist already exists
-    const existingArtist = await this.prisma.savedArtist.findFirst({
-      where: {
-        userId,
-        name: data.name,
-        identifiers: data.identifiers?.[0] ? {
-          some: {
-            type: data.identifiers[0].type,
-            value: data.identifiers[0].value
-          }
-        } : undefined
-      }
-    });
+    console.log('SavedArtistsService: createOrUpdateArtist called with userId:', userId);
+    console.log('SavedArtistsService: createOrUpdateArtist data:', JSON.stringify(data, null, 2));
+    
+    try {
+      // Check if artist already exists
+      console.log('SavedArtistsService: Checking for existing artist...');
+      const existingArtist = await this.prisma.savedArtist.findFirst({
+        where: {
+          userId,
+          name: data.name,
+          identifiers: data.identifiers?.[0] ? {
+            some: {
+              type: data.identifiers[0].type,
+              value: data.identifiers[0].value
+            }
+          } : undefined
+        }
+      });
 
-    if (existingArtist) {
-      // Update usage count and last used
-      return this.prisma.savedArtist.update({
-        where: { id: existingArtist.id },
+      console.log('SavedArtistsService: Existing artist found:', existingArtist ? 'Yes' : 'No');
+
+      if (existingArtist) {
+        console.log('SavedArtistsService: Updating existing artist with ID:', existingArtist.id);
+        // Update usage count and last used
+        const updatedArtist = await this.prisma.savedArtist.update({
+          where: { id: existingArtist.id },
+          data: {
+            usageCount: { increment: 1 },
+            lastUsed: new Date()
+          },
+        });
+        console.log('SavedArtistsService: Artist updated successfully:', updatedArtist);
+        return updatedArtist;
+      }
+
+      // Create new artist
+      console.log('SavedArtistsService: Creating new artist...');
+      const newArtist = await this.prisma.savedArtist.create({
         data: {
-          usageCount: { increment: 1 },
-          lastUsed: new Date()
+          userId,
+          name: data.name,
+          translations: {
+            set: data.translations || []
+          },
+          identifiers: {
+            set: data.identifiers || []
+          }
         },
       });
+      console.log('SavedArtistsService: New artist created successfully:', newArtist);
+      return newArtist;
+    } catch (error) {
+      console.error('SavedArtistsService: Error in createOrUpdateArtist:', error);
+      throw error;
     }
-
-    // Create new artist
-    return this.prisma.savedArtist.create({
-      data: {
-        userId,
-        name: data.name,
-        translations: {
-          set: data.translations || []
-        },
-        identifiers: {
-          set: data.identifiers || []
-        }
-      },
-    });
   }
 
   // Create or update a contributor
