@@ -10,9 +10,6 @@ import ErrorBoundary from './components/ErrorBoundary'
 const HomePage = lazy(() => import('./pages/Home'))
 const LoginPage = lazy(() => import('./pages/Login'))
 const DashboardPage = lazy(() => import('./pages/Dashboard'))
-const ReleaseSubmissionPage = lazy(() => import('./pages/ReleaseSubmission'))
-const ReleaseSubmissionV2Page = lazy(() => import('./pages/ReleaseSubmissionV2'))
-const ModernReleaseSubmissionPage = lazy(() => import('./pages/ModernReleaseSubmission'))
 const ImprovedReleaseSubmissionPage = lazy(() => import('./pages/ImprovedReleaseSubmission'))
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminSubmissionsPage = lazy(() => import('./pages/admin/AdminSubmissions'))
@@ -29,7 +26,6 @@ const AuthCallbackPage = lazy(() => import('./pages/AuthCallback'))
 const ProfileCompletePage = lazy(() => import('./pages/ProfileComplete'))
 const RoleSelectPage = lazy(() => import('./pages/RoleSelect'))
 const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
-const ReleaseFormV2 = lazy(() => import('./components/ReleaseFormV2'))
 
 function App() {
   const authStore = useAuthStore()
@@ -100,31 +96,10 @@ function App() {
           <Route path="/dashboard" element={
             isAuthenticated ? <DashboardPage /> : <Navigate to="/login" state={{ from: '/dashboard' }} />
           } />
-          <Route path="/onboarding" element={
-            isAuthenticated ? (
-              <ErrorBoundary>
-                <ReleaseSubmissionPage />
-              </ErrorBoundary>
-            ) : <Navigate to="/login" state={{ from: '/onboarding' }} />
-          } />
-          <Route path="/onboarding-v2" element={
-            isAuthenticated ? (
-              <ErrorBoundary>
-                <ReleaseSubmissionV2Page />
-              </ErrorBoundary>
-            ) : <Navigate to="/login" state={{ from: '/onboarding-v2' }} />
-          } />
-          <Route path="/release-form-v2" element={
-            isAuthenticated ? (
-              <ErrorBoundary>
-                <ReleaseFormV2 />
-              </ErrorBoundary>
-            ) : <Navigate to="/login" state={{ from: '/release-form-v2' }} />
-          } />
           <Route path="/release-submission-modern" element={
             isAuthenticated ? (
               <ErrorBoundary>
-                <ModernReleaseSubmissionPage />
+                <ImprovedReleaseSubmissionPage />
               </ErrorBoundary>
             ) : <Navigate to="/login" state={{ from: '/release-submission-modern' }} />
           } />
