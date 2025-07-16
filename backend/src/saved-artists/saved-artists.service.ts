@@ -86,22 +86,43 @@ export class SavedArtistsService {
     console.log('SavedArtistsService: createOrUpdateArtist data:', JSON.stringify(data, null, 2));
     
     try {
-      // Check if artist already exists
-      console.log('SavedArtistsService: Checking for existing artist...');
-      const existingArtist = await this.prisma.savedArtist.findFirst({
-        where: {
-          userId,
-          name: data.name,
-          identifiers: data.identifiers?.[0] ? {
-            some: {
-              type: data.identifiers[0].type,
-              value: data.identifiers[0].value
+      let existingArtist = null;
+      
+      // Check if artist already exists - only if we have identifiers
+      if (data.identifiers && data.identifiers.length > 0) {
+        console.log('SavedArtistsService: Checking for existing artist with identifiers...');
+        existingArtist = await this.prisma.savedArtist.findFirst({
+          where: {
+            userId,
+            name: data.name,
+            identifiers: {
+              some: {
+                type: data.identifiers[0].type,
+                value: data.identifiers[0].value
+              }
             }
-          } : undefined
-        }
-      });
+          }
+        });
+      } else {
+        console.log('SavedArtistsService: No identifiers provided, checking for existing artist by name only...');
+        // For new artists without identifiers, we might still want to check by name
+        // but we'll be more lenient about creating duplicates
+        existingArtist = await this.prisma.savedArtist.findFirst({
+          where: {
+            userId,
+            name: data.name,
+            // Only match if both have no identifiers
+            identifiers: {
+              none: {}
+            }
+          }
+        });
+      }
 
       console.log('SavedArtistsService: Existing artist found:', existingArtist ? 'Yes' : 'No');
+      if (existingArtist) {
+        console.log('SavedArtistsService: Existing artist details:', JSON.stringify(existingArtist, null, 2));
+      }
 
       if (existingArtist) {
         console.log('SavedArtistsService: Updating existing artist with ID:', existingArtist.id);
@@ -119,6 +140,13 @@ export class SavedArtistsService {
 
       // Create new artist
       console.log('SavedArtistsService: Creating new artist...');
+      console.log('SavedArtistsService: Artist data to create:', {
+        userId,
+        name: data.name,
+        translations: data.translations || [],
+        identifiers: data.identifiers || []
+      });
+      
       const newArtist = await this.prisma.savedArtist.create({
         data: {
           userId,
@@ -135,6 +163,8 @@ export class SavedArtistsService {
       return newArtist;
     } catch (error) {
       console.error('SavedArtistsService: Error in createOrUpdateArtist:', error);
+      console.error('SavedArtistsService: Error details:', error.message);
+      console.error('SavedArtistsService: Error stack:', error.stack);
       throw error;
     }
   }
