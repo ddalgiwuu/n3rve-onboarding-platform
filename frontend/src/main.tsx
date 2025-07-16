@@ -1,3 +1,4 @@
+import './utils/reactPolyfill' // Apply React 19 compatibility polyfill first
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'

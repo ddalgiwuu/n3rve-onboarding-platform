@@ -10,7 +10,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 const HomePage = lazy(() => import('./pages/Home'))
 const LoginPage = lazy(() => import('./pages/Login'))
 const DashboardPage = lazy(() => import('./pages/Dashboard'))
-const ImprovedReleaseSubmissionPage = lazy(() => import('./pages/ImprovedReleaseSubmission'))
+const ImprovedReleaseSubmissionPage = lazy(() => import('./pages/ImprovedReleaseSubmissionSimple'))
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminSubmissionsPage = lazy(() => import('./pages/admin/AdminSubmissions'))
 const SubmissionManagementPage = lazy(() => import('./pages/admin/SubmissionManagement'))
