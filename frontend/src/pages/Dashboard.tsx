@@ -76,13 +76,6 @@ export default function Dashboard() {
             </div>
             <div className="flex items-center gap-3">
               <Link
-                to="/onboarding"
-                className="btn-modern btn-secondary flex items-center gap-2 hover-lift"
-              >
-                <Upload className="w-5 h-5" />
-                {t('기존 양식')}
-              </Link>
-              <Link
                 to="/release-submission-modern"
                 className="btn-modern btn-primary flex items-center gap-2 hover-lift"
               >

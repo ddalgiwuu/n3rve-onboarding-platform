@@ -107,7 +107,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // Make menu items reactive to language changes
   const customerMenuItems = [
     { icon: Home, label: language === 'ko' ? '대시보드' : 'Dashboard', path: '/dashboard', color: 'text-blue-600' },
-    { icon: Upload, label: language === 'ko' ? '새 음원 제출' : 'New Submission', path: '/onboarding', color: 'text-n3rve-main', badge: 'NEW' },
+    { icon: Upload, label: language === 'ko' ? '새 음원 제출' : 'New Submission', path: '/release-submission-modern', color: 'text-n3rve-main', badge: 'NEW' },
     { icon: FolderOpen, label: language === 'ko' ? '제출 내역' : 'Submissions', path: '/submissions', color: 'text-purple-600' },
     { icon: FileText, label: language === 'ko' ? '가이드' : 'Guide', path: '/guide', color: 'text-green-600' },
     { icon: Music, label: language === 'ko' ? '아티스트 프로필' : 'Artist Profile', path: '/artist-profile-guide', color: 'text-pink-600' },
