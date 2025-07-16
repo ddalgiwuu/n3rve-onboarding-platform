@@ -26,20 +26,34 @@ class SavedArtistsService {
   private baseUrl = `${import.meta.env.VITE_API_URL}/saved-artists`
 
   async getArtists(): Promise<SavedArtist[]> {
+    console.log('Getting artists from API:', `${this.baseUrl}/artists`)
+    console.log('Auth token:', authService.getToken() ? 'Present' : 'Missing')
+    
     const response = await fetch(`${this.baseUrl}/artists`, {
       headers: {
         'Authorization': `Bearer ${authService.getToken()}`
       }
     })
     
+    console.log('Get artists response status:', response.status)
+    console.log('Get artists response ok:', response.ok)
+    
     if (!response.ok) {
-      throw new Error(`Failed to fetch artists: ${response.status} ${response.statusText}`)
+      const errorText = await response.text()
+      console.error('Failed to fetch artists:', errorText)
+      throw new Error(`Failed to fetch artists: ${response.status} ${response.statusText} - ${errorText}`)
     }
     
-    return await response.json()
+    const result = await response.json()
+    console.log('Successfully fetched artists:', result)
+    return result
   }
 
   async addArtist(artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedArtist> {
+    console.log('Adding artist:', artist)
+    console.log('API URL:', `${this.baseUrl}/artists`)
+    console.log('Auth token:', authService.getToken() ? 'Present' : 'Missing')
+    
     const response = await fetch(`${this.baseUrl}/artists`, {
       method: 'POST',
       headers: {
@@ -49,11 +63,18 @@ class SavedArtistsService {
       body: JSON.stringify(artist)
     })
     
+    console.log('Response status:', response.status)
+    console.log('Response ok:', response.ok)
+    
     if (!response.ok) {
-      throw new Error('Failed to add artist')
+      const errorText = await response.text()
+      console.error('Failed to add artist:', errorText)
+      throw new Error(`Failed to add artist: ${response.status} ${response.statusText} - ${errorText}`)
     }
     
-    return await response.json()
+    const result = await response.json()
+    console.log('Successfully added artist:', result)
+    return result
   }
 
   async updateArtist(id: string, updates: Partial<SavedArtist>): Promise<SavedArtist> {

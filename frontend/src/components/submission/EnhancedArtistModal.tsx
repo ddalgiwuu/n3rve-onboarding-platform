@@ -127,6 +127,7 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
       // Save to database if not editing existing
       if (!editingArtist) {
         try {
+          console.log('EnhancedArtistModal: Saving artist to database')
           await savedArtistsStore.addArtist({
             name: artist.primaryName,
             translations: Object.entries(translations).map(([language, name]) => ({
@@ -139,10 +140,12 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
               ...(artist.youtubeChannelId ? [{ type: 'YOUTUBE', value: artist.youtubeChannelId }] : [])
             ]
           })
+          console.log('EnhancedArtistModal: Artist saved successfully')
           toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'))
         } catch (error) {
-          console.error('Error saving artist:', error)
-          toast.error(t('아티스트 저장에 실패했습니다', 'Failed to save artist'))
+          console.error('EnhancedArtistModal: Error saving artist:', error)
+          toast.error(t(`아티스트 저장에 실패했습니다: ${error.message}`, `Failed to save artist: ${error.message}`))
+          return // Don't close modal if save failed
         }
       }
       
