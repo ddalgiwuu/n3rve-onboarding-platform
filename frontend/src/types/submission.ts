@@ -28,6 +28,12 @@ export interface Submission {
   releaseTitle: string;
   releaseType: 'single' | 'ep' | 'album';
   releaseDate: string;
+  // UTC 변환 필드들 추가
+  releaseUTC?: string; // UTC로 변환된 정확한 발매일시
+  originalReleaseUTC?: string; // UTC로 변환된 원본 발매일시
+  consumerReleaseUTC?: string; // UTC로 변환된 소비자 발매일시
+  releaseTime?: string; // 발매 시간
+  selectedTimezone?: string; // 선택된 타임존
   genre: string;
   subgenre?: string;
   language: string;

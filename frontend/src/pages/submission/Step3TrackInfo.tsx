@@ -88,6 +88,8 @@ interface Track {
   alternateGenre?: string
   alternateSubgenre?: string
   lyrics?: string
+  lyricsLanguage?: string
+  lyricsFiles?: File[]
   audioLanguage?: string
   metadataLanguage?: string
   explicitContent?: boolean
@@ -4160,6 +4162,25 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('가사 언어', 'Lyrics Language')} <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={selectedTrack.lyricsLanguage || ''}
+                      onChange={(e) => updateTrack(selectedTrack.id, { lyricsLanguage: e.target.value })}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                    >
+                      <option value="">{t('언어 선택', 'Select Language')}</option>
+                      {languageOptions.map(lang => (
+                        <option key={lang.value} value={lang.value}>{lang.label}</option>
+                      ))}
+                      <option value="instrumental">{t('연주곡', 'Instrumental')}</option>
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                      {t('가사에 사용된 주요 언어를 선택하세요', 'Select the main language used in the lyrics')}
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {t('음성 언어', 'Audio Language')} <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -4178,6 +4199,90 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     </p>
                   </div>
                 </div>
+                </div>
+              </div>
+
+              {/* Lyrics Upload Section */}
+              <div className="relative">
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {language === 'ko' ? '가사 업로드' : 'Lyrics Upload'}
+                    </h4>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {language === 'ko' ? '가사 파일을 업로드하세요 (txt, doc, hwp)' : 'Upload lyrics files (txt, doc, hwp)'}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {language === 'ko' ? '가사 파일 업로드' : 'Upload Lyrics Files'}
+                      </label>
+                      <input
+                        type="file"
+                        multiple
+                        accept=".txt,.doc,.docx,.hwp"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files || [])
+                          updateTrack(selectedTrack.id, { lyricsFiles: files })
+                        }}
+                        className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                      />
+                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        {language === 'ko' 
+                          ? '지원 형식: .txt, .doc, .docx, .hwp - 여러 파일 선택 가능'
+                          : 'Supported formats: .txt, .doc, .docx, .hwp - Multiple files allowed'
+                        }
+                      </p>
+                    </div>
+                    
+                    {selectedTrack.lyricsFiles && selectedTrack.lyricsFiles.length > 0 && (
+                      <div className="space-y-2">
+                        <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {language === 'ko' ? '업로드된 파일:' : 'Uploaded files:'}
+                        </h5>
+                        <div className="space-y-1">
+                          {selectedTrack.lyricsFiles.map((file, index) => (
+                            <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                              <span className="text-sm text-gray-700 dark:text-gray-300">{file.name}</span>
+                              <button
+                                onClick={() => {
+                                  const newFiles = selectedTrack.lyricsFiles?.filter((_, i) => i !== index) || []
+                                  updateTrack(selectedTrack.id, { lyricsFiles: newFiles })
+                                }}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                      <div className="flex items-start gap-3">
+                        <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                        <div className="text-sm text-blue-700 dark:text-blue-300">
+                          <p className="font-medium mb-1">
+                            {language === 'ko' ? '가사 파일 업로드 가이드' : 'Lyrics Upload Guide'}
+                          </p>
+                          <ul className="space-y-1 text-xs text-blue-600 dark:text-blue-400">
+                            <li>• {language === 'ko' ? 'TXT: 일반 텍스트 파일' : 'TXT: Plain text files'}</li>
+                            <li>• {language === 'ko' ? 'DOC/DOCX: Microsoft Word 문서' : 'DOC/DOCX: Microsoft Word documents'}</li>
+                            <li>• {language === 'ko' ? 'HWP: 한글 워드프로세서 파일' : 'HWP: Hangul Word Processor files'}</li>
+                            <li>• {language === 'ko' ? '여러 언어 가사는 별도 파일로 업로드' : 'Upload separate files for different language lyrics'}</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 

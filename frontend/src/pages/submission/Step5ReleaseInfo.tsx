@@ -493,14 +493,16 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 Consumer Release Date <span className="text-red-500">*</span>
               </label>
               <input
-                {...register('consumerReleaseDate')}
-                type="date"
-                onChange={(e) => {
-                  setValue('consumerReleaseDate', e.target.value)
-                  if (!isOriginalDateManuallySet) {
-                    setValue('originalReleaseDate', e.target.value)
+                {...register('consumerReleaseDate', {
+                  onChange: (e) => {
+                    const newDate = e.target.value
+                    setValue('consumerReleaseDate', newDate)
+                    if (!isOriginalDateManuallySet && newDate) {
+                      setValue('originalReleaseDate', newDate)
+                    }
                   }
-                }}
+                })}
+                type="date"
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
               />
               <p className="mt-1 text-xs text-gray-500">
@@ -571,12 +573,27 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                   {language === 'ko' ? '발매 시간' : 'Release Time'}
                   <span className="text-xs text-gray-500 ml-2">({language === 'ko' ? '선택사항' : 'Optional'})</span>
                 </label>
-                <input
-                  {...register('releaseTime')}
-                  type="time"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-                  placeholder="00:00"
-                />
+                <div 
+                  className="relative group cursor-pointer"
+                  onClick={() => {
+                    const input = document.getElementById('release-time-input') as HTMLInputElement
+                    if (input) {
+                      input.showPicker()
+                    }
+                  }}
+                >
+                  <div className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 hover:border-purple-400 dark:hover:border-purple-600 transition-colors flex items-center justify-between">
+                    <input
+                      {...register('releaseTime')}
+                      id="release-time-input"
+                      type="time"
+                      className="bg-transparent border-none focus:outline-none flex-1 text-gray-900 dark:text-white text-sm"
+                      placeholder="00:00"
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                    <Clock className="w-4 h-4 text-gray-400 group-hover:text-purple-500 transition-colors" />
+                  </div>
+                </div>
                 <p className="mt-1 text-xs text-gray-500">
                   {language === 'ko' ? `${timezones.find(tz => tz.value === selectedTimezone)?.label.split(' ')[0] || selectedTimezone} 기준 시간 (비워두면 00:00 자정)` : `Time in ${timezones.find(tz => tz.value === selectedTimezone)?.label.split(' ')[0] || selectedTimezone} (leave empty for 00:00 midnight)`}
                 </p>

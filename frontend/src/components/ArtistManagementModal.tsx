@@ -1,6 +1,8 @@
-import { useState } from 'react'
-import { X, Plus, Trash2, Users, User, Music, ExternalLink, HelpCircle, Globe, Search, ChevronDown } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { X, Plus, Trash2, Users, User, Music, ExternalLink, HelpCircle, Globe, Search, ChevronDown, Save, Edit2 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
+import { useSavedArtistsStore } from '@/store/savedArtists.store'
+import toast from 'react-hot-toast'
 
 interface Artist {
   id: string
@@ -25,6 +27,7 @@ interface ArtistManagementModalProps {
 // Language options for translations
 const translationLanguages = [
   { code: 'en', name: 'English' },
+  { code: 'ko', name: '한국어 (Korean)' },
   { code: 'ja', name: '日本語 (Japanese)' },
   { code: 'zh', name: '中文 (Chinese)' },
   { code: 'es', name: 'Español (Spanish)' },
@@ -46,6 +49,8 @@ export default function ArtistManagementModal({
   const { language } = useLanguageStore()
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
   
+  const savedArtistsStore = useSavedArtistsStore()
+  
   const [artists, setArtists] = useState<Artist[]>(initialArtists)
   const [newArtist, setNewArtist] = useState<Partial<Artist>>({
     name: '',
@@ -58,6 +63,8 @@ export default function ArtistManagementModal({
   const [showSpotifyHelp, setShowSpotifyHelp] = useState(false)
   const [showAppleHelp, setShowAppleHelp] = useState(false)
   const [activeTranslations, setActiveTranslations] = useState<string[]>([])
+  const [savedArtistSearch, setSavedArtistSearch] = useState('')
+  const [showSavedArtists, setShowSavedArtists] = useState(false)
 
   const validateArtist = () => {
     const errs: string[] = []
@@ -67,11 +74,17 @@ export default function ArtistManagementModal({
     if (artists.some(a => a.name.toLowerCase() === newArtist.name?.toLowerCase())) {
       errs.push(t('이미 추가된 아티스트입니다', 'Artist already added'))
     }
+    if (!newArtist.spotifyId?.trim()) {
+      errs.push(t('Spotify Artist ID는 필수입니다', 'Spotify Artist ID is required'))
+    }
+    if (!newArtist.appleId?.trim()) {
+      errs.push(t('Apple Music Artist ID는 필수입니다', 'Apple Music Artist ID is required'))
+    }
     setErrors(errs)
     return errs.length === 0
   }
 
-  const addArtist = () => {
+  const addArtist = async () => {
     if (validateArtist()) {
       const artist: Artist = {
         id: Date.now().toString(),
@@ -81,7 +94,31 @@ export default function ArtistManagementModal({
         appleId: newArtist.appleId?.trim() || undefined,
         translations: newArtist.translations
       }
+      
+      // Add to current session
       setArtists([...artists, artist])
+      
+      // Save to database
+      try {
+        await savedArtistsStore.addArtist({
+          name: artist.name,
+          translations: Object.entries(artist.translations || {}).map(([language, name]) => ({
+            language,
+            name
+          })),
+          identifiers: [
+            ...(artist.spotifyId ? [{ type: 'SPOTIFY', value: artist.spotifyId }] : []),
+            ...(artist.appleId ? [{ type: 'APPLE_MUSIC', value: artist.appleId }] : [])
+          ]
+        })
+        
+        toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'))
+      } catch (error) {
+        console.error('Error saving artist:', error)
+        toast.error(t('아티스트 저장에 실패했습니다', 'Failed to save artist'))
+      }
+      
+      // Reset form
       setNewArtist({ 
         name: '', 
         role: isFeaturing ? 'featured' : (albumLevel ? 'main' : 'additional'), 
@@ -182,6 +219,150 @@ export default function ArtistManagementModal({
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+          {/* Saved Artists Section */}
+          <div className="mb-6">
+            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-1">
+              <button
+                onClick={() => setShowSavedArtists(!showSavedArtists)}
+                className="flex items-center justify-between w-full p-4 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
+                    <Save className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div className="text-left">
+                    <div className="font-semibold text-gray-900 dark:text-white">
+                      {t('저장된 아티스트', 'Saved Artists')}
+                    </div>
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
+                      {savedArtistsStore.artists.length}개의 아티스트가 저장됨
+                    </div>
+                  </div>
+                </div>
+                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showSavedArtists ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+            
+            {showSavedArtists && (
+              <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      placeholder={t('아티스트 이름으로 검색...', 'Search by artist name...')}
+                      value={savedArtistSearch}
+                      onChange={(e) => setSavedArtistSearch(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-sm"
+                    />
+                  </div>
+                </div>
+                
+                <div className="max-h-64 overflow-y-auto">
+                  {savedArtistsStore.searchArtists(savedArtistSearch).map((savedArtist) => (
+                    <div key={savedArtist.id} className="group p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0">
+                          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                              {savedArtist.name}
+                            </h4>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">
+                              {savedArtist.usageCount}회 사용
+                            </span>
+                          </div>
+                          
+                          <div className="flex items-center gap-2 mb-2">
+                            {savedArtist.identifiers.find(id => id.type === 'SPOTIFY') && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-md text-xs font-medium">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                Spotify
+                              </span>
+                            )}
+                            {savedArtist.identifiers.find(id => id.type === 'APPLE_MUSIC') && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs font-medium">
+                                <span className="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
+                                Apple Music
+                              </span>
+                            )}
+                          </div>
+                          
+                          {savedArtist.translations.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-2">
+                              {savedArtist.translations.map((trans, idx) => (
+                                <span key={idx} className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md text-xs">
+                                  <Globe className="w-3 h-3" />
+                                  {trans.language.toUpperCase()}: {trans.name}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="flex-shrink-0 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button
+                            onClick={() => {
+                              const spotifyId = savedArtist.identifiers.find(id => id.type === 'SPOTIFY')?.value
+                              const appleId = savedArtist.identifiers.find(id => id.type === 'APPLE_MUSIC')?.value
+                              
+                              const artist: Artist = {
+                                id: Date.now().toString(),
+                                name: savedArtist.name,
+                                role: isFeaturing ? 'featured' : (albumLevel ? 'main' : 'additional'),
+                                spotifyId,
+                                appleId,
+                                translations: savedArtist.translations.reduce((acc, trans) => ({
+                                  ...acc,
+                                  [trans.language]: trans.name
+                                }), {})
+                              }
+                              
+                              setArtists([...artists, artist])
+                              savedArtistsStore.useArtist(savedArtist.id)
+                              toast.success(t('아티스트가 추가되었습니다', 'Artist added'))
+                            }}
+                            className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                          >
+                            {t('추가', 'Add')}
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (confirm(t('정말 삭제하시겠습니까?', 'Are you sure you want to delete?'))) {
+                                savedArtistsStore.deleteArtist(savedArtist.id)
+                                toast.success(t('아티스트가 삭제되었습니다', 'Artist deleted'))
+                              }
+                            }}
+                            className="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                          >
+                            {t('삭제', 'Delete')}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {savedArtistsStore.searchArtists(savedArtistSearch).length === 0 && (
+                    <div className="text-center py-8">
+                      <Users className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" />
+                      <p className="text-gray-500 dark:text-gray-400 font-medium">
+                        {savedArtistSearch ? t('검색 결과가 없습니다', 'No search results') : t('저장된 아티스트가 없습니다', 'No saved artists')}
+                      </p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                        {savedArtistSearch ? t('다른 검색어를 시도해보세요', 'Try a different search term') : t('아티스트를 추가하면 자동으로 저장됩니다', 'Artists are automatically saved when added')}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Add New Artist */}
           <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
@@ -223,90 +404,121 @@ export default function ArtistManagementModal({
               </div>
 
               {/* Artist Translations */}
-              <div className="md:col-span-2 bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    {t('아티스트명 번역', 'Artist Name Translations')}
-                  </label>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    {t('선택사항', 'Optional')}
-                  </span>
-                </div>
-                
-                {/* Active translations */}
-                <div className="space-y-2">
-                  {activeTranslations.map(langCode => {
-                    const lang = translationLanguages.find(l => l.code === langCode)
-                    return (
-                      <div key={langCode} className="group bg-white dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-600 transition-colors">
-                        <div className="flex items-center gap-3">
-                          <div className="flex items-center gap-2 min-w-[120px]">
-                            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                              {lang?.code}
-                            </span>
-                            <span className="text-xs text-gray-400 dark:text-gray-500">•</span>
-                            <span className="text-sm text-gray-700 dark:text-gray-300">
-                              {lang?.name}
-                            </span>
+              <div className="md:col-span-2">
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                      <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
+                        <Globe className="w-5 h-5 text-white" />
+                      </div>
+                      {t('아티스트명 번역', 'Artist Name Translations')}
+                    </label>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
+                      {t('선택사항', 'Optional')}
+                    </span>
+                  </div>
+                  
+                  {/* Active translations */}
+                  <div className="space-y-3">
+                    {activeTranslations.map(langCode => {
+                      const lang = translationLanguages.find(l => l.code === langCode)
+                      return (
+                        <div key={langCode} className="group relative bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+                          <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200" style={{ padding: '1px' }}>
+                            <div className="bg-white dark:bg-gray-800 h-full w-full rounded-xl" />
                           </div>
-                          <input
-                            type="text"
-                            value={newArtist.translations?.[langCode] || ''}
-                            onChange={(e) => setNewArtist({
-                              ...newArtist,
-                              translations: {
-                                ...newArtist.translations,
-                                [langCode]: e.target.value
-                              }
-                            })}
-                            placeholder={t(`${lang?.name}로 아티스트명 입력`, `Enter artist name in ${lang?.name}`)}
-                            className="flex-1 px-3 py-1.5 text-sm border-0 bg-transparent focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => removeTranslation(langCode)}
-                            className="opacity-0 group-hover:opacity-100 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
+                          <div className="relative p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-shrink-0">
+                                <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-blue-100 dark:from-purple-900/50 dark:to-blue-900/50 rounded-lg flex items-center justify-center">
+                                  <span className="font-bold text-sm bg-gradient-to-br from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                                    {lang?.code.toUpperCase()}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex-1">
+                                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                                  {lang?.name}
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newArtist.translations?.[langCode] || ''}
+                                  onChange={(e) => setNewArtist({
+                                    ...newArtist,
+                                    translations: {
+                                      ...newArtist.translations,
+                                      [langCode]: e.target.value
+                                    }
+                                  })}
+                                  placeholder={t(`${lang?.name}로 아티스트명 입력`, `Enter artist name in ${lang?.name}`)}
+                                  className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeTranslation(langCode)}
+                                className="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
+                    
+                    {activeTranslations.length === 0 && (
+                      <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
+                        <Globe className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                        <p className="text-gray-500 dark:text-gray-400 font-medium mb-1">
+                          {t('아직 번역이 없습니다', 'No translations yet')}
+                        </p>
+                        <p className="text-sm text-gray-400 dark:text-gray-500">
+                          {t('아래에서 언어를 선택하여 번역을 추가하세요', 'Select a language below to add translations')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Add translation button */}
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowLanguageSelector(!showLanguageSelector)}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
+                    >
+                      <Plus className="w-5 h-5" />
+                      {t('언어 추가', 'Add Language')}
+                    </button>
+                    
+                    {showLanguageSelector && (
+                      <div className="mt-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 animate-in fade-in slide-in-from-top-2">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          {translationLanguages
+                            .filter(lang => !activeTranslations.includes(lang.code))
+                            .map(lang => (
+                              <button
+                                key={lang.code}
+                                onClick={() => {
+                                  addTranslation(lang.code)
+                                  setShowLanguageSelector(false)
+                                }}
+                                className="p-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors group"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-bold text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                                    {lang.code.toUpperCase()}
+                                  </span>
+                                  <span className="text-sm text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">
+                                    {lang.name}
+                                  </span>
+                                </div>
+                              </button>
+                            ))
+                          }
                         </div>
                       </div>
-                    )
-                  })}
-                  
-                  {activeTranslations.length === 0 && (
-                    <div className="text-center py-4 text-gray-400 dark:text-gray-500 text-sm">
-                      {t('번역을 추가하려면 아래 버튼을 클릭하세요', 'Click below to add translations')}
-                    </div>
-                  )}
-                </div>
-                
-                {/* Add translation button */}
-                <div className="mt-3">
-                  <div className="relative">
-                    <select
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          addTranslation(e.target.value)
-                          e.target.value = ''
-                        }
-                      }}
-                      className="w-full appearance-none text-sm px-4 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
-                    >
-                      <option value="">{t('+ 언어 추가', '+ Add Language')}</option>
-                      {translationLanguages
-                        .filter(lang => !activeTranslations.includes(lang.code))
-                        .map(lang => (
-                          <option key={lang.code} value={lang.code}>
-                            {lang.name} ({lang.code.toUpperCase()})
-                          </option>
-                        ))
-                      }
-                    </select>
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                      <ChevronDown className="w-4 h-4 text-gray-400" />
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -314,7 +526,7 @@ export default function ArtistManagementModal({
               {/* Spotify ID */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Spotify Artist ID
+                  Spotify Artist ID <span className="text-red-500">*</span>
                   <button
                     type="button"
                     onClick={() => setShowSpotifyHelp(!showSpotifyHelp)}
@@ -359,10 +571,10 @@ export default function ArtistManagementModal({
                         <p className="font-medium mt-2">{t('Windows:', 'Windows:')}</p>
                         <ol className="list-decimal list-inside ml-2">
                           <li>{t('Spotify 앱에서 아티스트 페이지 열기', 'Open artist page in Spotify app')}</li>
-                          <li>{t('아티스트 이름 옆 ⋯ 클릭', 'Click ⋯ next to artist name')}</li>
-                          <li>{t('"Share" → "Copy link to artist" 선택', 'Select "Share" → "Copy link to artist"')}</li>
-                          <li>{t('URL에서 ID 추출: open.spotify.com/artist/[이 부분이 ID]', 'Extract ID from URL: open.spotify.com/artist/[this is the ID]')}</li>
-                          <li>{t('또는 spotify:artist:XXXXXXXXX 형식으로 입력', 'Or enter as spotify:artist:XXXXXXXXX format')}</li>
+                          <li>{t('Ctrl 키를 누른 상태에서 아티스트 이름 옆 ⋯ 클릭', 'Hold Ctrl key and click ⋯ next to artist name')}</li>
+                          <li>{t('"Copy Spotify URI" 선택', 'Select "Copy Spotify URI"')}</li>
+                          <li>{t('복사된 URI 예시: spotify:artist:XXXXXXXXX', 'Copied URI example: spotify:artist:XXXXXXXXX')}</li>
+                          <li>{t('또는 웹에서 "Share" → "Copy link to artist"로 URL 복사 후 ID 추출', 'Or copy URL via web "Share" → "Copy link to artist" and extract ID')}</li>
                         </ol>
                       </div>
                       <p className="text-xs italic">
@@ -377,7 +589,7 @@ export default function ArtistManagementModal({
               {/* Apple Music ID */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Apple Music Artist ID
+                  Apple Music Artist ID <span className="text-red-500">*</span>
                   <button
                     type="button"
                     onClick={() => setShowAppleHelp(!showAppleHelp)}

@@ -275,6 +275,10 @@ type ReleaseInfo {
   consumerReleaseDate       String
   releaseTime               String?
   selectedTimezone          String?
+  // UTC 변환 필드들 추가
+  releaseUTC                DateTime?   // UTC로 변환된 정확한 발매일시
+  originalReleaseUTC        DateTime?   // UTC로 변환된 원본 발매일시
+  consumerReleaseUTC        DateTime?   // UTC로 변환된 소비자 발매일시
   cRights                   String
   pRights                   String
   previewStart              Int?

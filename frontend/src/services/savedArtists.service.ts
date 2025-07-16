@@ -26,22 +26,17 @@ class SavedArtistsService {
   private baseUrl = `${import.meta.env.VITE_API_URL}/saved-artists`
 
   async getArtists(): Promise<SavedArtist[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/artists`, {
-        headers: {
-          'Authorization': `Bearer ${authService.getToken()}`
-        }
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch artists')
+    const response = await fetch(`${this.baseUrl}/artists`, {
+      headers: {
+        'Authorization': `Bearer ${authService.getToken()}`
       }
-      
-      return await response.json()
-    } catch (error) {
-      console.error('Error fetching artists:', error)
-      return []
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch artists: ${response.status} ${response.statusText}`)
     }
+    
+    return await response.json()
   }
 
   async addArtist(artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedArtist> {
@@ -108,22 +103,17 @@ class SavedArtistsService {
 
   // Contributors
   async getContributors(): Promise<SavedContributor[]> {
-    try {
-      const response = await fetch(`${this.baseUrl}/contributors`, {
-        headers: {
-          'Authorization': `Bearer ${authService.getToken()}`
-        }
-      })
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch contributors')
+    const response = await fetch(`${this.baseUrl}/contributors`, {
+      headers: {
+        'Authorization': `Bearer ${authService.getToken()}`
       }
-      
-      return await response.json()
-    } catch (error) {
-      console.error('Error fetching contributors:', error)
-      return []
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch contributors: ${response.status} ${response.statusText}`)
     }
+    
+    return await response.json()
   }
 
   async addContributor(contributor: Omit<SavedContributor, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedContributor> {

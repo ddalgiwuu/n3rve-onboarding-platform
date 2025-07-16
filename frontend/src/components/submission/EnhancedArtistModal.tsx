@@ -81,10 +81,13 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
     }
   }, [editingArtist])
 
-  // Load saved artists on mount
+  // Load saved artists on mount and when modal opens
   useEffect(() => {
     if (isOpen) {
-      savedArtistsStore.fetchArtists()
+      savedArtistsStore.fetchArtists().catch(error => {
+        console.error('Failed to fetch saved artists:', error)
+        toast.error(t('저장된 아티스트를 불러오는데 실패했습니다', 'Failed to load saved artists'))
+      })
     }
   }, [isOpen])
 
@@ -247,7 +250,28 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
                   </div>
                   
                   <div className="max-h-48 overflow-y-auto">
-                    {savedArtistsStore.searchArtists(savedArtistSearch).map((savedArtist) => (
+                    {savedArtistsStore.loading && (
+                      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                        {t('아티스트를 불러오는 중...', 'Loading artists...')}
+                      </div>
+                    )}
+                    {savedArtistsStore.error && (
+                      <div className="p-4 text-center text-red-500">
+                        {t('아티스트를 불러오는데 실패했습니다', 'Failed to load artists')}
+                        <button
+                          onClick={() => savedArtistsStore.fetchArtists()}
+                          className="block mx-auto mt-2 px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600"
+                        >
+                          {t('다시 시도', 'Retry')}
+                        </button>
+                      </div>
+                    )}
+                    {!savedArtistsStore.loading && !savedArtistsStore.error && savedArtistsStore.searchArtists(savedArtistSearch).length === 0 && (
+                      <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                        {t('저장된 아티스트가 없습니다', 'No saved artists found')}
+                      </div>
+                    )}
+                    {!savedArtistsStore.loading && !savedArtistsStore.error && savedArtistsStore.searchArtists(savedArtistSearch).map((savedArtist) => (
                       <button
                         key={savedArtist.id}
                         onClick={() => selectSavedArtist(savedArtist)}
