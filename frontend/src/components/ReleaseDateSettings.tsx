@@ -3,6 +3,7 @@ import { Calendar, Clock, Info, Copy, Globe } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import DatePicker from '@/components/DatePicker'
+import TimePicker from '@/components/ui/TimePicker'
 import { timezones, convertToUTC } from '@/constants/timezones'
 
 interface ReleaseDateSettingsProps {
@@ -112,11 +113,10 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
           
           <div>
             <label className="block text-sm font-medium mb-1">{t('시간', 'Time')} *</label>
-            <input
-              type="time"
+            <TimePicker
               value={consumerDate.time}
-              onChange={(e) => handleConsumerDateChange('time', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
+              onChange={(value) => handleConsumerDateChange('time', value)}
+              className="w-full"
             />
           </div>
           
@@ -209,11 +209,10 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
             
             <div>
               <label className="block text-sm font-medium mb-1">{t('시간', 'Time')}</label>
-              <input
-                type="time"
+              <TimePicker
                 value={originalDate.time}
-                onChange={(e) => handleOriginalDateChange('time', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
+                onChange={(value) => handleOriginalDateChange('time', value)}
+                className="w-full"
               />
             </div>
             
