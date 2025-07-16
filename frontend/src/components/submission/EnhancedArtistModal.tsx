@@ -127,8 +127,11 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
       // Save to database if not editing existing
       if (!editingArtist) {
         try {
-          console.log('EnhancedArtistModal: Saving artist to database')
-          await savedArtistsStore.addArtist({
+          console.log('EnhancedArtistModal: Preparing to save artist to database')
+          console.log('EnhancedArtistModal: Artist data:', JSON.stringify(artist, null, 2))
+          console.log('EnhancedArtistModal: Translations:', JSON.stringify(translations, null, 2))
+          
+          const artistDataToSave = {
             name: artist.primaryName,
             translations: Object.entries(translations).map(([language, name]) => ({
               language,
@@ -139,11 +142,20 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
               ...(artist.appleId && artist.appleId !== 'MAKE_NEW' ? [{ type: 'APPLE_MUSIC', value: artist.appleId }] : []),
               ...(artist.youtubeChannelId ? [{ type: 'YOUTUBE', value: artist.youtubeChannelId }] : [])
             ]
-          })
-          console.log('EnhancedArtistModal: Artist saved successfully')
+          }
+          
+          console.log('EnhancedArtistModal: Final data to save:', JSON.stringify(artistDataToSave, null, 2))
+          console.log('EnhancedArtistModal: Artist is new artist:', artist.isNewArtist)
+          console.log('EnhancedArtistModal: Identifiers count:', artistDataToSave.identifiers.length)
+          
+          console.log('EnhancedArtistModal: Calling savedArtistsStore.addArtist...')
+          const savedArtist = await savedArtistsStore.addArtist(artistDataToSave)
+          console.log('EnhancedArtistModal: Artist saved successfully, result:', JSON.stringify(savedArtist, null, 2))
           toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'))
         } catch (error) {
           console.error('EnhancedArtistModal: Error saving artist:', error)
+          console.error('EnhancedArtistModal: Error details:', error.message)
+          console.error('EnhancedArtistModal: Error stack:', error.stack)
           toast.error(t(`아티스트 저장에 실패했습니다: ${error.message}`, `Failed to save artist: ${error.message}`))
           return // Don't close modal if save failed
         }
