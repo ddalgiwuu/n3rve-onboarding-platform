@@ -37,11 +37,13 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const fetchArtists = async () => {
     try {
+      console.log('SavedArtistsContext: Starting to fetch artists')
       setState(prev => ({ ...prev, loading: true, error: null }))
       const artists = await savedArtistsService.getArtists()
+      console.log('SavedArtistsContext: Fetched artists:', artists)
       setState(prev => ({ ...prev, artists, loading: false }))
     } catch (error) {
-      console.error('Error fetching artists:', error)
+      console.error('SavedArtistsContext: Error fetching artists:', error)
       setState(prev => ({ ...prev, error, loading: false }))
       // Don't throw here, let the UI handle the error state
     }
@@ -61,12 +63,18 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const addArtist = async (artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
     try {
+      console.log('SavedArtistsContext: Starting to add artist:', artist)
       const newArtist = await savedArtistsService.addArtist(artist)
+      console.log('SavedArtistsContext: Artist added successfully:', newArtist)
+      
       // Refetch the entire list to ensure proper sorting and synchronization
+      console.log('SavedArtistsContext: Refetching artists list...')
       await fetchArtists()
+      console.log('SavedArtistsContext: Artists list refetched successfully')
+      
       return newArtist
     } catch (error) {
-      console.error('Error adding artist:', error)
+      console.error('SavedArtistsContext: Error adding artist:', error)
       setState(prev => ({ ...prev, error }))
       throw error
     }
