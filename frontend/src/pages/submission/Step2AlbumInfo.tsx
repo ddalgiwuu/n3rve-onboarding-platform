@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
-import { Disc, FileText, Info, Languages, AlertCircle } from 'lucide-react'
+import { Disc, FileText, Info, Languages, AlertCircle, ChevronDown, Globe } from 'lucide-react'
 import { validateField } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
 import { useMemo, useState } from 'react'
@@ -160,19 +160,19 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
               </div>
 
               {/* Translation Toggle */}
-              <div className="relative">
-                <div className="absolute left-0 top-8 bottom-0 w-px bg-gradient-to-b from-n3rve-200 to-transparent dark:from-n3rve-800" />
+              <div className="relative mt-6">
+                <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-gray-200 via-gray-300 to-transparent dark:from-gray-700 dark:via-gray-600" />
                 
-                <label htmlFor="hasTranslation" className="flex items-center justify-between p-4 -mx-6 -mb-6 border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors rounded-b-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-n3rve-100 dark:bg-n3rve-900/30 rounded-lg flex items-center justify-center">
-                      <Languages className="w-4 h-4 text-n3rve-600 dark:text-n3rve-400" />
+                <label htmlFor="hasTranslation" className="flex items-center justify-between p-5 -mx-6 -mb-6 border-t border-gray-100 dark:border-gray-800 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/10 dark:hover:to-purple-900/10 cursor-pointer transition-all duration-200 rounded-b-2xl group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg flex items-center justify-center group-hover:from-blue-200 group-hover:to-purple-200 dark:group-hover:from-blue-800/30 dark:group-hover:to-purple-800/30 transition-all duration-200">
+                      <Languages className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <span className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">
                         {language === 'ko' ? '번역 추가' : 'Add Translation'}
                       </span>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                         {language === 'ko' 
                           ? '다른 언어로 앨범 제목을 추가할 수 있습니다'
                           : 'Add album title in another language'
@@ -187,7 +187,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                       id="hasTranslation"
                       className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-n3rve-300 dark:peer-focus:ring-n3rve-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-n3rve-600"></div>
+                    <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-6 peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-gradient-to-r peer-checked:from-blue-600 peer-checked:to-purple-600"></div>
                   </div>
                 </label>
               </div>
@@ -195,54 +195,141 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
 
             {/* Translation Fields */}
             {hasTranslation && (
-              <div id="translation-section" className="mt-4 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm animate-fadeIn">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-1 h-8 bg-n3rve-main rounded-full" />
-                  <h4 className="font-medium text-gray-900 dark:text-white">
-                    {language === 'ko' ? '번역 정보' : 'Translation Information'}
-                  </h4>
-                </div>
+              <div id="translation-section" className="mt-6 relative overflow-hidden">
+                {/* Background gradient effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10 rounded-3xl" />
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'ko' ? '번역 언어' : 'Translation Language'} <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      {...register('translationLanguage')}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-500 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    >
-                      <option value="">{language === 'ko' ? '언어를 선택하세요' : 'Select a language'}</option>
-                      {getLanguageOptions(t).map(lang => (
-                        <option key={lang.value} value={lang.value}>
-                          {lang.label}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.translationLanguage && (
-                      <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.translationLanguage.message}
+                <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 p-8 shadow-xl animate-fadeIn">
+                  {/* Header with icon */}
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="relative">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-400 to-purple-600 rounded-2xl blur-xl opacity-50 animate-pulse" />
+                      <div className="relative w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
+                        <Languages className="w-7 h-7 text-white" />
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+                        {language === 'ko' ? '앨범 제목 번역' : 'Album Title Translation'}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {language === 'ko' ? '글로벌 배포를 위한 다국어 앨범 제목' : 'Multi-language album title for global distribution'}
                       </p>
-                    )}
+                    </div>
                   </div>
+                  
+                  <div className="space-y-8">
+                    {/* Language Selection Grid */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                        {language === 'ko' ? '번역 언어 선택' : 'Select Translation Language'} <span className="text-red-500">*</span>
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        {getLanguageOptions(t).map(lang => (
+                          <label
+                            key={lang.value}
+                            className={`relative cursor-pointer transition-all duration-200 ${
+                              translationLanguage === lang.value
+                                ? 'scale-105'
+                                : 'hover:scale-105'
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              value={lang.value}
+                              {...register('translationLanguage')}
+                              className="sr-only"
+                            />
+                            <div className={`relative overflow-hidden rounded-xl border-2 transition-all duration-200 ${
+                              translationLanguage === lang.value
+                                ? 'border-transparent bg-gradient-to-br from-blue-500 to-purple-600 text-white shadow-lg'
+                                : 'border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 hover:border-blue-300 dark:hover:border-blue-700'
+                            }`}>
+                              <div className="p-3 text-center">
+                                <p className={`text-sm font-medium ${
+                                  translationLanguage === lang.value
+                                    ? 'text-white'
+                                    : 'text-gray-700 dark:text-gray-300'
+                                }`}>
+                                  {lang.label}
+                                </p>
+                                <p className={`text-xs mt-1 ${
+                                  translationLanguage === lang.value
+                                    ? 'text-white/80'
+                                    : 'text-gray-500 dark:text-gray-500'
+                                }`}>
+                                  {lang.value.toUpperCase()}
+                                </p>
+                              </div>
+                              {translationLanguage === lang.value && (
+                                <div className="absolute top-1 right-1">
+                                  <div className="w-5 h-5 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                      {errors.translationLanguage && (
+                        <p className="mt-3 text-sm text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.translationLanguage.message}
+                        </p>
+                      )}
+                    </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'ko' ? '번역된 제목' : 'Translated Title'} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      {...register('translatedTitle')}
-                      type="text"
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-500 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'ko' ? '번역된 앨범 제목 입력' : 'Enter translated album title'}
-                    />
-                    {errors.translatedTitle && (
-                      <p className="mt-2 text-sm text-red-500 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.translatedTitle.message}
-                      </p>
-                    )}
+                    {/* Translated Title Input */}
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-4">
+                        {language === 'ko' ? '번역된 앨범 제목' : 'Translated Album Title'} <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative group">
+                        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
+                        <div className="relative">
+                          <input
+                            {...register('translatedTitle')}
+                            type="text"
+                            className="w-full px-6 py-4 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all text-lg font-medium shadow-sm focus:shadow-lg"
+                            placeholder={
+                              translationLanguage === 'en' ? 'e.g., My First Album' :
+                              translationLanguage === 'ja' ? 'e.g., 私の最初のアルバム' :
+                              translationLanguage === 'zh' ? 'e.g., 我的第一张专辑' :
+                              translationLanguage === 'es' ? 'e.g., Mi Primer Álbum' :
+                              translationLanguage === 'fr' ? 'e.g., Mon Premier Album' :
+                              language === 'ko' ? '번역된 앨범 제목을 입력하세요' : 'Enter translated album title'
+                            }
+                          />
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-6">
+                            <Globe className="w-6 h-6 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                          </div>
+                        </div>
+                      </div>
+                      {errors.translatedTitle && (
+                        <p className="mt-3 text-sm text-red-500 flex items-center gap-1">
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.translatedTitle.message}
+                        </p>
+                      )}
+                      <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                        <div className="flex items-start gap-3">
+                          <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                          <div className="text-sm text-blue-700 dark:text-blue-300">
+                            <p className="font-medium mb-1">
+                              {language === 'ko' ? '번역 가이드라인' : 'Translation Guidelines'}
+                            </p>
+                            <ul className="space-y-1 text-xs text-blue-600 dark:text-blue-400">
+                              <li>• {language === 'ko' ? '정확한 의미 전달을 우선시하세요' : 'Prioritize accurate meaning over literal translation'}</li>
+                              <li>• {language === 'ko' ? '현지 문화와 언어 특성을 고려하세요' : 'Consider local culture and language characteristics'}</li>
+                              <li>• {language === 'ko' ? '특수 문자와 발음 기호를 정확히 입력하세요' : 'Enter special characters and diacritics accurately'}</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
