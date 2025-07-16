@@ -46,7 +46,7 @@ const releaseSchema = (language: 'ko' | 'en') => z.object({
   albumNotes: z.string().optional(),
   
   // 추가 메타데이터
-  parentalAdvisory: z.enum(['none', 'explicit', 'clean']).default('none'),
+  parentalAdvisory: z.enum(['none', 'explicit', 'clean']).optional(),
   preOrderEnabled: z.boolean().default(false),
   preOrderDate: z.string().optional(),
   releaseFormat: z.enum(['standard', 'deluxe', 'special', 'remastered', 'anniversary', 'remix', 'acoustic', 'live', 'instrumental']).default('standard'),
@@ -159,8 +159,8 @@ interface Props {
 export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  const { getStepData, updateStep, updateCurrentStep } = useSubmissionStore()
-  const savedData = getStepData(5)
+  const { formData, updateFormData, setCurrentStep } = useSubmissionStore()
+  const savedData = formData.release
   
   const [showKoreanDSP, setShowKoreanDSP] = useState(false)
   const [hasTranslation, setHasTranslation] = useState(false)
@@ -197,24 +197,24 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
   useEffect(() => {
     const interval = setInterval(() => {
       const currentData = getValues()
-      updateStep(5, currentData)
+      updateFormData({ release: currentData })
     }, 5000)
     
     return () => clearInterval(interval)
-  }, [getValues, updateStep])
+  }, [getValues, updateFormData])
   
   // Save data when component unmounts
   useEffect(() => {
     return () => {
       const currentData = getValues()
-      updateStep(5, currentData)
+      updateFormData({ release: currentData })
     }
-  }, [getValues, updateStep])
+  }, [getValues, updateFormData])
   
   // Update current step
   useEffect(() => {
-    updateCurrentStep(5)
-  }, [updateCurrentStep])
+    setCurrentStep(5)
+  }, [setCurrentStep])
   
   // Custom submit handler to save timezone with form data
   const handleFormSubmit = (formData: ReleaseForm) => {
@@ -223,7 +223,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
       ...formData,
       selectedTimezone // Save the selected timezone
     }
-    updateStep(5, dataWithTimezone)
+    updateFormData({ release: dataWithTimezone })
     
     onNext(dataWithTimezone)
   }
