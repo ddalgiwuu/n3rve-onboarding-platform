@@ -183,11 +183,11 @@ export default function ArtistSelector({
                             </span>
                           )}
                           
-                          {'roles' in item && item.roles.length > 0 && (
+                          {'roles' in item && Array.isArray(item.roles) && item.roles.length > 0 && (
                             <span>{item.roles.join(', ')}</span>
                           )}
                           
-                          {'instruments' in item && item.instruments.length > 0 && (
+                          {'instruments' in item && Array.isArray(item.instruments) && item.instruments.length > 0 && (
                             <span>{item.instruments.join(', ')}</span>
                           )}
                         </div>
