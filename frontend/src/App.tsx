@@ -24,6 +24,7 @@ const AdminCustomersPage = lazy(() => import('./pages/admin/AdminCustomers'))
 const DropboxCallbackPage = lazy(() => import('./pages/DropboxCallback'))
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallback'))
 const ProfileCompletePage = lazy(() => import('./pages/ProfileComplete'))
+const ProfileSetupPage = lazy(() => import('./pages/ProfileSetup'))
 const RoleSelectPage = lazy(() => import('./pages/RoleSelect'))
 const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
 
@@ -85,6 +86,9 @@ function App() {
         <Route path="/technical-guide" element={<TechnicalGuidePage />} />
         <Route path="/dropbox-callback" element={<DropboxCallbackPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/profile-setup" element={
+          isAuthenticated ? <ProfileSetupPage /> : <Navigate to="/login" />
+        } />
         <Route path="/profile-complete" element={
           isAuthenticated ? <ProfileCompletePage /> : <Navigate to="/login" />
         } />

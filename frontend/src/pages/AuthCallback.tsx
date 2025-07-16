@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '@/store/auth.store'
 import useSafeStore from '@/hooks/useSafeStore'
+import { useTranslation } from '@/hooks/useTranslation'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 
@@ -9,6 +10,7 @@ export default function AuthCallback() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth)
+  const { t } = useTranslation()
 
   useEffect(() => {
     const handleAuth = async () => {
@@ -17,7 +19,7 @@ export default function AuthCallback() {
       const profileComplete = searchParams.get('profile_complete') === 'true'
 
       if (!accessToken || !refreshToken) {
-        toast.error('로그인에 실패했습니다')
+        toast.error(t('auth.loginFailed'))
         navigate('/login')
         return
       }
@@ -51,27 +53,27 @@ export default function AuthCallback() {
           sessionStorage.setItem('temp_user', JSON.stringify(user))
           navigate('/role-select')
         } else if (!profileComplete) {
-          navigate('/profile-complete')
+          navigate('/profile-setup')
         } else {
           navigate(returnUrl || '/dashboard')
         }
 
-        toast.success('로그인되었습니다')
+        toast.success(t('auth.loginSuccess'))
       } catch (error) {
         console.error('Auth error:', error)
-        toast.error('로그인 처리 중 오류가 발생했습니다')
+        toast.error(t('auth.loginProcessError'))
         navigate('/login')
       }
     }
 
     handleAuth()
-  }, [searchParams, navigate, setAuth])
+  }, [searchParams, navigate, setAuth, t])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 flex items-center justify-center">
       <div className="card-glass p-8 flex items-center gap-4 animate-scale-in">
         <LoadingSpinner />
-        <span className="text-gray-600 dark:text-gray-400 font-medium">로그인 중...</span>
+        <span className="text-gray-600 dark:text-gray-400 font-medium">{t('auth.signingInProgress')}</span>
       </div>
     </div>
   )
