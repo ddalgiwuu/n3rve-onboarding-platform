@@ -5,7 +5,7 @@ import useSafeStore from '@/hooks/useSafeStore'
 import { v4 as uuidv4 } from 'uuid'
 import { validateField, type QCValidationResult } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
-import ArtistModal from '@/components/submission/ArtistModal'
+import EnhancedArtistModal from '@/components/submission/EnhancedArtistModal'
 import { DatePicker } from '@/components/DatePicker'
 
 interface ArtistIdentifier {
@@ -6045,7 +6045,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
       )}
 
       {/* Artist Modal */}
-      <ArtistModal
+      <EnhancedArtistModal
         isOpen={showArtistModal}
         onClose={() => {
           setShowArtistModal(false)
@@ -6056,15 +6056,15 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
         editingArtist={editingArtist}
       />
 
-      {/* Contributor Modal */}
-      <ContributorModal
+      {/* Contributor Modal - TODO: Create ContributorModal component */}
+      {/* <ContributorModal
         isOpen={showContributorModal}
         onClose={() => {
           setShowContributorModal(false)
           setEditingContributor(null)
         }}
         onSave={addContributorToTrack}
-      />
+      /> */}
     </form>
   )
 }
