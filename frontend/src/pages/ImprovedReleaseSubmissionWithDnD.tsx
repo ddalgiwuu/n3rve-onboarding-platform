@@ -1130,57 +1130,6 @@ const ImprovedReleaseSubmission: React.FC = () => {
               
               {/* Additional Artists */}
               
-              {/* Featuring Artists */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('피처링 아티스트', 'Featuring Artists')}
-                </label>
-                <input
-                  type="text"
-                  value={formData.featuringArtists?.join(', ') || ''}
-                  onChange={(e) => setFormData(prev => ({ 
-                    ...prev, 
-                    featuringArtists: e.target.value.split(',').map(a => a.trim()).filter(Boolean)
-                  }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  placeholder={t('콤마로 구분 (예: Feat1, Feat2)', 'Comma separated (e.g., Feat1, Feat2)')}
-                />
-              </div>
-              
-              {/* Artist IDs */}
-              <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('Spotify 아티스트 ID', 'Spotify Artist ID')}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.marketingInfo?.artist_spotify_id || ''}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      marketingInfo: { ...prev.marketingInfo, artist_spotify_id: e.target.value }
-                    }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="spotify:artist:XXXXXXXXX"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('Apple Music 아티스트 ID', 'Apple Music Artist ID')}
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.marketingInfo?.artist_apple_id || ''}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
-                      marketingInfo: { ...prev.marketingInfo, artist_apple_id: e.target.value }
-                    }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="123456789"
-                  />
-                </div>
-              </div>
-              
               {/* Release Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

@@ -77,8 +77,8 @@ export default function ArtistManagementModal({
         id: Date.now().toString(),
         name: newArtist.name!.trim(),
         role: isFeaturing ? 'featured' : (albumLevel ? 'main' : newArtist.role as Artist['role']),
-        spotifyId: newArtist.spotifyId?.trim() || 'MAKE_NEW',
-        appleId: newArtist.appleId?.trim() || 'MAKE_NEW',
+        spotifyId: newArtist.spotifyId?.trim() || undefined,
+        appleId: newArtist.appleId?.trim() || undefined,
         translations: newArtist.translations
       }
       setArtists([...artists, artist])
@@ -161,12 +161,13 @@ export default function ArtistManagementModal({
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
           {/* Add New Artist */}
-          <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-6">
-            <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-4">
+          <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+              <Plus className="w-5 h-5 text-purple-600 dark:text-purple-400" />
               {t('새 아티스트 추가', 'Add New Artist')}
             </h3>
             
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -273,13 +274,24 @@ export default function ArtistManagementModal({
                     <HelpCircle className="w-4 h-4 inline" />
                   </button>
                 </label>
-                <input
-                  type="text"
-                  value={newArtist.spotifyId || ''}
-                  onChange={(e) => setNewArtist({ ...newArtist, spotifyId: e.target.value })}
-                  placeholder="spotify:artist:XXXXXXXXX (비워두면 MAKE_NEW)"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newArtist.spotifyId || ''}
+                    onChange={(e) => setNewArtist({ ...newArtist, spotifyId: e.target.value })}
+                    placeholder="spotify:artist:XXXXXXXXX"
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
+                  />
+                  {!newArtist.spotifyId && (
+                    <button
+                      type="button"
+                      onClick={() => setNewArtist({ ...newArtist, spotifyId: 'MAKE_NEW' })}
+                      className="px-4 py-2 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/30 transition-colors text-sm font-medium whitespace-nowrap"
+                    >
+                      {t('NEW', 'NEW')}
+                    </button>
+                  )}
+                </div>
                 
                 {showSpotifyHelp && (
                   <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-sm">
@@ -297,8 +309,8 @@ export default function ArtistManagementModal({
                         </ol>
                       </div>
                       <p className="text-xs italic">
-                        {t('아티스트가 Spotify에 없다면 비워두세요. 자동으로 MAKE_NEW로 설정됩니다.', 
-                          'If artist is not on Spotify, leave empty. It will be set to MAKE_NEW automatically.')}
+                        {t('아티스트가 Spotify에 없다면 비워두고 NEW 버튼을 클릭하세요.', 
+                          'If artist is not on Spotify, leave empty and click NEW button.')}
                       </p>
                     </div>
                   </div>
@@ -317,13 +329,24 @@ export default function ArtistManagementModal({
                     <HelpCircle className="w-4 h-4 inline" />
                   </button>
                 </label>
-                <input
-                  type="text"
-                  value={newArtist.appleId || ''}
-                  onChange={(e) => setNewArtist({ ...newArtist, appleId: e.target.value })}
-                  placeholder="123456789 (비워두면 MAKE_NEW)"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newArtist.appleId || ''}
+                    onChange={(e) => setNewArtist({ ...newArtist, appleId: e.target.value })}
+                    placeholder="123456789"
+                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
+                  />
+                  {!newArtist.appleId && (
+                    <button
+                      type="button"
+                      onClick={() => setNewArtist({ ...newArtist, appleId: 'MAKE_NEW' })}
+                      className="px-4 py-2 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/30 transition-colors text-sm font-medium whitespace-nowrap"
+                    >
+                      {t('NEW', 'NEW')}
+                    </button>
+                  )}
+                </div>
                 
                 {showAppleHelp && (
                   <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-900 rounded-lg text-sm">
@@ -350,8 +373,8 @@ export default function ArtistManagementModal({
                         </ol>
                       </div>
                       <p className="text-xs italic">
-                        {t('아티스트가 Apple Music에 없다면 비워두세요. 자동으로 MAKE_NEW로 설정됩니다.', 
-                          'If artist is not on Apple Music, leave empty. It will be set to MAKE_NEW automatically.')}
+                        {t('아티스트가 Apple Music에 없다면 비워두고 NEW 버튼을 클릭하세요.', 
+                          'If artist is not on Apple Music, leave empty and click NEW button.')}
                       </p>
                     </div>
                   </div>
