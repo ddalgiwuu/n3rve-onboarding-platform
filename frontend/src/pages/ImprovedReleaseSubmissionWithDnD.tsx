@@ -160,6 +160,7 @@ interface FormData {
   }
   albumArtist?: string // For backward compatibility
   albumArtists: Artist[]
+  albumFeaturingArtists?: Artist[]
   releaseType: 'single' | 'album' | 'ep'
   primaryGenre: string
   primarySubgenre: string
@@ -283,6 +284,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
     albumTitleTranslations: {},
     albumArtist: '',
     albumArtists: [],
+    albumFeaturingArtists: [],
     releaseType: 'single',
     primaryGenre: '',
     primarySubgenre: '',
@@ -309,6 +311,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
   
   // Modal states
   const [showAlbumArtistModal, setShowAlbumArtistModal] = useState(false)
+  const [showAlbumFeaturingArtistModal, setShowAlbumFeaturingArtistModal] = useState(false)
   const [showTrackArtistModal, setShowTrackArtistModal] = useState<string | null>(null)
   const [showFeaturingArtistModal, setShowFeaturingArtistModal] = useState<string | null>(null)
   const [showContributorModal, setShowContributorModal] = useState<string | null>(null)
@@ -1128,7 +1131,35 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 </button>
               </div>
               
-              {/* Additional Artists */}
+              {/* Featuring Artists */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('피처링 아티스트', 'Featuring Artists')}
+                </label>
+                
+                {/* Featuring Artist List */}
+                {formData.albumFeaturingArtists && formData.albumFeaturingArtists.length > 0 && (
+                  <div className="mb-2 flex flex-wrap gap-2">
+                    {formData.albumFeaturingArtists.map((artist) => (
+                      <span
+                        key={artist.id}
+                        className="inline-flex items-center gap-1 px-2 py-1 bg-pink-100 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 rounded-full text-sm"
+                      >
+                        {artist.name}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                
+                <button
+                  type="button"
+                  onClick={() => setShowAlbumFeaturingArtistModal(true)}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+                >
+                  <Plus className="w-4 h-4 inline-block mr-1" />
+                  {t('피처링 관리', 'Manage Featuring')}
+                </button>
+              </div>
               
               {/* Release Type */}
               <div>
@@ -1996,6 +2027,24 @@ const ImprovedReleaseSubmission: React.FC = () => {
             setShowAlbumArtistModal(false)
           }}
           albumLevel={true}
+        />
+      )}
+      
+      {/* Album Featuring Artist Management Modal */}
+      {showAlbumFeaturingArtistModal && (
+        <ArtistManagementModal
+          isOpen={showAlbumFeaturingArtistModal}
+          onClose={() => setShowAlbumFeaturingArtistModal(false)}
+          artists={formData.albumFeaturingArtists || []}
+          onSave={(artists) => {
+            setFormData(prev => ({ 
+              ...prev, 
+              albumFeaturingArtists: artists
+            }))
+            setShowAlbumFeaturingArtistModal(false)
+          }}
+          albumLevel={false}
+          isFeaturing={true}
         />
       )}
       
