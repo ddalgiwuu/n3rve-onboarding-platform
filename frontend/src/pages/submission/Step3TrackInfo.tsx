@@ -2871,7 +2871,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                       
                                       if (isAllSelected) {
                                         const newTerritories = currentTerritories.filter(
-                                          c => !continent.countries.includes(c)
+                                          (c: string) => !continent.countries.includes(c)
                                         )
                                         setProductMetadata({
                                           ...productMetadata,
@@ -2936,7 +2936,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                           const currentTerritories = productMetadata.territories || []
                                           const newTerritories = e.target.checked
                                             ? [...currentTerritories, countryCode]
-                                            : currentTerritories.filter(c => c !== countryCode)
+                                            : currentTerritories.filter((c: string) => c !== countryCode)
                                           setProductMetadata({
                                             ...productMetadata,
                                             territories: newTerritories
@@ -2970,7 +2970,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                           ({productMetadata.territories?.length || 0})
                         </h5>
                         <div className="flex flex-wrap gap-2">
-                          {(productMetadata.territories || []).map(countryCode => (
+                          {(productMetadata.territories || []).map((countryCode: string) => (
                             <span 
                               key={countryCode}
                               className="inline-flex items-center gap-1 px-2 py-1 bg-n3rve-100 dark:bg-n3rve-800 text-n3rve-700 dark:text-n3rve-200 rounded-full text-xs"
@@ -3040,7 +3040,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
 
                 {/* Quick Preview of Custom DSPs */}
                 {Object.entries(productMetadata.dspTerritories || {})
-                  .filter(([_, config]) => config.territoryType === 'custom')
+                  .filter(([_, config]: [string, any]) => config.territoryType === 'custom')
                   .length > 0 && (
                   <div className="space-y-2">
                     <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -3048,15 +3048,15 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     </h5>
                     <div className="flex flex-wrap gap-2">
                       {Object.entries(productMetadata.dspTerritories || {})
-                        .filter(([_, config]) => config.territoryType === 'custom')
-                        .map(([dsp, config]) => (
+                        .filter(([_, config]: [string, any]) => config.territoryType === 'custom')
+                        .map(([dsp, config]: [string, any]) => (
                           <span 
                             key={dsp}
                             className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs"
                           >
                             {dsp.split(' ')[0]}
                             <span className="text-n3rve-main dark:text-n3rve-accent2 font-medium">
-                              ({config.territories?.length || 0})
+                              ({(config as any).territories?.length || 0})
                             </span>
                           </span>
                         ))
@@ -3704,7 +3704,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         </label>
                         <DatePicker
                           value={selectedTrack.consumerReleaseDate || ''}
-                          onChange={(newDate) => updateTrack(selectedTrack.id, { consumerReleaseDate: newDate })}
+                          onChange={(newDate: any) => updateTrack(selectedTrack.id, { consumerReleaseDate: newDate })}
                           placeholder="Select track release date"
                         />
                       </div>
@@ -5491,7 +5491,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
             </div>
             
             <textarea
-              value={productMetadata.albumNotes}
+              value={(productMetadata as any).albumNotes || ''}
               onChange={(e) => setProductMetadata(prev => ({ ...prev, albumNotes: e.target.value }))}
               rows={4}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
