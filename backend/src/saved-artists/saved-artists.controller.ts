@@ -28,11 +28,24 @@ export class SavedArtistsController {
     @Query('search') search?: string,
     @Query('limit') limit?: string,
   ) {
-    return this.savedArtistsService.findAllArtists(
-      req.user.id,
-      search,
-      limit ? parseInt(limit) : 50
-    );
+    console.log('SavedArtistsController: GET /artists called');
+    console.log('SavedArtistsController: User ID:', req.user.id);
+    console.log('SavedArtistsController: Search query:', search);
+    console.log('SavedArtistsController: Limit:', limit);
+    
+    try {
+      const result = await this.savedArtistsService.findAllArtists(
+        req.user.id,
+        search,
+        limit ? parseInt(limit) : 50
+      );
+      console.log('SavedArtistsController: Found artists:', result.length);
+      console.log('SavedArtistsController: Artists data:', JSON.stringify(result, null, 2));
+      return result;
+    } catch (error) {
+      console.error('SavedArtistsController: Error fetching artists:', error);
+      throw error;
+    }
   }
 
   @Get('contributors')
@@ -59,7 +72,18 @@ export class SavedArtistsController {
   @Post('artists')
   @ApiOperation({ summary: 'Create or update a saved artist' })
   async createOrUpdateArtist(@Request() req, @Body() data: any) {
-    return this.savedArtistsService.createOrUpdateArtist(req.user.id, data);
+    console.log('SavedArtistsController: POST /artists called');
+    console.log('SavedArtistsController: User ID:', req.user.id);
+    console.log('SavedArtistsController: Request body:', JSON.stringify(data, null, 2));
+    
+    try {
+      const result = await this.savedArtistsService.createOrUpdateArtist(req.user.id, data);
+      console.log('SavedArtistsController: Artist created/updated successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('SavedArtistsController: Error creating/updating artist:', error);
+      throw error;
+    }
   }
 
   @Post('contributors')
