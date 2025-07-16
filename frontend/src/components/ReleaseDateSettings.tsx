@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Calendar, Clock, Info, Copy, Globe } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
-import { DatePicker } from '@/components/DatePicker'
+import DatePicker from '@/components/DatePicker'
 import { timezones, convertToUTC } from '@/constants/timezones'
 
 interface ReleaseDateSettingsProps {
@@ -104,7 +104,7 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
             <label className="block text-sm font-medium mb-1">{t('날짜', 'Date')} *</label>
             <DatePicker
               value={consumerDate.date}
-              onChange={(date) => handleConsumerDateChange('date', date)}
+              onChange={(date: string) => handleConsumerDateChange('date', date)}
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
               minDate={new Date().toISOString().split('T')[0]}
             />
@@ -201,7 +201,7 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
               <label className="block text-sm font-medium mb-1">{t('날짜', 'Date')}</label>
               <DatePicker
                 value={originalDate.date}
-                onChange={(date) => handleOriginalDateChange('date', date)}
+                onChange={(date: string) => handleOriginalDateChange('date', date)}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
                 maxDate={new Date().toISOString().split('T')[0]}
               />
