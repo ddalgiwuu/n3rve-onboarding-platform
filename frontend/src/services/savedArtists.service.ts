@@ -73,7 +73,10 @@ class SavedArtistsService {
     }
     
     const result = await response.json()
-    console.log('Successfully added artist:', result)
+    console.log('Successfully added artist:', JSON.stringify(result, null, 2))
+    console.log('Added artist ID:', result.id)
+    console.log('Added artist name:', result.name)
+    console.log('Added artist userId:', result.userId)
     return result
   }
 
