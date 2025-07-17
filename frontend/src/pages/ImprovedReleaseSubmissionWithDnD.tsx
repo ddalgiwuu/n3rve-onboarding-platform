@@ -28,6 +28,7 @@ import { countries } from '@/constants/countries'
 import { timezones, convertToUTC } from '@/constants/timezones'
 import { generateUPC, generateEAN, validateUPC, validateEAN } from '@/utils/identifiers'
 import { dspList } from '@/constants/dspList'
+import { SavedArtistsProvider } from '@/contexts/SavedArtistsContext'
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -2093,7 +2094,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
+    <SavedArtistsProvider>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
         <div className="mb-8">
@@ -2295,6 +2297,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
         />
       )}
     </div>
+    </SavedArtistsProvider>
   )
 }
 
