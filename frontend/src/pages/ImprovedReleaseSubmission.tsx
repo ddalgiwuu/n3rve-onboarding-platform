@@ -956,9 +956,9 @@ function AlbumInfoStep({ formData, setFormData }: any) {
             </label>
             <DatePicker
               value={formData.originalReleaseDate}
-              onChange={(date) => setFormData({ ...formData, originalReleaseDate: typeof date === 'string' ? date : date ? date.toISOString().split('T')[0] : '' })}
-              minDate={new Date('1900-01-01')}
-              maxDate={new Date()}
+              onChange={(date) => setFormData({ ...formData, originalReleaseDate: date })}
+              minDate="1900-01-01"
+              maxDate={new Date().toISOString().split('T')[0]}
             />
           </div>
 
@@ -973,8 +973,8 @@ function AlbumInfoStep({ formData, setFormData }: any) {
             </label>
             <DatePicker
               value={formData.consumerReleaseDate}
-              onChange={(date) => setFormData({ ...formData, consumerReleaseDate: typeof date === 'string' ? date : date ? date.toISOString().split('T')[0] : '' })}
-              minDate={new Date()}
+              onChange={(date) => setFormData({ ...formData, consumerReleaseDate: date })}
+              minDate={new Date().toISOString().split('T')[0]}
             />
           </div>
         </div>
@@ -1011,7 +1011,7 @@ function AlbumInfoStep({ formData, setFormData }: any) {
             </select>
             {formData.consumerReleaseDate && formData.releaseTime && (
               <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                UTC: {convertToUTC(formData.consumerReleaseDate, formData.releaseTime, formData.selectedTimezone)}
+                UTC: {convertToUTC(formData.consumerReleaseDate, formData.releaseTime, formData.selectedTimezone).toISOString()}
               </p>
             )}
           </div>
@@ -1034,7 +1034,7 @@ function AlbumInfoStep({ formData, setFormData }: any) {
                 <span className="text-red-500 ml-1">*</span>
               </label>
               <MultiSelect
-                options={genreList.map(genre => ({ value: genre, label: genre }))}
+                options={genreList}
                 value={formData.genre}
                 onChange={(genres) => setFormData({ ...formData, genre: genres })}
                 placeholder={t('장르 선택', 'Select genres')}
@@ -1231,7 +1231,7 @@ function TrackInfoStep({ formData, setFormData }: any) {
       const oldIndex = formData.tracks.findIndex((t: any) => t.id === active.id)
       const newIndex = formData.tracks.findIndex((t: any) => t.id === over?.id)
       
-      const newTracks = arrayMove(formData.tracks, oldIndex, newIndex).map((track, index) => ({
+      const newTracks = arrayMove(formData.tracks, oldIndex, newIndex).map((track: any, index: number) => ({
         ...track,
         trackNumber: index + 1
       }))
@@ -1803,7 +1803,6 @@ function DistributionStep({ formData, setFormData }: any) {
           <RegionSelector
             selectedRegions={formData.territories}
             onRegionsChange={(territories) => setFormData({ ...formData, territories })}
-            onExcludedRegionsChange={(excluded: string[]) => setFormData({ ...formData, excludedTerritories: excluded })}
           />
         </div>
 
