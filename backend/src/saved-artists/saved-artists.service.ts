@@ -9,6 +9,30 @@ export class SavedArtistsService {
   // Get all saved artists for a user
   async findAllArtists(userId: string, search?: string, limit: number = 50) {
     console.log('SavedArtistsService: Finding artists for userId:', userId);
+    console.log('SavedArtistsService: userId type:', typeof userId);
+    
+    // First, let's check if there are ANY artists in the database
+    const totalCount = await this.prisma.savedArtist.count();
+    console.log('SavedArtistsService: Total artists in database:', totalCount);
+    
+    // Check artists for this specific user
+    const userArtistCount = await this.prisma.savedArtist.count({
+      where: { userId }
+    });
+    console.log('SavedArtistsService: Artists for this user:', userArtistCount);
+    
+    // Get all artists (for debugging)
+    const allArtists = await this.prisma.savedArtist.findMany({
+      take: 5,
+      select: {
+        id: true,
+        userId: true,
+        name: true,
+        createdAt: true
+      }
+    });
+    console.log('SavedArtistsService: Sample of all artists:', JSON.stringify(allArtists, null, 2));
+    
     const where: Prisma.SavedArtistWhereInput = { userId };
     
     if (search) {
@@ -24,6 +48,8 @@ export class SavedArtistsService {
       ];
     }
 
+    console.log('SavedArtistsService: Query where clause:', JSON.stringify(where, null, 2));
+
     const result = await this.prisma.savedArtist.findMany({
       where,
       orderBy: [
@@ -35,6 +61,7 @@ export class SavedArtistsService {
     });
     
     console.log('SavedArtistsService: Found artists:', result.length);
+    console.log('SavedArtistsService: Result details:', JSON.stringify(result, null, 2));
     return result;
   }
 
@@ -159,7 +186,17 @@ export class SavedArtistsService {
           }
         },
       });
-      console.log('SavedArtistsService: New artist created successfully:', newArtist);
+      console.log('SavedArtistsService: New artist created successfully:', JSON.stringify(newArtist, null, 2));
+      
+      // Verify the artist was actually saved
+      const verifyArtist = await this.prisma.savedArtist.findUnique({
+        where: { id: newArtist.id }
+      });
+      console.log('SavedArtistsService: Verification - artist exists in DB:', verifyArtist ? 'YES' : 'NO');
+      if (verifyArtist) {
+        console.log('SavedArtistsService: Verified artist data:', JSON.stringify(verifyArtist, null, 2));
+      }
+      
       return newArtist;
     } catch (error) {
       console.error('SavedArtistsService: Error in createOrUpdateArtist:', error);
