@@ -94,7 +94,6 @@ jobs:
             -p 443:443 \
             -p 3001:3001 \
             --env-file .env \
-            -v /home/ubuntu/n3rve-onboarding-platform/nginx/conf.d:/etc/nginx/conf.d:ro \
             -v /etc/letsencrypt:/etc/letsencrypt:ro \
             --restart always \
             ${{ env.DOCKER_IMAGE }}:latest
