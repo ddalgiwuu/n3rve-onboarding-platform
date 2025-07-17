@@ -8,13 +8,15 @@ export default function DebugAuth() {
   const navigate = useNavigate()
 
   useEffect(() => {
-    // Log current auth state
-    console.log('=== AUTH DEBUG ===')
-    console.log('isAuthenticated:', isAuthenticated)
-    console.log('user:', user)
-    console.log('accessToken:', accessToken)
-    console.log('localStorage auth-storage:', localStorage.getItem('auth-storage'))
-    console.log('==================')
+    // Log current auth state only in development
+    if (import.meta.env.DEV) {
+      console.log('=== AUTH DEBUG ===')
+      console.log('isAuthenticated:', isAuthenticated)
+      console.log('user:', user)
+      console.log('accessToken:', accessToken ? 'Present' : 'Missing')
+      console.log('localStorage auth-storage:', localStorage.getItem('auth-storage') ? 'Present' : 'Missing')
+      console.log('==================')
+    }
   }, [isAuthenticated, user, accessToken])
 
   const clearAllAuth = () => {

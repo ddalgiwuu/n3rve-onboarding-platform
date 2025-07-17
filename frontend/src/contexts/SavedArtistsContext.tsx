@@ -37,10 +37,8 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const fetchArtists = async () => {
     try {
-      console.log('SavedArtistsContext: Starting to fetch artists')
       setState(prev => ({ ...prev, loading: true, error: null }))
       const artists = await savedArtistsService.getArtists()
-      console.log('SavedArtistsContext: Fetched artists:', artists)
       setState(prev => ({ ...prev, artists, loading: false }))
     } catch (error) {
       console.error('SavedArtistsContext: Error fetching artists:', error)
@@ -63,14 +61,10 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const addArtist = async (artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
     try {
-      console.log('SavedArtistsContext: Starting to add artist:', artist)
       const newArtist = await savedArtistsService.addArtist(artist)
-      console.log('SavedArtistsContext: Artist added successfully:', newArtist)
       
       // Refetch the entire list to ensure proper sorting and synchronization
-      console.log('SavedArtistsContext: Refetching artists list...')
       await fetchArtists()
-      console.log('SavedArtistsContext: Artists list refetched successfully')
       
       return newArtist
     } catch (error) {

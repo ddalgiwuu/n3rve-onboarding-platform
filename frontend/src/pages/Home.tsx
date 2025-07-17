@@ -9,9 +9,7 @@ import DarkModeToggle from '@/components/common/DarkModeToggle'
 export default function HomePage() {
   const { language } = useTranslation()
   
-  // Debug: Check if auth is causing issues
   const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated)
-  console.log('[HomePage] isAuthenticated:', isAuthenticated)
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/50 to-blue-50/50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 relative overflow-hidden">

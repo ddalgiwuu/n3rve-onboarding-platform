@@ -55,7 +55,7 @@ export default function DarkModeToggle() {
   const toggleDarkMode = () => {
     const newIsDark = !isDark
     
-    console.log('Toggling dark mode:', isDark, '->', newIsDark)
+    // Toggling dark mode
     
     // Update DOM - both html and body elements
     if (newIsDark) {
@@ -73,8 +73,7 @@ export default function DarkModeToggle() {
     // Update state
     setIsDark(newIsDark)
     
-    console.log('Dark mode toggled. HTML classes:', document.documentElement.classList.toString())
-    console.log('Dark mode toggled. Body classes:', document.body.classList.toString())
+    // Dark mode toggled
   }
 
   return (
