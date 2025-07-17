@@ -153,4 +153,24 @@ export class AuthController {
     return updatedUser;
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('verify-token')
+  async verifyToken(@CurrentUser() user: User, @Req() req: Request) {
+    console.log('Verify Token - Headers:', req.headers);
+    console.log('Verify Token - Authorization header:', req.headers.authorization);
+    console.log('Verify Token - User:', user);
+    
+    return {
+      status: 'authenticated',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        isProfileComplete: user.isProfileComplete,
+      },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
 }
