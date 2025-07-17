@@ -100,14 +100,15 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
       newErrors.primaryName = t('필수 항목입니다', 'This field is required')
     }
     
-    // Platform IDs are required unless it's a new artist
-    if (!artist.isNewArtist) {
-      if (!artist.spotifyId?.trim()) {
-        newErrors.spotifyId = t('Spotify ID는 필수입니다', 'Spotify ID is required')
-      }
-      if (!artist.appleId?.trim()) {
-        newErrors.appleId = t('Apple Music ID는 필수입니다', 'Apple Music ID is required')
-      }
+    // Platform IDs validation - only validate if provided
+    if (!artist.isNewArtist && artist.spotifyId && artist.spotifyId.trim() && artist.spotifyId === 'MAKE_NEW') {
+      // If user selected "MAKE_NEW", they need to be marked as new artist
+      newErrors.spotifyId = t('신인 아티스트로 체크해주세요', 'Please check as new artist')
+    }
+    
+    if (!artist.isNewArtist && artist.appleId && artist.appleId.trim() && artist.appleId === 'MAKE_NEW') {
+      // If user selected "MAKE_NEW", they need to be marked as new artist
+      newErrors.appleId = t('신인 아티스트로 체크해주세요', 'Please check as new artist')
     }
     
     setErrors(newErrors)
@@ -115,7 +116,15 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
   }
 
   const handleSave = async () => {
-    if (validate()) {
+    console.log('EnhancedArtistModal: handleSave called')
+    console.log('EnhancedArtistModal: Current artist data:', artist)
+    console.log('EnhancedArtistModal: editingArtist:', editingArtist)
+    
+    const isValid = validate()
+    console.log('EnhancedArtistModal: Validation result:', isValid)
+    console.log('EnhancedArtistModal: Validation errors:', errors)
+    
+    if (isValid) {
       // Prepare artist with translations
       const finalArtist = {
         ...artist,
