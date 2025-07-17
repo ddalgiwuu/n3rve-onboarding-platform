@@ -174,28 +174,61 @@ export class SavedArtistsService {
         identifiers: data.identifiers || []
       });
       
-      const newArtist = await this.prisma.savedArtist.create({
-        data: {
-          userId,
-          name: data.name,
-          translations: {
-            set: data.translations || []
-          },
-          identifiers: {
-            set: data.identifiers || []
-          }
+      console.log('SavedArtistsService: Attempting to create artist with Prisma...');
+      console.log('SavedArtistsService: Prisma data object:', JSON.stringify({
+        userId,
+        name: data.name,
+        translations: {
+          set: data.translations || []
         },
-      });
-      console.log('SavedArtistsService: New artist created successfully:', JSON.stringify(newArtist, null, 2));
+        identifiers: {
+          set: data.identifiers || []
+        }
+      }, null, 2));
+      
+      let newArtist;
+      try {
+        newArtist = await this.prisma.savedArtist.create({
+          data: {
+            userId,
+            name: data.name,
+            translations: {
+              set: data.translations || []
+            },
+            identifiers: {
+              set: data.identifiers || []
+            }
+          },
+        });
+        console.log('SavedArtistsService: Prisma create successful');
+        console.log('SavedArtistsService: New artist created successfully:', JSON.stringify(newArtist, null, 2));
+      } catch (createError) {
+        console.error('SavedArtistsService: Prisma create failed:', createError);
+        console.error('SavedArtistsService: Create error message:', createError.message);
+        console.error('SavedArtistsService: Create error code:', createError.code);
+        console.error('SavedArtistsService: Create error stack:', createError.stack);
+        throw createError;
+      }
       
       // Verify the artist was actually saved
-      const verifyArtist = await this.prisma.savedArtist.findUnique({
-        where: { id: newArtist.id }
-      });
-      console.log('SavedArtistsService: Verification - artist exists in DB:', verifyArtist ? 'YES' : 'NO');
-      if (verifyArtist) {
-        console.log('SavedArtistsService: Verified artist data:', JSON.stringify(verifyArtist, null, 2));
+      console.log('SavedArtistsService: Verifying artist was saved...');
+      try {
+        const verifyArtist = await this.prisma.savedArtist.findUnique({
+          where: { id: newArtist.id }
+        });
+        console.log('SavedArtistsService: Verification - artist exists in DB:', verifyArtist ? 'YES' : 'NO');
+        if (verifyArtist) {
+          console.log('SavedArtistsService: Verified artist data:', JSON.stringify(verifyArtist, null, 2));
+        } else {
+          console.warn('SavedArtistsService: WARNING - Artist created but not found in verification!');
+        }
+      } catch (verifyError) {
+        console.error('SavedArtistsService: Verification error:', verifyError);
       }
+      
+      // Also count total artists to confirm
+      const totalAfterCreate = await this.prisma.savedArtist.count();
+      console.log('SavedArtistsService: Total artists after create:', totalAfterCreate);
       
       return newArtist;
     } catch (error) {
