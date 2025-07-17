@@ -72,6 +72,11 @@ jobs:
           echo "Stopping containers..."
           docker-compose -f docker-compose.prod.yml down || true
           
+          # Force remove any existing container with the same name
+          echo "Removing existing containers..."
+          docker stop n3rve-app || true
+          docker rm n3rve-app || true
+          
           # Pull latest image
           echo "Pulling latest Docker image..."
           docker pull ${{ env.DOCKER_IMAGE }}:latest
