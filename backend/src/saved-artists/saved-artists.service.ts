@@ -86,7 +86,7 @@ export class SavedArtistsService {
     console.log('SavedArtistsService: createOrUpdateArtist data:', JSON.stringify(data, null, 2));
     
     try {
-      let existingArtist = null;
+      let existingArtist: any = null;
       
       // Check if artist already exists - only if we have identifiers
       if (data.identifiers && data.identifiers.length > 0) {
