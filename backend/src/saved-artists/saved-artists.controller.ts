@@ -29,7 +29,9 @@ export class SavedArtistsController {
     @Query('limit') limit?: string,
   ) {
     console.log('SavedArtistsController: GET /artists called');
+    console.log('SavedArtistsController: Full req.user object:', JSON.stringify(req.user, null, 2));
     console.log('SavedArtistsController: User ID:', req.user.id);
+    console.log('SavedArtistsController: User ID type:', typeof req.user.id);
     console.log('SavedArtistsController: Search query:', search);
     console.log('SavedArtistsController: Limit:', limit);
     
@@ -44,6 +46,7 @@ export class SavedArtistsController {
       return result;
     } catch (error) {
       console.error('SavedArtistsController: Error fetching artists:', error);
+      console.error('SavedArtistsController: Error stack:', error.stack);
       throw error;
     }
   }
@@ -73,15 +76,20 @@ export class SavedArtistsController {
   @ApiOperation({ summary: 'Create or update a saved artist' })
   async createOrUpdateArtist(@Request() req, @Body() data: any) {
     console.log('SavedArtistsController: POST /artists called');
+    console.log('SavedArtistsController: Full req.user object:', JSON.stringify(req.user, null, 2));
     console.log('SavedArtistsController: User ID:', req.user.id);
+    console.log('SavedArtistsController: User ID type:', typeof req.user.id);
     console.log('SavedArtistsController: Request body:', JSON.stringify(data, null, 2));
     
     try {
       const result = await this.savedArtistsService.createOrUpdateArtist(req.user.id, data);
-      console.log('SavedArtistsController: Artist created/updated successfully:', result);
+      console.log('SavedArtistsController: Artist created/updated successfully:', JSON.stringify(result, null, 2));
+      console.log('SavedArtistsController: Result ID:', result.id);
+      console.log('SavedArtistsController: Result userId:', result.userId);
       return result;
     } catch (error) {
       console.error('SavedArtistsController: Error creating/updating artist:', error);
+      console.error('SavedArtistsController: Error stack:', error.stack);
       throw error;
     }
   }
