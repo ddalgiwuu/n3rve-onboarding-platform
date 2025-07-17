@@ -16,8 +16,10 @@ import useSafeStore from '@/hooks/useSafeStore'
 import { validateSubmission, validateField, type QCValidationResult, type QCValidationResults } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
 import ArtistModal from '@/components/submission/ArtistModal'
+import ArtistSelector from '@/components/submission/ArtistSelector'
 import { DatePicker } from '@/components/DatePicker'
 import { v4 as uuidv4 } from 'uuid'
+import { SavedArtistsProvider } from '@/contexts/SavedArtistsContext'
 import { contributorRoles, getRolesByCategory, searchRoles } from '@/constants/contributorRoles'
 import { instrumentList, searchInstruments, getInstrumentCategory } from '@/constants/instruments'
 // @dnd-kit temporarily disabled for React 19 compatibility
@@ -1059,14 +1061,12 @@ export default function ReleaseSubmission() {
 
               <div className="space-y-3">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {t('기본 이름', 'Primary Name')} *
-                  </label>
-                  <input
-                    type="text"
+                  <ArtistSelector
                     value={artist.primaryName}
-                    onChange={(e) => updateArtist(artist.id, { primaryName: e.target.value })}
-                    className="input"
+                    onChange={(value) => updateArtist(artist.id, { primaryName: value })}
+                    label={t('기본 이름', 'Primary Name')}
+                    required={true}
+                    language={language}
                     placeholder={t('아티스트 이름 입력', 'Enter artist name')}
                   />
                 </div>
@@ -3183,7 +3183,8 @@ export default function ReleaseSubmission() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-black to-purple-900/20">
+    <SavedArtistsProvider>
+      <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-black to-purple-900/20">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Progress Bar */}
         <div className="mb-8">
@@ -3275,6 +3276,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
+    </SavedArtistsProvider>
   )
 }
 
