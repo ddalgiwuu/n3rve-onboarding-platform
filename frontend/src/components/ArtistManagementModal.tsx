@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, ChevronDown, Save } from 'lucide-react'
+import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, ChevronDown, Save, Check } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import { useSavedArtistsStore } from '@/store/savedArtists.store'
 import toast from 'react-hot-toast'
@@ -70,15 +70,7 @@ export default function ArtistManagementModal({
   // Load saved artists when modal opens
   useEffect(() => {
     if (isOpen) {
-      console.log('ArtistManagementModal: Modal opened, fetching saved artists...')
-      console.log('ArtistManagementModal: savedArtistsStore:', savedArtistsStore)
-      console.log('ArtistManagementModal: Current artists in store:', savedArtistsStore.artists)
-      
       savedArtistsStore.fetchArtists()
-        .then(() => {
-          console.log('ArtistManagementModal: Successfully fetched artists')
-          console.log('ArtistManagementModal: Artists after fetch:', savedArtistsStore.artists)
-        })
         .catch(error => {
           console.error('ArtistManagementModal: Failed to fetch saved artists:', error)
           console.error('ArtistManagementModal: Error details:', {
@@ -256,10 +248,10 @@ export default function ArtistManagementModal({
                   </div>
                   <div className="text-left">
                     <div className="font-semibold text-gray-900 dark:text-white">
-                      {t('저장된 아티스트', 'Saved Artists')}
+                      {t('아티스트 라이브러리', 'Artist Library')}
                     </div>
                     <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {savedArtistsStore.artists.length}개의 아티스트가 저장됨
+                      {t('이전에 사용한 아티스트 목록', 'Previously used artists')} ({savedArtistsStore.artists.length})
                     </div>
                   </div>
                 </div>
@@ -353,9 +345,13 @@ export default function ArtistManagementModal({
                               savedArtistsStore.useArtist(savedArtist.id)
                               toast.success(t('아티스트가 추가되었습니다', 'Artist added'))
                             }}
-                            className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            disabled={artists.some(a => a.name === savedArtist.name)}
+                            className={artists.some(a => a.name === savedArtist.name) ? 
+                              "px-3 py-1.5 text-xs bg-gray-400 text-white rounded-lg cursor-not-allowed font-medium" :
+                              "px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            }
                           >
-                            {t('추가', 'Add')}
+                            {artists.some(a => a.name === savedArtist.name) ? t('추가됨', 'Added') : t('사용', 'Use')}
                           </button>
                           <button
                             onClick={() => {
@@ -389,11 +385,23 @@ export default function ArtistManagementModal({
             )}
           </div>
 
+          {/* Divider */}
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">
+                {t('또는', 'OR')}
+              </span>
+            </div>
+          </div>
+
           {/* Add New Artist */}
           <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <Plus className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              {t('새 아티스트 추가', 'Add New Artist')}
+              {t('새 아티스트 입력', 'Enter New Artist')}
             </h3>
             
             <div className="space-y-6">
@@ -684,10 +692,10 @@ export default function ArtistManagementModal({
 
               <button
                 onClick={addArtist}
-                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
               >
                 <Plus className="w-4 h-4" />
-                {t('아티스트 추가', 'Add Artist')}
+                {t('위 정보로 아티스트 등록 및 저장', 'Register & Save Artist with Above Info')}
               </button>
             </div>
           </div>
@@ -697,7 +705,7 @@ export default function ArtistManagementModal({
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                {t('등록된 아티스트', 'Registered Artists')}
+                {t('현재 세션에 추가된 아티스트', 'Artists Added to Current Session')}
               </h3>
               <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
                 {artists.length}
@@ -708,7 +716,7 @@ export default function ArtistManagementModal({
               <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
                 <Users className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" />
                 <p className="text-gray-500 dark:text-gray-400">
-                  {t('등록된 아티스트가 없습니다', 'No artists registered')}
+                  {t('현재 세션에 추가된 아티스트가 없습니다', 'No artists added to current session')}
                 </p>
                 <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
                   {t('위에서 아티스트를 추가해주세요', 'Add artists above to get started')}
@@ -721,13 +729,14 @@ export default function ArtistManagementModal({
                     key={artist.id}
                     className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600 transition-all"
                   >
-                    <div className="flex items-center gap-3">
-                      {!albumLevel && (
-                        <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                          {getRoleIcon(artist.role)}
-                        </div>
-                      )}
-                      <div>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3">
+                        {!albumLevel && (
+                          <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
+                            {getRoleIcon(artist.role)}
+                          </div>
+                        )}
+                        <div className="flex-1">
                         <p className="font-medium text-gray-900 dark:text-white">
                           {artist.name}
                         </p>
@@ -792,7 +801,6 @@ export default function ArtistManagementModal({
                         )}
                       </div>
                     </div>
-                    
                     <div className="flex items-center gap-2">
                       {!albumLevel && !isFeaturing && (
                         <select
@@ -812,6 +820,7 @@ export default function ArtistManagementModal({
                       </button>
                     </div>
                   </div>
+                  </div>
                 ))}
               </div>
             )}
@@ -828,9 +837,10 @@ export default function ArtistManagementModal({
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center gap-2"
           >
-            {t('저장', 'Save')}
+            <Check className="w-4 h-4" />
+            {t('완료', 'Done')}
           </button>
         </div>
       </div>

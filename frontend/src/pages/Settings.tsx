@@ -33,7 +33,7 @@ const Settings = () => {
 
   const handleSaveProfile = () => {
     // Save profile logic
-    console.log('Saving profile:', profile);
+    // Profile data saved
   };
 
   const ToggleSwitch = ({ enabled, onChange }: { enabled: boolean; onChange: () => void }) => (
