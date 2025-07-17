@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, ChevronDown, Save } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import { useSavedArtistsStore } from '@/store/savedArtists.store'
@@ -66,6 +66,29 @@ export default function ArtistManagementModal({
   const [savedArtistSearch, setSavedArtistSearch] = useState('')
   const [showSavedArtists, setShowSavedArtists] = useState(false)
   const [showLanguageSelector, setShowLanguageSelector] = useState(false)
+
+  // Load saved artists when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      console.log('ArtistManagementModal: Modal opened, fetching saved artists...')
+      console.log('ArtistManagementModal: savedArtistsStore:', savedArtistsStore)
+      console.log('ArtistManagementModal: Current artists in store:', savedArtistsStore.artists)
+      
+      savedArtistsStore.fetchArtists()
+        .then(() => {
+          console.log('ArtistManagementModal: Successfully fetched artists')
+          console.log('ArtistManagementModal: Artists after fetch:', savedArtistsStore.artists)
+        })
+        .catch(error => {
+          console.error('ArtistManagementModal: Failed to fetch saved artists:', error)
+          console.error('ArtistManagementModal: Error details:', {
+            message: error.message,
+            stack: error.stack,
+            response: error.response
+          })
+        })
+    }
+  }, [isOpen])
 
   const validateArtist = () => {
     const errs: string[] = []
