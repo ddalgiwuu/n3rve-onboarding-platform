@@ -116,13 +116,7 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
   }
 
   const handleSave = async () => {
-    console.log('EnhancedArtistModal: handleSave called')
-    console.log('EnhancedArtistModal: Current artist data:', artist)
-    console.log('EnhancedArtistModal: editingArtist:', editingArtist)
-    
     const isValid = validate()
-    console.log('EnhancedArtistModal: Validation result:', isValid)
-    console.log('EnhancedArtistModal: Validation errors:', errors)
     
     if (isValid) {
       // Prepare artist with translations
@@ -136,9 +130,6 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
       // Save to database if not editing existing
       if (!editingArtist) {
         try {
-          console.log('EnhancedArtistModal: Preparing to save artist to database')
-          console.log('EnhancedArtistModal: Artist data:', JSON.stringify(artist, null, 2))
-          console.log('EnhancedArtistModal: Translations:', JSON.stringify(translations, null, 2))
           
           const artistDataToSave = {
             name: artist.primaryName,
@@ -153,13 +144,7 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
             ]
           }
           
-          console.log('EnhancedArtistModal: Final data to save:', JSON.stringify(artistDataToSave, null, 2))
-          console.log('EnhancedArtistModal: Artist is new artist:', artist.isNewArtist)
-          console.log('EnhancedArtistModal: Identifiers count:', artistDataToSave.identifiers.length)
-          
-          console.log('EnhancedArtistModal: Calling savedArtistsStore.addArtist...')
           const savedArtist = await savedArtistsStore.addArtist(artistDataToSave)
-          console.log('EnhancedArtistModal: Artist saved successfully, result:', JSON.stringify(savedArtist, null, 2))
           toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'))
         } catch (error) {
           console.error('EnhancedArtistModal: Error saving artist:', error)

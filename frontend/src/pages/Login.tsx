@@ -14,11 +14,9 @@ export default function LoginPage() {
   const { t } = useTranslation()
   const popupRef = useRef<Window | null>(null)
   
-  // Debug logging
+  // Component mounted
   useEffect(() => {
-    console.log('[LoginPage] Mounted')
-    console.log('[LoginPage] Location:', location)
-    console.log('[LoginPage] isAuthenticated:', isAuthenticated)
+    // Component initialization
   }, [])
   
   // Check for OAuth error in URL
@@ -59,7 +57,6 @@ export default function LoginPage() {
   }, [navigate])
 
   const handleGoogleLogin = () => {
-    console.log('[LoginPage] handleGoogleLogin called')
     setIsLoading(true)
     // Get the returnUrl from location state or query params
     const returnUrl = location.state?.from || new URLSearchParams(location.search).get('returnUrl') || '/dashboard'
@@ -68,7 +65,6 @@ export default function LoginPage() {
     sessionStorage.setItem('returnUrl', returnUrl)
     
     const googleAuthUrl = `${import.meta.env.VITE_API_URL}/auth/google`
-    console.log('[LoginPage] Redirecting to:', googleAuthUrl)
     
     // Safari-friendly approach: Use popup window for OAuth
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
