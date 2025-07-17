@@ -297,9 +297,11 @@ export default function ArtistManagementModal({
                             <h4 className="font-semibold text-gray-900 dark:text-white truncate">
                               {savedArtist.name}
                             </h4>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">
-                              {savedArtist.usageCount}회 사용
-                            </span>
+                            {savedArtist.usageCount > 0 && (
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200">
+                                {savedArtist.usageCount}회 사용
+                              </span>
+                            )}
                           </div>
                           
                           <div className="flex items-center gap-2 mb-2">
