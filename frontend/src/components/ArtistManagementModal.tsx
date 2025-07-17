@@ -235,51 +235,103 @@ export default function ArtistManagementModal({
         </div>
 
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
-          {/* Saved Artists Section */}
+          {/* Unified Artist Management Section */}
           <div className="mb-6">
-            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-1">
-              <button
-                onClick={() => setShowSavedArtists(!showSavedArtists)}
-                className="flex items-center justify-between w-full p-4 bg-white dark:bg-gray-800 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg">
-                    <Save className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div className="text-left">
-                    <div className="font-semibold text-gray-900 dark:text-white">
-                      {t('아티스트 라이브러리', 'Artist Library')}
-                    </div>
-                    <div className="text-sm text-gray-500 dark:text-gray-400">
-                      {t('이전에 사용한 아티스트 목록', 'Previously used artists')} ({savedArtistsStore.artists.length})
-                    </div>
-                  </div>
-                </div>
-                <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showSavedArtists ? 'rotate-180' : ''}`} />
-              </button>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                {t('아티스트 관리', 'Artist Management')}
+              </h3>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
+                  {t('현재 세션', 'Current Session')}: {artists.length}
+                </span>
+                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
+                  {t('라이브러리', 'Library')}: {savedArtistsStore.artists.length}
+                </span>
+              </div>
             </div>
             
-            {showSavedArtists && (
-              <div className="mt-4 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      placeholder={t('아티스트 이름으로 검색...', 'Search by artist name...')}
-                      value={savedArtistSearch}
-                      onChange={(e) => setSavedArtistSearch(e.target.value)}
-                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-sm"
-                    />
-                  </div>
+            <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder={t('아티스트 이름으로 검색...', 'Search by artist name...')}
+                    value={savedArtistSearch}
+                    onChange={(e) => setSavedArtistSearch(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-sm"
+                  />
                 </div>
+              </div>
                 
-                <div className="max-h-64 overflow-y-auto">
-                  {savedArtistsStore.searchArtists(savedArtistSearch).map((savedArtist) => (
+                <div className="max-h-96 overflow-y-auto">
+                  {/* Current Session Artists */}
+                  {artists.length > 0 && (
+                    <>
+                      <div className="px-4 py-2 bg-purple-50 dark:bg-purple-900/10 border-b border-gray-200 dark:border-gray-700">
+                        <p className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                          {t('현재 세션 아티스트', 'Current Session Artists')}
+                        </p>
+                      </div>
+                      {artists.map((artist) => (
+                        <div key={artist.id} className="group p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 transition-colors">
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0">
+                              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                                <User className="w-5 h-5 text-white" />
+                              </div>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h4 className="font-semibold text-gray-900 dark:text-white truncate">
+                                  {artist.name}
+                                </h4>
+                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200">
+                                  {t('현재 세션', 'Current')}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                {artist.spotifyId && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-md text-xs font-medium">
+                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                    Spotify
+                                  </span>
+                                )}
+                                {artist.appleId && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs font-medium">
+                                    <span className="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
+                                    Apple Music
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => removeArtist(artist.id)}
+                              className="opacity-0 group-hover:opacity-100 p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+
+                  {/* Library Artists */}
+                  {savedArtistsStore.searchArtists(savedArtistSearch).filter(savedArtist => !artists.some(a => a.name === savedArtist.name)).length > 0 && (
+                    <>
+                      <div className="px-4 py-2 bg-blue-50 dark:bg-blue-900/10 border-b border-gray-200 dark:border-gray-700 sticky top-0">
+                        <p className="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">
+                          {t('아티스트 라이브러리', 'Artist Library')}
+                        </p>
+                      </div>
+                  {savedArtistsStore.searchArtists(savedArtistSearch).filter(savedArtist => !artists.some(a => a.name === savedArtist.name)).map((savedArtist) => (
                     <div key={savedArtist.id} className="group p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 last:border-b-0 transition-colors">
                       <div className="flex items-start gap-4">
                         <div className="flex-shrink-0">
-                          <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                             <User className="w-5 h-5 text-white" />
                           </div>
                         </div>
@@ -345,13 +397,9 @@ export default function ArtistManagementModal({
                               savedArtistsStore.useArtist(savedArtist.id)
                               toast.success(t('아티스트가 추가되었습니다', 'Artist added'))
                             }}
-                            disabled={artists.some(a => a.name === savedArtist.name)}
-                            className={artists.some(a => a.name === savedArtist.name) ? 
-                              "px-3 py-1.5 text-xs bg-gray-400 text-white rounded-lg cursor-not-allowed font-medium" :
-                              "px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                            }
+                            className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                           >
-                            {artists.some(a => a.name === savedArtist.name) ? t('추가됨', 'Added') : t('사용', 'Use')}
+                            {t('사용', 'Use')}
                           </button>
                           <button
                             onClick={() => {
@@ -369,7 +417,7 @@ export default function ArtistManagementModal({
                     </div>
                   ))}
                   
-                  {savedArtistsStore.searchArtists(savedArtistSearch).length === 0 && (
+                  {artists.length === 0 && savedArtistsStore.searchArtists(savedArtistSearch).length === 0 && (
                     <div className="text-center py-8">
                       <Users className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" />
                       <p className="text-gray-500 dark:text-gray-400 font-medium">
@@ -382,7 +430,6 @@ export default function ArtistManagementModal({
                   )}
                 </div>
               </div>
-            )}
           </div>
 
           {/* Divider */}
@@ -700,131 +747,6 @@ export default function ArtistManagementModal({
             </div>
           </div>
 
-          {/* Artist List */}
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                {t('현재 세션에 추가된 아티스트', 'Artists Added to Current Session')}
-              </h3>
-              <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
-                {artists.length}
-              </span>
-            </div>
-            
-            {artists.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 dark:bg-gray-900/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700">
-                <Users className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-500 dark:text-gray-400">
-                  {t('현재 세션에 추가된 아티스트가 없습니다', 'No artists added to current session')}
-                </p>
-                <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                  {t('위에서 아티스트를 추가해주세요', 'Add artists above to get started')}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {artists.map((artist) => (
-                  <div
-                    key={artist.id}
-                    className="group bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-lg hover:border-purple-300 dark:hover:border-purple-600 transition-all"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        {!albumLevel && (
-                          <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                            {getRoleIcon(artist.role)}
-                          </div>
-                        )}
-                        <div className="flex-1">
-                        <p className="font-medium text-gray-900 dark:text-white">
-                          {artist.name}
-                        </p>
-                        {!albumLevel && (
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {getRoleLabel(artist.role)}
-                          </p>
-                        )}
-                        <div className="flex items-center gap-2 mt-2">
-                          {/* Spotify Status */}
-                          {artist.spotifyId === 'MAKE_NEW' ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-md text-xs font-medium">
-                              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-                              Spotify: NEW
-                            </span>
-                          ) : artist.spotifyId ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-md text-xs font-medium">
-                              <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                              Spotify ✓
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-md text-xs">
-                              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
-                              Spotify -
-                            </span>
-                          )}
-                          
-                          {/* Apple Music Status */}
-                          {artist.appleId === 'MAKE_NEW' ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-md text-xs font-medium">
-                              <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-                              Apple: NEW
-                            </span>
-                          ) : artist.appleId ? (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md text-xs font-medium">
-                              <span className="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
-                              Apple ✓
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 rounded-md text-xs">
-                              <span className="w-1.5 h-1.5 bg-gray-400 rounded-full"></span>
-                              Apple -
-                            </span>
-                          )}
-                        </div>
-                        {artist.translations && Object.keys(artist.translations).length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {Object.entries(artist.translations).map(([lang, translation]) => (
-                              <span 
-                                key={lang} 
-                                className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded-full text-xs"
-                              >
-                                <span className="font-medium text-gray-600 dark:text-gray-400">
-                                  {lang.toUpperCase()}
-                                </span>
-                                <span className="text-gray-700 dark:text-gray-300">
-                                  {translation}
-                                </span>
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {!albumLevel && !isFeaturing && (
-                        <select
-                          value={artist.role}
-                          onChange={(e) => updateArtistRole(artist.id, e.target.value as Artist['role'])}
-                          className="text-sm px-2 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                        >
-                          <option value="featured">{t('피처링', 'Featured')}</option>
-                          <option value="additional">{t('참여', 'Additional')}</option>
-                        </select>
-                      )}
-                      <button
-                        onClick={() => removeArtist(artist.id)}
-                        className="p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Footer */}
