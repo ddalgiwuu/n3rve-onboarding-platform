@@ -70,20 +70,34 @@ jobs:
           
           # Stop all containers
           echo "Stopping containers..."
-          docker-compose -f docker-compose.prod.yml down || true
+          docker-compose -f docker-compose.prod.yml down -v || true
           
           # Force remove any existing container with the same name
           echo "Removing existing containers..."
           docker stop n3rve-app || true
           docker rm n3rve-app || true
+          docker ps -a | grep n3rve | awk '{print $1}' | xargs -r docker rm -f || true
+          
+          # Clean up Docker system
+          echo "Cleaning Docker system..."
+          docker system prune -f || true
           
           # Pull latest image
           echo "Pulling latest Docker image..."
           docker pull ${{ env.DOCKER_IMAGE }}:latest
           
-          # Start all services with production docker-compose
+          # Run container directly without docker-compose
           echo "Starting services..."
-          docker-compose -f docker-compose.prod.yml up -d
+          docker run -d \
+            --name n3rve-app \
+            -p 80:80 \
+            -p 443:443 \
+            -p 3001:3001 \
+            --env-file .env \
+            -v /home/ubuntu/n3rve-onboarding-platform/nginx/conf.d:/etc/nginx/conf.d:ro \
+            -v /etc/letsencrypt:/etc/letsencrypt:ro \
+            --restart always \
+            ${{ env.DOCKER_IMAGE }}:latest
           
           # Wait for services to be ready
           echo "Waiting for services to be ready..."
@@ -91,11 +105,11 @@ jobs:
           
           # Check container status
           echo "Container status:"
-          docker-compose -f docker-compose.prod.yml ps
+          docker ps -a | grep n3rve
           
           # Check logs
           echo "App logs:"
-          docker logs n3rve-app --tail 20 || true
+          docker logs n3rve-app --tail 30 || true
           
           # Clean up old images
           echo "Cleaning up old images..."
