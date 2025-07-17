@@ -25,11 +25,25 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:5173'],
+    origin: process.env.CORS_ORIGIN?.split(',') || [
+      'http://localhost:5173',
+      'https://n3rve-onboarding.com',
+      'http://n3rve-onboarding.com'
+    ],
     credentials: true,
   });
 
   app.setGlobalPrefix('api');
+
+  // Add request logging middleware
+  app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+    if (req.method === 'POST' || req.method === 'PUT') {
+      console.log('Request body:', JSON.stringify(req.body, null, 2));
+    }
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    next();
+  });
 
   // Serve static files from uploads directory
   app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
