@@ -50,34 +50,43 @@ class SavedArtistsService {
   }
 
   async addArtist(artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedArtist> {
-    console.log('Adding artist:', artist)
+    console.log('SavedArtistsService.addArtist called')
+    console.log('Adding artist:', JSON.stringify(artist, null, 2))
     console.log('API URL:', `${this.baseUrl}/artists`)
     console.log('Auth token:', authService.getToken() ? 'Present' : 'Missing')
+    console.log('Full URL:', `${this.baseUrl}/artists`)
+    console.log('Request body:', JSON.stringify(artist))
     
-    const response = await fetch(`${this.baseUrl}/artists`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authService.getToken()}`
-      },
-      body: JSON.stringify(artist)
-    })
-    
-    console.log('Response status:', response.status)
-    console.log('Response ok:', response.ok)
-    
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Failed to add artist:', errorText)
-      throw new Error(`Failed to add artist: ${response.status} ${response.statusText} - ${errorText}`)
+    try {
+      const response = await fetch(`${this.baseUrl}/artists`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authService.getToken()}`
+        },
+        body: JSON.stringify(artist)
+      })
+      
+      console.log('SavedArtistsService: Response received')
+      console.log('Response status:', response.status)
+      console.log('Response ok:', response.ok)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Failed to add artist:', errorText)
+        throw new Error(`Failed to add artist: ${response.status} ${response.statusText} - ${errorText}`)
+      }
+      
+      const result = await response.json()
+      console.log('Successfully added artist:', JSON.stringify(result, null, 2))
+      console.log('Added artist ID:', result.id)
+      console.log('Added artist name:', result.name)
+      console.log('Added artist userId:', result.userId)
+      return result
+    } catch (fetchError) {
+      console.error('SavedArtistsService: Fetch error:', fetchError)
+      throw fetchError
     }
-    
-    const result = await response.json()
-    console.log('Successfully added artist:', JSON.stringify(result, null, 2))
-    console.log('Added artist ID:', result.id)
-    console.log('Added artist name:', result.name)
-    console.log('Added artist userId:', result.userId)
-    return result
   }
 
   async updateArtist(id: string, updates: Partial<SavedArtist>): Promise<SavedArtist> {
