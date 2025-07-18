@@ -1,4 +1,4 @@
-import { Controller, Get, Put, Body, UseGuards, Req, Res, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Put, Post, Body, UseGuards, Req, Res, HttpException, HttpStatus } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GoogleOAuthGuard } from './guards/google-oauth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -171,6 +171,35 @@ export class AuthController {
       },
       timestamp: new Date().toISOString(),
     };
+  }
+
+  @Public()
+  @Post('refresh')
+  async refreshToken(@Body() body: { refreshToken: string }) {
+    console.log('Auth Controller - Refresh token request received');
+    
+    if (!body.refreshToken) {
+      throw new HttpException('Refresh token is required', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const result = await this.authService.refreshAccessToken(body.refreshToken);
+      console.log('Auth Controller - Refresh token result:', result ? 'Success' : 'Failed');
+      
+      if (!result) {
+        throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
+      }
+
+      return result;
+    } catch (error) {
+      console.error('Auth Controller - Refresh token error:', error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException('Failed to refresh token', HttpStatus.UNAUTHORIZED);
+    }
   }
 
 }
