@@ -256,7 +256,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
           <button
             onClick={() => navigate('/admin/submissions')}
-            className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-xl hover:bg-white/15 transition-all duration-300 text-left group"
+            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-blue-500/20 rounded-lg">
@@ -264,13 +264,13 @@ export default function AdminDashboard() {
               </div>
               <span className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors">→</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">{t('제출 관리', 'Manage Submissions')}</h3>
-            <p className="text-sm text-gray-400">{t('모든 제출 내역 검토 및 관리', 'Review and manage all submissions')}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('제출 관리', 'Manage Submissions')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('모든 제출 내역 검토 및 관리', 'Review and manage all submissions')}</p>
           </button>
 
           <button
             onClick={() => navigate('/admin/users')}
-            className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-xl hover:bg-white/15 transition-all duration-300 text-left group"
+            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-purple-500/20 rounded-lg">
@@ -278,13 +278,13 @@ export default function AdminDashboard() {
               </div>
               <span className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors">→</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">{t('사용자 관리', 'Manage Users')}</h3>
-            <p className="text-sm text-gray-400">{t('사용자 계정 및 권한 관리', 'Manage user accounts and permissions')}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('사용자 관리', 'Manage Users')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('사용자 계정 및 권한 관리', 'Manage user accounts and permissions')}</p>
           </button>
 
           <button
             onClick={() => navigate('/admin/settings')}
-            className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-xl hover:bg-white/15 transition-all duration-300 text-left group"
+            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-green-500/20 rounded-lg">
@@ -292,8 +292,8 @@ export default function AdminDashboard() {
               </div>
               <span className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors">→</span>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">{t('플랫폼 설정', 'Platform Settings')}</h3>
-            <p className="text-sm text-gray-400">{t('시스템 설정 및 구성 관리', 'Manage system settings and configuration')}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('플랫폼 설정', 'Platform Settings')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('시스템 설정 및 구성 관리', 'Manage system settings and configuration')}</p>
           </button>
         </div>
       </div>
