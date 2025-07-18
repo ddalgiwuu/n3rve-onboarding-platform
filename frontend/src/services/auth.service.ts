@@ -17,7 +17,10 @@ class AuthService {
 
   isTokenExpired(token: string): boolean {
     const payload = this.parseJwt(token)
-    if (!payload || !payload.exp) return true
+    if (!payload || !payload.exp) {
+      console.log('AuthService: Token has no expiration or invalid payload')
+      return true
+    }
     
     const currentTime = Math.floor(Date.now() / 1000)
     const expirationTime = payload.exp
@@ -26,6 +29,8 @@ class AuthService {
     console.log('AuthService: Token expiration check:', {
       currentTime: new Date(currentTime * 1000).toISOString(),
       expirationTime: new Date(expirationTime * 1000).toISOString(),
+      timeUntilExpiry: expirationTime - currentTime,
+      bufferTime: bufferTime,
       isExpired: currentTime >= (expirationTime - bufferTime)
     })
     
@@ -126,10 +131,15 @@ class AuthService {
         const token = parsed.state?.accessToken || parsed.accessToken || null
         console.log('AuthService: getToken - final token exists:', !!token)
         
-        if (token && this.isTokenExpired(token)) {
-          console.log('AuthService: Token expired, attempting refresh...')
-          const newToken = await this.refreshAccessToken()
-          return newToken || null
+        if (token) {
+          const isExpired = this.isTokenExpired(token)
+          console.log('AuthService: Token expired check:', isExpired)
+          
+          if (isExpired) {
+            console.log('AuthService: Token expired, attempting refresh...')
+            const newToken = await this.refreshAccessToken()
+            return newToken || null
+          }
         }
         
         return token
@@ -156,8 +166,25 @@ class AuthService {
     }
   }
 
-  isAuthenticated(): boolean {
-    return !!this.getToken()
+  // Synchronous method to check if token exists (doesn't check expiration)
+  hasToken(): boolean {
+    try {
+      const storedValue = localStorage.getItem('auth-storage')
+      if (storedValue) {
+        const parsed = JSON.parse(storedValue)
+        const token = parsed.state?.accessToken || parsed.accessToken || null
+        return !!token
+      }
+      return false
+    } catch (error) {
+      return false
+    }
+  }
+
+  // Async method that checks token validity and refreshes if needed
+  async isAuthenticated(): Promise<boolean> {
+    const token = await this.getToken()
+    return !!token
   }
 
   logout(): void {
