@@ -19,6 +19,11 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       return true;
     }
     
+    const request = context.switchToHttp().getRequest();
+    console.log('JwtAuthGuard: Request URL:', request.url);
+    console.log('JwtAuthGuard: Authorization header:', request.headers?.authorization);
+    console.log('JwtAuthGuard: Has Bearer token:', !!request.headers?.authorization?.startsWith('Bearer '));
+    
     return super.canActivate(context);
   }
 }
