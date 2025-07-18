@@ -76,10 +76,10 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-n3rve-900/20 to-gray-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:via-n3rve-900/20 dark:to-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {t('관리자 대시보드', 'Admin Dashboard')}
           </h1>
           <button
@@ -93,11 +93,11 @@ export default function AdminDashboard() {
 
         {/* 통계 카드 */}
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 border border-white/20 shadow-xl">
+          <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-300 mb-1">{t('전체 제출', 'Total Submissions')}</p>
-                <p className="text-2xl md:text-3xl font-bold text-white">{stats.totalSubmissions}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('전체 제출', 'Total Submissions')}</p>
+                <p className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{stats.totalSubmissions}</p>
               </div>
               <div className="p-2 md:p-3 bg-blue-500/20 rounded-lg">
                 <ClipboardList className="w-6 h-6 md:w-8 md:h-8 text-blue-400" />
@@ -105,11 +105,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 border border-white/20 shadow-xl">
+          <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-300 mb-1">{t('검토 대기', 'Pending Review')}</p>
-                <p className="text-2xl md:text-3xl font-bold text-yellow-400">{stats.pendingReview}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('검토 대기', 'Pending Review')}</p>
+                <p className="text-2xl md:text-3xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pendingReview}</p>
               </div>
               <div className="p-2 md:p-3 bg-yellow-500/20 rounded-lg">
                 <Clock className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" />
@@ -117,11 +117,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 border border-white/20 shadow-xl">
+          <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-300 mb-1">{t('승인됨', 'Approved')}</p>
-                <p className="text-2xl md:text-3xl font-bold text-green-400">{stats.approved}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('승인됨', 'Approved')}</p>
+                <p className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400">{stats.approved}</p>
               </div>
               <div className="p-2 md:p-3 bg-green-500/20 rounded-lg">
                 <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-400" />
@@ -129,11 +129,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 border border-white/20 shadow-xl">
+          <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-300 mb-1">{t('반려됨', 'Rejected')}</p>
-                <p className="text-2xl md:text-3xl font-bold text-red-400">{stats.rejected}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('반려됨', 'Rejected')}</p>
+                <p className="text-2xl md:text-3xl font-bold text-red-600 dark:text-red-400">{stats.rejected}</p>
               </div>
               <div className="p-2 md:p-3 bg-red-500/20 rounded-lg">
                 <XCircle className="w-6 h-6 md:w-8 md:h-8 text-red-400" />
@@ -141,11 +141,11 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 border border-white/20 shadow-xl">
+          <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-300 mb-1">{t('전체 사용자', 'Total Users')}</p>
-                <p className="text-2xl md:text-3xl font-bold text-n3rve-400">{stats.totalCustomers}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('전체 사용자', 'Total Users')}</p>
+                <p className="text-2xl md:text-3xl font-bold text-n3rve-600 dark:text-n3rve-400">{stats.totalCustomers}</p>
               </div>
               <div className="p-2 md:p-3 bg-n3rve-500/20 rounded-lg">
                 <Users className="w-6 h-6 md:w-8 md:h-8 text-n3rve-400" />
@@ -170,7 +170,7 @@ export default function AdminDashboard() {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as any)}
-              className="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:border-transparent"
+              className="px-4 py-3 bg-gray-50 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:border-transparent"
             >
               <option value="all">{t('전체 상태', 'All Status')}</option>
               <option value="pending">{t('대기 중', 'Pending')}</option>
@@ -188,32 +188,32 @@ export default function AdminDashboard() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-white/20">
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('제출일', 'Date')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('아티스트', 'Artist')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('앨범명', 'Album')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('제출자', 'Submitter')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('상태', 'Status')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('작업', 'Actions')}</th>
+                <tr className="border-b border-gray-200 dark:border-white/20">
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('제출일', 'Date')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('아티스트', 'Artist')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('앨범명', 'Album')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('제출자', 'Submitter')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('상태', 'Status')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('작업', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {recentSubmissions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center p-8 text-gray-400">
+                    <td colSpan={6} className="text-center p-8 text-gray-500 dark:text-gray-400">
                       {t('제출된 데이터가 없습니다', 'No submissions found')}
                     </td>
                   </tr>
                 ) : (
                   recentSubmissions.map((submission) => (
-                    <tr key={submission.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
-                      <td className="p-4 text-gray-200">{formatDate(submission.createdAt)}</td>
-                      <td className="p-4 text-gray-200">{submission.artist?.name || '-'}</td>
-                      <td className="p-4 text-gray-200">{submission.album?.title || '-'}</td>
-                      <td className="p-4 text-gray-200">
+                    <tr key={submission.id} className="border-b border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                      <td className="p-4 text-gray-700 dark:text-gray-200">{formatDate(submission.createdAt)}</td>
+                      <td className="p-4 text-gray-700 dark:text-gray-200">{submission.artist?.name || '-'}</td>
+                      <td className="p-4 text-gray-700 dark:text-gray-200">{submission.album?.title || '-'}</td>
+                      <td className="p-4 text-gray-700 dark:text-gray-200">
                         <div>
                           <div className="text-sm">{submission.submitterName}</div>
-                          <div className="text-xs text-gray-400">{submission.submitterEmail}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{submission.submitterEmail}</div>
                         </div>
                       </td>
                       <td className="p-4">
@@ -242,10 +242,10 @@ export default function AdminDashboard() {
           </div>
           
           {/* 더보기 버튼 */}
-          <div className="p-4 border-t border-white/20 text-center">
+          <div className="p-4 border-t border-gray-200 dark:border-white/20 text-center">
             <button
               onClick={() => navigate('/admin/submissions')}
-              className="text-n3rve-400 hover:text-n3rve-300 font-medium transition-colors"
+              className="text-n3rve-600 hover:text-n3rve-700 dark:text-n3rve-400 dark:hover:text-n3rve-300 font-medium transition-colors"
             >
               {t('모든 제출 보기 →', 'View All Submissions →')}
             </button>
@@ -262,7 +262,7 @@ export default function AdminDashboard() {
               <div className="p-3 bg-blue-500/20 rounded-lg">
                 <Music className="w-6 h-6 text-blue-400" />
               </div>
-              <span className="text-gray-400 group-hover:text-white transition-colors">→</span>
+              <span className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors">→</span>
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">{t('제출 관리', 'Manage Submissions')}</h3>
             <p className="text-sm text-gray-400">{t('모든 제출 내역 검토 및 관리', 'Review and manage all submissions')}</p>
@@ -276,7 +276,7 @@ export default function AdminDashboard() {
               <div className="p-3 bg-purple-500/20 rounded-lg">
                 <Users className="w-6 h-6 text-purple-400" />
               </div>
-              <span className="text-gray-400 group-hover:text-white transition-colors">→</span>
+              <span className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors">→</span>
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">{t('사용자 관리', 'Manage Users')}</h3>
             <p className="text-sm text-gray-400">{t('사용자 계정 및 권한 관리', 'Manage user accounts and permissions')}</p>
@@ -290,7 +290,7 @@ export default function AdminDashboard() {
               <div className="p-3 bg-green-500/20 rounded-lg">
                 <Settings className="w-6 h-6 text-green-400" />
               </div>
-              <span className="text-gray-400 group-hover:text-white transition-colors">→</span>
+              <span className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors">→</span>
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">{t('플랫폼 설정', 'Platform Settings')}</h3>
             <p className="text-sm text-gray-400">{t('시스템 설정 및 구성 관리', 'Manage system settings and configuration')}</p>
