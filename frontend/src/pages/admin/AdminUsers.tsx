@@ -127,16 +127,16 @@ export default function AdminUsers() {
         {/* 사용자 목록 */}
         <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[768px]">
               <thead>
                 <tr className="border-b border-white/20">
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('사용자', 'User')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('회사', 'Company')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('권한', 'Role')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('상태', 'Status')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('가입일', 'Joined')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('마지막 로그인', 'Last Login')}</th>
-                  <th className="text-left p-4 text-gray-300 font-medium">{t('작업', 'Actions')}</th>
+                  <th className="text-left p-4 text-gray-300 font-medium whitespace-nowrap">{t('사용자', 'User')}</th>
+                  <th className="text-left p-4 text-gray-300 font-medium whitespace-nowrap">{t('회사', 'Company')}</th>
+                  <th className="text-left p-4 text-gray-300 font-medium whitespace-nowrap">{t('권한', 'Role')}</th>
+                  <th className="text-left p-4 text-gray-300 font-medium whitespace-nowrap">{t('상태', 'Status')}</th>
+                  <th className="text-left p-4 text-gray-300 font-medium whitespace-nowrap">{t('가입일', 'Joined')}</th>
+                  <th className="text-left p-4 text-gray-300 font-medium whitespace-nowrap">{t('마지막 로그인', 'Last Login')}</th>
+                  <th className="text-left p-4 text-gray-300 font-medium whitespace-nowrap">{t('작업', 'Actions')}</th>
                 </tr>
               </thead>
               <tbody>

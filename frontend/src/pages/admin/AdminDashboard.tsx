@@ -92,63 +92,63 @@ export default function AdminDashboard() {
         </div>
 
         {/* 통계 카드 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-xl">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 border border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-300 mb-1">{t('전체 제출', 'Total Submissions')}</p>
-                <p className="text-3xl font-bold text-white">{stats.totalSubmissions}</p>
+                <p className="text-2xl md:text-3xl font-bold text-white">{stats.totalSubmissions}</p>
               </div>
-              <div className="p-3 bg-blue-500/20 rounded-lg">
-                <ClipboardList className="w-8 h-8 text-blue-400" />
+              <div className="p-2 md:p-3 bg-blue-500/20 rounded-lg">
+                <ClipboardList className="w-6 h-6 md:w-8 md:h-8 text-blue-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-xl">
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 border border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-300 mb-1">{t('검토 대기', 'Pending Review')}</p>
-                <p className="text-3xl font-bold text-yellow-400">{stats.pendingReview}</p>
+                <p className="text-2xl md:text-3xl font-bold text-yellow-400">{stats.pendingReview}</p>
               </div>
-              <div className="p-3 bg-yellow-500/20 rounded-lg">
-                <Clock className="w-8 h-8 text-yellow-400" />
+              <div className="p-2 md:p-3 bg-yellow-500/20 rounded-lg">
+                <Clock className="w-6 h-6 md:w-8 md:h-8 text-yellow-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-xl">
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 border border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-300 mb-1">{t('승인됨', 'Approved')}</p>
-                <p className="text-3xl font-bold text-green-400">{stats.approved}</p>
+                <p className="text-2xl md:text-3xl font-bold text-green-400">{stats.approved}</p>
               </div>
-              <div className="p-3 bg-green-500/20 rounded-lg">
-                <CheckCircle className="w-8 h-8 text-green-400" />
+              <div className="p-2 md:p-3 bg-green-500/20 rounded-lg">
+                <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-xl">
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 border border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-300 mb-1">{t('반려됨', 'Rejected')}</p>
-                <p className="text-3xl font-bold text-red-400">{stats.rejected}</p>
+                <p className="text-2xl md:text-3xl font-bold text-red-400">{stats.rejected}</p>
               </div>
-              <div className="p-3 bg-red-500/20 rounded-lg">
-                <XCircle className="w-8 h-8 text-red-400" />
+              <div className="p-2 md:p-3 bg-red-500/20 rounded-lg">
+                <XCircle className="w-6 h-6 md:w-8 md:h-8 text-red-400" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-xl">
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 md:p-6 border border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-300 mb-1">{t('전체 사용자', 'Total Users')}</p>
-                <p className="text-3xl font-bold text-n3rve-400">{stats.totalCustomers}</p>
+                <p className="text-2xl md:text-3xl font-bold text-n3rve-400">{stats.totalCustomers}</p>
               </div>
-              <div className="p-3 bg-n3rve-500/20 rounded-lg">
-                <Users className="w-8 h-8 text-n3rve-400" />
+              <div className="p-2 md:p-3 bg-n3rve-500/20 rounded-lg">
+                <Users className="w-6 h-6 md:w-8 md:h-8 text-n3rve-400" />
               </div>
             </div>
           </div>
