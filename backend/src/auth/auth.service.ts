@@ -116,4 +116,45 @@ export class AuthService {
       throw new UnauthorizedException('Invalid token');
     }
   }
+
+  async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string } | null> {
+    try {
+      console.log('AuthService: Refresh token request received');
+      
+      // Verify the refresh token
+      const refreshSecret = this.configService.get('JWT_REFRESH_SECRET') || this.configService.get('JWT_SECRET');
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: refreshSecret,
+      });
+      
+      console.log('AuthService: Refresh token payload:', payload);
+
+      // Get the user to ensure they still exist and are active
+      const user = await this.usersService.findUserById(payload.sub);
+      
+      if (!user || !user.isActive) {
+        console.log('AuthService: User not found or inactive');
+        return null;
+      }
+
+      // Create new access token
+      const newPayload: JwtPayload = {
+        email: user.email,
+        sub: user.id,
+        name: user.name,
+        role: user.role,
+      };
+
+      const accessToken = this.jwtService.sign(newPayload, {
+        expiresIn: '24h',
+      });
+
+      console.log('AuthService: New access token created');
+
+      return { accessToken };
+    } catch (error) {
+      console.error('AuthService: Refresh token error:', error);
+      return null;
+    }
+  }
 }
