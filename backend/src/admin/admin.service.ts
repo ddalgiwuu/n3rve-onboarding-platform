@@ -231,11 +231,12 @@ export class AdminService {
   }
 
   async getSubmissionStats() {
-    const [totalSubmissions, pendingReview, approved, rejected, totalCustomers] = await Promise.all([
+    const [totalSubmissions, pendingReview, approved, rejected, totalUsers, usersWithSubmissions] = await Promise.all([
       this.prisma.submission.count(),
       this.prisma.submission.count({ where: { status: 'PENDING' } }),
       this.prisma.submission.count({ where: { status: 'APPROVED' } }),
       this.prisma.submission.count({ where: { status: 'REJECTED' } }),
+      this.prisma.user.count(),
       this.prisma.user.count({ where: { submissions: { some: {} } } }),
     ]);
 
@@ -244,8 +245,8 @@ export class AdminService {
       pendingReview,
       approved,
       rejected,
-      totalCustomers,
-      activeArtists: totalCustomers, // For compatibility with frontend
+      totalCustomers: totalUsers, // Total registered users
+      activeArtists: usersWithSubmissions, // Users who have submitted
       totalRevenue: 0, // Placeholder - implement if needed
     };
   }

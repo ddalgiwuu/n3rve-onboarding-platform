@@ -83,17 +83,17 @@ export default function AdminUsers() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-n3rve-900/20 to-gray-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:via-n3rve-900/20 dark:to-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
             <Users className="w-8 h-8 text-n3rve-400" />
             {t('사용자 관리', 'User Management')}
           </h1>
         </div>
 
         {/* 검색 및 필터 */}
-        <div className="bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 shadow-xl mb-6">
+        <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl mb-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -103,13 +103,13 @@ export default function AdminUsers() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && loadUsers()}
                 placeholder={t('이름, 이메일, 회사 검색...', 'Search name, email, company...')}
-                className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:border-transparent"
               />
             </div>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value as any)}
-              className="px-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:border-transparent"
+              className="px-4 py-3 bg-gray-50 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:border-transparent"
             >
               <option value="all">{t('전체 권한', 'All Roles')}</option>
               <option value="USER">{t('일반 사용자', 'User')}</option>
@@ -125,7 +125,7 @@ export default function AdminUsers() {
         </div>
 
         {/* 사용자 목록 */}
-        <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl overflow-hidden">
+        <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl border border-gray-200 dark:border-white/20 shadow-xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full min-w-[768px]">
               <thead>
@@ -148,20 +148,20 @@ export default function AdminUsers() {
                   </tr>
                 ) : (
                   users.map((user) => (
-                    <tr key={user.id} className="border-b border-white/10 hover:bg-white/5 transition-colors">
+                    <tr key={user.id} className="border-b border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-n3rve-400 to-purple-500 flex items-center justify-center text-white font-semibold">
                             {user.name ? user.name[0].toUpperCase() : user.email[0].toUpperCase()}
                           </div>
                           <div>
-                            <div className="text-white font-medium">{user.name || 'No name'}</div>
-                            <div className="text-gray-400 text-sm flex items-center gap-1">
+                            <div className="text-gray-900 dark:text-white font-medium">{user.name || 'No name'}</div>
+                            <div className="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1">
                               <Mail className="w-3 h-3" />
                               {user.email}
                             </div>
                             {user.phone && (
-                              <div className="text-gray-400 text-sm flex items-center gap-1">
+                              <div className="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1">
                                 <Phone className="w-3 h-3" />
                                 {user.phone}
                               </div>
@@ -169,14 +169,14 @@ export default function AdminUsers() {
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 text-gray-200">
+                      <td className="p-4 text-gray-700 dark:text-gray-200">
                         {user.company ? (
                           <div className="flex items-center gap-1">
-                            <Building className="w-4 h-4 text-gray-400" />
+                            <Building className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             {user.company}
                           </div>
                         ) : (
-                          <span className="text-gray-500">-</span>
+                          <span className="text-gray-400 dark:text-gray-500">-</span>
                         )}
                       </td>
                       <td className="p-4">
@@ -215,20 +215,20 @@ export default function AdminUsers() {
                           )}
                         </button>
                       </td>
-                      <td className="p-4 text-gray-200">
+                      <td className="p-4 text-gray-700 dark:text-gray-200">
                         <div className="flex items-center gap-1 text-sm">
                           <Calendar className="w-4 h-4 text-gray-400" />
                           {formatDate(user.createdAt)}
                         </div>
                       </td>
-                      <td className="p-4 text-gray-200">
+                      <td className="p-4 text-gray-700 dark:text-gray-200">
                         {user.lastLoginAt ? (
                           <div className="flex items-center gap-1 text-sm">
                             <Clock className="w-4 h-4 text-gray-400" />
                             {formatDate(user.lastLoginAt)}
                           </div>
                         ) : (
-                          <span className="text-gray-500">-</span>
+                          <span className="text-gray-400 dark:text-gray-500">-</span>
                         )}
                       </td>
                       <td className="p-4">
