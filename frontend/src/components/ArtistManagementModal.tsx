@@ -386,12 +386,48 @@ export default function ArtistManagementModal({
                                   )}
                                 </div>
                               </div>
-                              <button
-                                onClick={() => removeArtist(artist.id)}
-                                className="opacity-0 group-hover:opacity-100 p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all transform hover:scale-110"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              <div className="flex-shrink-0 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => {
+                                    // Set the newArtist state to edit mode
+                                    setNewArtist({
+                                      name: artist.name,
+                                      role: artist.role,
+                                      spotifyId: artist.spotifyId || '',
+                                      appleId: artist.appleId || '',
+                                      translations: artist.translations || {}
+                                    })
+                                    
+                                    // Set active translations
+                                    setActiveTranslations(Object.keys(artist.translations || {}))
+                                    
+                                    // Scroll to the form
+                                    setTimeout(() => {
+                                      const formElement = document.querySelector('[placeholder*="아티스트명"]')
+                                      if (formElement) {
+                                        formElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                                        ;(formElement as HTMLInputElement).focus()
+                                      }
+                                    }, 100)
+                                    
+                                    // Remove the artist from current list to edit
+                                    setArtists(artists.filter(a => a.id !== artist.id))
+                                    
+                                    toast.success(t('수정하려면 아래 폼에서 변경하세요', 'Edit in the form below'))
+                                  }}
+                                  className="p-2 text-purple-600 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20 rounded-lg transition-all transform hover:scale-110"
+                                  title={t('수정', 'Edit')}
+                                >
+                                  <Edit2 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => removeArtist(artist.id)}
+                                  className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all transform hover:scale-110"
+                                  title={t('삭제', 'Delete')}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
                           </div>
                         </div>
