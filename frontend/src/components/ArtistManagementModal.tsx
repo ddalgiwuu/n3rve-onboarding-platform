@@ -265,8 +265,8 @@ export default function ArtistManagementModal({
                   />
                 </div>
               </div>
-                
-                <div className="max-h-96 overflow-y-auto">
+              
+              <div className="max-h-96 overflow-y-auto">
                   {/* Current Session Artists */}
                   {artists.length > 0 && (
                     <>
@@ -416,6 +416,8 @@ export default function ArtistManagementModal({
                       </div>
                     </div>
                   ))}
+                    </>
+                  )}
                   
                   {artists.length === 0 && savedArtistsStore.searchArtists(savedArtistSearch).length === 0 && (
                     <div className="text-center py-8">
@@ -429,7 +431,7 @@ export default function ArtistManagementModal({
                     </div>
                   )}
                 </div>
-              </div>
+            </div>
           </div>
 
           {/* Divider */}
