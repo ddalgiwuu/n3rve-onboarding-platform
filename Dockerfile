@@ -64,7 +64,7 @@ COPY --from=frontend-builder /app/frontend/dist /usr/share/nginx/html
 
 # Copy nginx config
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
-COPY nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY nginx/default-no-ssl.conf /etc/nginx/conf.d/default.conf
 
 # Create supervisord config
 RUN mkdir -p /etc/supervisor.d
@@ -83,7 +83,7 @@ stderr_logfile=/dev/stderr
 stderr_logfile_maxbytes=0
 
 [program:backend]
-command=node /app/backend/dist/main.js
+command=node /app/backend/dist/src/main.js
 directory=/app/backend
 autostart=true
 autorestart=true
