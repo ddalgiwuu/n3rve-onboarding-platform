@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Clock, Star, Music, Users, Languages, Link as LinkIcon, Edit2, Trash2 } from 'lucide-react'
+import { Search, Plus, Clock, Star, Music, Users, Languages, Link as LinkIcon, Edit2, Trash2, Check } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import { useSavedArtistsStore, SavedArtist, SavedContributor } from '@/store/savedArtists.store'
@@ -11,11 +11,13 @@ interface ArtistSelectorProps {
   onCreateNew?: () => void  // Made optional since it's not used internally
   filterRoles?: string[]
   filterInstruments?: string[]
+  selectedIds?: string[]  // IDs of already selected items
 }
 
 export default function ArtistSelector({ 
   type, 
-  onSelect
+  onSelect,
+  selectedIds = []
 }: ArtistSelectorProps) {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string) => language === 'ko' ? ko : en
@@ -213,28 +215,64 @@ export default function ArtistSelector({
             </div>
           ) : (
             <>
-              {results.map((item) => (
-                <div
-                  key={item.id}
-                  className="relative group"
-                >
-                  <button
-                    onClick={() => handleSelect(item)}
-                    className="w-full p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
+              {results.map((item) => {
+                const isSelected = selectedIds.includes(item.id)
+                
+                return (
+                  <div
+                    key={item.id}
+                    className="relative group"
                   >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                          {type === 'artist' ? 
-                            <Music className="w-5 h-5 text-purple-600 dark:text-purple-400" /> :
-                            <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                          }
+                    <button
+                      onClick={() => handleSelect(item)}
+                      disabled={isSelected}
+                      className={`
+                        w-full p-4 rounded-lg transition-all text-left relative overflow-hidden
+                        ${isSelected 
+                          ? 'bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-500 dark:border-green-400 cursor-not-allowed' 
+                          : 'bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 border-2 border-transparent'
+                        }
+                      `}
+                    >
+                      {/* Selected indicator */}
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 flex items-center gap-2 bg-green-100 dark:bg-green-900/50 px-3 py-1 rounded-full">
+                          <Check className="w-4 h-4 text-green-600 dark:text-green-400" />
+                          <span className="text-xs font-semibold text-green-700 dark:text-green-300">
+                            {t('등록됨', 'Added')}
+                          </span>
                         </div>
-                        
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400">
-                            {item.name}
-                          </h4>
+                      )}
+                      
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start gap-3 flex-1">
+                          <div className={`p-2 rounded-lg ${
+                            isSelected 
+                              ? 'bg-green-100 dark:bg-green-900/30' 
+                              : 'bg-purple-100 dark:bg-purple-900/30'
+                          }`}>
+                            {type === 'artist' ? 
+                              <Music className={`w-5 h-5 ${
+                                isSelected 
+                                  ? 'text-green-600 dark:text-green-400' 
+                                  : 'text-purple-600 dark:text-purple-400'
+                              }`} /> :
+                              <Users className={`w-5 h-5 ${
+                                isSelected 
+                                  ? 'text-green-600 dark:text-green-400' 
+                                  : 'text-purple-600 dark:text-purple-400'
+                              }`} />
+                            }
+                          </div>
+                          
+                          <div className="flex-1">
+                            <h4 className={`font-medium ${
+                              isSelected
+                                ? 'text-green-700 dark:text-green-300'
+                                : 'text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400'
+                            }`}>
+                              {item.name}
+                            </h4>
                           
                           <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
                             {item.translations.length > 0 && (
