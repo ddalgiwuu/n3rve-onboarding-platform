@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, ChevronDown, Save, Check, Sparkles } from 'lucide-react'
+import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, ChevronDown, Save, Check, Sparkles, Edit2 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import { useSavedArtistsStore } from '@/store/savedArtists.store'
 import toast from 'react-hot-toast'
@@ -478,9 +478,46 @@ export default function ArtistManagementModal({
                               savedArtistsStore.useArtist(savedArtist.id)
                               toast.success(t('아티스트가 추가되었습니다', 'Artist added'))
                             }}
-                            className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-1"
                           >
+                            <Plus className="w-3 h-3" />
                             {t('사용', 'Use')}
+                          </button>
+                          <button
+                            onClick={() => {
+                              // Set the newArtist state to edit mode
+                              const spotifyId = savedArtist.identifiers.find(id => id.type === 'SPOTIFY')?.value || ''
+                              const appleId = savedArtist.identifiers.find(id => id.type === 'APPLE_MUSIC')?.value || ''
+                              
+                              setNewArtist({
+                                name: savedArtist.name,
+                                role: isFeaturing ? 'featured' : (albumLevel ? 'main' : 'additional'),
+                                spotifyId,
+                                appleId,
+                                translations: savedArtist.translations.reduce((acc, trans) => ({
+                                  ...acc,
+                                  [trans.language]: trans.name
+                                }), {})
+                              })
+                              
+                              // Set active translations
+                              setActiveTranslations(savedArtist.translations.map(t => t.language))
+                              
+                              // Scroll to the form
+                              setTimeout(() => {
+                                const formElement = document.querySelector('[placeholder*="아티스트명"]')
+                                if (formElement) {
+                                  formElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                                  ;(formElement as HTMLInputElement).focus()
+                                }
+                              }, 100)
+                              
+                              toast.success(t('수정하려면 아래 폼에서 변경하세요', 'Edit in the form below'))
+                            }}
+                            className="px-3 py-1.5 text-xs bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center gap-1"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                            {t('수정', 'Edit')}
                           </button>
                           <button
                             onClick={() => {
@@ -496,8 +533,9 @@ export default function ArtistManagementModal({
                                   })
                               }
                             }}
-                            className="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                            className="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-1"
                           >
+                            <Trash2 className="w-3 h-3" />
                             {t('삭제', 'Delete')}
                           </button>
                         </div>
@@ -706,15 +744,40 @@ export default function ArtistManagementModal({
                     <HelpCircle className="w-4 h-4 inline" />
                   </button>
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newArtist.spotifyId || ''}
-                    onChange={(e) => setNewArtist({ ...newArtist, spotifyId: e.target.value })}
-                    placeholder="spotify:artist:XXXXXXXXX"
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                  />
-                  {!newArtist.spotifyId && (
+                {newArtist.spotifyId === 'MAKE_NEW' ? (
+                  <div className="relative">
+                    <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-2 border-purple-300 dark:border-purple-600 rounded-lg">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg shadow-purple-500/20">
+                          <Sparkles className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-purple-900 dark:text-purple-100">
+                          {t('새 아티스트로 등록됩니다', 'Will be registered as a new artist')}
+                        </p>
+                        <p className="text-sm text-purple-700 dark:text-purple-300">
+                          {t('Spotify에 아직 등록되지 않은 아티스트', 'Artist not yet on Spotify')}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setNewArtist({ ...newArtist, spotifyId: '' })}
+                        className="p-2 text-purple-600 hover:bg-purple-100 dark:text-purple-400 dark:hover:bg-purple-900/20 rounded-lg transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newArtist.spotifyId || ''}
+                      onChange={(e) => setNewArtist({ ...newArtist, spotifyId: e.target.value })}
+                      placeholder="spotify:artist:XXXXXXXXX"
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
+                    />
                     <button
                       type="button"
                       onClick={() => setNewArtist({ ...newArtist, spotifyId: 'MAKE_NEW' })}
@@ -723,11 +786,11 @@ export default function ArtistManagementModal({
                       <span className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                       <span className="relative flex items-center gap-2 font-bold">
                         <Plus className="w-4 h-4" />
-                        {t('새 아티스트', 'Make New')}
+                        {t('아직 없음', 'Not Listed')}
                       </span>
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
                 
                 {showSpotifyHelp && (
                   <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-sm">
@@ -773,15 +836,40 @@ export default function ArtistManagementModal({
                     <HelpCircle className="w-4 h-4 inline" />
                   </button>
                 </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newArtist.appleId || ''}
-                    onChange={(e) => setNewArtist({ ...newArtist, appleId: e.target.value })}
-                    placeholder="123456789"
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                  />
-                  {!newArtist.appleId && (
+                {newArtist.appleId === 'MAKE_NEW' ? (
+                  <div className="relative">
+                    <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-800 border-2 border-gray-300 dark:border-gray-600 rounded-lg">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 bg-gradient-to-br from-gray-600 to-gray-800 rounded-lg flex items-center justify-center shadow-lg shadow-gray-600/20">
+                          <Sparkles className="w-6 h-6 text-white" />
+                        </div>
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">
+                          {t('새 아티스트로 등록됩니다', 'Will be registered as a new artist')}
+                        </p>
+                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                          {t('Apple Music에 아직 등록되지 않은 아티스트', 'Artist not yet on Apple Music')}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setNewArtist({ ...newArtist, appleId: '' })}
+                        className="p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newArtist.appleId || ''}
+                      onChange={(e) => setNewArtist({ ...newArtist, appleId: e.target.value })}
+                      placeholder="123456789"
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
+                    />
                     <button
                       type="button"
                       onClick={() => setNewArtist({ ...newArtist, appleId: 'MAKE_NEW' })}
@@ -790,11 +878,11 @@ export default function ArtistManagementModal({
                       <span className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                       <span className="relative flex items-center gap-2 font-bold">
                         <Plus className="w-4 h-4" />
-                        {t('새 아티스트', 'Make New')}
+                        {t('아직 없음', 'Not Listed')}
                       </span>
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
                 
                 {showAppleHelp && (
                   <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-sm border border-gray-200 dark:border-gray-700">
