@@ -78,16 +78,19 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const fetchArtists = async () => {
     try {
+      console.log('SavedArtistsContext: fetchArtists called, isAuthenticated:', authService.isAuthenticated(), 'userId:', userId)
       setState(prev => ({ ...prev, loading: true, error: null }))
       
       // If authenticated, fetch from server and sync with localStorage
       if (authService.isAuthenticated()) {
         const artists = await savedArtistsService.getArtists()
+        console.log('SavedArtistsContext: Fetched', artists.length, 'artists from server')
         setState(prev => ({ ...prev, artists, loading: false }))
         saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, artists, userId)
       } else {
         // Not authenticated, use localStorage data
         const localArtists = loadFromLocalStorage<SavedArtist>(LOCAL_STORAGE_ARTISTS_KEY, userId)
+        console.log('SavedArtistsContext: Loaded', localArtists.length, 'artists from localStorage')
         setState(prev => ({ ...prev, artists: localArtists, loading: false }))
       }
     } catch (error) {
@@ -122,11 +125,13 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const addArtist = async (artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
     try {
+      console.log('SavedArtistsContext: addArtist called with:', artist)
       let newArtist: SavedArtist
       
       if (authService.isAuthenticated()) {
         // If authenticated, save to server
         newArtist = await savedArtistsService.addArtist(artist)
+        console.log('SavedArtistsContext: Artist added to server:', newArtist)
         // Refetch to sync
         await fetchArtists()
       } else {
