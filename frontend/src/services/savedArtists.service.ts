@@ -24,12 +24,30 @@ export interface SavedContributor {
 
 class SavedArtistsService {
   private baseUrl = `${import.meta.env.VITE_API_URL}/saved-artists`
+  
+  private getHeaders() {
+    const token = authService.getToken()
+    console.log('SavedArtistsService: Getting headers - token exists:', !!token)
+    console.log('SavedArtistsService: Token preview:', token ? `${token.substring(0, 30)}...` : 'null')
+    
+    const headers: HeadersInit = {
+      'Content-Type': 'application/json'
+    }
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`
+    }
+    
+    return headers
+  }
 
   async getArtists(): Promise<SavedArtist[]> {
+    console.log('SavedArtistsService: getArtists - URL:', `${this.baseUrl}/artists`)
+    
     const response = await fetch(`${this.baseUrl}/artists`, {
-      headers: {
-        'Authorization': `Bearer ${authService.getToken()}`
-      }
+      method: 'GET',
+      headers: this.getHeaders(),
+      credentials: 'include' // Include cookies if any
     })
     
     if (!response.ok) {
@@ -43,12 +61,13 @@ class SavedArtistsService {
 
   async addArtist(artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedArtist> {
     try {
+      console.log('SavedArtistsService: addArtist - URL:', `${this.baseUrl}/artists`)
+      console.log('SavedArtistsService: addArtist - body:', JSON.stringify(artist))
+      
       const response = await fetch(`${this.baseUrl}/artists`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${authService.getToken()}`
-        },
+        headers: this.getHeaders(),
+        credentials: 'include',
         body: JSON.stringify(artist)
       })
       
@@ -67,10 +86,8 @@ class SavedArtistsService {
   async updateArtist(id: string, updates: Partial<SavedArtist>): Promise<SavedArtist> {
     const response = await fetch(`${this.baseUrl}/artists/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${authService.getToken()}`
-      },
+      headers: this.getHeaders(),
+      credentials: 'include',
       body: JSON.stringify(updates)
     })
     
@@ -84,9 +101,8 @@ class SavedArtistsService {
   async deleteArtist(id: string): Promise<void> {
     const response = await fetch(`${this.baseUrl}/artists/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${authService.getToken()}`
-      }
+      headers: this.getHeaders(),
+      credentials: 'include'
     })
     
     if (!response.ok) {
@@ -97,9 +113,8 @@ class SavedArtistsService {
   async useArtist(id: string): Promise<SavedArtist> {
     const response = await fetch(`${this.baseUrl}/artists/${id}/use`, {
       method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${authService.getToken()}`
-      }
+      headers: this.getHeaders(),
+      credentials: 'include'
     })
     
     if (!response.ok) {
@@ -112,9 +127,9 @@ class SavedArtistsService {
   // Contributors
   async getContributors(): Promise<SavedContributor[]> {
     const response = await fetch(`${this.baseUrl}/contributors`, {
-      headers: {
-        'Authorization': `Bearer ${authService.getToken()}`
-      }
+      method: 'GET',
+      headers: this.getHeaders(),
+      credentials: 'include'
     })
     
     if (!response.ok) {
