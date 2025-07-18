@@ -109,6 +109,19 @@ const SubmissionManagement: React.FC = () => {
         limit: itemsPerPage
       })
       
+      // Add defensive programming
+      if (!response || !Array.isArray(response.submissions)) {
+        console.error('Invalid response format:', response)
+        setSubmissions([])
+        setStats({
+          total: 0,
+          pending: 0,
+          approved: 0,
+          rejected: 0
+        })
+        return
+      }
+      
       setSubmissions(response.submissions || [])
       
       // Update stats
