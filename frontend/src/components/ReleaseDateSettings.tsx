@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react'
 import { Calendar, Clock, Info, Copy, Globe } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
-import DatePicker from '@/components/DatePicker'
-import TimePicker from '@/components/ui/TimePicker'
+import DateTimePicker from '@/components/DateTimePicker'
 import { timezones, convertToUTC } from '@/constants/timezones'
 
 interface ReleaseDateSettingsProps {
@@ -43,15 +42,29 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
     }
   }, [consumerDate, originalDate.isReRelease, showOriginalDateEdit])
 
-  const handleConsumerDateChange = (field: 'date' | 'time' | 'timezone', value: string) => {
-    const updatedConsumerDate = { ...consumerDate, [field]: value }
-    onChange({
-      consumerDate: updatedConsumerDate,
-      originalDate: originalDate.isReRelease ? originalDate : { ...updatedConsumerDate, isReRelease: false }
-    })
+  const handleConsumerDateChange = (field: 'date' | 'time' | 'timezone' | 'datetime', value: string) => {
+    if (field === 'datetime') {
+      // Parse datetime ISO string
+      const date = new Date(value)
+      const updatedConsumerDate = {
+        ...consumerDate,
+        date: date.toISOString().split('T')[0],
+        time: `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+      }
+      onChange({
+        consumerDate: updatedConsumerDate,
+        originalDate: originalDate.isReRelease ? originalDate : { ...updatedConsumerDate, isReRelease: false }
+      })
+    } else {
+      const updatedConsumerDate = { ...consumerDate, [field]: value }
+      onChange({
+        consumerDate: updatedConsumerDate,
+        originalDate: originalDate.isReRelease ? originalDate : { ...updatedConsumerDate, isReRelease: false }
+      })
+    }
   }
 
-  const handleOriginalDateChange = (field: 'date' | 'time' | 'timezone' | 'isReRelease', value: string | boolean) => {
+  const handleOriginalDateChange = (field: 'date' | 'time' | 'timezone' | 'isReRelease' | 'datetime', value: string | boolean) => {
     if (field === 'isReRelease') {
       const isReRelease = value as boolean
       onChange({
@@ -64,6 +77,17 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
         }
       })
       setShowOriginalDateEdit(isReRelease)
+    } else if (field === 'datetime') {
+      // Parse datetime ISO string
+      const date = new Date(value as string)
+      onChange({
+        consumerDate,
+        originalDate: {
+          ...originalDate,
+          date: date.toISOString().split('T')[0],
+          time: `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+        }
+      })
     } else {
       onChange({
         consumerDate,
@@ -102,32 +126,29 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium mb-1">{t('날짜', 'Date')} *</label>
-            <DatePicker
-              value={consumerDate.date}
-              onChange={(date: string) => handleConsumerDateChange('date', date)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-1">
+            <DateTimePicker
+              value={consumerDate.date && consumerDate.time ? 
+                `${consumerDate.date}T${consumerDate.time}:00` : 
+                new Date().toISOString()
+              }
+              onChange={(datetime: string) => handleConsumerDateChange('datetime', datetime)}
+              label={t('날짜 및 시간', 'Date & Time')}
+              required
               minDate={new Date().toISOString().split('T')[0]}
+              hint={t('발매일과 시간을 선택하세요', 'Select release date and time')}
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium mb-1">{t('시간', 'Time')} *</label>
-            <TimePicker
-              value={consumerDate.time}
-              onChange={(value) => handleConsumerDateChange('time', value)}
-              className="w-full"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-1">{t('시간대', 'Timezone')} *</label>
+            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5">
+              {t('시간대', 'Timezone')} <span className="text-red-500">*</span>
+            </label>
             <select
               value={consumerDate.timezone}
               onChange={(e) => handleConsumerDateChange('timezone', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
+              className="w-full px-4 py-3.5 min-h-[48px] border-2 rounded-xl bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm text-gray-900 dark:text-white font-medium border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 focus:border-transparent focus:ring-4 focus:ring-n3rve-500/20 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:shadow-lg focus:shadow-n3rve-500/10 transition-all duration-200"
             >
               {timezones.map(tz => (
                 <option key={tz.value} value={tz.value}>
@@ -200,32 +221,28 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
         </div>
 
         {originalDate.isReRelease ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-1">{t('날짜', 'Date')}</label>
-              <DatePicker
-                value={originalDate.date}
-                onChange={(date: string) => handleOriginalDateChange('date', date)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-1">
+              <DateTimePicker
+                value={originalDate.date && originalDate.time ? 
+                  `${originalDate.date}T${originalDate.time}:00` : 
+                  new Date().toISOString()
+                }
+                onChange={(datetime: string) => handleOriginalDateChange('datetime', datetime)}
+                label={t('날짜 및 시간', 'Date & Time')}
                 maxDate={new Date().toISOString().split('T')[0]}
+                hint={t('원곡이 발매된 날짜와 시간', 'Original release date and time')}
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium mb-1">{t('시간', 'Time')}</label>
-              <TimePicker
-                value={originalDate.time}
-                onChange={(value) => handleOriginalDateChange('time', value)}
-                className="w-full"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-1">{t('시간대', 'Timezone')}</label>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5">
+                {t('시간대', 'Timezone')}
+              </label>
               <select
                 value={originalDate.timezone}
                 onChange={(e) => handleOriginalDateChange('timezone', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
+                className="w-full px-4 py-3.5 min-h-[48px] border-2 rounded-xl bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm text-gray-900 dark:text-white font-medium border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 focus:border-transparent focus:ring-4 focus:ring-n3rve-500/20 focus:outline-none focus:bg-white dark:focus:bg-gray-900 focus:shadow-lg focus:shadow-n3rve-500/10 transition-all duration-200"
               >
                 {timezones.map(tz => (
                   <option key={tz.value} value={tz.value}>

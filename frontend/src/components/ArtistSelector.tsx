@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Plus, Clock, Star, Music, Users, Languages, Link as LinkIcon } from 'lucide-react'
+import { Search, Plus, Clock, Star, Music, Users, Languages, Link as LinkIcon, Edit2, Trash2 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import { useSavedArtistsStore, SavedArtist, SavedContributor } from '@/store/savedArtists.store'
@@ -22,6 +22,8 @@ export default function ArtistSelector({
 
   const [searchQuery, setSearchQuery] = useState('')
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editingItem, setEditingItem] = useState<SavedArtist | SavedContributor | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
   
   const { 
     artists, 
@@ -33,6 +35,10 @@ export default function ArtistSelector({
     useContributor,
     addArtist,
     addContributor,
+    updateArtist,
+    updateContributor,
+    deleteArtist,
+    deleteContributor,
     fetchArtists,
     fetchContributors
   } = useSavedArtistsStore()
@@ -95,6 +101,52 @@ export default function ArtistSelector({
       setShowCreateForm(false)
     } catch (error) {
       console.error('Error creating:', error)
+    }
+  }
+
+  const handleUpdate = async (data: any) => {
+    if (!editingItem) return
+    
+    try {
+      if (type === 'artist') {
+        await updateArtist(editingItem.id, {
+          name: data.name,
+          translations: data.translations,
+          identifiers: data.identifiers
+        })
+      } else {
+        await updateContributor(editingItem.id, {
+          name: data.name,
+          roles: data.roles,
+          instruments: data.instruments,
+          translations: data.translations,
+          identifiers: data.identifiers
+        })
+      }
+      setEditingItem(null)
+      // Refresh the list
+      if (type === 'artist') {
+        fetchArtists()
+      } else {
+        fetchContributors()
+      }
+    } catch (error) {
+      console.error('Error updating:', error)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    try {
+      if (type === 'artist') {
+        await deleteArtist(id)
+        fetchArtists()
+      } else {
+        await deleteContributor(id)
+        fetchContributors()
+      }
+      setShowDeleteConfirm(null)
+    } catch (error) {
+      console.error('Error deleting:', error)
     }
   }
 
@@ -162,63 +214,122 @@ export default function ArtistSelector({
           ) : (
             <>
               {results.map((item) => (
-                <button
+                <div
                   key={item.id}
-                  onClick={() => handleSelect(item)}
-                  className="w-full p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-left group"
+                  className="relative group"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-3 flex-1">
-                      <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                        {type === 'artist' ? 
-                          <Music className="w-5 h-5 text-purple-600 dark:text-purple-400" /> :
-                          <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        }
+                  <button
+                    onClick={() => handleSelect(item)}
+                    className="w-full p-4 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors text-left"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start gap-3 flex-1">
+                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
+                          {type === 'artist' ? 
+                            <Music className="w-5 h-5 text-purple-600 dark:text-purple-400" /> :
+                            <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                          }
+                        </div>
+                        
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400">
+                            {item.name}
+                          </h4>
+                          
+                          <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
+                            {item.translations.length > 0 && (
+                              <span className="flex items-center gap-1">
+                                <Languages className="w-3 h-3" />
+                                {item.translations.length} {t('번역', 'translations')}
+                              </span>
+                            )}
+                            
+                            {item.identifiers.length > 0 && (
+                              <span className="flex items-center gap-1">
+                                <LinkIcon className="w-3 h-3" />
+                                {item.identifiers.map((i: any) => i.type).join(', ')}
+                              </span>
+                            )}
+                            
+                            {'roles' in item && Array.isArray(item.roles) && item.roles.length > 0 && (
+                              <span>{item.roles.join(', ')}</span>
+                            )}
+                            
+                            {'instruments' in item && Array.isArray(item.instruments) && item.instruments.length > 0 && (
+                              <span>{item.instruments.join(', ')}</span>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400">
-                          {item.name}
-                        </h4>
-                        
-                        <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-gray-500">
-                          {item.translations.length > 0 && (
-                            <span className="flex items-center gap-1">
-                              <Languages className="w-3 h-3" />
-                              {item.translations.length} {t('번역', 'translations')}
-                            </span>
-                          )}
-                          
-                          {item.identifiers.length > 0 && (
-                            <span className="flex items-center gap-1">
-                              <LinkIcon className="w-3 h-3" />
-                              {item.identifiers.map((i: any) => i.type).join(', ')}
-                            </span>
-                          )}
-                          
-                          {'roles' in item && Array.isArray(item.roles) && item.roles.length > 0 && (
-                            <span>{item.roles.join(', ')}</span>
-                          )}
-                          
-                          {'instruments' in item && Array.isArray(item.instruments) && item.instruments.length > 0 && (
-                            <span>{item.instruments.join(', ')}</span>
-                          )}
+                      <div className="text-right text-xs text-gray-500">
+                        <div className="flex items-center gap-1 mb-1">
+                          <Star className="w-3 h-3" />
+                          <span>{item.usageCount}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Clock className="w-3 h-3" />
+                          <span>{formatDate(item.lastUsed)}</span>
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="text-right text-xs text-gray-500">
-                      <div className="flex items-center gap-1 mb-1">
-                        <Star className="w-3 h-3" />
-                        <span>{item.usageCount}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{formatDate(item.lastUsed)}</span>
+                  </button>
+                  
+                  {/* Edit/Delete buttons */}
+                  <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setEditingItem(item)
+                      }}
+                      className="p-2 bg-white dark:bg-gray-700 rounded-lg shadow-sm hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
+                      title={t('수정', 'Edit')}
+                    >
+                      <Edit2 className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setShowDeleteConfirm(item.id)
+                      }}
+                      className="p-2 bg-white dark:bg-gray-700 rounded-lg shadow-sm hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      title={t('삭제', 'Delete')}
+                    >
+                      <Trash2 className="w-4 h-4 text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400" />
+                    </button>
+                  </div>
+                  
+                  {/* Delete confirmation */}
+                  {showDeleteConfirm === item.id && (
+                    <div className="absolute inset-0 bg-white dark:bg-gray-800 rounded-lg flex items-center justify-center p-4 z-10">
+                      <div className="text-center">
+                        <p className="text-sm mb-3">
+                          {t('정말 삭제하시겠습니까?', 'Are you sure you want to delete?')}
+                        </p>
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDelete(item.id)
+                            }}
+                            className="px-3 py-1 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm"
+                          >
+                            {t('삭제', 'Delete')}
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setShowDeleteConfirm(null)
+                            }}
+                            className="px-3 py-1 bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500 text-sm"
+                          >
+                            {t('취소', 'Cancel')}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
+                  )}
+                </div>
               ))}
               
               {/* Add New Button */}
@@ -271,6 +382,16 @@ export default function ArtistSelector({
           contributor={undefined}
           onSave={handleCreateNew}
           onCancel={() => setShowCreateForm(false)}
+          isArtist={type === 'artist'}
+        />
+      )}
+      
+      {/* Edit Form */}
+      {editingItem && (
+        <ContributorForm
+          contributor={editingItem}
+          onSave={handleUpdate}
+          onCancel={() => setEditingItem(null)}
           isArtist={type === 'artist'}
         />
       )}
