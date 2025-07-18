@@ -745,6 +745,7 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
               </button>
             </div>
             <ArtistSelector
+              key={`artist-selector-${Date.now()}`} // Force remount to fetch latest data
               type="artist"
               onSelect={handleArtistSelection}
               onCreateNew={() => {

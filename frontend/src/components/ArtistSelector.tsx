@@ -37,14 +37,27 @@ export default function ArtistSelector({
     fetchContributors
   } = useSavedArtistsStore()
 
-  // Fetch data on mount
+  // Fetch data on mount and when component becomes visible
   useEffect(() => {
+    console.log('ArtistSelector: Fetching data for type:', type)
     if (type === 'artist') {
       fetchArtists()
     } else {
       fetchContributors()
     }
   }, [type, fetchArtists, fetchContributors])
+  
+  // Also fetch fresh data whenever searchQuery changes from empty (component likely just opened)
+  useEffect(() => {
+    if (searchQuery === '') {
+      console.log('ArtistSelector: Component opened, fetching fresh data')
+      if (type === 'artist') {
+        fetchArtists()
+      } else {
+        fetchContributors()
+      }
+    }
+  }, [])
 
   const results = type === 'artist' 
     ? searchArtists(searchQuery)
