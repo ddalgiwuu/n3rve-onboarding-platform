@@ -1,5 +1,6 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react'
 import { savedArtistsService, SavedArtist, SavedContributor } from '@/services/savedArtists.service'
+import { authService } from '@/services/auth.service'
 
 interface SavedArtistsState {
   artists: SavedArtist[]
@@ -37,6 +38,12 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const fetchArtists = async () => {
     try {
+      // Only fetch if authenticated
+      if (!authService.isAuthenticated()) {
+        setState(prev => ({ ...prev, artists: [], loading: false }))
+        return
+      }
+      
       setState(prev => ({ ...prev, loading: true, error: null }))
       const artists = await savedArtistsService.getArtists()
       setState(prev => ({ ...prev, artists, loading: false }))
@@ -49,6 +56,12 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const fetchContributors = async () => {
     try {
+      // Only fetch if authenticated
+      if (!authService.isAuthenticated()) {
+        setState(prev => ({ ...prev, contributors: [], loading: false }))
+        return
+      }
+      
       setState(prev => ({ ...prev, loading: true, error: null }))
       const contributors = await savedArtistsService.getContributors()
       setState(prev => ({ ...prev, contributors, loading: false }))
@@ -61,6 +74,13 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const addArtist = async (artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
     try {
+      // Check authentication before attempting to add
+      if (!authService.isAuthenticated()) {
+        const error = new Error('User is not authenticated')
+        setState(prev => ({ ...prev, error }))
+        throw error
+      }
+      
       const newArtist = await savedArtistsService.addArtist(artist)
       
       // Refetch the entire list to ensure proper sorting and synchronization

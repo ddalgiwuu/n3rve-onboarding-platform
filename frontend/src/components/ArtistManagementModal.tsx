@@ -69,15 +69,13 @@ export default function ArtistManagementModal({
 
   // Load saved artists when modal opens
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && savedArtistsStore) {
       savedArtistsStore.fetchArtists()
         .catch(error => {
-          console.error('ArtistManagementModal: Failed to fetch saved artists:', error)
-          console.error('ArtistManagementModal: Error details:', {
-            message: error.message,
-            stack: error.stack,
-            response: error.response
-          })
+          // Only log if it's not an authentication issue
+          if (!error.message?.includes('401')) {
+            console.error('ArtistManagementModal: Failed to fetch saved artists:', error)
+          }
         })
     }
   }, [isOpen])
@@ -114,36 +112,38 @@ export default function ArtistManagementModal({
       // Add to current session
       setArtists([...artists, artist])
       
-      // Save to database
-      try {
-        await savedArtistsStore.addArtist({
-          name: artist.name,
-          translations: Object.entries(artist.translations || {}).map(([language, name]) => ({
-            language,
-            name
-          })),
-          identifiers: [
-            ...(artist.spotifyId ? [{ type: 'SPOTIFY', value: artist.spotifyId }] : []),
-            ...(artist.appleId ? [{ type: 'APPLE_MUSIC', value: artist.appleId }] : [])
-          ]
-        })
-        
-        toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'))
-      } catch (error) {
-        console.error('Error saving artist:', error)
-        toast.error(t('아티스트 저장에 실패했습니다', 'Failed to save artist'))
+      // Save to database only if authenticated
+      if (savedArtistsStore) {
+        try {
+          await savedArtistsStore.addArtist({
+            name: artist.name,
+            translations: Object.entries(artist.translations || {}).map(([language, name]) => ({
+              language,
+              name
+            })),
+            identifiers: [
+              ...(artist.spotifyId ? [{ type: 'SPOTIFY', value: artist.spotifyId }] : []),
+              ...(artist.appleId ? [{ type: 'APPLE_MUSIC', value: artist.appleId }] : [])
+            ]
+          })
+          
+          toast.success(t('아티스트가 성공적으로 추가되었습니다', 'Artist added successfully'))
+        } catch (error: any) {
+          // Only log error if it's not an authentication issue
+          if (!error.message?.includes('not authenticated')) {
+            console.error('Error saving artist:', error)
+          }
+          // Don't show error toast for authentication issues during submission
+        }
       }
       
-      // Reset form
-      setNewArtist({ 
-        name: '', 
-        role: isFeaturing ? 'featured' : (albumLevel ? 'main' : 'additional'), 
-        spotifyId: '', 
-        appleId: '',
-        translations: {}
-      })
+      // Only reset the name field to allow quick addition of multiple artists
+      setNewArtist(prev => ({ 
+        ...prev,
+        name: '' // Only clear the name, keep other fields for convenience
+      }))
       setErrors([])
-      setActiveTranslations([])
+      // Keep active translations to allow similar artists to be added quickly
     }
   }
 
@@ -405,7 +405,14 @@ export default function ArtistManagementModal({
                             onClick={() => {
                               if (confirm(t('정말 삭제하시겠습니까?', 'Are you sure you want to delete?'))) {
                                 savedArtistsStore.deleteArtist(savedArtist.id)
-                                toast.success(t('아티스트가 삭제되었습니다', 'Artist deleted'))
+                                  .then(() => {
+                                    toast.success(t('아티스트가 삭제되었습니다', 'Artist deleted'))
+                                  })
+                                  .catch(error => {
+                                    if (!error.message?.includes('401')) {
+                                      toast.error(t('삭제에 실패했습니다', 'Failed to delete'))
+                                    }
+                                  })
                               }
                             }}
                             className="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
@@ -739,13 +746,31 @@ export default function ArtistManagementModal({
                 </div>
               )}
 
-              <button
-                onClick={addArtist}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-                {t('위 정보로 아티스트 등록 및 저장', 'Register & Save Artist with Above Info')}
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={addArtist}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  <Plus className="w-4 h-4" />
+                  {t('아티스트 추가', 'Add Artist')}
+                </button>
+                <button
+                  onClick={() => {
+                    setNewArtist({ 
+                      name: '', 
+                      role: isFeaturing ? 'featured' : (albumLevel ? 'main' : 'additional'), 
+                      spotifyId: '', 
+                      appleId: '',
+                      translations: {}
+                    })
+                    setErrors([])
+                    setActiveTranslations([])
+                  }}
+                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  {t('초기화', 'Clear')}
+                </button>
+              </div>
             </div>
           </div>
 
