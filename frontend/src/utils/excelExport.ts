@@ -15,21 +15,33 @@ export const exportSubmissionsToExcel = ({
   const workbook = XLSX.utils.book_new();
 
   // Sheet 1: Overview
-  const overviewData = submissions.map((sub) => ({
-    'Submission ID': sub.id,
-    'Artist Name': sub.artistName,
-    'Label': sub.labelName || 'N/A',
-    'Release Title': sub.releaseTitle,
-    'Release Type': sub.releaseType,
-    'Genre': sub.genre,
-    'Status': sub.status,
-    'Submitted Date': new Date(sub.createdAt).toLocaleDateString(),
-    'Submitted Time': new Date(sub.createdAt).toLocaleTimeString(),
-    'Last Updated': new Date(sub.updatedAt).toLocaleDateString(),
-    'Track Count': sub.tracks.length,
-    'Total Files': sub.files.length,
-    'Distribution': sub.distribution.join(', '),
-  }));
+  const overviewData = submissions.map((sub: any) => {
+    // Handle different submission data structures
+    const artistName = sub.artistName || sub.artist?.primaryName || 'N/A';
+    const labelName = sub.labelName || sub.artist?.labelName || 'N/A';
+    const releaseTitle = sub.releaseTitle || sub.album?.titleKo || sub.album?.titleEn || 'N/A';
+    const releaseType = sub.releaseType || sub.album?.albumType || 'N/A';
+    const genre = sub.genre || sub.album?.genre || 'N/A';
+    const trackCount = sub.tracks?.length || 0;
+    const fileCount = sub.files?.length || 0;
+    const distribution = Array.isArray(sub.distribution) ? sub.distribution.join(', ') : 'N/A';
+    
+    return {
+      'Submission ID': sub.id || 'N/A',
+      'Artist Name': artistName,
+      'Label': labelName,
+      'Release Title': releaseTitle,
+      'Release Type': releaseType,
+      'Genre': genre,
+      'Status': sub.status || 'pending',
+      'Submitted Date': sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A',
+      'Submitted Time': sub.createdAt ? new Date(sub.createdAt).toLocaleTimeString() : 'N/A',
+      'Last Updated': sub.updatedAt ? new Date(sub.updatedAt).toLocaleDateString() : 'N/A',
+      'Track Count': trackCount,
+      'Total Files': fileCount,
+      'Distribution': distribution,
+    };
+  });
 
   const overviewSheet = XLSX.utils.json_to_sheet(overviewData);
   
@@ -55,29 +67,51 @@ export const exportSubmissionsToExcel = ({
 
   if (includeDetails) {
     // Sheet 2: Detailed Metadata
-    const detailsData = submissions.map((sub) => ({
-      'Submission ID': sub.id,
-      'Artist Name': sub.artistName,
-      'Artist Email': sub.artistEmail,
-      'Artist Phone': sub.artistPhone,
-      'Label Name': sub.labelName || 'N/A',
-      'Release Title': sub.releaseTitle,
-      'Release Type': sub.releaseType,
-      'Release Date': new Date(sub.releaseDate).toLocaleDateString(),
-      'Genre': sub.genre,
-      'Subgenre': sub.subgenre || 'N/A',
-      'Language': sub.language,
-      'Copyright': sub.copyright,
-      'Copyright Year': sub.copyrightYear,
-      'UPC/EAN': sub.upcEan || 'N/A',
-      'Catalog Number': sub.catalogNumber || 'N/A',
-      'Distribution Platforms': sub.distribution.join(', '),
-      'Spotify Artist ID': sub.spotifyArtistId || 'N/A',
-      'Apple Music Artist ID': sub.appleMusicArtistId || 'N/A',
-      'Marketing Plan': sub.marketingPlan || 'N/A',
-      'Status': sub.status,
-      'Admin Notes': sub.adminNotes || 'N/A',
-    }));
+    const detailsData = submissions.map((sub: any) => {
+      // Handle different submission data structures
+      const artistName = sub.artistName || sub.artist?.primaryName || 'N/A';
+      const artistEmail = sub.artistEmail || sub.artist?.email || 'N/A';
+      const artistPhone = sub.artistPhone || sub.artist?.phone || 'N/A';
+      const labelName = sub.labelName || sub.artist?.labelName || 'N/A';
+      const releaseTitle = sub.releaseTitle || sub.album?.titleKo || sub.album?.titleEn || 'N/A';
+      const releaseType = sub.releaseType || sub.album?.albumType || 'N/A';
+      const releaseDate = sub.releaseDate || sub.release?.releaseDate || sub.createdAt;
+      const genre = sub.genre || sub.album?.genre || 'N/A';
+      const subgenre = sub.subgenre || sub.album?.subgenre || 'N/A';
+      const language = sub.language || sub.album?.language || 'N/A';
+      const copyright = sub.copyright || sub.album?.copyright || 'N/A';
+      const copyrightYear = sub.copyrightYear || sub.album?.copyrightYear || new Date().getFullYear();
+      const upcEan = sub.upcEan || sub.album?.upcEan || 'N/A';
+      const catalogNumber = sub.catalogNumber || sub.album?.catalogNumber || 'N/A';
+      const distribution = Array.isArray(sub.distribution) ? sub.distribution.join(', ') : 'N/A';
+      const spotifyArtistId = sub.spotifyArtistId || sub.artist?.spotifyArtistId || 'N/A';
+      const appleMusicArtistId = sub.appleMusicArtistId || sub.artist?.appleMusicArtistId || 'N/A';
+      const marketingPlan = sub.marketingPlan || sub.release?.marketingPlan || 'N/A';
+      
+      return {
+        'Submission ID': sub.id || 'N/A',
+        'Artist Name': artistName,
+        'Artist Email': artistEmail,
+        'Artist Phone': artistPhone,
+        'Label Name': labelName,
+        'Release Title': releaseTitle,
+        'Release Type': releaseType,
+        'Release Date': releaseDate ? new Date(releaseDate).toLocaleDateString() : 'N/A',
+        'Genre': genre,
+        'Subgenre': subgenre,
+        'Language': language,
+        'Copyright': copyright,
+        'Copyright Year': copyrightYear,
+        'UPC/EAN': upcEan,
+        'Catalog Number': catalogNumber,
+        'Distribution Platforms': distribution,
+        'Spotify Artist ID': spotifyArtistId,
+        'Apple Music Artist ID': appleMusicArtistId,
+        'Marketing Plan': marketingPlan,
+        'Status': sub.status || 'pending',
+        'Admin Notes': sub.adminNotes || 'N/A',
+      };
+    });
 
     const detailsSheet = XLSX.utils.json_to_sheet(detailsData);
     
@@ -111,18 +145,23 @@ export const exportSubmissionsToExcel = ({
 
     // Sheet 3: Track Information
     const tracksData: any[] = [];
-    submissions.forEach((sub) => {
-      sub.tracks.forEach((track, index) => {
+    submissions.forEach((sub: any) => {
+      const tracks = sub.tracks || [];
+      const artistName = sub.artistName || sub.artist?.primaryName || 'N/A';
+      const releaseTitle = sub.releaseTitle || sub.album?.titleKo || sub.album?.titleEn || 'N/A';
+      const genre = sub.genre || sub.album?.genre || 'N/A';
+      
+      tracks.forEach((track: any, index: number) => {
         tracksData.push({
-          'Submission ID': sub.id,
-          'Artist Name': sub.artistName,
-          'Release Title': sub.releaseTitle,
+          'Submission ID': sub.id || 'N/A',
+          'Artist Name': artistName,
+          'Release Title': releaseTitle,
           'Track Number': index + 1,
-          'Track Title': track.title,
-          'Track Artist': track.artist || sub.artistName,
+          'Track Title': track.title || track.titleKo || track.titleEn || 'N/A',
+          'Track Artist': track.artist || track.artistName || artistName,
           'Duration': track.duration || 'N/A',
           'ISRC': track.isrc || 'N/A',
-          'Genre': track.genre || sub.genre,
+          'Genre': track.genre || genre,
           'Lyrics Language': track.lyricsLanguage || 'N/A',
           'Explicit': track.explicit ? 'Yes' : 'No',
           'Preview Start': track.previewStart || 'N/A',
