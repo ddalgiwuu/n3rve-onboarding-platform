@@ -37,25 +37,33 @@ const AdminCustomers = () => {
       setLoading(true);
       const response = await adminService.getUsers();
       
+      // Add defensive programming - check if response and users exist
+      if (!response || !response.users || !Array.isArray(response.users)) {
+        console.error('Invalid response format:', response);
+        setCustomers([]);
+        return;
+      }
+      
       // Transform users to customer format
       const customerData: Customer[] = response.users.map((user: any) => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
+        id: user.id || '',
+        name: user.name || 'Unknown',
+        email: user.email || '',
         phone: user.phone || '',
         company: user.company || '',
-        joinedAt: user.createdAt,
+        joinedAt: user.createdAt || new Date().toISOString(),
         submissionCount: 0, // TODO: Get from submissions count
         status: user.isActive ? 'active' : 'inactive',
-        lastActive: user.lastLogin || user.createdAt,
-        role: user.role,
-        isProfileComplete: user.isProfileComplete
+        lastActive: user.lastLogin || user.createdAt || new Date().toISOString(),
+        role: user.role || 'user',
+        isProfileComplete: user.isProfileComplete || false
       }));
       
       setCustomers(customerData);
     } catch (error) {
       console.error('Error fetching customers:', error);
       toast.error(t('고객 정보를 불러오는 중 오류가 발생했습니다.', 'Error fetching customers'));
+      setCustomers([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -216,7 +224,7 @@ const AdminCustomers = () => {
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                             <span className="text-white font-medium">
-                              {customer.name.split(' ').map(n => n[0]).join('')}
+                              {customer.name ? customer.name.split(' ').map(n => n[0] || '').join('') : '?'}
                             </span>
                           </div>
                           <p className="text-white font-medium">{customer.name}</p>
@@ -228,10 +236,12 @@ const AdminCustomers = () => {
                             <Mail className="w-4 h-4 text-gray-400" />
                             {customer.email}
                           </div>
-                          <div className="flex items-center gap-2 text-gray-300">
-                            <Phone className="w-4 h-4 text-gray-400" />
-                            {customer.phone}
-                          </div>
+                          {customer.phone && (
+                            <div className="flex items-center gap-2 text-gray-300">
+                              <Phone className="w-4 h-4 text-gray-400" />
+                              {customer.phone}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-gray-300">
@@ -252,7 +262,15 @@ const AdminCustomers = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-300">
-                        {customer.lastActive && customer.lastActive !== '' ? format(new Date(customer.lastActive), 'MMM dd, yyyy') : 'N/A'}
+                        {customer.lastActive && customer.lastActive !== '' ? (
+                          (() => {
+                            try {
+                              return format(new Date(customer.lastActive), 'MMM dd, yyyy');
+                            } catch {
+                              return 'N/A';
+                            }
+                          })()
+                        ) : 'N/A'}
                       </td>
                     </tr>
                   ))}
