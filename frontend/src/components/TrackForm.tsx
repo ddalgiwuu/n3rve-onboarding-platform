@@ -752,6 +752,7 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                 setShowArtistSelector(false)
                 setShowArtistForm(true)
               }}
+              selectedIds={localTrack.artists.map(a => a.id)}
             />
           </div>
         </div>
@@ -779,6 +780,7 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                 setShowContributorSelector(false)
                 setShowContributorForm(true)
               }}
+              selectedIds={localTrack.contributors.map(c => c.id)}
             />
           </div>
         </div>
