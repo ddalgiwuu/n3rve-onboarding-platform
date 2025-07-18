@@ -25,7 +25,7 @@ export class AuthService {
 
     if (!user) {
       // Check if this email should be an admin
-      const adminEmails = ['wonseok9706@gmail.com', 'chris@n3rve.com'];
+      const adminEmails = ['wonseok9706@gmail.com', 'chris@n3rve.com', 'ckalargiros@gmail.com'];
       const isAdmin = adminEmails.includes(googleUser.email);
 
       console.log(
@@ -56,7 +56,7 @@ export class AuthService {
       console.log('Google Login - User created:', user);
     } else {
       // Check if existing user should be upgraded to admin
-      const adminEmails = ['wonseok9706@gmail.com', 'chris@n3rve.com'];
+      const adminEmails = ['wonseok9706@gmail.com', 'chris@n3rve.com', 'ckalargiros@gmail.com'];
       const isAdmin = adminEmails.includes(user.email);
 
       // Update role if user should be admin but isn't
