@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, ChevronDown, Save, Check } from 'lucide-react'
+import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, ChevronDown, Save, Check, Sparkles } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import { useSavedArtistsStore } from '@/store/savedArtists.store'
 import toast from 'react-hot-toast'
@@ -66,6 +66,7 @@ export default function ArtistManagementModal({
   const [savedArtistSearch, setSavedArtistSearch] = useState('')
   const [showSavedArtists, setShowSavedArtists] = useState(false)
   const [showLanguageSelector, setShowLanguageSelector] = useState(false)
+  const [recentlyAddedIds, setRecentlyAddedIds] = useState<Set<string>>(new Set())
 
   // Load saved artists when modal opens
   useEffect(() => {
@@ -109,8 +110,26 @@ export default function ArtistManagementModal({
         translations: newArtist.translations
       }
       
-      // Add to current session
+      // Add to current session with animation
       setArtists([...artists, artist])
+      setRecentlyAddedIds(new Set([...recentlyAddedIds, artist.id]))
+      
+      // Success animation effect
+      toast.success(
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5" />
+          <span>{t('아티스트가 추가되었습니다!', 'Artist added!')}</span>
+        </div>,
+        {
+          duration: 2000,
+          position: 'top-right',
+          style: {
+            background: 'linear-gradient(to right, #8b5cf6, #ec4899)',
+            color: 'white',
+            fontWeight: 'bold'
+          }
+        }
+      )
       
       // Save to database only if authenticated
       if (savedArtistsStore) {
@@ -122,12 +141,10 @@ export default function ArtistManagementModal({
               name
             })),
             identifiers: [
-              ...(artist.spotifyId ? [{ type: 'SPOTIFY', value: artist.spotifyId }] : []),
-              ...(artist.appleId ? [{ type: 'APPLE_MUSIC', value: artist.appleId }] : [])
+              ...(artist.spotifyId && artist.spotifyId !== 'MAKE_NEW' ? [{ type: 'SPOTIFY', value: artist.spotifyId }] : []),
+              ...(artist.appleId && artist.appleId !== 'MAKE_NEW' ? [{ type: 'APPLE_MUSIC', value: artist.appleId }] : [])
             ]
           })
-          
-          toast.success(t('아티스트가 성공적으로 추가되었습니다', 'Artist added successfully'))
         } catch (error: any) {
           // Only log error if it's not an authentication issue
           if (!error.message?.includes('not authenticated')) {
@@ -137,18 +154,30 @@ export default function ArtistManagementModal({
         }
       }
       
-      // Only reset the name field to allow quick addition of multiple artists
-      setNewArtist(prev => ({ 
-        ...prev,
-        name: '' // Only clear the name, keep other fields for convenience
-      }))
+      // Clear all fields for next artist
+      setNewArtist({ 
+        name: '',
+        role: isFeaturing ? 'featured' : (albumLevel ? 'main' : 'additional'),
+        spotifyId: '',
+        appleId: '',
+        translations: {}
+      })
       setErrors([])
-      // Keep active translations to allow similar artists to be added quickly
+      setActiveTranslations([])
+      
+      // Focus back on name field for quick entry
+      setTimeout(() => {
+        const nameInput = document.querySelector('input[placeholder*="아티스트명"]') as HTMLInputElement
+        if (nameInput) {
+          nameInput.focus()
+        }
+      }, 100)
     }
   }
 
   const removeArtist = (id: string) => {
     setArtists(artists.filter(a => a.id !== id))
+    setRecentlyAddedIds(new Set([...recentlyAddedIds].filter(aid => aid !== id)))
   }
 
   const updateArtistRole = (id: string, role: Artist['role']) => {
@@ -193,6 +222,28 @@ export default function ArtistManagementModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <style jsx>{`
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+        
+        @keyframes pulse {
+          0%, 100% {
+            opacity: 1;
+          }
+          50% {
+            opacity: 0.5;
+          }
+        }
+      `}</style>
+      
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-200 dark:border-gray-700">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 p-6">
@@ -270,49 +321,78 @@ export default function ArtistManagementModal({
                   {/* Current Session Artists */}
                   {artists.length > 0 && (
                     <>
-                      <div className="px-4 py-2 bg-purple-50 dark:bg-purple-900/10 border-b border-gray-200 dark:border-gray-700">
-                        <p className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wider">
+                      <div className="px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-gray-200 dark:border-gray-700">
+                        <p className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wider flex items-center gap-2">
+                          <span className="animate-pulse w-2 h-2 bg-purple-500 rounded-full"></span>
                           {t('현재 세션 아티스트', 'Current Session Artists')}
                         </p>
                       </div>
-                      {artists.map((artist) => (
-                        <div key={artist.id} className="group p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 transition-colors">
-                          <div className="flex items-start gap-4">
-                            <div className="flex-shrink-0">
-                              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
-                                <User className="w-5 h-5 text-white" />
+                      {artists.map((artist, index) => (
+                        <div 
+                          key={artist.id} 
+                          className="group relative overflow-hidden"
+                          style={{
+                            animation: recentlyAddedIds.has(artist.id) ? `slideIn 0.3s ease-out ${index * 0.05}s both` : undefined
+                          }}
+                        >
+                          {/* Newly added indicator */}
+                          {recentlyAddedIds.has(artist.id) && (
+                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-500 to-pink-500 animate-pulse"></div>
+                          )}
+                          
+                          <div className="p-4 hover:bg-gradient-to-r hover:from-purple-50/50 hover:to-pink-50/50 dark:hover:from-purple-900/10 dark:hover:to-pink-900/10 border-b border-gray-100 dark:border-gray-700 transition-all duration-200">
+                            <div className="flex items-start gap-4">
+                              <div className="flex-shrink-0">
+                                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/20 transform transition-transform group-hover:scale-110">
+                                  <User className="w-6 h-6 text-white" />
+                                </div>
                               </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="font-bold text-gray-900 dark:text-white truncate text-lg">
+                                    {artist.name}
+                                  </h4>
+                                  {recentlyAddedIds.has(artist.id) && (
+                                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-700">
+                                      <Sparkles className="w-3 h-3 mr-1" />
+                                      {t('방금 추가됨', 'Just Added')}
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  {artist.spotifyId && artist.spotifyId !== 'MAKE_NEW' && (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-md text-xs font-medium border border-green-200 dark:border-green-800">
+                                      <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                                      Spotify
+                                    </span>
+                                  )}
+                                  {artist.spotifyId === 'MAKE_NEW' && (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-md text-xs font-medium border border-orange-200 dark:border-orange-800">
+                                      <Plus className="w-3 h-3" />
+                                      Spotify New
+                                    </span>
+                                  )}
+                                  {artist.appleId && artist.appleId !== 'MAKE_NEW' && (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs font-medium border border-gray-200 dark:border-gray-700">
+                                      <span className="w-2 h-2 bg-gray-500 rounded-full"></span>
+                                      Apple Music
+                                    </span>
+                                  )}
+                                  {artist.appleId === 'MAKE_NEW' && (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-300 rounded-md text-xs font-medium border border-orange-200 dark:border-orange-800">
+                                      <Plus className="w-3 h-3" />
+                                      Apple New
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => removeArtist(artist.id)}
+                                className="opacity-0 group-hover:opacity-100 p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all transform hover:scale-110"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h4 className="font-semibold text-gray-900 dark:text-white truncate">
-                                  {artist.name}
-                                </h4>
-                                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/20 text-purple-800 dark:text-purple-200">
-                                  {t('현재 세션', 'Current')}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                {artist.spotifyId && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-md text-xs font-medium">
-                                    <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                                    Spotify
-                                  </span>
-                                )}
-                                {artist.appleId && (
-                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md text-xs font-medium">
-                                    <span className="w-1.5 h-1.5 bg-gray-500 rounded-full"></span>
-                                    Apple Music
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                            <button
-                              onClick={() => removeArtist(artist.id)}
-                              className="opacity-0 group-hover:opacity-100 p-1.5 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
                           </div>
                         </div>
                       ))}
@@ -394,6 +474,7 @@ export default function ArtistManagementModal({
                               }
                               
                               setArtists([...artists, artist])
+                              setRecentlyAddedIds(new Set([...recentlyAddedIds, artist.id]))
                               savedArtistsStore.useArtist(savedArtist.id)
                               toast.success(t('아티스트가 추가되었습니다', 'Artist added'))
                             }}
@@ -637,9 +718,13 @@ export default function ArtistManagementModal({
                     <button
                       type="button"
                       onClick={() => setNewArtist({ ...newArtist, spotifyId: 'MAKE_NEW' })}
-                      className="px-4 py-2 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/30 transition-colors text-sm font-medium whitespace-nowrap"
+                      className="group relative px-6 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:from-purple-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/25 overflow-hidden"
                     >
-                      {t('NEW', 'NEW')}
+                      <span className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
+                      <span className="relative flex items-center gap-2 font-bold">
+                        <Plus className="w-4 h-4" />
+                        {t('새 아티스트', 'Make New')}
+                      </span>
                     </button>
                   )}
                 </div>
@@ -700,9 +785,13 @@ export default function ArtistManagementModal({
                     <button
                       type="button"
                       onClick={() => setNewArtist({ ...newArtist, appleId: 'MAKE_NEW' })}
-                      className="px-4 py-2 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 rounded-lg hover:bg-purple-200 dark:hover:bg-purple-900/30 transition-colors text-sm font-medium whitespace-nowrap"
+                      className="group relative px-6 py-2 bg-gradient-to-r from-gray-600 to-gray-800 text-white rounded-lg hover:from-gray-700 hover:to-gray-900 transition-all transform hover:scale-105 shadow-lg shadow-gray-600/25 overflow-hidden"
                     >
-                      {t('NEW', 'NEW')}
+                      <span className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
+                      <span className="relative flex items-center gap-2 font-bold">
+                        <Plus className="w-4 h-4" />
+                        {t('새 아티스트', 'Make New')}
+                      </span>
                     </button>
                   )}
                 </div>
