@@ -147,42 +147,35 @@ export default function TranslationInput({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Languages className="w-5 h-5 text-n3rve-main" />
-          <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <Languages className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+          <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
             {language === 'ko' ? '번역' : 'Translations'}
           </h4>
         </div>
         <button
+          type="button"
           onClick={addTranslation}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-n3rve-main hover:bg-n3rve-700 text-white rounded-lg transition-colors text-sm font-medium"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors text-xs font-medium shadow-sm"
         >
-          <Plus className="w-4 h-4" />
+          <Plus className="w-3.5 h-3.5" />
           {language === 'ko' ? '번역 추가' : 'Add Translation'}
         </button>
       </div>
 
-      {/* Info Banner */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800">
-        <div className="flex items-start gap-3">
-          <Globe className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-              {language === 'ko' 
-                ? '70개 이상의 언어로 번역 가능'
-                : 'Translate into 70+ languages'
-              }
-            </p>
-            <p className="text-xs text-gray-600 dark:text-gray-300">
-              {language === 'ko' 
-                ? '전 세계 스트리밍 플랫폼에서 더 많은 청취자에게 도달하세요'
-                : 'Reach more listeners on streaming platforms worldwide'
-              }
-            </p>
-          </div>
+      {/* Info Banner - Compact Version */}
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-3 border border-blue-100 dark:border-blue-800">
+        <div className="flex items-center gap-2">
+          <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+          <p className="text-xs text-gray-700 dark:text-gray-300">
+            {language === 'ko' 
+              ? '70개 이상의 언어로 번역하여 전 세계 청취자에게 도달하세요'
+              : 'Translate into 70+ languages to reach listeners worldwide'
+            }
+          </p>
         </div>
       </div>
 
@@ -192,13 +185,13 @@ export default function TranslationInput({
           {translations.map((translation, index) => (
             <div 
               key={translation.id} 
-              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 hover:shadow-sm transition-shadow"
+              className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:shadow-sm transition-shadow"
             >
-              <div className="flex gap-3">
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex gap-2">
+                <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2">
                   {/* Language Selector */}
                   <div className="relative">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {language === 'ko' ? '언어' : 'Language'}
                     </label>
                     <button
@@ -207,7 +200,7 @@ export default function TranslationInput({
                         setShowDropdown(showDropdown === index ? null : index)
                         setSearchQuery('')
                       }}
-                      className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm text-left flex items-center justify-between hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
+                      className="w-full px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm text-left flex items-center justify-between hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
                     >
                       <span className={translation.language ? '' : 'text-gray-500 dark:text-gray-400'}>
                         {translation.language 
@@ -228,7 +221,7 @@ export default function TranslationInput({
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder={language === 'ko' ? '언어 검색...' : 'Search languages...'}
-                            className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-n3rve-500 focus:border-n3rve-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                            className="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                             onClick={(e) => e.stopPropagation()}
                           />
                         </div>
@@ -255,7 +248,7 @@ export default function TranslationInput({
                                     }}
                                     className={`w-full px-3 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
                                       translation.language === lang.value 
-                                        ? 'bg-n3rve-50 dark:bg-n3rve-900/20 text-n3rve-700 dark:text-n3rve-300' 
+                                        ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' 
                                         : 'text-gray-700 dark:text-gray-300'
                                     }`}
                                   >
@@ -272,7 +265,7 @@ export default function TranslationInput({
 
                   {/* Title Input */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {language === 'ko' ? '번역된 제목' : 'Translated Title'}
                     </label>
                     <input
@@ -281,7 +274,7 @@ export default function TranslationInput({
                       onChange={(e) => updateTranslation(index, 'title', e.target.value)}
                       placeholder={placeholder || (language === 'ko' ? '선택한 언어로 번역된 제목' : 'Title in selected language')}
                       disabled={!translation.language}
-                      className="w-full px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors"
+                      className="w-full px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors"
                     />
                     {!translation.language && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -296,28 +289,29 @@ export default function TranslationInput({
 
                 {/* Remove Button */}
                 <button
+                  type="button"
                   onClick={() => removeTranslation(index)}
-                  className="mt-6 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  className="mt-5 p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
           ))}
         </div>
       ) : (
-        <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
-          <Globe className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-          <p className="text-gray-600 dark:text-gray-400 text-sm">
+        <div className="text-center py-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+          <Globe className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
+          <p className="text-gray-600 dark:text-gray-400 text-xs">
             {language === 'ko' 
               ? '아직 번역이 없습니다'
               : 'No translations yet'
             }
           </p>
-          <p className="text-gray-500 dark:text-gray-500 text-xs mt-1">
+          <p className="text-gray-500 dark:text-gray-500 text-xs mt-0.5">
             {language === 'ko' 
-              ? '위의 "번역 추가" 버튼을 클릭하여 시작하세요'
-              : 'Click "Add Translation" above to get started'
+              ? '"번역 추가" 버튼을 클릭하여 시작하세요'
+              : 'Click "Add Translation" to get started'
             }
           </p>
         </div>
