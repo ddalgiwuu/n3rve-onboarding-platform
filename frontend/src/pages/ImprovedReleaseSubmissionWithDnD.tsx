@@ -454,12 +454,17 @@ const ImprovedReleaseSubmission: React.FC = () => {
   }
 
   const updateTrack = (trackId: string, updates: Partial<Track>) => {
-    setFormData(prev => ({
-      ...prev,
-      tracks: prev.tracks.map(track =>
+    console.log('updateTrack called:', { trackId, updates })
+    setFormData(prev => {
+      const newTracks = prev.tracks.map(track =>
         track.id === trackId ? { ...track, ...updates } : track
       )
-    }))
+      console.log('Updated tracks:', newTracks)
+      return {
+        ...prev,
+        tracks: newTracks
+      }
+    })
   }
 
   const moveTrackUp = (index: number) => {
@@ -825,22 +830,25 @@ const ImprovedReleaseSubmission: React.FC = () => {
     
     return (
       <div
-        draggable
-        onDragStart={(e) => handleDragStart(e, index)}
-        onDragEnd={handleDragEnd}
-        onDragOver={(e) => handleDragOver(e, index)}
-        onDragLeave={handleDragLeave}
-        onDrop={(e) => handleDrop(e, index)}
         className={`
-          p-4 border rounded-lg transition-all cursor-move
+          p-4 border rounded-lg transition-all
           ${isDragOver ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 scale-105' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}
           ${draggedIndex === index ? 'opacity-50' : ''}
         `}
+        onDragOver={(e) => handleDragOver(e, index)}
+        onDragLeave={handleDragLeave}
+        onDrop={(e) => handleDrop(e, index)}
       >
         <div className="flex items-start gap-4">
           {/* Drag Handle */}
-          <div className="flex flex-col items-center gap-1 mt-2">
-            <GripVertical className="w-5 h-5 text-gray-400 cursor-move" />
+          <div 
+            className="flex flex-col items-center gap-1 mt-2 cursor-move"
+            draggable
+            onDragStart={(e) => handleDragStart(e, index)}
+            onDragEnd={handleDragEnd}
+            style={{ touchAction: 'none' }}
+          >
+            <GripVertical className="w-5 h-5 text-gray-400" />
             <span className="text-sm font-medium text-gray-500">#{track.trackNumber}</span>
           </div>
           
@@ -854,7 +862,11 @@ const ImprovedReleaseSubmission: React.FC = () => {
               <input
                 type="text"
                 value={track.title || ''}
-                onChange={(e) => updateTrack(track.id, { title: e.target.value })}
+                onChange={(e) => {
+                  e.stopPropagation()
+                  updateTrack(track.id, { title: e.target.value })
+                }}
+                onMouseDown={(e) => e.stopPropagation()}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
                 placeholder={t('트랙 제목 입력', 'Enter track title')}
               />
@@ -1091,17 +1103,23 @@ const ImprovedReleaseSubmission: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Album Title */}
               <div className="md:col-span-2">
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                     {t('앨범 제목', 'Album Title')} *
                   </label>
                   <button
                     type="button"
                     onClick={() => setShowAlbumTranslations(!showAlbumTranslations)}
-                    className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 flex items-center gap-1"
+                    className={`
+                      inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all
+                      ${showAlbumTranslations 
+                        ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm' 
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:border-purple-300 hover:text-purple-600 dark:hover:text-purple-400'
+                      }
+                    `}
                   >
-                    <Globe className="w-4 h-4" />
-                    {t('번역 추가', 'Add translations')}
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>{t('번역 추가', 'Add Translation')}</span>
                   </button>
                 </div>
                 <input
@@ -1115,73 +1133,89 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 
                 {/* Album Title Translations */}
                 {showAlbumTranslations && (
-                  <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-3">
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                      <Globe className="w-4 h-4" />
-                      {t('앨범 제목 번역', 'Album Title Translations')}
-                    </h4>
-                    
-                    {/* Active translations */}
-                    {activeAlbumTranslations.map(langCode => {
-                      const lang = translationLanguages.find(l => l.code === langCode)
-                      return (
-                        <div key={langCode} className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600 dark:text-gray-400 w-32">
-                            {lang?.name}:
-                          </span>
-                          <input
-                            type="text"
-                            value={formData.albumTitleTranslations?.[langCode] || ''}
-                            onChange={(e) => setFormData(prev => ({
-                              ...prev,
-                              albumTitleTranslations: {
-                                ...prev.albumTitleTranslations,
-                                [langCode]: e.target.value
+                  <div className="mt-3">
+                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+                      {/* Header */}
+                      <div className="flex items-center gap-2 mb-3">
+                        <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {t('앨범 제목 번역', 'Album Title Translations')}
+                        </h4>
+                      </div>
+                      
+                      {/* Translations List */}
+                      <div className="space-y-2">
+                        {activeAlbumTranslations.map(langCode => {
+                          const lang = translationLanguages.find(l => l.code === langCode)
+                          return (
+                            <div key={langCode} className="group">
+                              <div className="flex items-center gap-2">
+                                <label className="text-sm text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">
+                                  {lang?.name}:
+                                </label>
+                                <div className="flex-1 relative">
+                                  <input
+                                    type="text"
+                                    value={formData.albumTitleTranslations?.[langCode] || ''}
+                                    onChange={(e) => setFormData(prev => ({
+                                      ...prev,
+                                      albumTitleTranslations: {
+                                        ...prev.albumTitleTranslations,
+                                        [langCode]: e.target.value
+                                      }
+                                    }))}
+                                    className="w-full px-3 py-1.5 pr-8 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md 
+                                             focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                                             hover:border-gray-400 dark:hover:border-gray-500 transition-colors
+                                             text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400"
+                                    placeholder={t('번역 입력', 'Enter translation')}
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setActiveAlbumTranslations(activeAlbumTranslations.filter(l => l !== langCode))
+                                      const newTranslations = { ...formData.albumTitleTranslations }
+                                      delete newTranslations[langCode]
+                                      setFormData(prev => ({ ...prev, albumTitleTranslations: newTranslations }))
+                                    }}
+                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 
+                                             text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 
+                                             rounded transition-all"
+                                  >
+                                    <X className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        })}
+                        
+                        {/* Add translation dropdown */}
+                        <div className="pt-1">
+                          <select
+                            value=""
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                setActiveAlbumTranslations([...activeAlbumTranslations, e.target.value])
                               }
-                            }))}
-                            placeholder={t('번역 입력', 'Enter translation')}
-                            className="flex-1 px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveAlbumTranslations(activeAlbumTranslations.filter(l => l !== langCode))
-                              const newTranslations = { ...formData.albumTitleTranslations }
-                              delete newTranslations[langCode]
-                              setFormData(prev => ({ ...prev, albumTitleTranslations: newTranslations }))
                             }}
-                            className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 
+                                     rounded-md cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 
+                                     focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                                     text-sm text-gray-600 dark:text-gray-400 transition-all"
                           >
-                            <X className="w-4 h-4" />
-                          </button>
+                            <option value="">{t('언어 선택...', 'Select language...')}</option>
+                            {translationLanguages
+                              .filter(lang => !activeAlbumTranslations.includes(lang.code))
+                              .map(lang => (
+                                <option key={lang.code} value={lang.code}>
+                                  {lang.name}
+                                </option>
+                              ))
+                            }
+                          </select>
                         </div>
-                      )
-                    })}
-                    
-                    {/* Add translation dropdown */}
-                    <div className="flex items-center gap-2">
-                      <select
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            setActiveAlbumTranslations([...activeAlbumTranslations, e.target.value])
-                            e.target.value = ''
-                          }
-                        }}
-                        className="text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                      >
-                        <option value="">{t('언어 선택...', 'Select language...')}</option>
-                        {translationLanguages
-                          .filter(lang => !activeAlbumTranslations.includes(lang.code))
-                          .map(lang => (
-                            <option key={lang.code} value={lang.code}>
-                              {lang.name}
-                            </option>
-                          ))
-                        }
-                      </select>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        {t('각 언어별 앨범 제목을 입력하세요', 'Enter album title for each language')}
-                      </span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1231,7 +1265,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAlbumArtistModal(true)}
-                  className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors flex items-center justify-center gap-2 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-600 
+                           rounded-lg hover:border-purple-400 dark:hover:border-purple-500 
+                           transition-colors flex items-center justify-center gap-2 
+                           text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
                 >
                   <Plus className="w-5 h-5" />
                   {t('아티스트 관리', 'Manage Artists')}
@@ -1246,14 +1283,26 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 
                 {/* Featuring Artist List */}
                 {formData.albumFeaturingArtists && formData.albumFeaturingArtists.length > 0 && (
-                  <div className="mb-2 flex flex-wrap gap-2">
+                  <div className="mb-3 space-y-2">
                     {formData.albumFeaturingArtists.map((artist) => (
-                      <span
+                      <div
                         key={artist.id}
-                        className="inline-flex items-center gap-1 px-2 py-1 bg-pink-100 dark:bg-pink-900/20 text-pink-700 dark:text-pink-300 rounded-full text-sm"
+                        className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
                       >
-                        {artist.name}
-                      </span>
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 bg-pink-100 dark:bg-pink-900/20 rounded">
+                            <Music className="w-4 h-4 text-pink-600 dark:text-pink-400" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white">
+                              {artist.name}
+                            </p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {t('피처링 아티스트', 'Featuring Artist')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -1261,9 +1310,12 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAlbumFeaturingArtistModal(true)}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-600 
+                           rounded-lg hover:border-purple-400 dark:hover:border-purple-500 
+                           transition-colors flex items-center justify-center gap-2 
+                           text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
                 >
-                  <Plus className="w-4 h-4 inline-block mr-1" />
+                  <Plus className="w-5 h-5" />
                   {t('피처링 관리', 'Manage Featuring')}
                 </button>
               </div>
