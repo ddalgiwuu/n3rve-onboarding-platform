@@ -1279,14 +1279,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
               </div>
               
               {/* Album Artists */}
-              <div id="album-artist-section" className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <div id="album-artist-section" className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('앨범 아티스트', 'Album Artists')} *
                 </label>
                 
                 {/* Artist List Display */}
                 {formData.albumArtists.length > 0 && (
-                  <div className="mb-3 space-y-2">
+                  <div className="space-y-2">
                     {formData.albumArtists.map((artist) => (
                       <div
                         key={artist.id}
@@ -1322,25 +1322,25 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAlbumArtistModal(true)}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-600 
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-600 
                            rounded-lg hover:border-purple-400 dark:hover:border-purple-500 
                            transition-colors flex items-center justify-center gap-2 
-                           text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+                           text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4" />
                   {t('아티스트 관리', 'Manage Artists')}
                 </button>
               </div>
               
               {/* Featuring Artists */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <div id="featuring-artist-section" className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   {t('피처링 아티스트', 'Featuring Artists')}
                 </label>
                 
                 {/* Featuring Artist List */}
                 {formData.albumFeaturingArtists && formData.albumFeaturingArtists.length > 0 && (
-                  <div className="mb-3 space-y-2">
+                  <div className="space-y-2">
                     {formData.albumFeaturingArtists.map((artist) => (
                       <div
                         key={artist.id}
@@ -1367,12 +1367,12 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowAlbumFeaturingArtistModal(true)}
-                  className="w-full px-4 py-2.5 bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-600 
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-600 
                            rounded-lg hover:border-purple-400 dark:hover:border-purple-500 
                            transition-colors flex items-center justify-center gap-2 
-                           text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+                           text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
                 >
-                  <Plus className="w-5 h-5" />
+                  <Plus className="w-4 h-4" />
                   {t('피처링 관리', 'Manage Featuring')}
                 </button>
               </div>
