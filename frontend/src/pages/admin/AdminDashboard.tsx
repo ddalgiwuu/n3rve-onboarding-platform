@@ -255,8 +255,12 @@ export default function AdminDashboard() {
         {/* 빠른 링크 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
           <button
-            onClick={() => navigate('/admin/submissions')}
-            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group"
+            type="button"
+            onClick={() => {
+              console.log('Navigating to /admin/submissions');
+              navigate('/admin/submissions');
+            }}
+            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:ring-offset-2 relative z-10"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-blue-500/20 rounded-lg">
@@ -269,8 +273,12 @@ export default function AdminDashboard() {
           </button>
 
           <button
-            onClick={() => navigate('/admin/users')}
-            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group"
+            type="button"
+            onClick={() => {
+              console.log('Navigating to /admin/customers');
+              navigate('/admin/customers');
+            }}
+            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:ring-offset-2 relative z-10"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-purple-500/20 rounded-lg">
@@ -283,8 +291,12 @@ export default function AdminDashboard() {
           </button>
 
           <button
-            onClick={() => navigate('/admin/settings')}
-            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group"
+            type="button"
+            onClick={() => {
+              console.log('Navigating to /admin/settings');
+              navigate('/admin/settings');
+            }}
+            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:ring-offset-2 relative z-10"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-green-500/20 rounded-lg">
