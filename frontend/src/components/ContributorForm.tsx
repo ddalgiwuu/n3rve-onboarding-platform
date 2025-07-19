@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { 
   X, Plus, Trash2, Search, Music, User, Globe, 
   Info, Link as LinkIcon, ChevronDown, ChevronUp,
@@ -110,6 +110,24 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
 
   const [searchQuery, setSearchQuery] = useState({ roles: '', instruments: '' })
   const [showDropdown, setShowDropdown] = useState({ roles: false, instruments: false })
+  
+  const rolesRef = useRef<HTMLDivElement>(null)
+  const instrumentsRef = useRef<HTMLDivElement>(null)
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (rolesRef.current && !rolesRef.current.contains(event.target as Node)) {
+        setShowDropdown(prev => ({ ...prev, roles: false }))
+      }
+      if (instrumentsRef.current && !instrumentsRef.current.contains(event.target as Node)) {
+        setShowDropdown(prev => ({ ...prev, instruments: false }))
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   // Filter roles and instruments based on search
   const filteredRoles = contributorRolesData.roles.filter(role =>
@@ -421,13 +439,19 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
               )}
 
               {/* Role Search */}
-              <div className="relative">
+              <div className="relative" ref={rolesRef}>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
                     value={searchQuery.roles}
-                    onChange={(e) => setSearchQuery(prev => ({ ...prev, roles: e.target.value }))}
+                    onChange={(e) => {
+                      setSearchQuery(prev => ({ ...prev, roles: e.target.value }))
+                      // Auto-open dropdown when typing
+                      if (e.target.value.length > 0) {
+                        setShowDropdown(prev => ({ ...prev, roles: true }))
+                      }
+                    }}
                     onFocus={() => setShowDropdown(prev => ({ ...prev, roles: true }))}
                     className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
                     placeholder={t('역할 검색 (예: Producer, Composer)', 'Search roles (e.g., Producer, Composer)')}
@@ -439,6 +463,13 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                     {showDropdown.roles ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
                 </div>
+
+                {/* Search Results Count */}
+                {searchQuery.roles && (
+                  <div className="absolute right-12 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 dark:text-gray-400">
+                    {filteredRoles.length} {t('개 결과', 'results')}
+                  </div>
+                )}
 
                 {/* Role Dropdown */}
                 {showDropdown.roles && (
@@ -498,13 +529,19 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
               )}
 
               {/* Instrument Search */}
-              <div className="relative">
+              <div className="relative" ref={instrumentsRef}>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
                     value={searchQuery.instruments}
-                    onChange={(e) => setSearchQuery(prev => ({ ...prev, instruments: e.target.value }))}
+                    onChange={(e) => {
+                      setSearchQuery(prev => ({ ...prev, instruments: e.target.value }))
+                      // Auto-open dropdown when typing
+                      if (e.target.value.length > 0) {
+                        setShowDropdown(prev => ({ ...prev, instruments: true }))
+                      }
+                    }}
                     onFocus={() => setShowDropdown(prev => ({ ...prev, instruments: true }))}
                     className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
                     placeholder={t('악기 검색 (예: Guitar, Piano)', 'Search instruments (e.g., Guitar, Piano)')}
@@ -516,6 +553,13 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                     {showDropdown.instruments ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
                 </div>
+
+                {/* Search Results Count */}
+                {searchQuery.instruments && (
+                  <div className="absolute right-12 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 dark:text-gray-400">
+                    {filteredInstruments.length} {t('개 결과', 'results')}
+                  </div>
+                )}
 
                 {/* Instrument Dropdown */}
                 {showDropdown.instruments && (
