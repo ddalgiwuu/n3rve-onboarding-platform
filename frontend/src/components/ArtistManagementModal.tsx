@@ -55,8 +55,8 @@ export default function ArtistManagementModal({
   const [newArtist, setNewArtist] = useState<Partial<Artist>>({
     name: '',
     role: isFeaturing ? 'featured' : (albumLevel ? 'main' : 'additional'),
-    spotifyId: '',
-    appleId: '',
+    spotifyId: 'MAKE_NEW',
+    appleId: 'MAKE_NEW',
     translations: {}
   })
   const [errors, setErrors] = useState<string[]>([])
@@ -89,10 +89,10 @@ export default function ArtistManagementModal({
     if (artists.some(a => a.name.toLowerCase() === newArtist.name?.toLowerCase())) {
       errs.push(t('이미 추가된 아티스트입니다', 'Artist already added'))
     }
-    if (!newArtist.spotifyId?.trim()) {
+    if (!newArtist.spotifyId?.trim() || newArtist.spotifyId?.trim() === '') {
       errs.push(t('Spotify Artist ID는 필수입니다', 'Spotify Artist ID is required'))
     }
-    if (!newArtist.appleId?.trim()) {
+    if (!newArtist.appleId?.trim() || newArtist.appleId?.trim() === '') {
       errs.push(t('Apple Music Artist ID는 필수입니다', 'Apple Music Artist ID is required'))
     }
     setErrors(errs)
@@ -158,8 +158,8 @@ export default function ArtistManagementModal({
       setNewArtist({ 
         name: '',
         role: isFeaturing ? 'featured' : (albumLevel ? 'main' : 'additional'),
-        spotifyId: '',
-        appleId: '',
+        spotifyId: 'MAKE_NEW',
+        appleId: 'MAKE_NEW',
         translations: {}
       })
       setErrors([])
@@ -393,8 +393,8 @@ export default function ArtistManagementModal({
                                     setNewArtist({
                                       name: artist.name,
                                       role: artist.role,
-                                      spotifyId: artist.spotifyId || '',
-                                      appleId: artist.appleId || '',
+                                      spotifyId: artist.spotifyId || 'MAKE_NEW',
+                                      appleId: artist.appleId || 'MAKE_NEW',
                                       translations: artist.translations || {}
                                     })
                                     
@@ -522,8 +522,8 @@ export default function ArtistManagementModal({
                           <button
                             onClick={() => {
                               // Set the newArtist state to edit mode
-                              const spotifyId = savedArtist.identifiers.find(id => id.type === 'SPOTIFY')?.value || ''
-                              const appleId = savedArtist.identifiers.find(id => id.type === 'APPLE_MUSIC')?.value || ''
+                              const spotifyId = savedArtist.identifiers.find(id => id.type === 'SPOTIFY')?.value || 'MAKE_NEW'
+                              const appleId = savedArtist.identifiers.find(id => id.type === 'APPLE_MUSIC')?.value || 'MAKE_NEW'
                               
                               setNewArtist({
                                 name: savedArtist.name,
@@ -972,8 +972,8 @@ export default function ArtistManagementModal({
                     setNewArtist({ 
                       name: '', 
                       role: isFeaturing ? 'featured' : (albumLevel ? 'main' : 'additional'), 
-                      spotifyId: '', 
-                      appleId: '',
+                      spotifyId: 'MAKE_NEW', 
+                      appleId: 'MAKE_NEW',
                       translations: {}
                     })
                     setErrors([])
