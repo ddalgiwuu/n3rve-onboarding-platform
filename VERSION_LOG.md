@@ -2,6 +2,19 @@
 
 ## Version History
 
+### v1.3.55 (2025-07-19)
+- **Type**: UI Enhancement
+- **Changes**:
+  - Fixed TranslationInput component visibility in track section
+  - Made TranslationInput more compact for better fit in track cards
+  - Improved "Add Translation" button visibility with proper styling
+  - Reduced component sizes for better mobile responsiveness
+  - Fixed color scheme from n3rve-main to standard purple colors
+- **Files Modified**: 
+  - `/frontend/src/components/TranslationInput.tsx`
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+- **Commit**: pending
+
 ### v1.3.54 (2025-07-19)
 - **Type**: Feature Enhancement
 - **Changes**:

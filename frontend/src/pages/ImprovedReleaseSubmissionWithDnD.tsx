@@ -861,7 +861,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
             </div>
 
             {/* Track Title Translations */}
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 mt-4">
               <TranslationInput
                 translations={track.titleTranslations ? 
                   Object.entries(track.titleTranslations).map(([language, title]) => ({
