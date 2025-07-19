@@ -8,7 +8,7 @@ import {
   GripVertical,
   HelpCircle, AlertTriangle, Star,
   ExternalLink,
-  ChevronUp, ChevronDown, User
+  ChevronUp, ChevronDown, User, Languages
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { submissionService } from '@/services/submission.service'
@@ -1131,88 +1131,146 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   placeholder={t('앨범 제목을 입력하세요', 'Enter album title')}
                 />
                 
-                {/* Album Title Translations */}
+                {/* Album Title Translations - Modern Design */}
                 {showAlbumTranslations && (
-                  <div className="mt-3">
-                    <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                      {/* Header */}
-                      <div className="flex items-center gap-2 mb-3">
-                        <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                        <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {t('앨범 제목 번역', 'Album Title Translations')}
-                        </h4>
+                  <div className="mt-4 animate-in slide-in-from-top-2">
+                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 rounded-2xl p-6 border border-purple-100 dark:border-purple-800/30">
+                      
+                      {/* Header with Animation */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+                            <Globe className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                          </div>
+                          <div>
+                            <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                              {t('글로벌 번역', 'Global Translations')}
+                            </h4>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              {t('전 세계 팬들을 위한 다국어 지원', 'Multilingual support for global fans')}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
+                          {activeAlbumTranslations.length}/{translationLanguages.length} {t('언어', 'languages')}
+                        </span>
                       </div>
                       
-                      {/* Translations List */}
-                      <div className="space-y-2">
-                        {activeAlbumTranslations.map(langCode => {
-                          const lang = translationLanguages.find(l => l.code === langCode)
-                          return (
-                            <div key={langCode} className="group">
-                              <div className="flex flex-col gap-1.5">
-                                <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                                  {lang?.name}:
-                                </label>
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="text"
-                                    value={formData.albumTitleTranslations?.[langCode] || ''}
-                                    onChange={(e) => setFormData(prev => ({
-                                      ...prev,
-                                      albumTitleTranslations: {
-                                        ...prev.albumTitleTranslations,
-                                        [langCode]: e.target.value
-                                      }
-                                    }))}
-                                    className="flex-1 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md 
-                                             focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
-                                             hover:border-gray-400 dark:hover:border-gray-500 transition-colors
-                                             text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400"
-                                    placeholder={t('번역 입력', 'Enter translation')}
-                                  />
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      setActiveAlbumTranslations(activeAlbumTranslations.filter(l => l !== langCode))
-                                      const newTranslations = { ...formData.albumTitleTranslations }
-                                      delete newTranslations[langCode]
-                                      setFormData(prev => ({ ...prev, albumTitleTranslations: newTranslations }))
-                                    }}
-                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 
-                                             rounded-md transition-all"
-                                  >
-                                    <X className="w-3.5 h-3.5" />
-                                  </button>
+                      {/* Translations Grid */}
+                      <div className="space-y-3">
+                        {activeAlbumTranslations.length === 0 ? (
+                          <div className="text-center py-8">
+                            <Languages className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                              {t('아래에서 언어를 선택하여 번역을 추가하세요', 'Select a language below to add translations')}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="grid gap-3">
+                            {activeAlbumTranslations.map((langCode, index) => {
+                              const lang = translationLanguages.find(l => l.code === langCode)
+                              return (
+                                <div 
+                                  key={langCode} 
+                                  className="group bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200"
+                                  style={{ animationDelay: `${index * 50}ms` }}
+                                >
+                                  <div className="flex items-start gap-3">
+                                    {/* Language Flag/Icon */}
+                                    <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-800/20 dark:to-pink-800/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                                      <span className="text-sm font-bold text-purple-700 dark:text-purple-300">
+                                        {langCode.toUpperCase().slice(0, 2)}
+                                      </span>
+                                    </div>
+                                    
+                                    {/* Input Area */}
+                                    <div className="flex-1">
+                                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
+                                        {lang?.name}
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={formData.albumTitleTranslations?.[langCode] || ''}
+                                        onChange={(e) => setFormData(prev => ({
+                                          ...prev,
+                                          albumTitleTranslations: {
+                                            ...prev.albumTitleTranslations,
+                                            [langCode]: e.target.value
+                                          }
+                                        }))}
+                                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border-0 rounded-lg 
+                                                 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white dark:focus:bg-gray-800
+                                                 transition-all duration-200 text-sm text-gray-900 dark:text-gray-100 
+                                                 placeholder-gray-400 dark:placeholder-gray-500"
+                                        placeholder={t(`${lang?.name}로 번역`, `Translate to ${lang?.name}`)}
+                                      />
+                                    </div>
+                                    
+                                    {/* Delete Button */}
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setActiveAlbumTranslations(activeAlbumTranslations.filter(l => l !== langCode))
+                                        const newTranslations = { ...formData.albumTitleTranslations }
+                                        delete newTranslations[langCode]
+                                        setFormData(prev => ({ ...prev, albumTitleTranslations: newTranslations }))
+                                      }}
+                                      className="mt-6 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 
+                                               rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            </div>
-                          )
-                        })}
+                              )
+                            })}
+                          </div>
+                        )}
                         
-                        {/* Add translation dropdown */}
-                        <div className="pt-1">
-                          <select
-                            value=""
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                setActiveAlbumTranslations([...activeAlbumTranslations, e.target.value])
-                              }
-                            }}
-                            className="w-full px-3 py-2 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 
-                                     rounded-md cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 
-                                     focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
-                                     text-sm text-gray-600 dark:text-gray-400 transition-all"
-                          >
-                            <option value="">{t('언어 선택...', 'Select language...')}</option>
+                        {/* Language Selection */}
+                        <div className="mt-4 pt-4 border-t border-purple-100 dark:border-purple-800/30">
+                          <div className="flex flex-wrap gap-2">
                             {translationLanguages
                               .filter(lang => !activeAlbumTranslations.includes(lang.code))
+                              .slice(0, 6)
                               .map(lang => (
-                                <option key={lang.code} value={lang.code}>
-                                  {lang.name}
-                                </option>
-                              ))
-                            }
-                          </select>
+                                <button
+                                  key={lang.code}
+                                  type="button"
+                                  onClick={() => setActiveAlbumTranslations([...activeAlbumTranslations, lang.code])}
+                                  className="px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 
+                                           bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50 
+                                           rounded-full transition-all duration-200"
+                                >
+                                  + {lang.name}
+                                </button>
+                              ))}
+                            
+                            {translationLanguages.filter(lang => !activeAlbumTranslations.includes(lang.code)).length > 6 && (
+                              <select
+                                value=""
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    setActiveAlbumTranslations([...activeAlbumTranslations, e.target.value])
+                                  }
+                                }}
+                                className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400 
+                                         bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
+                                         rounded-full cursor-pointer transition-all duration-200 appearance-none pr-8"
+                                style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
+                              >
+                                <option value="">{t('더 많은 언어...', 'More languages...')}</option>
+                                {translationLanguages
+                                  .filter(lang => !activeAlbumTranslations.includes(lang.code))
+                                  .slice(6)
+                                  .map(lang => (
+                                    <option key={lang.code} value={lang.code}>
+                                      {lang.name}
+                                    </option>
+                                  ))}
+                              </select>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
