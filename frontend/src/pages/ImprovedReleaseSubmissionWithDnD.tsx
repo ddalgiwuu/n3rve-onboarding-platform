@@ -1337,6 +1337,19 @@ const ImprovedReleaseSubmission: React.FC = () => {
                       </div>
                     </div>
 
+                    {/* Auto-fill Notice */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-3">
+                      <div className="flex items-start gap-2">
+                        <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                        <p className="text-xs text-blue-700 dark:text-blue-300">
+                          {t(
+                            '💡 컨슈머 발매일을 입력하면 오리지널 발매일이 자동으로 같은 날짜로 설정됩니다. 재발매인 경우 오리지널 발매일을 별도로 수정해주세요.',
+                            '💡 When you enter Consumer Release Date, Original Release Date will be automatically set to the same date. For re-releases, please adjust the Original Release Date separately.'
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Consumer Release Date */}
                       <div>
@@ -1345,7 +1358,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
                         </label>
                         <DatePicker
                           value={formData.consumerReleaseDate || ''}
-                          onChange={(date) => setFormData(prev => ({ ...prev, consumerReleaseDate: date }))}
+                          onChange={(date) => {
+                            setFormData(prev => ({ 
+                              ...prev, 
+                              consumerReleaseDate: date,
+                              // 오리지널 발매일이 비어있으면 자동으로 같은 날짜로 설정
+                              originalReleaseDate: prev.originalReleaseDate || date
+                            }))
+                          }}
                           minDate={new Date().toISOString().split('T')[0]}
                         />
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
