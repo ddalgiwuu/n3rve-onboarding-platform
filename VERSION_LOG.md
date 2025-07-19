@@ -2,6 +2,18 @@
 
 ## Version History
 
+### v1.3.60 (2025-07-19)
+- **Type**: Bug Fix
+- **Changes**:
+  - Fixed album title translation layout issue
+  - Changed from horizontal to vertical layout for translation fields
+  - Language labels now appear above input fields instead of beside
+  - Improved mobile responsiveness with better stacking
+  - Fixed X button positioning outside of input field
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+- **Commit**: pending
+
 ### v1.3.59 (2025-07-19)
 - **Type**: UI Enhancement
 - **Changes**:

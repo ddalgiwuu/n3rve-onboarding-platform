@@ -1149,11 +1149,11 @@ const ImprovedReleaseSubmission: React.FC = () => {
                           const lang = translationLanguages.find(l => l.code === langCode)
                           return (
                             <div key={langCode} className="group">
-                              <div className="flex items-center gap-2">
-                                <label className="text-sm text-gray-600 dark:text-gray-400 w-24 flex-shrink-0">
+                              <div className="flex flex-col gap-1.5">
+                                <label className="text-xs font-medium text-gray-600 dark:text-gray-400">
                                   {lang?.name}:
                                 </label>
-                                <div className="flex-1 relative">
+                                <div className="flex items-center gap-2">
                                   <input
                                     type="text"
                                     value={formData.albumTitleTranslations?.[langCode] || ''}
@@ -1164,7 +1164,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                                         [langCode]: e.target.value
                                       }
                                     }))}
-                                    className="w-full px-3 py-1.5 pr-8 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md 
+                                    className="flex-1 px-3 py-1.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-md 
                                              focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent
                                              hover:border-gray-400 dark:hover:border-gray-500 transition-colors
                                              text-sm text-gray-900 dark:text-gray-100 placeholder-gray-400"
@@ -1178,9 +1178,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
                                       delete newTranslations[langCode]
                                       setFormData(prev => ({ ...prev, albumTitleTranslations: newTranslations }))
                                     }}
-                                    className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 
-                                             text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 
-                                             rounded transition-all"
+                                    className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 
+                                             rounded-md transition-all"
                                   >
                                     <X className="w-3.5 h-3.5" />
                                   </button>
