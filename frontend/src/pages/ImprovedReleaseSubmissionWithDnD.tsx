@@ -1315,6 +1315,63 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   {t('피처링 관리', 'Manage Featuring')}
                 </button>
               </div>
+
+              {/* Label and Display Artist */}
+              <div className="md:col-span-2">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  {t('레이블 및 표시 정보', 'Label & Display Information')}
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('레이블', 'Label')}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.label || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                      placeholder={t('레이블명 입력', 'Enter label name')}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('디스플레이 아티스트', 'Display Artist')}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.displayArtist || ''}
+                      readOnly
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+                      placeholder={t('아티스트 정보에서 자동 생성됨', 'Auto-generated from artist info')}
+                    />
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      {t('메인 및 피처링 아티스트 정보를 기반으로 자동 생성됩니다', 'Automatically generated based on main and featuring artists')}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Explicit Content */}
+              <div className="md:col-span-2">
+                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="explicit-content"
+                    checked={formData.explicitContent || false}
+                    onChange={(e) => setFormData(prev => ({ ...prev, explicitContent: e.target.checked }))}
+                    className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+                  />
+                  <label htmlFor="explicit-content" className="flex-1 cursor-pointer">
+                    <span className="font-medium text-gray-900 dark:text-white">
+                      {t('이 앨범은 청소년 유해 컨텐츠를 포함합니다', 'This album contains explicit content')}
+                    </span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {t('욕설, 성적 내용, 폭력적 내용 등이 포함된 경우 체크하세요', 'Check if album contains profanity, sexual content, violence, etc.')}
+                    </p>
+                  </label>
+                </div>
+              </div>
               
               {/* Release Type */}
               <div>
@@ -1661,63 +1718,6 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     '© (Copyright) refers to composition/lyrics rights, ℗ (Production) refers to recording/production rights'
                   )}
                 </p>
-              </div>
-
-              {/* Label and Display Artist */}
-              <div className="md:col-span-2">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  {t('레이블 및 표시 정보', 'Label & Display Information')}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('레이블', 'Label')}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.label || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                      placeholder={t('레이블명 입력', 'Enter label name')}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('디스플레이 아티스트', 'Display Artist')}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.displayArtist || ''}
-                      readOnly
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed"
-                      placeholder={t('아티스트 정보에서 자동 생성됨', 'Auto-generated from artist info')}
-                    />
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {t('메인 및 피처링 아티스트 정보를 기반으로 자동 생성됩니다', 'Automatically generated based on main and featuring artists')}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Explicit Content */}
-              <div className="md:col-span-2">
-                <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
-                  <input
-                    type="checkbox"
-                    id="explicit-content"
-                    checked={formData.explicitContent || false}
-                    onChange={(e) => setFormData(prev => ({ ...prev, explicitContent: e.target.checked }))}
-                    className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
-                  />
-                  <label htmlFor="explicit-content" className="flex-1 cursor-pointer">
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {t('이 앨범은 청소년 유해 컨텐츠를 포함합니다', 'This album contains explicit content')}
-                    </span>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      {t('욕설, 성적 내용, 폭력적 내용 등이 포함된 경우 체크하세요', 'Check if album contains profanity, sexual content, violence, etc.')}
-                    </p>
-                  </label>
-                </div>
               </div>
             </div>
           </div>
