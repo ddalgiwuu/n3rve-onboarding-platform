@@ -10,8 +10,8 @@ npm run type-check: Verify types
 - **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com  
 - **EC2 Instance ID**: i-0fd6de9be4fa199a9
 - **Docker Hub**: ddalgiwuu/n3rve-platform:latest
-- **Latest Version**: v1.3.24
-- **Deployment Date**: 2025-07-14
+- **Latest Version**: v1.3.54
+- **Deployment Date**: 2025-07-19
 - **Status**: ✅ LIVE and Running
 - **GitHub Actions**: ✅ Auto-deployment enabled
 - **Database**: MongoDB Atlas (Cloud) - 로컬 MongoDB 사용 X
@@ -345,6 +345,19 @@ When simulation is absolutely necessary, I will always ask for permission first 
     - All arrays now have defensive checks (v1.3.18+)
   - MongoDB connection: Ensure MONGODB_URI points to Atlas, not local
   - Browser caching issues: Nginx now sends no-cache headers for JS/CSS files
+
+### 📝 Recent Updates
+
+#### v1.3.54 (2025-07-19) - Contributor Search Enhancement
+- **Features Added**:
+  - Auto-open dropdown when typing in role/instrument search fields
+  - Real-time search result count display (e.g., "15 개 결과")
+  - Click-outside to close dropdowns for better UX
+  - Enhanced search for comprehensive lists:
+    - 90 contributor roles across 6 categories
+    - 339 instruments across 7 categories
+- **Improvements**: Multi-select support, category grouping, instant search feedback
+- **Files Updated**: `/frontend/src/components/ContributorForm.tsx`
 
 ### 🔥 Common Issues & Solutions
 1. **"Cannot read properties of undefined (reading 'map')" Error**
