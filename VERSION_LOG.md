@@ -2,6 +2,59 @@
 
 ## Version History
 
+### v1.3.59 (2025-07-19)
+- **Type**: UI Enhancement
+- **Changes**:
+  - Redesigned album title translation UI for cleaner, modern look
+  - Changed "Add Translation" button to rounded pill style
+  - Simplified translation section with lighter background
+  - Reduced input field sizes and improved spacing
+  - Removed excessive padding and borders for cleaner appearance
+  - Made delete buttons smaller and more subtle
+  - Improved overall visual hierarchy
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+- **Commit**: pending
+
+### v1.3.58 (2025-07-19)
+- **Type**: UI Enhancement
+- **Changes**:
+  - Unified UI design for Album Artists and Featuring Artists sections
+  - Modernized "Add translations" button with toggle state
+  - Improved button styling with rounded corners and hover effects
+  - Added consistent list display for both artist types
+  - Enhanced visual hierarchy with better spacing and colors
+  - Featuring artists now use same card layout as album artists
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+- **Commit**: pending
+
+### v1.3.57 (2025-07-19)
+- **Type**: UI Enhancement
+- **Changes**:
+  - Modernized album title translation UI with cleaner design
+  - Added gradient header with purple/blue theme
+  - Improved input field styling with hover effects
+  - Added floating delete button that appears on hover
+  - Enhanced select dropdown with dashed border style
+  - Consistent rounded corners and shadow effects
+  - Better contrast and accessibility in dark mode
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+- **Commit**: pending
+
+### v1.3.56 (2025-07-19)
+- **Type**: Bug Fix
+- **Changes**:
+  - Fixed track title input field text entry issue
+  - Separated drag functionality to only drag handle (GripVertical icon)
+  - Added event propagation stops to prevent drag interference with input
+  - Added debug logging for updateTrack function
+  - Improved touch interaction handling for mobile devices
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+- **Commit**: pending
+
 ### v1.3.55 (2025-07-19)
 - **Type**: UI Enhancement
 - **Changes**:
