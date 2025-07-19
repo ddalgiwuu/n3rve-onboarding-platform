@@ -1362,8 +1362,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
                             setFormData(prev => ({ 
                               ...prev, 
                               consumerReleaseDate: date,
-                              // 오리지널 발매일이 비어있으면 자동으로 같은 날짜로 설정
-                              originalReleaseDate: prev.originalReleaseDate || date
+                              // 항상 오리지널 발매일을 컨슈머 발매일과 동일하게 설정
+                              originalReleaseDate: date
                             }))
                           }}
                           minDate={new Date().toISOString().split('T')[0]}
