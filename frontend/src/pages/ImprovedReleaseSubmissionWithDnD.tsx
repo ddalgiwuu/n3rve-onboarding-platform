@@ -489,20 +489,54 @@ const ImprovedReleaseSubmission: React.FC = () => {
     toast.success(t('오디오 파일이 제거되었습니다', 'Audio file removed'))
   }
 
-  // Validation
+  // Validation with visual feedback
+  const highlightField = (fieldId: string) => {
+    const element = document.getElementById(fieldId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      element.classList.add('ring-2', 'ring-red-500', 'ring-offset-2', 'animate-pulse')
+      setTimeout(() => {
+        element.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2', 'animate-pulse')
+      }, 3000)
+    }
+  }
+
   const validateStep = (step: number): boolean => {
     switch (step) {
       case 1: // Album Info
-        if (!formData.albumTitle || formData.albumArtists.length === 0) {
-          toast.error(t('앨범 제목과 아티스트명을 입력해주세요', 'Please enter album title and artist name'))
+        if (!formData.albumTitle) {
+          toast.error(t('앨범 제목을 입력해주세요', 'Please enter album title'))
+          highlightField('album-title-input')
           return false
         }
-        if (!formData.primaryGenre || !formData.language) {
-          toast.error(t('장르와 언어를 선택해주세요', 'Please select genre and language'))
+        if (formData.albumArtists.length === 0) {
+          toast.error(t('아티스트명을 입력해주세요', 'Please enter artist name'))
+          highlightField('album-artist-section')
           return false
         }
-        if (!formData.releaseDate) {
-          toast.error(t('발매일을 선택해주세요', 'Please select release date'))
+        if (!formData.primaryGenre) {
+          toast.error(t('장르를 선택해주세요', 'Please select genre'))
+          highlightField('genre-section')
+          return false
+        }
+        if (!formData.language) {
+          toast.error(t('언어를 선택해주세요', 'Please select language'))
+          highlightField('language-section')
+          return false
+        }
+        if (!formData.consumerReleaseDate) {
+          toast.error(t('컨슈머 발매일을 선택해주세요', 'Please select consumer release date'))
+          highlightField('consumer-release-date')
+          return false
+        }
+        if (!formData.originalReleaseDate) {
+          toast.error(t('오리지널 발매일을 선택해주세요', 'Please select original release date'))
+          highlightField('original-release-date')
+          return false
+        }
+        if (!formData.releaseTime) {
+          toast.error(t('발매 시간을 입력해주세요', 'Please enter release time'))
+          highlightField('release-time-input')
           return false
         }
         return true
@@ -510,11 +544,13 @@ const ImprovedReleaseSubmission: React.FC = () => {
       case 2: // Tracks
         if (formData.tracks.length === 0) {
           toast.error(t('최소 1개 이상의 트랙을 추가해주세요', 'Please add at least one track'))
+          highlightField('add-track-button')
           return false
         }
         for (const track of formData.tracks) {
           if (!track.title || track.artists.length === 0) {
             toast.error(t('모든 트랙의 제목과 아티스트를 입력해주세요', 'Please enter title and artist for all tracks'))
+            highlightField('tracks-section')
             return false
           }
         }
@@ -523,10 +559,12 @@ const ImprovedReleaseSubmission: React.FC = () => {
       case 3: // Files
         if (!formData.coverArt) {
           toast.error(t('커버 아트를 업로드해주세요', 'Please upload cover art'))
+          highlightField('cover-art-upload')
           return false
         }
         if (formData.audioFiles.length !== formData.tracks.length) {
           toast.error(t('트랙 수와 오디오 파일 수가 일치해야 합니다', 'Number of tracks and audio files must match'))
+          highlightField('audio-files-upload')
           return false
         }
         return true
@@ -534,10 +572,12 @@ const ImprovedReleaseSubmission: React.FC = () => {
       case 4: // Distribution
         if (formData.distributionType === 'selected' && formData.selectedStores.length === 0) {
           toast.error(t('최소 1개 이상의 스토어를 선택해주세요', 'Please select at least one store'))
+          highlightField('store-selection')
           return false
         }
         if (formData.territories.length === 0) {
           toast.error(t('최소 1개 이상의 지역을 선택해주세요', 'Please select at least one territory'))
+          highlightField('territory-selection')
           return false
         }
         return true
@@ -1079,6 +1119,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   </button>
                 </div>
                 <input
+                  id="album-title-input"
                   type="text"
                   value={formData.albumTitle}
                   onChange={(e) => setFormData(prev => ({ ...prev, albumTitle: e.target.value }))}
@@ -1161,7 +1202,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               </div>
               
               {/* Album Artists */}
-              <div className="md:col-span-2">
+              <div id="album-artist-section" className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   {t('앨범 아티스트', 'Album Artists')} *
                 </label>
@@ -1259,7 +1300,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               </div>
               
               {/* Primary Genre */}
-              <div>
+              <div id="genre-section">
                 <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
                   {t('주 장르', 'Primary Genre')} <span className="text-red-500">*</span>
                 </label>
@@ -1290,7 +1331,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               </div>
               
               {/* Language */}
-              <div>
+              <div id="language-section">
                 <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
                   {t('주요 가사 언어', 'Primary Lyrics Language')} <span className="text-red-500">*</span>
                   <span className="ml-1 text-xs text-gray-600 dark:text-gray-400">
@@ -1352,7 +1393,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Consumer Release Date */}
-                      <div>
+                      <div id="consumer-release-date">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {t('컨슈머 발매일', 'Consumer Release Date')} <span className="text-red-500">*</span>
                         </label>
@@ -1414,7 +1455,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                       </div>
                       
                       {/* Original Release Date */}
-                      <div>
+                      <div id="original-release-date">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {t('오리지널 발매일', 'Original Release Date')} <span className="text-red-500">*</span>
                         </label>
@@ -1435,6 +1476,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                         </label>
                         <div className="space-y-2">
                           <input
+                            id="release-time-input"
                             type="time"
                             value={formData.releaseTime}
                             onChange={(e) => setFormData(prev => ({ ...prev, releaseTime: e.target.value }))}
@@ -1598,6 +1640,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 {t('트랙 정보', 'Track Information')}
               </h2>
               <button
+                id="add-track-button"
                 type="button"
                 onClick={addTrack}
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
@@ -1607,7 +1650,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               </button>
             </div>
             
-            <div className="space-y-4">
+            <div id="tracks-section" className="space-y-4">
               {formData.tracks.length === 0 ? (
                 <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                   <Music className="w-12 h-12 mx-auto text-gray-400 mb-4" />
@@ -1680,6 +1723,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 </div>
               ) : (
                 <button
+                  id="cover-art-upload"
                   type="button"
                   onClick={() => coverArtInputRef.current?.click()}
                   className="w-full p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
@@ -1736,6 +1780,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               )}
               
               <button
+                id="audio-files-upload"
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
@@ -1952,7 +1997,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
             
             {/* Store Selection */}
             {formData.distributionType === 'selected' && (
-              <div>
+              <div id="store-selection">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('스토어 선택', 'Select Stores')}
                 </label>
@@ -1966,7 +2011,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
             )}
             
             {/* Territories */}
-            <div>
+            <div id="territory-selection">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('배포 지역', 'Distribution Territories')} *
               </label>
