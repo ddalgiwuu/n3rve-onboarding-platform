@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { ClipboardList, Users, CheckCircle, XCircle, Calendar, Music, Eye, Download, Search, Filter, Clock, Settings } from 'lucide-react'
 import { submissionService } from '@/services/submission.service'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
@@ -254,13 +254,9 @@ export default function AdminDashboard() {
 
         {/* 빠른 링크 */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-          <button
-            type="button"
-            onClick={() => {
-              console.log('Navigating to /admin/submissions');
-              navigate('/admin/submissions');
-            }}
-            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:ring-offset-2 relative z-10"
+          <Link
+            to="/admin/submissions"
+            className="block bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 hover:scale-[1.02] transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:ring-offset-2 relative z-10"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-blue-500/20 rounded-lg">
@@ -270,15 +266,11 @@ export default function AdminDashboard() {
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('제출 관리', 'Manage Submissions')}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">{t('모든 제출 내역 검토 및 관리', 'Review and manage all submissions')}</p>
-          </button>
+          </Link>
 
-          <button
-            type="button"
-            onClick={() => {
-              console.log('Navigating to /admin/customers');
-              navigate('/admin/customers');
-            }}
-            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:ring-offset-2 relative z-10"
+          <Link
+            to="/admin/customers"
+            className="block bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 hover:scale-[1.02] transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:ring-offset-2 relative z-10"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-purple-500/20 rounded-lg">
@@ -288,15 +280,11 @@ export default function AdminDashboard() {
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('사용자 관리', 'Manage Users')}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">{t('사용자 계정 및 권한 관리', 'Manage user accounts and permissions')}</p>
-          </button>
+          </Link>
 
-          <button
-            type="button"
-            onClick={() => {
-              console.log('Navigating to /admin/settings');
-              navigate('/admin/settings');
-            }}
-            className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:ring-offset-2 relative z-10"
+          <Link
+            to="/admin/settings"
+            className="block bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 hover:scale-[1.02] transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:ring-offset-2 relative z-10"
           >
             <div className="flex items-center justify-between mb-4">
               <div className="p-3 bg-green-500/20 rounded-lg">
@@ -306,7 +294,7 @@ export default function AdminDashboard() {
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('플랫폼 설정', 'Platform Settings')}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">{t('시스템 설정 및 구성 관리', 'Manage system settings and configuration')}</p>
-          </button>
+          </Link>
         </div>
       </div>
     </div>
