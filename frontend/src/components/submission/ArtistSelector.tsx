@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Save, Plus, Search, ChevronDown, User, Globe, Music } from 'lucide-react'
 import { useSavedArtistsStore } from '@/store/savedArtists.store'
-import { savedArtistsService } from '@/services/savedArtists.service'
 import toast from 'react-hot-toast'
 
 interface Props {

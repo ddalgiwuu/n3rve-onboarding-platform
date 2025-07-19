@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Plus, X, Globe, Languages, ChevronDown } from 'lucide-react'
 
 interface Translation {

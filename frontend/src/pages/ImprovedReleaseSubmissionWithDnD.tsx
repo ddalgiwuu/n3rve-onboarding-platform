@@ -24,9 +24,8 @@ import SearchableSelect from '@/components/ui/SearchableSelect'
 import ArtistManagementModal from '@/components/ArtistManagementModal'
 import ContributorManagementModal from '@/components/ContributorManagementModal'
 import { genreList, subgenreList } from '@/constants/genres'
-import { countries } from '@/constants/countries'
 import { timezones, convertToUTC } from '@/constants/timezones'
-import { generateUPC, generateEAN, validateUPC, validateEAN } from '@/utils/identifiers'
+import { generateUPC, generateEAN } from '@/utils/identifiers'
 import { dspList } from '@/constants/dspList'
 import { SavedArtistsProvider } from '@/contexts/SavedArtistsContext'
 
@@ -296,10 +295,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Seoul',
     consumerReleaseDate: '',
     originalReleaseDate: '',
-    recordLabel: user?.company || '',
-    copyrightHolder: user?.company || '',
+    recordLabel: '',
+    copyrightHolder: '',
     copyrightYear: new Date().getFullYear().toString(),
-    productionHolder: user?.company || '',
+    productionHolder: '',
     productionYear: new Date().getFullYear().toString(),
     tracks: [],
     audioFiles: [],
@@ -324,14 +323,13 @@ const ImprovedReleaseSubmission: React.FC = () => {
   const [showAlbumTranslations, setShowAlbumTranslations] = useState(false)
   const [activeAlbumTranslations, setActiveAlbumTranslations] = useState<string[]>([])
   const [trackTranslations, setTrackTranslations] = useState<{ [trackId: string]: string[] }>({})
-  const [showTrackTranslations, setShowTrackTranslations] = useState<{ [trackId: string]: boolean }>({})
 
   // Generate display artist name
   const generateDisplayArtist = (mainArtists: Artist[], featuringArtists: Artist[] = []): string => {
     if (mainArtists.length === 0) return ''
     
     // Join main artists with "and"
-    const mainArtistNames = mainArtists.map(artist => artist.primaryName)
+    const mainArtistNames = mainArtists.map(artist => artist.name)
     let displayName = mainArtistNames.length === 1 
       ? mainArtistNames[0]
       : mainArtistNames.length === 2
@@ -340,7 +338,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
     
     // Add featuring artists if any
     if (featuringArtists.length > 0) {
-      const featuringNames = featuringArtists.map(artist => artist.primaryName)
+      const featuringNames = featuringArtists.map(artist => artist.name)
       const featuringPart = featuringNames.length === 1
         ? featuringNames[0]
         : featuringNames.length === 2
@@ -366,11 +364,6 @@ const ImprovedReleaseSubmission: React.FC = () => {
     toast.success(t('UPC가 생성되었습니다', 'UPC generated successfully'))
   }
 
-  const handleGenerateEAN = () => {
-    const ean = generateEAN() 
-    setFormData(prev => ({ ...prev, ean }))
-    toast.success(t('EAN이 생성되었습니다', 'EAN generated successfully'))
-  }
 
   // Drag event handlers for native HTML5 drag and drop
   const handleDragStart = (e: React.DragEvent, index: number) => {

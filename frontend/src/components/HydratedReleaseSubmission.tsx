@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
-import ReleaseSubmissionNew from '@/pages/ReleaseSubmissionNew'
+import ReleaseSubmissionNew from '@/pages/ImprovedReleaseSubmissionWithDnD'
 
 /**
  * Wrapper component that ensures hydration is complete before rendering ReleaseSubmissionNew

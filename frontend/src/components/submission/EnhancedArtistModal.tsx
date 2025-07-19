@@ -144,7 +144,7 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
             ]
           }
           
-          const savedArtist = await savedArtistsStore.addArtist(artistDataToSave)
+          await savedArtistsStore.addArtist(artistDataToSave)
           toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'))
         } catch (error) {
           console.error('EnhancedArtistModal: Error saving artist:', error)
