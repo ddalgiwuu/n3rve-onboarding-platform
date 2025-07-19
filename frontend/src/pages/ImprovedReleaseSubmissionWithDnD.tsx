@@ -392,16 +392,21 @@ const ImprovedReleaseSubmission: React.FC = () => {
 
   // Track management
   const addTrack = () => {
+    // Get all featuring artists from album artists
+    const featuringArtists = formData.albumArtists.filter(artist => artist.role === 'featuring')
+    const mainArtists = formData.albumArtists.filter(artist => artist.role !== 'featuring')
+    
     const newTrack: Track = {
       id: uuidv4(),
       title: '',
       titleTranslation: '',
-      artists: [...formData.albumArtists], // Copy album artists as default
-      featuringArtists: [],
+      artists: [...mainArtists], // Copy main artists only
+      featuringArtists: [...featuringArtists], // Copy featuring artists
       contributors: [],
       trackNumber: formData.tracks.length + 1,
       titleLanguage: 'Korean',
-      dolbyAtmos: false
+      dolbyAtmos: false,
+      titleTranslations: {}
     }
     setFormData(prev => ({
       ...prev,
