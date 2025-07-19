@@ -2,6 +2,23 @@
 
 ## Version History
 
+### v1.3.61 (2025-07-19)
+- **Type**: Major UI Redesign
+- **Changes**:
+  - Completely redesigned translation UI with modern, trendy design
+  - Added gradient background with purple-pink theme
+  - Implemented card-based layout for each translation
+  - Added language code badges with gradient backgrounds
+  - Quick language selection with pill buttons
+  - Empty state with helpful illustration
+  - Progress indicator showing languages added
+  - Smooth animations and transitions
+  - Hover effects and improved interactivity
+  - More intuitive and visually appealing interface
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+- **Commit**: pending
+
 ### v1.3.60 (2025-07-19)
 - **Type**: Bug Fix
 - **Changes**:
