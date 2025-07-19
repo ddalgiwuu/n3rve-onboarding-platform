@@ -162,7 +162,8 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const updateArtist = async (id: string, updates: Partial<SavedArtist>) => {
     try {
-      if (authService.isAuthenticated() && !id.startsWith('local_')) {
+      const isAuth = await authService.isAuthenticated()
+      if (isAuth && !id.startsWith('local_')) {
         // If authenticated and it's a server artist, update on server
         const updatedArtist = await savedArtistsService.updateArtist(id, updates)
         setState(prev => ({
@@ -187,7 +188,8 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const deleteArtist = async (id: string) => {
     try {
-      if (authService.isAuthenticated() && !id.startsWith('local_')) {
+      const isAuth = await authService.isAuthenticated()
+      if (isAuth && !id.startsWith('local_')) {
         // If authenticated and it's a server artist, delete from server
         await savedArtistsService.deleteArtist(id)
       }
@@ -209,7 +211,8 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
     try {
       let updatedArtist: SavedArtist
       
-      if (authService.isAuthenticated() && !id.startsWith('local_')) {
+      const isAuth = await authService.isAuthenticated()
+      if (isAuth && !id.startsWith('local_')) {
         // If authenticated and it's a server artist, update on server
         updatedArtist = await savedArtistsService.useArtist(id)
       } else {
@@ -251,7 +254,8 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
     try {
       let newContributor: SavedContributor
       
-      if (authService.isAuthenticated()) {
+      const isAuth = await authService.isAuthenticated()
+      if (isAuth) {
         // If authenticated, save to server
         newContributor = await savedArtistsService.addContributor(contributor)
         // Refetch to sync

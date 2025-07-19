@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, ChevronDown, Save, Check, Sparkles, Edit2 } from 'lucide-react'
+import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, Check, Sparkles, Edit2 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import { useSavedArtistsStore } from '@/store/savedArtists.store'
 import toast from 'react-hot-toast'
@@ -64,7 +64,6 @@ export default function ArtistManagementModal({
   const [showAppleHelp, setShowAppleHelp] = useState(false)
   const [activeTranslations, setActiveTranslations] = useState<string[]>([])
   const [savedArtistSearch, setSavedArtistSearch] = useState('')
-  const [showSavedArtists, setShowSavedArtists] = useState(false)
   const [showLanguageSelector, setShowLanguageSelector] = useState(false)
   const [recentlyAddedIds, setRecentlyAddedIds] = useState<Set<string>>(new Set())
 
@@ -180,10 +179,6 @@ export default function ArtistManagementModal({
     setRecentlyAddedIds(new Set([...recentlyAddedIds].filter(aid => aid !== id)))
   }
 
-  const updateArtistRole = (id: string, role: Artist['role']) => {
-    setArtists(artists.map(a => a.id === id ? { ...a, role } : a))
-  }
-
   const handleSave = () => {
     onSave(artists)
     onClose()
@@ -204,25 +199,9 @@ export default function ArtistManagementModal({
 
   if (!isOpen) return null
 
-  const getRoleIcon = (role: Artist['role']) => {
-    switch (role) {
-      case 'main': return <User className="w-4 h-4" />
-      case 'featured': return <Music className="w-4 h-4" />
-      case 'additional': return <Users className="w-4 h-4" />
-    }
-  }
-
-  const getRoleLabel = (role: Artist['role']) => {
-    switch (role) {
-      case 'main': return t('메인 아티스트', 'Main Artist')
-      case 'featured': return t('피처링', 'Featured')
-      case 'additional': return t('참여 아티스트', 'Additional Artist')
-    }
-  }
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <style jsx>{`
+      <style>{`
         @keyframes slideIn {
           from {
             opacity: 0;
