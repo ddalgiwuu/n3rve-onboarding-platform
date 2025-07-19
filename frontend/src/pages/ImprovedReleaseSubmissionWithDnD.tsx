@@ -28,6 +28,7 @@ import { timezones, convertToUTC } from '@/constants/timezones'
 import { generateUPC, generateEAN } from '@/utils/identifiers'
 import { dspList } from '@/constants/dspList'
 import { SavedArtistsProvider } from '@/contexts/SavedArtistsContext'
+import TranslationInput from '@/components/TranslationInput'
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -421,16 +422,16 @@ const ImprovedReleaseSubmission: React.FC = () => {
 
   // Track management
   const addTrack = () => {
-    // Get all featuring artists from album artists
-    const featuringArtists = formData.albumArtists.filter(artist => artist.role === 'featuring')
-    const mainArtists = formData.albumArtists.filter(artist => artist.role !== 'featuring')
+    // Copy album main artists and featuring artists to new track
+    const mainArtists = formData.albumArtists || []
+    const featuringArtists = formData.albumFeaturingArtists || []
     
     const newTrack: Track = {
       id: uuidv4(),
       title: '',
       titleTranslation: '',
-      artists: [...mainArtists], // Copy main artists only
-      featuringArtists: [...featuringArtists], // Copy featuring artists
+      artists: [...mainArtists], // Copy album main artists
+      featuringArtists: [...featuringArtists], // Copy album featuring artists
       contributors: [],
       trackNumber: formData.tracks.length + 1,
       titleLanguage: 'Korean',
@@ -845,110 +846,40 @@ const ImprovedReleaseSubmission: React.FC = () => {
           
           {/* Track Content */}
           <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Track Title with Translation Toggle */}
+            {/* Track Title */}
             <div className="md:col-span-2">
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('트랙 제목', 'Track Title')} *
-                </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    const currentTranslations = trackTranslations[track.id] || []
-                    setTrackTranslations({
-                      ...trackTranslations,
-                      [track.id]: currentTranslations.length > 0 ? [] : ['en']
-                    })
-                  }}
-                  className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 flex items-center gap-1"
-                >
-                  <Globe className="w-3 h-3" />
-                  {trackTranslations[track.id]?.length > 0 ? t('번역 숨기기', 'Hide translations') : t('번역 추가', 'Add translations')}
-                </button>
-              </div>
-              
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                {t('트랙 제목', 'Track Title')} *
+              </label>
               <input
                 type="text"
-                value={track.title}
+                value={track.title || ''}
                 onChange={(e) => updateTrack(track.id, { title: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
                 placeholder={t('트랙 제목 입력', 'Enter track title')}
               />
-              
-              {/* Track Title Translations */}
-              {trackTranslations[track.id]?.length > 0 && (
-                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg space-y-3">
-                  <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    {t('제목 번역', 'Title Translations')}
-                  </h4>
-                  
-                  {/* Active translations */}
-                  {(trackTranslations[track.id] || []).map(langCode => {
-                    const lang = translationLanguages.find(l => l.code === langCode)
-                    return (
-                      <div key={langCode} className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600 dark:text-gray-400 w-24">
-                          {lang?.name}:
-                        </span>
-                        <input
-                          type="text"
-                          value={track.titleTranslations?.[langCode] || ''}
-                          onChange={(e) => updateTrack(track.id, {
-                            titleTranslations: {
-                              ...track.titleTranslations,
-                              [langCode]: e.target.value
-                            }
-                          })}
-                          placeholder={t('번역 입력', 'Enter translation')}
-                          className="flex-1 px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setTrackTranslations({
-                              ...trackTranslations,
-                              [track.id]: trackTranslations[track.id].filter(l => l !== langCode)
-                            })
-                            const newTranslations = { ...track.titleTranslations }
-                            delete newTranslations[langCode]
-                            updateTrack(track.id, { titleTranslations: newTranslations })
-                          }}
-                          className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    )
-                  })}
-                  
-                  {/* Add translation dropdown */}
-                  <div className="flex items-center gap-2">
-                    <select
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          setTrackTranslations({
-                            ...trackTranslations,
-                            [track.id]: [...(trackTranslations[track.id] || []), e.target.value]
-                          })
-                          e.target.value = ''
-                        }
-                      }}
-                      className="text-sm px-3 py-1 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
-                    >
-                      <option value="">{t('언어 추가...', 'Add language...')}</option>
-                      {translationLanguages
-                        .filter(lang => !(trackTranslations[track.id] || []).includes(lang.code))
-                        .map(lang => (
-                          <option key={lang.code} value={lang.code}>
-                            {lang.name}
-                          </option>
-                        ))
-                      }
-                    </select>
-                  </div>
-                </div>
-              )}
+            </div>
+
+            {/* Track Title Translations */}
+            <div className="md:col-span-2">
+              <TranslationInput
+                translations={track.titleTranslations ? 
+                  Object.entries(track.titleTranslations).map(([language, title]) => ({
+                    id: `${track.id}-${language}`,
+                    language,
+                    title: title as string
+                  })) : []
+                }
+                onTranslationsChange={(translations) => {
+                  const translationsObj = translations.reduce((acc, t) => ({
+                    ...acc,
+                    [t.language]: t.title
+                  }), {})
+                  updateTrack(track.id, { titleTranslations: translationsObj })
+                }}
+                language={language}
+                placeholder={t('트랙 제목의 번역', 'Translation of track title')}
+              />
             </div>
             
             {/* Track Artists */}
@@ -1013,28 +944,49 @@ const ImprovedReleaseSubmission: React.FC = () => {
             
             {/* Contributors */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('기여자', 'Contributors')}
               </label>
               
               {/* Contributor List */}
-              {track.contributors.length > 0 && (
-                <div className="mb-2 flex flex-wrap gap-2">
+              {track.contributors && track.contributors.length > 0 && (
+                <div className="mb-3 space-y-2">
                   {track.contributors.map((contributor) => (
-                    <span
+                    <div
                       key={contributor.id}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-full text-sm"
+                      className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-lg border border-green-200 dark:border-green-800"
                     >
-                      {contributor.name}
-                      <span className="text-xs">
-                        ({contributor.role === 'composer' && t('작곡', 'Composer')}
-                        {contributor.role === 'lyricist' && t('작사', 'Lyricist')}
-                        {contributor.role === 'arranger' && t('편곡', 'Arranger')}
-                        {contributor.role === 'producer' && t('프로듀서', 'Producer')}
-                        {contributor.role === 'engineer' && t('엔지니어', 'Engineer')}
-                        {contributor.role === 'performer' && `${t('연주', 'Performer')} - ${contributor.instrument}`})
-                      </span>
-                    </span>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Users className="w-4 h-4 text-green-600 dark:text-green-400" />
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {contributor.name}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap gap-2 text-xs">
+                            {contributor.roles && contributor.roles.map((role, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full"
+                              >
+                                <User className="w-3 h-3" />
+                                {role}
+                              </span>
+                            ))}
+                            {contributor.instruments && contributor.instruments.map((instrument, idx) => (
+                              <span
+                                key={idx}
+                                className="inline-flex items-center gap-1 px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-full"
+                              >
+                                <Music className="w-3 h-3" />
+                                {instrument}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -1042,9 +994,9 @@ const ImprovedReleaseSubmission: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowContributorModal(track.id)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-center gap-2"
               >
-                <Plus className="w-4 h-4 inline-block mr-1" />
+                <Plus className="w-4 h-4" />
                 {t('기여자 관리', 'Manage Contributors')}
               </button>
             </div>
