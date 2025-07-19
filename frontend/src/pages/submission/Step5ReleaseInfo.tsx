@@ -216,6 +216,17 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
     setCurrentStep(5)
   }, [setCurrentStep])
   
+  // Check if original date was manually set on load
+  useEffect(() => {
+    const consumerDate = watch('consumerReleaseDate')
+    const originalDate = watch('originalReleaseDate')
+    
+    // If dates are different on load, it means original date was manually set
+    if (consumerDate && originalDate && consumerDate !== originalDate) {
+      setIsOriginalDateManuallySet(true)
+    }
+  }, [])
+  
   // Custom submit handler to save timezone with form data
   const handleFormSubmit = (formData: ReleaseForm) => {
     // Save to store before submitting
@@ -477,10 +488,10 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-blue-800 dark:text-blue-200">
                 <p className="font-medium mb-1">
-                  {language === 'ko' ? '발매일 설정 순서' : 'Release Date Setup Order'}
+                  {language === 'ko' ? '✨ 발매일 자동 설정' : '✨ Release Date Auto-fill'}
                 </p>
                 <p>
-                  {language === 'ko' ? '1. Consumer Release Date 먼저 입력 → 2. Original Release Date 자동 설정 → 3. 필요시 Original Date 수정' : '1. Enter Consumer Release Date first → 2. Original Release Date auto-filled → 3. Modify Original Date if needed'}
+                  {language === 'ko' ? '컨슈머 발매일을 입력하면 오리지널 발매일이 자동으로 동일하게 설정됩니다!' : 'When you enter Consumer Release Date, Original Release Date will be automatically set to the same date!'}
                 </p>
               </div>
             </div>
@@ -493,16 +504,16 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 Consumer Release Date <span className="text-red-500">*</span>
               </label>
               <input
-                {...register('consumerReleaseDate', {
-                  onChange: (e) => {
-                    const newDate = e.target.value
-                    setValue('consumerReleaseDate', newDate)
-                    if (!isOriginalDateManuallySet && newDate) {
-                      setValue('originalReleaseDate', newDate)
-                    }
-                  }
-                })}
+                {...register('consumerReleaseDate')}
                 type="date"
+                onChange={(e) => {
+                  const newDate = e.target.value
+                  setValue('consumerReleaseDate', newDate)
+                  // 자동으로 Original Release Date에 같은 값 설정
+                  if (newDate && !isOriginalDateManuallySet) {
+                    setValue('originalReleaseDate', newDate)
+                  }
+                }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
               />
               <p className="mt-1 text-xs text-gray-500">
@@ -633,9 +644,10 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                   <span className="font-medium">Original Release Date:</span> {language === 'ko' ? '음악이 처음 발매된 날짜' : 'When music was first released'}
                 </p>
                 <div className="mt-2 text-xs bg-blue-100 dark:bg-blue-800/30 rounded p-2">
-                  <p className="font-medium mb-1">{language === 'ko' ? '자동 설정:' : 'Auto-fill:'}</p>
-                  <p>• {language === 'ko' ? 'Consumer 날짜 입력 시 Original도 자동으로 같은 날짜로 설정됩니다' : 'When you enter Consumer date, Original is automatically set to the same date'}</p>
-                  <p>• {language === 'ko' ? 'Original 날짜는 필요시 별도로 수정 가능합니다' : 'Original date can be modified separately if needed'}</p>
+                  <p className="font-medium mb-1">{language === 'ko' ? '💡 자동 설정 기능:' : '💡 Auto-fill Feature:'}</p>
+                  <p>• {language === 'ko' ? '컨슈머 발매일을 입력하면 오리지널 발매일이 자동으로 같은 날짜로 설정됩니다' : 'When you enter Consumer Release Date, Original Release Date is automatically set to the same date'}</p>
+                  <p>• {language === 'ko' ? '신곡의 경우 두 날짜가 동일합니다' : 'For new releases, both dates should be the same'}</p>
+                  <p>• {language === 'ko' ? '재발매/리마스터의 경우 오리지널 날짜를 별도로 수정하세요' : 'For re-releases/remasters, modify the Original date separately'}</p>
                 </div>
               </div>
             </div>
