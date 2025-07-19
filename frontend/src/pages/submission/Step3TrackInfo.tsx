@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react'
-import { Plus, X, Music, Star, User, Edit3, Users, ChevronRight, List, AlertTriangle, Info, Languages, AlertCircle, Volume2, BookOpen, Megaphone, CheckCircle, FileText, Tag, Target, Disc, Music2, Mic, UserCheck, Calendar, Search, GripVertical, Database, Share2, Heart, Link as LinkIcon, MapPin, Upload, Video } from 'lucide-react'
+import { Plus, X, Music, Star, User, Edit3, Users, ChevronRight, ChevronDown, List, AlertTriangle, Info, Languages, AlertCircle, Volume2, BookOpen, Megaphone, CheckCircle, FileText, Tag, Target, Disc, Music2, Mic, UserCheck, Calendar, Search, GripVertical, Database, Share2, Heart, Link as LinkIcon, MapPin, Upload, Video } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import { v4 as uuidv4 } from 'uuid'
@@ -4039,23 +4039,73 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     </p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('음성 언어', 'Audio Language')} <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={selectedTrack.audioLanguage || ''}
-                      onChange={(e) => updateTrack(selectedTrack.id, { audioLanguage: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    >
-                      <option value="">{t('언어 선택', 'Select Language')}</option>
-                      {languageOptions.map(lang => (
-                        <option key={lang.value} value={lang.value}>{lang.label}</option>
-                      ))}
-                      <option value="instrumental">{t('연주곡', 'Instrumental')}</option>
-                    </select>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {t('음성에 사용된 언어를 선택하세요', 'Select the language used in the audio')}
-                    </p>
+                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
+                      <div className="flex items-start gap-4">
+                        <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg shadow-md">
+                          <Volume2 className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                            {t('오디오 언어', 'Audio Language')} <span className="text-red-500 text-sm">*</span>
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                            {t('트랙의 음성 또는 보컬에 사용된 주요 언어를 선택해주세요', 'Select the primary language used in the track\'s audio or vocals')}
+                          </p>
+                          
+                          <div className="relative">
+                            <select
+                              value={selectedTrack.audioLanguage || ''}
+                              onChange={(e) => updateTrack(selectedTrack.id, { audioLanguage: e.target.value })}
+                              className="w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm appearance-none cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
+                            >
+                              <option value="">{t('언어를 선택하세요', 'Select a language')}</option>
+                              
+                              <optgroup label={t('주요 언어', 'Major Languages')}>
+                                {languageOptions.slice(0, 12).map(lang => (
+                                  <option key={lang.value} value={lang.value}>{lang.label}</option>
+                                ))}
+                              </optgroup>
+                              
+                              <optgroup label={t('아시아 언어', 'Asian Languages')}>
+                                {languageOptions.slice(12, 26).map(lang => (
+                                  <option key={lang.value} value={lang.value}>{lang.label}</option>
+                                ))}
+                              </optgroup>
+                              
+                              <optgroup label={t('유럽 언어', 'European Languages')}>
+                                {languageOptions.slice(26, 45).map(lang => (
+                                  <option key={lang.value} value={lang.value}>{lang.label}</option>
+                                ))}
+                              </optgroup>
+                              
+                              <optgroup label={t('기타 언어', 'Other Languages')}>
+                                {languageOptions.slice(45).map(lang => (
+                                  <option key={lang.value} value={lang.value}>{lang.label}</option>
+                                ))}
+                              </optgroup>
+                              
+                              <optgroup label={t('특수', 'Special')}>
+                                <option value="instrumental">{t('연주곡 (가사 없음)', 'Instrumental (No Lyrics)')}</option>
+                                <option value="multiple">{t('다중 언어', 'Multiple Languages')}</option>
+                              </optgroup>
+                            </select>
+                            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                          </div>
+                          
+                          {selectedTrack.audioLanguage && (
+                            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 rounded-full text-sm">
+                              <CheckCircle className="w-4 h-4" />
+                              <span className="font-medium">
+                                {selectedTrack.audioLanguage === 'instrumental' 
+                                  ? t('연주곡', 'Instrumental')
+                                  : languageOptions.find(l => l.value === selectedTrack.audioLanguage)?.label || selectedTrack.audioLanguage
+                                }
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 </div>
