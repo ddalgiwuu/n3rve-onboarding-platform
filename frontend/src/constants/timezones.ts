@@ -34,17 +34,49 @@ export const timezones = [
 
 // Convert local time to UTC
 export function convertToUTC(localDate: string, localTime: string, timezone: string): Date {
-  const dateTimeString = `${localDate}T${localTime}:00`
-  const date = new Date(dateTimeString)
+  // Parse the input date and time
+  const [year, month, day] = localDate.split('-').map(Number)
+  const [hour, minute] = localTime.split(':').map(Number)
   
-  // Create date in the specified timezone and convert to UTC
-  const localDateTime = new Date(date.toLocaleString('en-US', { timeZone: timezone }))
-  const utcDateTime = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
+  // Create date in UTC first (this will interpret the input as UTC)
+  const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute, 0))
   
-  const offsetMs = localDateTime.getTime() - utcDateTime.getTime()
-  const utcDate = new Date(date.getTime() - offsetMs)
+  // Format this UTC date in the target timezone to see what local time it represents
+  const formatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: timezone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  })
   
-  return utcDate
+  // Format the date and parse the result
+  const formatted = formatter.format(utcDate)
+  const match = formatted.match(/(\d{2})\/(\d{2})\/(\d{4}),?\s*(\d{2}):(\d{2})/)
+  
+  if (!match) {
+    throw new Error('Failed to parse formatted date')
+  }
+  
+  const [, formattedMonth, formattedDay, formattedYear, formattedHour, formattedMinute] = match
+  
+  // Calculate the difference between what we wanted and what we got
+  const wantedTime = new Date(year, month - 1, day, hour, minute, 0).getTime()
+  const gotTime = new Date(
+    parseInt(formattedYear), 
+    parseInt(formattedMonth) - 1, 
+    parseInt(formattedDay), 
+    parseInt(formattedHour), 
+    parseInt(formattedMinute), 
+    0
+  ).getTime()
+  
+  const offset = gotTime - wantedTime
+  
+  // Adjust the UTC date by the offset
+  return new Date(utcDate.getTime() - offset)
 }
 
 // Format UTC time for display in different timezones
