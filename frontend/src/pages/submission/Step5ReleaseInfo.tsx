@@ -227,6 +227,14 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
     }
   }, [])
   
+  // Consumer date is already watched above
+  // Watch for consumer date changes and auto-fill original date
+  useEffect(() => {
+    if (consumerReleaseDate && !isOriginalDateManuallySet) {
+      setValue('originalReleaseDate', consumerReleaseDate)
+    }
+  }, [consumerReleaseDate, isOriginalDateManuallySet, setValue])
+  
   // Custom submit handler to save timezone with form data
   const handleFormSubmit = (formData: ReleaseForm) => {
     // Save to store before submitting
@@ -506,14 +514,6 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               <input
                 {...register('consumerReleaseDate')}
                 type="date"
-                onChange={(e) => {
-                  const newDate = e.target.value
-                  setValue('consumerReleaseDate', newDate)
-                  // 자동으로 Original Release Date에 같은 값 설정
-                  if (newDate && !isOriginalDateManuallySet) {
-                    setValue('originalReleaseDate', newDate)
-                  }
-                }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
               />
               <p className="mt-1 text-xs text-gray-500">
