@@ -2,6 +2,20 @@
 
 ## Version History
 
+### v1.3.62 (2025-07-19)
+- **Type**: UI Enhancement
+- **Changes**:
+  - Fixed layout consistency between Album Artists and Featuring Artists sections
+  - Both sections now have identical spacing and styling
+  - Added consistent space-y-3 class to both container divs
+  - Unified button padding (py-3) for both "Manage Artists" and "Manage Featuring" buttons
+  - Added font-medium class to button text for consistent weight
+  - Ensured both sections occupy equal width in the grid layout
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.61 (2025-07-19)
 - **Type**: Major UI Redesign
 - **Changes**:
