@@ -33,10 +33,23 @@ const Submissions = () => {
     try {
       setLoading(true);
       const data = await submissionService.getUserSubmissions();
-      setSubmissions(data);
+      // Ensure data is an array
+      if (Array.isArray(data)) {
+        setSubmissions(data);
+      } else if (data && Array.isArray(data.submissions)) {
+        // Handle case where API returns {submissions: [...]}
+        setSubmissions(data.submissions);
+      } else if (data && Array.isArray(data.data)) {
+        // Handle case where API returns {data: [...]}
+        setSubmissions(data.data);
+      } else {
+        console.error('Unexpected data format:', data);
+        setSubmissions([]);
+      }
     } catch (error) {
       console.error('Error fetching submissions:', error);
       toast.error(t('submissions.fetchError'));
+      setSubmissions([]);
     } finally {
       setLoading(false);
     }
@@ -78,12 +91,14 @@ const Submissions = () => {
     }
   };
 
-  const filteredSubmissions = submissions.filter(submission => {
-    const matchesSearch = submission.albumTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         submission.artistName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || submission.status === statusFilter.toUpperCase();
-    return matchesSearch && matchesStatus;
-  });
+  const filteredSubmissions = Array.isArray(submissions) 
+    ? submissions.filter(submission => {
+        const matchesSearch = submission.albumTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                             submission.artistName.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus = statusFilter === 'all' || submission.status === statusFilter.toUpperCase();
+        return matchesSearch && matchesStatus;
+      })
+    : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">

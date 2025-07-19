@@ -2,6 +2,19 @@
 
 ## Version History
 
+### v1.3.63 (2025-07-19)
+- **Type**: Bug Fix
+- **Changes**:
+  - Fixed "a.filter is not a function" error in Submissions page
+  - Added safe handling for API response data structure
+  - Handles various API response formats (array, {submissions: []}, {data: []})
+  - Added Array.isArray check before filtering submissions
+  - Prevents runtime errors when API returns unexpected data format
+- **Files Modified**: 
+  - `/frontend/src/pages/Submissions.tsx`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.62 (2025-07-19)
 - **Type**: UI Enhancement
 - **Changes**:
@@ -14,7 +27,7 @@
 - **Files Modified**: 
   - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
   - `/package.json`
-- **Commit**: pending
+- **Commit**: 93cd5bc
 
 ### v1.3.61 (2025-07-19)
 - **Type**: Major UI Redesign
