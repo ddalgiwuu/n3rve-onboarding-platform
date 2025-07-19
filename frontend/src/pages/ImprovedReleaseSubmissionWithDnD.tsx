@@ -1486,7 +1486,11 @@ const ImprovedReleaseSubmission: React.FC = () => {
                             <span className="font-medium">{t('UTC 변환', 'UTC Time')}:</span> {
                               (() => {
                                 const utcDate = convertToUTC(formData.consumerReleaseDate, formData.releaseTime, formData.timezone);
-                                return `${utcDate.getUTCFullYear()}-${String(utcDate.getUTCMonth() + 1).padStart(2, '0')}-${String(utcDate.getUTCDate()).padStart(2, '0')} ${String(utcDate.getUTCHours()).padStart(2, '0')}:${String(utcDate.getUTCMinutes()).padStart(2, '0')} UTC`;
+                                const hours = utcDate.getUTCHours();
+                                const minutes = String(utcDate.getUTCMinutes()).padStart(2, '0');
+                                const ampm = hours >= 12 ? 'PM' : 'AM';
+                                const displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+                                return `${utcDate.getUTCFullYear()}-${String(utcDate.getUTCMonth() + 1).padStart(2, '0')}-${String(utcDate.getUTCDate()).padStart(2, '0')} ${displayHours}:${minutes} ${ampm} UTC`;
                               })()
                             }
                           </p>
