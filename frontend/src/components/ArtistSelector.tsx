@@ -368,7 +368,8 @@ export default function ArtistSelector({
                     </div>
                   )}
                 </div>
-              ))}
+              );
+              })}
               
               {/* Add New Button */}
               <button
