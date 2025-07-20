@@ -894,6 +894,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
   // Track Item Component with drag and drop
   const TrackItem = React.memo<{ track: Track; index: number }>(({ track, index }) => {
     const isDragOver = dragOverIndex === index
+    const [showTrackTranslations, setShowTrackTranslations] = useState(false)
     
     return (
       <div
@@ -923,33 +924,53 @@ const ImprovedReleaseSubmission: React.FC = () => {
           <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Track Title */}
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('트랙 제목', 'Track Title')} *
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {t('트랙 제목', 'Track Title')} *
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setShowTrackTranslations(!showTrackTranslations)}
+                  className={`
+                    inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all
+                    ${showTrackTranslations 
+                      ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm' 
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:border-purple-300 hover:text-purple-600 dark:hover:text-purple-400'
+                    }
+                  `}
+                >
+                  <Globe className="w-3.5 h-3.5" />
+                  <span>{t('번역 추가', 'Add Translation')}</span>
+                </button>
+              </div>
               <TrackTitleInput trackId={track.id} initialValue={track.title || ''} />
             </div>
 
-            {/* Track Title Translations */}
-            <div className="md:col-span-2 mt-4">
-              <TranslationInput
-                translations={track.titleTranslations ? 
-                  Object.entries(track.titleTranslations).map(([language, title]) => ({
-                    id: `${track.id}-${language}`,
-                    language,
-                    title: title as string
-                  })) : []
-                }
-                onTranslationsChange={(translations) => {
-                  const translationsObj = translations.reduce((acc, t) => ({
-                    ...acc,
-                    [t.language]: t.title
-                  }), {})
-                  updateTrack(track.id, { titleTranslations: translationsObj })
-                }}
-                language={language}
-                placeholder={t('트랙 제목의 번역', 'Translation of track title')}
-              />
-            </div>
+            {/* Track Title Translations - Enhanced UI */}
+            {showTrackTranslations && (
+              <div className="md:col-span-2 mt-4 animate-in slide-in-from-top-2">
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 rounded-2xl p-6 border border-purple-100 dark:border-purple-800/30">
+                  <TranslationInput
+                  translations={track.titleTranslations ? 
+                    Object.entries(track.titleTranslations).map(([language, title]) => ({
+                      id: `${track.id}-${language}`,
+                      language,
+                      title: title as string
+                    })) : []
+                  }
+                  onTranslationsChange={(translations) => {
+                    const translationsObj = translations.reduce((acc, t) => ({
+                      ...acc,
+                      [t.language]: t.title
+                    }), {})
+                    updateTrack(track.id, { titleTranslations: translationsObj })
+                  }}
+                  language={language}
+                  placeholder={t('트랙 제목의 번역', 'Translation of track title')}
+                />
+                </div>
+              </div>
+            )}
             
             {/* Track Artists */}
             <div>
