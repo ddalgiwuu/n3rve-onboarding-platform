@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, X, Globe, Languages, ChevronDown } from 'lucide-react'
 
 interface Translation {
@@ -98,6 +98,43 @@ const languageOptions = [
   { value: 'ku', label: 'Kurdî (Kurdish)', group: 'other' },
   { value: 'sd', label: 'سنڌي (Sindhi)', group: 'other' }
 ]
+
+// Translation Title Input Component with local state
+const TranslationTitleInput = ({ 
+  index, 
+  initialValue, 
+  language,
+  onUpdate,
+  placeholder 
+}: {
+  index: number
+  initialValue: string
+  language: string
+  onUpdate: (index: number, field: 'language' | 'title', value: string) => void
+  placeholder: string
+}) => {
+  const [localValue, setLocalValue] = useState(initialValue)
+  
+  useEffect(() => {
+    setLocalValue(initialValue)
+  }, [initialValue])
+  
+  const handleBlur = () => {
+    onUpdate(index, 'title', localValue)
+  }
+  
+  return (
+    <input
+      type="text"
+      value={localValue}
+      onChange={(e) => setLocalValue(e.target.value)}
+      onBlur={handleBlur}
+      placeholder={placeholder}
+      disabled={!language}
+      className="w-full px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors"
+    />
+  )
+}
 
 export default function TranslationInput({ 
   translations, 
@@ -268,13 +305,12 @@ export default function TranslationInput({
                     <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                       {language === 'ko' ? '번역된 제목' : 'Translated Title'}
                     </label>
-                    <input
-                      type="text"
-                      value={translation.title}
-                      onChange={(e) => updateTranslation(index, 'title', e.target.value)}
+                    <TranslationTitleInput
+                      index={index}
+                      initialValue={translation.title}
+                      language={translation.language}
+                      onUpdate={updateTranslation}
                       placeholder={placeholder || (language === 'ko' ? '선택한 언어로 번역된 제목' : 'Title in selected language')}
-                      disabled={!translation.language}
-                      className="w-full px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors"
                     />
                     {!translation.language && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
