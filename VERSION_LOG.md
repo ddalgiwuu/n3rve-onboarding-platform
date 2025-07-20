@@ -2,6 +2,26 @@
 
 ## Version History
 
+### v1.3.64 (2025-07-19)
+- **Type**: Major Feature Addition
+- **Changes**:
+  - Completely redesigned Submissions page with modern UI/UX
+  - Added edit functionality for PENDING submissions
+  - Added delete functionality with confirmation modal
+  - Added resubmit functionality for REJECTED submissions
+  - Implemented grid/list view toggle
+  - Added rejection reason display for REJECTED submissions
+  - Improved search and filter functionality
+  - Better mobile responsiveness with card-based layout
+  - Added action buttons with hover effects
+  - Updated submission form to handle edit/resubmit modes
+  - Dynamic submit button text based on mode
+- **Files Modified**: 
+  - `/frontend/src/pages/Submissions.tsx` (complete rewrite)
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.63 (2025-07-19)
 - **Type**: Bug Fix
 - **Changes**:
@@ -13,7 +33,7 @@
 - **Files Modified**: 
   - `/frontend/src/pages/Submissions.tsx`
   - `/package.json`
-- **Commit**: pending
+- **Commit**: 924cd4e
 
 ### v1.3.62 (2025-07-19)
 - **Type**: UI Enhancement
