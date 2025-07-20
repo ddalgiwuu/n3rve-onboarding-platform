@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, memo } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguageStore } from '@/store/language.store'
 import { 
@@ -29,6 +29,7 @@ import { generateUPC, generateEAN } from '@/utils/identifiers'
 import { dspList } from '@/constants/dspList'
 import { SavedArtistsProvider } from '@/contexts/SavedArtistsContext'
 import TranslationInput from '@/components/TranslationInput'
+import TrackTranslationUI from '@/components/TrackTranslationUI'
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -331,6 +332,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
   const [showAlbumTranslations, setShowAlbumTranslations] = useState(false)
   const [activeAlbumTranslations, setActiveAlbumTranslations] = useState<string[]>([])
   const [trackTranslations, setTrackTranslations] = useState<{ [trackId: string]: string[] }>({})
+  const [showTrackTranslations, setShowTrackTranslations] = useState<{ [trackId: string]: boolean }>({})
 
   // Generate display artist name
   const generateDisplayArtist = (mainArtists: Artist[], featuringArtists: Artist[] = []): string => {
@@ -891,10 +893,22 @@ const ImprovedReleaseSubmission: React.FC = () => {
     )
   })
 
+  // Toggle translation handler with useCallback for memoization
+  const handleToggleTrackTranslation = useCallback((trackId: string) => {
+    setShowTrackTranslations(prev => ({
+      ...prev,
+      [trackId]: !prev[trackId]
+    }))
+  }, [])
+
   // Track Item Component with drag and drop
-  const TrackItem = React.memo<{ track: Track; index: number }>(({ track, index }) => {
+  const TrackItem = memo<{ 
+    track: Track; 
+    index: number;
+    isTranslationOpen: boolean;
+    onToggleTranslation: (trackId: string) => void;
+  }>(({ track, index, isTranslationOpen, onToggleTranslation }) => {
     const isDragOver = dragOverIndex === index
-    const [showTrackTranslations, setShowTrackTranslations] = useState(false)
     
     return (
       <div
@@ -930,10 +944,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 </label>
                 <button
                   type="button"
-                  onClick={() => setShowTrackTranslations(!showTrackTranslations)}
+                  onClick={() => onToggleTranslation(track.id)}
                   className={`
                     inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-full transition-all
-                    ${showTrackTranslations 
+                    ${isTranslationOpen 
                       ? 'bg-purple-600 text-white hover:bg-purple-700 shadow-sm' 
                       : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:border-purple-300 hover:text-purple-600 dark:hover:text-purple-400'
                     }
@@ -947,27 +961,29 @@ const ImprovedReleaseSubmission: React.FC = () => {
             </div>
 
             {/* Track Title Translations - Enhanced UI */}
-            {showTrackTranslations && (
+            {isTranslationOpen && (
               <div className="md:col-span-2 mt-4 animate-in slide-in-from-top-2">
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 rounded-2xl p-6 border border-purple-100 dark:border-purple-800/30">
-                  <TranslationInput
-                  translations={track.titleTranslations ? 
-                    Object.entries(track.titleTranslations).map(([language, title]) => ({
-                      id: `${track.id}-${language}`,
-                      language,
-                      title: title as string
-                    })) : []
-                  }
-                  onTranslationsChange={(translations) => {
-                    const translationsObj = translations.reduce((acc, t) => ({
-                      ...acc,
-                      [t.language]: t.title
-                    }), {})
-                    updateTrack(track.id, { titleTranslations: translationsObj })
-                  }}
-                  language={language}
-                  placeholder={t('트랙 제목의 번역', 'Translation of track title')}
-                />
+                <div 
+                  className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 rounded-2xl p-6 border border-purple-100 dark:border-purple-800/30"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <TrackTranslationUI
+                    translations={track.titleTranslations ? 
+                      Object.entries(track.titleTranslations).map(([language, title]) => ({
+                        id: `${track.id}-${language}`,
+                        language,
+                        title: title as string
+                      })) : []
+                    }
+                    onTranslationsChange={(translations) => {
+                      const translationsObj = translations.reduce((acc, t) => ({
+                        ...acc,
+                        [t.language]: t.title
+                      }), {})
+                      updateTrack(track.id, { titleTranslations: translationsObj })
+                    }}
+                    language={language}
+                  />
                 </div>
               </div>
             )}
@@ -1165,6 +1181,20 @@ const ImprovedReleaseSubmission: React.FC = () => {
           </div>
         </div>
       </div>
+    )
+  }, (prevProps, nextProps) => {
+    // Custom comparison function for React.memo
+    return (
+      prevProps.track.id === nextProps.track.id &&
+      prevProps.track.title === nextProps.track.title &&
+      JSON.stringify(prevProps.track.titleTranslations) === JSON.stringify(nextProps.track.titleTranslations) &&
+      JSON.stringify(prevProps.track.artists) === JSON.stringify(nextProps.track.artists) &&
+      prevProps.track.trackNumber === nextProps.track.trackNumber &&
+      prevProps.track.titleLanguage === nextProps.track.titleLanguage &&
+      prevProps.track.dolbyAtmos === nextProps.track.dolbyAtmos &&
+      prevProps.index === nextProps.index &&
+      prevProps.isTranslationOpen === nextProps.isTranslationOpen
+      // onToggleTranslation is excluded from comparison since it's memoized with useCallback
     )
   })
 
@@ -1894,7 +1924,13 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     {t('드래그하여 트랙 순서를 변경할 수 있습니다', 'Drag to reorder tracks')}
                   </p>
                   {formData.tracks.map((track, index) => (
-                    <TrackItem key={track.id} track={track} index={index} />
+                    <TrackItem 
+                      key={track.id} 
+                      track={track} 
+                      index={index}
+                      isTranslationOpen={showTrackTranslations[track.id] || false}
+                      onToggleTranslation={handleToggleTrackTranslation}
+                    />
                   ))}
                 </>
               )}

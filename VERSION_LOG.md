@@ -2,6 +2,70 @@
 
 ## Version History
 
+### v1.3.71 (2025-07-20)
+- **Type**: Bug Fix - Event Bubbling in Track Translation
+- **Changes**:
+  - Fixed track translation section closing when clicking language selection or add buttons
+  - Added e.stopPropagation() to all interactive elements in TrackTranslationUI
+  - Prevented event bubbling from translation container to parent components
+  - Added click event handler to translation section container to stop propagation
+  - Resolved issue where any interaction within translation UI would close the entire section
+- **Files Modified**: 
+  - `/frontend/src/components/TrackTranslationUI.tsx`
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
+### v1.3.70 (2025-07-20)
+- **Type**: Bug Fix - Track Translation Toggle
+- **Changes**:
+  - Fixed track translation toggle requiring multiple clicks by properly memoizing toggle handler
+  - Added JSON.stringify for deep comparison of objects in React.memo
+  - Ensured handleToggleTrackTranslation doesn't have dependencies to prevent re-creation
+  - Fixed React.memo comparison function to properly detect state changes
+  - TrackTranslationUI component now maintains state properly when selecting languages
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
+### v1.3.69 (2025-07-20)
+- **Type**: UI/UX Enhancement & Bug Fix
+- **Changes**:
+  - Fixed track translation toggle requiring multiple clicks by passing state as props to memoized component
+  - Resolved React.memo optimization issue preventing proper re-renders
+  - Created new TrackTranslationUI component with modern, user-friendly interface
+  - Added quick language selection buttons (EN, JA, CN, ES, FR) for faster input
+  - Implemented inline editing with better visual hierarchy
+  - Added language badges with short codes for cleaner display
+  - Improved empty state with helpful visual cues
+  - Enhanced overall track translation workflow with smoother interactions
+  - Fixed issue where translation window would close when selecting language
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/frontend/src/components/TrackTranslationUI.tsx` (new)
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
+### v1.3.68 (2025-07-20)
+- **Type**: Data Update
+- **Changes**:
+  - Updated instruments.json with comprehensive list of 339 instruments (previously 339, same count)
+  - Updated contributorRoles.json with complete list of 90 roles (previously 88)
+  - Added missing roles: "Main Artist" and "Songwriter" 
+  - Reorganized instrument categories to match user specifications
+  - Categories now include: Brass, Electronic, Ensemble, Keyboard, Other, Percussion, Strings, Vocals, Woodwinds
+  - Ensured multi-select functionality works properly for both roles and instruments
+- **Files Modified**: 
+  - `/frontend/src/data/instruments.json`
+  - `/frontend/src/data/contributorRoles.json`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.67 (2025-07-20)
 - **Type**: Bug Fix & UI Enhancement
 - **Changes**:
@@ -11,6 +75,7 @@
   - Added toggle button for showing/hiding track translations
   - Applied gradient background and modern styling to translation sections
   - Improved overall UX consistency across the form
+  - Fixed translation toggle state persistence by lifting state to parent component
 - **Files Modified**: 
   - `/frontend/src/components/TranslationInput.tsx`
   - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
