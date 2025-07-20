@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguageStore } from '@/store/language.store'
 import { 
   Upload, Music, Image, CheckCircle, X, Plus, Trash2, 
@@ -262,10 +262,17 @@ const translationLanguages = [
 
 const ImprovedReleaseSubmission: React.FC = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { language } = useLanguageStore()
   const user = useSafeStore(useAuthStore, state => state.user)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const coverArtInputRef = useRef<HTMLInputElement>(null)
+  
+  // Check for edit or resubmit mode
+  const editId = searchParams.get('edit')
+  const resubmitId = searchParams.get('resubmit')
+  const [isEditMode, setIsEditMode] = useState(false)
+  const [isResubmitMode, setIsResubmitMode] = useState(false)
   
   // State for drag and drop
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
@@ -357,6 +364,37 @@ const ImprovedReleaseSubmission: React.FC = () => {
     const newDisplayArtist = generateDisplayArtist(formData.albumArtists, formData.albumFeaturingArtists)
     setFormData(prev => ({ ...prev, displayArtist: newDisplayArtist }))
   }, [formData.albumArtists, formData.albumFeaturingArtists])
+
+  // Load existing submission data for edit/resubmit mode
+  useEffect(() => {
+    const loadSubmissionData = async (submissionId: string) => {
+      try {
+        const submission = await submissionService.getSubmissionById(submissionId)
+        
+        if (editId) {
+          setIsEditMode(true)
+          // Load all data for editing
+          // TODO: Map submission data to formData structure
+          toast.success(t('수정할 데이터를 불러왔습니다', 'Edit data loaded successfully'))
+        } else if (resubmitId) {
+          setIsResubmitMode(true)
+          // Load data but clear status-related fields
+          // TODO: Map submission data to formData structure
+          toast.success(t('재제출할 데이터를 불러왔습니다', 'Resubmission data loaded successfully'))
+        }
+      } catch (error) {
+        console.error('Error loading submission:', error)
+        toast.error(t('데이터를 불러오는데 실패했습니다', 'Failed to load submission data'))
+        navigate('/submissions')
+      }
+    }
+
+    if (editId) {
+      loadSubmissionData(editId)
+    } else if (resubmitId) {
+      loadSubmissionData(resubmitId)
+    }
+  }, [editId, resubmitId, navigate, t])
 
   // Generate identifiers
   const handleGenerateUPC = () => {
@@ -810,11 +848,21 @@ const ImprovedReleaseSubmission: React.FC = () => {
         submissionData.append('audioFiles', file)
       })
       
-      // Submit
-      await submissionService.createSubmission(submissionData)
+      // Submit based on mode
+      if (isEditMode && editId) {
+        await submissionService.updateSubmission(editId, submissionData)
+        toast.success(t('릴리즈가 성공적으로 수정되었습니다!', 'Release updated successfully!'))
+      } else if (isResubmitMode && resubmitId) {
+        // For resubmit, create a new submission but mark it as a resubmission
+        submissionData.append('resubmittedFrom', resubmitId)
+        await submissionService.createSubmission(submissionData)
+        toast.success(t('릴리즈가 성공적으로 재제출되었습니다!', 'Release resubmitted successfully!'))
+      } else {
+        await submissionService.createSubmission(submissionData)
+        toast.success(t('릴리즈가 성공적으로 제출되었습니다!', 'Release submitted successfully!'))
+      }
       
-      toast.success(t('릴리즈가 성공적으로 제출되었습니다!', 'Release submitted successfully!'))
-      navigate('/submission-success')
+      navigate('/submissions')
       
     } catch (error) {
       console.error('Submission error:', error)
@@ -2293,7 +2341,11 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     {t('제출 중...', 'Submitting...')}
                   </span>
                 ) : (
-                  t('릴리즈 제출', 'Submit Release')
+                  isEditMode 
+                    ? t('수정 완료', 'Update Release')
+                    : isResubmitMode 
+                      ? t('재제출', 'Resubmit Release')
+                      : t('릴리즈 제출', 'Submit Release')
                 )}
               </button>
             </div>
