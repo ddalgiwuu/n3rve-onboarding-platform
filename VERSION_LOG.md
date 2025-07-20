@@ -2,6 +2,22 @@
 
 ## Version History
 
+### v1.3.67 (2025-07-20)
+- **Type**: Bug Fix & UI Enhancement
+- **Changes**:
+  - Fixed translation input fields losing focus by implementing local state management
+  - Created TranslationTitleInput component with blur-based updates
+  - Enhanced track title translation UI to match album title translation design
+  - Added toggle button for showing/hiding track translations
+  - Applied gradient background and modern styling to translation sections
+  - Improved overall UX consistency across the form
+- **Files Modified**: 
+  - `/frontend/src/components/TranslationInput.tsx`
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.66 (2025-07-20)
 - **Type**: Bug Fix (Critical)
 - **Changes**:
