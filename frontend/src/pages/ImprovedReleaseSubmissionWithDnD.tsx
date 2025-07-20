@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useLanguageStore } from '@/store/language.store'
 import { 
@@ -491,7 +491,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
     }))
   }
 
-  const updateTrack = (trackId: string, updates: Partial<Track>) => {
+  const updateTrack = useCallback((trackId: string, updates: Partial<Track>) => {
     console.log('updateTrack called:', { trackId, updates })
     setFormData(prev => {
       const newTracks = prev.tracks.map(track =>
@@ -503,7 +503,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
         tracks: newTracks
       }
     })
-  }
+  }, [])
 
   const moveTrackUp = (index: number) => {
     if (index === 0) return
@@ -873,7 +873,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
   }
 
   // Track Item Component with drag and drop
-  const TrackItem: React.FC<{ track: Track; index: number }> = ({ track, index }) => {
+  const TrackItem = React.memo<{ track: Track; index: number }>(({ track, index }) => {
     const isDragOver = dragOverIndex === index
     
     return (
@@ -1135,7 +1135,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
         </div>
       </div>
     )
-  }
+  })
 
   // Step Components
   const renderStepContent = () => {
