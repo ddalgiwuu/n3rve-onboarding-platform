@@ -2,6 +2,20 @@
 
 ## Version History
 
+### v1.3.66 (2025-07-20)
+- **Type**: Bug Fix (Critical)
+- **Changes**:
+  - Fixed track title input losing focus after each character by implementing local state management
+  - Created TrackTitleInput component with local state that updates on blur instead of onChange
+  - Moved drag event handlers from container to drag handle only to prevent interference
+  - Removed console.log statements for better performance
+  - This resolves the issue where users couldn't type continuously in track title fields
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.65 (2025-07-20)
 - **Type**: Bug Fix
 - **Changes**:

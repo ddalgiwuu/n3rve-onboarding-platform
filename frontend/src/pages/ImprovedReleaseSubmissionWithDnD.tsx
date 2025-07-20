@@ -492,17 +492,12 @@ const ImprovedReleaseSubmission: React.FC = () => {
   }
 
   const updateTrack = useCallback((trackId: string, updates: Partial<Track>) => {
-    console.log('updateTrack called:', { trackId, updates })
-    setFormData(prev => {
-      const newTracks = prev.tracks.map(track =>
+    setFormData(prev => ({
+      ...prev,
+      tracks: prev.tracks.map(track =>
         track.id === trackId ? { ...track, ...updates } : track
       )
-      console.log('Updated tracks:', newTracks)
-      return {
-        ...prev,
-        tracks: newTracks
-      }
-    })
+    }))
   }, [])
 
   const moveTrackUp = (index: number) => {
@@ -872,6 +867,30 @@ const ImprovedReleaseSubmission: React.FC = () => {
     }
   }
 
+  // Track Title Input Component with local state
+  const TrackTitleInput = React.memo<{ trackId: string; initialValue: string }>(({ trackId, initialValue }) => {
+    const [localValue, setLocalValue] = useState(initialValue)
+    
+    useEffect(() => {
+      setLocalValue(initialValue)
+    }, [initialValue])
+    
+    const handleBlur = () => {
+      updateTrack(trackId, { title: localValue })
+    }
+    
+    return (
+      <input
+        type="text"
+        value={localValue}
+        onChange={(e) => setLocalValue(e.target.value)}
+        onBlur={handleBlur}
+        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+        placeholder={t('트랙 제목 입력', 'Enter track title')}
+      />
+    )
+  })
+
   // Track Item Component with drag and drop
   const TrackItem = React.memo<{ track: Track; index: number }>(({ track, index }) => {
     const isDragOver = dragOverIndex === index
@@ -883,9 +902,6 @@ const ImprovedReleaseSubmission: React.FC = () => {
           ${isDragOver ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 scale-105' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}
           ${draggedIndex === index ? 'opacity-50' : ''}
         `}
-        onDragOver={(e) => handleDragOver(e, index)}
-        onDragLeave={handleDragLeave}
-        onDrop={(e) => handleDrop(e, index)}
       >
         <div className="flex items-start gap-4">
           {/* Drag Handle */}
@@ -894,6 +910,9 @@ const ImprovedReleaseSubmission: React.FC = () => {
             draggable
             onDragStart={(e) => handleDragStart(e, index)}
             onDragEnd={handleDragEnd}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDragLeave={handleDragLeave}
+            onDrop={(e) => handleDrop(e, index)}
             style={{ touchAction: 'none' }}
           >
             <GripVertical className="w-5 h-5 text-gray-400" />
@@ -907,16 +926,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('트랙 제목', 'Track Title')} *
               </label>
-              <input
-                type="text"
-                value={track.title || ''}
-                onChange={(e) => {
-                  updateTrack(track.id, { title: e.target.value })
-                }}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                placeholder={t('트랙 제목 입력', 'Enter track title')}
-                draggable={false}
-              />
+              <TrackTitleInput trackId={track.id} initialValue={track.title || ''} />
             </div>
 
             {/* Track Title Translations */}
