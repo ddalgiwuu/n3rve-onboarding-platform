@@ -2,6 +2,18 @@
 
 ## Version History
 
+### v1.3.65 (2025-07-20)
+- **Type**: Bug Fix
+- **Changes**:
+  - Fixed track title input focus issue where only one character could be typed at a time
+  - Added useCallback to memoize updateTrack function to prevent unnecessary re-renders
+  - Wrapped TrackItem component with React.memo to optimize rendering performance
+  - Users can now type continuously in track title fields without losing focus
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/VERSION_LOG.md`
+- **Commit**: pending
+
 ### v1.3.64 (2025-07-19)
 - **Type**: Major Feature Addition
 - **Changes**:
