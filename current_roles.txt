@@ -1,0 +1,88 @@
+A&R Administrator
+A&R Manager
+Actor
+Adapter
+Agent
+Arranger
+Art Direction
+Artist Management
+Assistant Composer
+Assistant Conductor
+Assistant Director
+Assistant Mastering Engineer
+Assistant Mixing Engineer
+Assistant Producer
+Assistant Recording Engineer
+Assistant Sound Engineer
+Author
+Band
+Camera Operator
+Choir
+Choir Conductor
+Choreographer
+Chorus
+Chorus Master
+Cinematographer
+Co-Producer
+Composer
+Computer Graphic Creator
+Conductor
+Contributing Artist
+Costume Designer
+Creative Director
+Dancer
+Director
+DJ
+Editor
+Engineer
+Ensemble
+Executive Producer
+Featuring
+Gaffer
+Guest Vocals
+Immersive Audio Engineer
+Immersive Mastering Engineer
+Immersive Mixing Engineer
+Key Grip
+Librettist
+Lighting Director
+Liner Notes
+Lyricist
+Mastering Engineer
+MC
+Mixer
+Mixing Engineer
+Musical Director
+Narrator
+Orchestra
+Orchestrator
+Performer
+Playwright
+Post-Producer
+Producer
+Production Assistant
+Programmer
+Rap
+Recording Engineer
+Remixer
+Sampled Artist
+Set Designer
+Soloist
+Sound Editor
+Sound Effects
+Sound Engineer
+Special Effects
+Spoken Word
+Strings Conductor
+Studio Musician
+Studio Personnel
+Tape
+Tonmeister
+Translator
+Video Director
+Video Producer
+Visual Effects Technician
+Vocal Effects
+Vocal Engineer
+Vocal Producer
+Writer
