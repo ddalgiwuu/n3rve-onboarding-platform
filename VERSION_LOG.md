@@ -7,7 +7,9 @@
 - **Changes**:
   - Added comprehensive territory selection component for release distribution
   - Created territories.json with 249 countries organized by continents
-  - Added 10 major DSPs (Spotify, Apple Music, YouTube Music, etc.)
+  - Added complete list of 61 DSPs used by N3RVE (replacing initial 10 sample DSPs)
+    - Most DSPs are via IIP-DDS integration
+    - Some are direct integrations marked with (A)
   - Implemented three distribution modes:
     - Worldwide: Release in all countries (default)
     - Include Only: Release only in selected countries
@@ -19,6 +21,9 @@
     - Quick selection buttons for major countries per DSP
     - Visual summary of release territories
     - Select all/deselect all per continent
+    - Popular DSPs section showing 8 major platforms
+    - Scrollable Other DSPs section for remaining 53 platforms
+    - Compact UI design for efficient DSP display
   - Modern UI with gradient backgrounds and smooth animations
   - Integrated into Step 1 (Album Info) after copyright information
 - **Files Modified**: 
