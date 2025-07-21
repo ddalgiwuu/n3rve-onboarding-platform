@@ -17,7 +17,7 @@ interface Translation {
 }
 
 interface PlatformIdentifier {
-  type: 'spotify' | 'apple' | 'youtube' | 'isni' | 'ipi'
+  type: 'spotify' | 'apple'
   value: string
   url?: string
 }
@@ -46,51 +46,21 @@ const identifierTypes = {
     name: 'Spotify',
     placeholder: 'spotify:artist:XXXXXX',
     helpText: {
-      ko: 'Spotify 앱에서 아티스트 → ⋮ → 공유 → Spotify URI 복사',
-      en: 'In Spotify app: Artist → ⋮ → Share → Copy Spotify URI'
+      ko: 'Mac: Spotify 앱에서 아티스트 → ⋮ → Option키 누르고 "Spotify URI 복사" 클릭\nWindows: Spotify 앱에서 아티스트 → ⋮ → Ctrl키 누르고 "Spotify URI 복사" 클릭',
+      en: 'Mac: In Spotify app: Artist → ⋮ → Hold Option key → Click "Copy Spotify URI"\nWindows: In Spotify app: Artist → ⋮ → Hold Ctrl key → Click "Copy Spotify URI"'
     },
     pattern: /^spotify:artist:[a-zA-Z0-9]+$/,
     icon: '🎵'
   },
   apple: {
     name: 'Apple Music',
-    placeholder: 'https://music.apple.com/artist/XXXXXX',
+    placeholder: '1234567890 (숫자만)',
     helpText: {
-      ko: 'Apple Music에서 아티스트 페이지 → 공유 → 링크 복사',
-      en: 'In Apple Music: Artist page → Share → Copy Link'
+      ko: 'Apple Music에서 아티스트 페이지 → 공유 → 링크 복사 → URL 마지막 숫자만 입력\n예: https://music.apple.com/kr/artist/bts/883131348 → 883131348',
+      en: 'In Apple Music: Artist page → Share → Copy Link → Enter only the numbers at the end\nExample: https://music.apple.com/us/artist/bts/883131348 → 883131348'
     },
-    pattern: /^https:\/\/music\.apple\.com\/.+\/artist\/.+$/,
+    pattern: /^[0-9]+$/,
     icon: '🎵'
-  },
-  youtube: {
-    name: 'YouTube',
-    placeholder: '@channelname or UC...',
-    helpText: {
-      ko: 'YouTube 채널 핸들(@username) 또는 채널 ID',
-      en: 'YouTube channel handle (@username) or channel ID'
-    },
-    pattern: /^(@[a-zA-Z0-9_-]+|UC[a-zA-Z0-9_-]{22})$/,
-    icon: '📺'
-  },
-  isni: {
-    name: 'ISNI',
-    placeholder: '0000 0000 0000 0000',
-    helpText: {
-      ko: '국제 표준 명칭 식별자 (16자리 숫자)',
-      en: 'International Standard Name Identifier (16 digits)'
-    },
-    pattern: /^[0-9]{4}\s?[0-9]{4}\s?[0-9]{4}\s?[0-9]{4}$/,
-    icon: '🔢'
-  },
-  ipi: {
-    name: 'IPI',
-    placeholder: '00000000000',
-    helpText: {
-      ko: '저작권 관리 단체 회원 번호 (11자리)',
-      en: 'Performing rights organization member number (11 digits)'
-    },
-    pattern: /^[0-9]{11}$/,
-    icon: '©️'
   }
 }
 
@@ -104,7 +74,10 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
     translations: contributor?.translations || [],
     roles: contributor?.roles || [],
     instruments: contributor?.instruments || [],
-    identifiers: contributor?.identifiers || [],
+    identifiers: contributor?.identifiers || [
+      { type: 'spotify', value: '' },
+      { type: 'apple', value: '' }
+    ],
     isNewArtist: contributor?.isNewArtist || false
   })
 
@@ -177,27 +150,17 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
     }))
   }
 
-  // Add/remove identifiers
-  const addIdentifier = (type: keyof typeof identifierTypes) => {
-    setFormData(prev => ({
-      ...prev,
-      identifiers: [...prev.identifiers, { type, value: '' }]
-    }))
-  }
-
+  // Update identifier value
   const updateIdentifier = (index: number, value: string) => {
+    if (index === -1) {
+      // If identifier doesn't exist yet, we need to handle it differently
+      return
+    }
     setFormData(prev => ({
       ...prev,
       identifiers: prev.identifiers.map((id, i) =>
         i === index ? { ...id, value } : id
       )
-    }))
-  }
-
-  const removeIdentifier = (index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      identifiers: prev.identifiers.filter((_, i) => i !== index)
     }))
   }
 
@@ -230,15 +193,16 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
   const getPlatformUrl = (identifier: PlatformIdentifier): string | null => {
     switch (identifier.type) {
       case 'spotify':
-        const spotifyId = identifier.value.replace('spotify:artist:', '')
-        return `https://open.spotify.com/artist/${spotifyId}`
+        if (identifier.value) {
+          const spotifyId = identifier.value.replace('spotify:artist:', '')
+          return `https://open.spotify.com/artist/${spotifyId}`
+        }
+        return 'https://open.spotify.com/search'
       case 'apple':
-        return identifier.value
-      case 'youtube':
-        const channelId = identifier.value.startsWith('@') 
-          ? identifier.value 
-          : `channel/${identifier.value}`
-        return `https://youtube.com/${channelId}`
+        if (identifier.value && /^[0-9]+$/.test(identifier.value)) {
+          return `https://music.apple.com/artist/${identifier.value}`
+        }
+        return 'https://music.apple.com/search'
       default:
         return null
     }
@@ -338,22 +302,39 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                   )}
                 </div>
 
-                {/* New Artist Toggle */}
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                {/* New Artist Toggle - Improved UI */}
+                <div className={`border-2 ${formData.isNewArtist ? 'border-orange-400 bg-orange-50 dark:bg-orange-900/20' : 'border-gray-200 dark:border-gray-700'} rounded-lg p-4 transition-all`}>
+                  <label className="flex items-start gap-3 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={formData.isNewArtist}
                       onChange={(e) => setFormData(prev => ({ ...prev, isNewArtist: e.target.checked }))}
-                      className="rounded text-purple-500"
+                      className="mt-0.5 w-5 h-5 rounded border-2 text-orange-500 focus:ring-orange-500"
                     />
-                    <span className="text-sm">{t('신규 아티스트', 'New Artist')}</span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-base">{t('신규 아티스트', 'New Artist')}</span>
+                        {formData.isNewArtist && (
+                          <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-800/30 text-orange-700 dark:text-orange-300 text-xs rounded-full font-medium">
+                            {t('활성화됨', 'ACTIVE')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        {formData.isNewArtist ? (
+                          <>
+                            <span className="text-orange-600 dark:text-orange-400 font-medium">
+                              {t('⚠️ 새로운 아티스트 페이지가 생성됩니다', '⚠️ A new artist page will be created')}
+                            </span>
+                            <br />
+                            {t('각 플랫폼(Spotify, Apple Music 등)에 새 아티스트 프로필이 만들어집니다.', 'New artist profiles will be created on each platform (Spotify, Apple Music, etc.).')}
+                          </>
+                        ) : (
+                          t('기존 아티스트와 연결하려면 체크하지 마세요', 'Leave unchecked to link with existing artist')
+                        )}
+                      </p>
+                    </div>
                   </label>
-                  {formData.isNewArtist && (
-                    <span className="text-xs text-orange-600 dark:text-orange-400">
-                      {t('플랫폼에 새 아티스트 페이지가 생성됩니다', 'A new artist page will be created on platforms')}
-                    </span>
-                  )}
                 </div>
 
                 {/* Translations */}
@@ -595,90 +576,74 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                 {t('플랫폼 연동', 'Platform Integration')}
               </h4>
 
-              {/* Platform buttons */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                {Object.entries(identifierTypes).map(([type, config]) => {
-                  const hasIdentifier = formData.identifiers.some(id => id.type === type)
-                  return (
-                    <button
-                      key={type}
-                      onClick={() => !hasIdentifier && addIdentifier(type as keyof typeof identifierTypes)}
-                      disabled={hasIdentifier}
-                      className={`px-4 py-2 rounded-lg border ${
-                        hasIdentifier
-                          ? 'bg-gray-100 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
-                          : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                      }`}
-                    >
-                      <span className="mr-2">{config.icon}</span>
-                      {config.name}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {/* Identifier inputs */}
-              <div className="space-y-3">
-                {formData.identifiers.map((identifier, index) => {
-                  const config = identifierTypes[identifier.type]
-                  const isValid = identifier.value ? validateIdentifier(identifier.type as keyof typeof identifierTypes, identifier.value) : true
-                  const platformUrl = getPlatformUrl(identifier)
+              {/* Platform fields - Always show Spotify and Apple Music */}
+              <div className="space-y-4">
+                {['spotify', 'apple'].map((platformType) => {
+                  const identifier = formData.identifiers.find(id => id.type === platformType) || { type: platformType, value: '' }
+                  const index = formData.identifiers.findIndex(id => id.type === platformType)
+                  const config = identifierTypes[platformType as keyof typeof identifierTypes]
+                  const isValid = identifier.value ? validateIdentifier(platformType as keyof typeof identifierTypes, identifier.value) : true
+                  const platformUrl = getPlatformUrl(identifier as PlatformIdentifier)
 
                   return (
-                    <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
+                    <div key={platformType} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
+                      <div className="flex items-center justify-between mb-3">
                         <h5 className="font-medium flex items-center gap-2">
-                          <span>{config.icon}</span>
+                          <span className="text-xl">{config.icon}</span>
                           {config.name}
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {t('(필수)', '(Required)')}
+                          </span>
                         </h5>
-                        <button
-                          onClick={() => removeIdentifier(index)}
-                          className="text-red-500 hover:text-red-600"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <div className="relative">
                           <input
                             type="text"
                             value={identifier.value}
                             onChange={(e) => updateIdentifier(index, e.target.value)}
-                            className={`w-full px-3 py-2 border rounded-lg dark:bg-gray-700 ${
-                              !isValid ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                            }`}
+                            className={`w-full px-4 py-3 border-2 rounded-lg dark:bg-gray-700 font-mono text-sm ${
+                              !isValid ? 'border-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:border-purple-500'
+                            } focus:outline-none focus:ring-2 focus:ring-purple-500/20`}
                             placeholder={config.placeholder}
                           />
                           {identifier.value && (
                             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                               {isValid ? (
-                                <Check className="w-4 h-4 text-green-500" />
+                                <Check className="w-5 h-5 text-green-500" />
                               ) : (
-                                <AlertCircle className="w-4 h-4 text-red-500" />
+                                <AlertCircle className="w-5 h-5 text-red-500" />
                               )}
                             </div>
                           )}
                         </div>
 
-                        {/* Help text */}
-                        <div className="flex items-start gap-2 text-xs text-gray-500 dark:text-gray-400">
-                          <Info className="w-3 h-3 mt-0.5" />
-                          <span>{config.helpText[language as 'ko' | 'en']}</span>
+                        {/* Help text with better formatting */}
+                        <div className="bg-gray-100 dark:bg-gray-700/50 rounded-lg p-3">
+                          <div className="flex items-start gap-2">
+                            <Info className="w-4 h-4 mt-0.5 text-gray-500 flex-shrink-0" />
+                            <div className="text-xs text-gray-600 dark:text-gray-400 whitespace-pre-line">
+                              {config.helpText[language as 'ko' | 'en']}
+                            </div>
+                          </div>
                         </div>
 
-                        {/* Platform link */}
-                        {platformUrl && isValid && (
-                          <a
-                            href={platformUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700"
-                          >
-                            {t('페이지 확인', 'View Page')}
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
+                        {/* Page Check Button */}
+                        <a
+                          href={platformUrl || '#'}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          {t('페이지 확인', 'Check Page')}
+                          {!identifier.value && (
+                            <span className="text-xs opacity-75">
+                              {t('(검색 페이지로 이동)', '(Opens search)')}
+                            </span>
+                          )}
+                        </a>
                       </div>
                     </div>
                   )
