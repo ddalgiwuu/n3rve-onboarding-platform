@@ -2,6 +2,31 @@
 
 ## Version History
 
+### v1.3.75 (2025-07-21)
+- **Type**: Major UX Enhancement - Territory Selection Modal
+- **Changes**:
+  - Completely redesigned territory selection UX with modal-based interface
+  - Simplified main display to show summary with "Configure" button
+  - Created intuitive modal with two tabs:
+    - Base Settings: Quick mode selection (Worldwide/Include/Exclude) with visual country selection
+    - DSP Overrides: Easy DSP-specific territory customization
+  - Enhanced features:
+    - Visual mode selection with large icon buttons
+    - Quick selection presets (Major Countries, Asia, Europe, Americas)
+    - Live search for countries with instant filtering
+    - Expandable continent groups with select all/deselect functionality
+    - Selected countries summary with easy removal
+    - DSP list with popular/other categorization
+    - Detailed DSP override configuration with back navigation
+    - Real-time territory count updates
+  - Improved mobile responsiveness with adaptive grid layouts
+  - Better visual hierarchy and modern design patterns
+- **Files Modified**: 
+  - `/frontend/src/components/TerritorySelector.tsx`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.74 (2025-07-21)
 - **Type**: Major Feature Addition - Territory & DSP Selection
 - **Changes**:
@@ -32,7 +57,7 @@
   - `/frontend/src/data/territories.json` (new)
   - `/VERSION_LOG.md`
   - `/package.json`
-- **Commit**: pending
+- **Commit**: e2fbe34
 
 ### v1.3.73 (2025-07-21)
 - **Type**: Major UI/UX Enhancement - Contributor Form Platform Integration
