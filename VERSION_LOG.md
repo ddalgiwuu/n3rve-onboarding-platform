@@ -2,6 +2,27 @@
 
 ## Version History
 
+### v1.3.73 (2025-07-21)
+- **Type**: Major UI/UX Enhancement - Contributor Form Platform Integration
+- **Changes**:
+  - Improved new artist checkbox UI with prominent border, color coding, and clear warnings
+  - Added default fields for Spotify and Apple Music platform integration (always visible)
+  - Updated Spotify link instructions with platform-specific key combinations:
+    - Mac: Hold Option key when clicking "Copy Spotify URI"
+    - Windows: Hold Ctrl key when clicking "Copy Spotify URI"
+  - Added "Page Check" functionality:
+    - Opens artist page if identifier is filled
+    - Opens search page if field is empty
+  - Removed IPI, YouTube, and ISNI identifier options (only Spotify and Apple Music remain)
+  - Apple Music integration now accepts only numeric artist ID (not full URL)
+  - Enhanced help text with better formatting and clearer instructions
+  - Made platform fields required with visual indicators
+- **Files Modified**: 
+  - `/frontend/src/components/ContributorForm.tsx`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.72 (2025-07-20)
 - **Type**: Major Update - Contributor Management System
 - **Changes**:
