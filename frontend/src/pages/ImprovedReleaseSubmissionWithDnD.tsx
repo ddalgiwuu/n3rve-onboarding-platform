@@ -30,6 +30,7 @@ import { dspList } from '@/constants/dspList'
 import { SavedArtistsProvider } from '@/contexts/SavedArtistsContext'
 import TranslationInput from '@/components/TranslationInput'
 import TrackTranslationUI from '@/components/TrackTranslationUI'
+import TerritorySelector from '@/components/TerritorySelector'
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -201,6 +202,18 @@ interface FormData {
   selectedStores: string[]
   excludedStores: string[]
   territories: string[]
+  // Territory selection with DSP overrides
+  territorySelection: {
+    base: {
+      mode: 'worldwide' | 'include' | 'exclude'
+      territories: string[]
+    }
+    dspOverrides: Array<{
+      dspId: string
+      mode: 'include' | 'exclude'
+      territories: string[]
+    }>
+  }
   excludedTerritories: string[]
   
   // Additional
@@ -316,6 +329,13 @@ const ImprovedReleaseSubmission: React.FC = () => {
     selectedStores: [],
     excludedStores: [],
     territories: [],
+    territorySelection: {
+      base: {
+        mode: 'worldwide',
+        territories: []
+      },
+      dspOverrides: []
+    },
     excludedTerritories: [],
     previouslyReleased: false,
     marketingInfo: {}
@@ -1887,6 +1907,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     '© (Copyright) refers to composition/lyrics rights, ℗ (Production) refers to recording/production rights'
                   )}
                 </p>
+              </div>
+
+              {/* Territory Selection */}
+              <div className="md:col-span-2">
+                <TerritorySelector
+                  value={formData.territorySelection}
+                  onChange={(value) => setFormData(prev => ({ ...prev, territorySelection: value }))}
+                />
               </div>
             </div>
           </div>
