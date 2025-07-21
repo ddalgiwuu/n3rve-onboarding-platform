@@ -2,6 +2,22 @@
 
 ## Version History
 
+### v1.3.72 (2025-07-20)
+- **Type**: Major Update - Contributor Management System
+- **Changes**:
+  - Completely rewrote ContributorManagementModal to use ContributorForm component
+  - Now supports all 90 contributor roles from contributorRoles.json
+  - Now supports all 457 instruments from instruments.json
+  - Added category-based grouping (Composition, Performance, Production, Business, Technical, Visual)
+  - Integrated full contributor data structure with translations, identifiers, and multi-select
+  - Shows total available roles and instruments in footer
+  - Fixed issue where only 6 hardcoded roles were available
+- **Files Modified**: 
+  - `/frontend/src/components/ContributorManagementModal.tsx`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.71 (2025-07-20)
 - **Type**: Bug Fix - Event Bubbling in Track Translation
 - **Changes**:
