@@ -383,11 +383,11 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowModal(false)}>
           <div 
-            className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden" 
+            className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-4xl max-h-[85vh] flex flex-col" 
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="sticky top-0 z-10 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+            <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-xl font-bold flex items-center gap-2">
@@ -438,7 +438,7 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
             </div>
 
             {/* Modal Content */}
-            <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 140px)' }}>
+            <div className="flex-1 overflow-y-auto">
 
               {activeTab === 'base' && (
                 <div className="p-6 space-y-6">
@@ -563,7 +563,7 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
 
                       {/* Country Grid */}
                       <div className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                        <div className="max-h-96 overflow-y-auto p-4">
+                        <div className="max-h-80 overflow-y-auto p-4">
                           {searchQuery ? (
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                               {Object.values(filteredContinents).flatMap(continent =>
@@ -772,7 +772,7 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
                                 {/* Country Selection */}
                                 <div>
                                   <h4 className="text-sm font-medium mb-3">{t('국가 선택', 'Select Countries')}</h4>
-                                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 max-h-64 overflow-y-auto">
+                                  <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 max-h-60 overflow-y-auto">
                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                                       {[
                                         { code: 'US', name: t('미국', 'USA') },
@@ -899,7 +899,7 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
                         <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                           {t('기타 DSP', 'Other DSPs')}
                         </h4>
-                        <div className="max-h-64 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                        <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-1 p-2">
                             {territoriesData.dsps
                               .filter(dsp => !['spotify', 'apple_music', 'youtube_music', 'kakao_melon', 'naver_vibe', 'genie_music', 'bugs', 'dreamus_flo'].includes(dsp.id))
@@ -935,7 +935,7 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
             </div>
 
             {/* Modal Footer */}
-            <div className="sticky bottom-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+            <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-6 py-4">
               <div className="flex items-center justify-between">
                 <div className="text-sm text-gray-600">
                   {t(`총 ${getTerritoryCount(value.base.mode, value.base.territories)}개국 발매`, 

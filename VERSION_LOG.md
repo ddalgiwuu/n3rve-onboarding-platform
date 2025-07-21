@@ -2,6 +2,21 @@
 
 ## Version History
 
+### v1.3.76 (2025-07-21)
+- **Type**: Bug Fix - Modal Scrolling Issue
+- **Changes**:
+  - Fixed modal scrolling issue where content was cut off at the bottom
+  - Changed modal structure to use flexbox layout for proper height distribution
+  - Removed fixed height calculation, using flex-grow for content area
+  - Made header and footer flex-shrink-0 to maintain fixed sizes
+  - Adjusted internal scroll containers max-heights for better content visibility
+  - Modal now properly shows all content with smooth scrolling
+- **Files Modified**: 
+  - `/frontend/src/components/TerritorySelector.tsx`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.75 (2025-07-21)
 - **Type**: Major UX Enhancement - Territory Selection Modal
 - **Changes**:
