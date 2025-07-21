@@ -161,6 +161,116 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
       ? value.base.territories.length 
       : totalCountries - value.base.territories.length
 
+  // Render DSP item helper function
+  const renderDSPItem = (dsp: typeof territoriesData.dsps[0], compact = false) => {
+    const override = getDSPOverride(dsp.id)
+    const isActive = activeDSP === dsp.id
+
+    return (
+      <div 
+        key={dsp.id}
+        className={`border rounded-lg transition-all ${
+          override 
+            ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/10' 
+            : 'border-gray-200 dark:border-gray-700'
+        } ${compact ? 'p-3' : ''}`}
+      >
+        <div className={`flex items-center justify-between ${compact ? '' : 'p-4'}`}>
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <span className={compact ? 'text-lg' : 'text-2xl'}>{dsp.icon}</span>
+            <div className="min-w-0 flex-1">
+              <h4 className={`font-medium truncate ${compact ? 'text-sm' : ''}`}>
+                {dsp.name}
+              </h4>
+              {override && !compact && (
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {override.mode === 'exclude' 
+                    ? t(`${override.territories.length}개국 제외`, `Excluding ${override.territories.length} countries`)
+                    : t(`${override.territories.length}개국만 발매`, `Only ${override.territories.length} countries`)}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              toggleDSPOverride(dsp.id)
+              if (!override) setActiveDSP(dsp.id)
+            }}
+            className={`${compact ? 'px-2 py-1 text-xs' : 'px-4 py-2 text-sm'} rounded-lg font-medium transition-colors flex-shrink-0 ml-2 ${
+              override
+                ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
+                : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50'
+            }`}
+          >
+            {override ? (compact ? t('제거', 'Remove') : t('설정 제거', 'Remove Override')) : (compact ? t('설정', 'Set') : t('개별 설정', 'Customize'))}
+          </button>
+        </div>
+
+        {/* DSP Override Settings */}
+        {override && isActive && !compact && (
+          <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
+            {/* Mode Toggle */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium">{t('모드:', 'Mode:')}</span>
+              <button
+                onClick={() => updateDSPOverride(dsp.id, { 
+                  mode: override.mode === 'exclude' ? 'include' : 'exclude' 
+                })}
+                className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                  override.mode === 'exclude'
+                    ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                    : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                }`}
+              >
+                {override.mode === 'exclude' ? <Minus className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                {override.mode === 'exclude' ? t('제외', 'Exclude') : t('포함만', 'Include Only')}
+              </button>
+            </div>
+
+            {/* Quick Selection */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { code: 'US', name: t('미국', 'USA') },
+                { code: 'JP', name: t('일본', 'Japan') },
+                { code: 'KR', name: t('한국', 'Korea') },
+                { code: 'CN', name: t('중국', 'China') },
+                { code: 'GB', name: t('영국', 'UK') },
+                { code: 'DE', name: t('독일', 'Germany') }
+              ].map(country => {
+                const isSelected = override.territories.includes(country.code)
+                
+                return (
+                  <button
+                    key={country.code}
+                    onClick={() => {
+                      const newTerritories = isSelected
+                        ? override.territories.filter(c => c !== country.code)
+                        : [...override.territories, country.code]
+                      updateDSPOverride(dsp.id, { territories: newTerritories })
+                    }}
+                    className={`px-3 py-1 rounded-lg text-sm transition-colors ${
+                      isSelected
+                        ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-2 border-purple-300 dark:border-purple-700'
+                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    }`}
+                  >
+                    {country.name}
+                  </button>
+                )
+              })}
+            </div>
+
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {t('더 많은 국가를 선택하려면 위의 전체 목록을 사용하세요.', 
+                 'Use the full list above to select more countries.')}
+            </p>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -330,113 +440,35 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
         </button>
 
         {showDSPOverrides && (
-          <div className="mt-4 space-y-3">
-            {territoriesData.dsps.map(dsp => {
-              const override = getDSPOverride(dsp.id)
-              const isActive = activeDSP === dsp.id
+          <div className="mt-4 space-y-6">
+            {/* Popular DSPs */}
+            <div>
+              <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                {t('주요 DSP', 'Popular DSPs')}
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {['spotify', 'apple_music', 'youtube_music', 'kakao_melon', 'naver_vibe', 'genie_music', 'bugs', 'dreamus_flo'].map(dspId => {
+                  const dsp = territoriesData.dsps.find(d => d.id === dspId)
+                  if (!dsp) return null
+                  return renderDSPItem(dsp)
+                })}
+              </div>
+            </div>
 
-              return (
-                <div 
-                  key={dsp.id}
-                  className={`border rounded-lg transition-all ${
-                    override 
-                      ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/10' 
-                      : 'border-gray-200 dark:border-gray-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{dsp.icon}</span>
-                      <div>
-                        <h4 className="font-medium">{dsp.name}</h4>
-                        {override && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {override.mode === 'exclude' 
-                              ? t(`${override.territories.length}개국 제외`, `Excluding ${override.territories.length} countries`)
-                              : t(`${override.territories.length}개국만 발매`, `Only ${override.territories.length} countries`)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        toggleDSPOverride(dsp.id)
-                        if (!override) setActiveDSP(dsp.id)
-                      }}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        override
-                          ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
-                          : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50'
-                      }`}
-                    >
-                      {override ? t('설정 제거', 'Remove Override') : t('개별 설정', 'Customize')}
-                    </button>
-                  </div>
-
-                  {/* DSP Override Settings */}
-                  {override && isActive && (
-                    <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
-                      {/* Mode Toggle */}
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium">{t('모드:', 'Mode:')}</span>
-                        <button
-                          onClick={() => updateDSPOverride(dsp.id, { 
-                            mode: override.mode === 'exclude' ? 'include' : 'exclude' 
-                          })}
-                          className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                            override.mode === 'exclude'
-                              ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
-                              : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-                          }`}
-                        >
-                          {override.mode === 'exclude' ? <Minus className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-                          {override.mode === 'exclude' ? t('제외', 'Exclude') : t('포함만', 'Include Only')}
-                        </button>
-                      </div>
-
-                      {/* Quick Selection */}
-                      <div className="flex flex-wrap gap-2">
-                        {[
-                          { code: 'US', name: t('미국', 'USA') },
-                          { code: 'JP', name: t('일본', 'Japan') },
-                          { code: 'KR', name: t('한국', 'Korea') },
-                          { code: 'CN', name: t('중국', 'China') },
-                          { code: 'GB', name: t('영국', 'UK') },
-                          { code: 'DE', name: t('독일', 'Germany') }
-                        ].map(country => {
-                          const isSelected = override.territories.includes(country.code)
-                          
-                          return (
-                            <button
-                              key={country.code}
-                              onClick={() => {
-                                const newTerritories = isSelected
-                                  ? override.territories.filter(c => c !== country.code)
-                                  : [...override.territories, country.code]
-                                updateDSPOverride(dsp.id, { territories: newTerritories })
-                              }}
-                              className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                                isSelected
-                                  ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-2 border-purple-300 dark:border-purple-700'
-                                  : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                              }`}
-                            >
-                              {country.name}
-                            </button>
-                          )
-                        })}
-                      </div>
-
-                      <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {t('더 많은 국가를 선택하려면 위의 전체 목록을 사용하세요.', 
-                           'Use the full list above to select more countries.')}
-                      </p>
-                    </div>
-                  )}
+            {/* All Other DSPs */}
+            <div>
+              <h4 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+                {t('기타 DSP', 'Other DSPs')}
+              </h4>
+              <div className="max-h-96 overflow-y-auto border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 p-3">
+                  {territoriesData.dsps
+                    .filter(dsp => !['spotify', 'apple_music', 'youtube_music', 'kakao_melon', 'naver_vibe', 'genie_music', 'bugs', 'dreamus_flo'].includes(dsp.id))
+                    .map(dsp => renderDSPItem(dsp, true))
+                  }
                 </div>
-              )
-            })}
+              </div>
+            </div>
           </div>
         )}
       </div>
