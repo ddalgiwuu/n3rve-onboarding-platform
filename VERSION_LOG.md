@@ -2,6 +2,33 @@
 
 ## Version History
 
+### v1.3.74 (2025-07-21)
+- **Type**: Major Feature Addition - Territory & DSP Selection
+- **Changes**:
+  - Added comprehensive territory selection component for release distribution
+  - Created territories.json with 249 countries organized by continents
+  - Added 10 major DSPs (Spotify, Apple Music, YouTube Music, etc.)
+  - Implemented three distribution modes:
+    - Worldwide: Release in all countries (default)
+    - Include Only: Release only in selected countries
+    - Exclude: Release worldwide except selected countries
+  - Added DSP-specific territory override functionality
+  - Features include:
+    - Continent-based country grouping with expand/collapse
+    - Real-time search for countries
+    - Quick selection buttons for major countries per DSP
+    - Visual summary of release territories
+    - Select all/deselect all per continent
+  - Modern UI with gradient backgrounds and smooth animations
+  - Integrated into Step 1 (Album Info) after copyright information
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/frontend/src/components/TerritorySelector.tsx` (new)
+  - `/frontend/src/data/territories.json` (new)
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.73 (2025-07-21)
 - **Type**: Major UI/UX Enhancement - Contributor Form Platform Integration
 - **Changes**:
