@@ -171,6 +171,67 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
       }
     })
 
+    // Marketing Fields (31 fields)
+    sections.push({
+      id: 'marketing',
+      title: t('마케팅 정보', 'Marketing Information'),
+      icon: <Info className="w-5 h-5" />,
+      data: {
+        // Basic Album Info
+        [t('앨범 소개', 'Album Introduction')]: submission.release?.albumIntroduction,
+        [t('앨범 설명', 'Album Description')]: submission.release?.albumDescription,
+        [t('마케팅 키워드', 'Marketing Keywords')]: submission.release?.marketingKeywords,
+        [t('타겟 대상', 'Target Audience')]: submission.release?.targetAudience,
+        [t('프로모션 계획', 'Promotion Plans')]: submission.release?.promotionPlans,
+        
+        // Artist Profile
+        [t('아티스트 이름', 'Artist Name')]: submission.release?.artistName,
+        [t('아티스트 성별', 'Artist Gender')]: submission.release?.artistGender,
+        [t('아티스트 국가', 'Artist Country')]: submission.release?.artistCountry,
+        [t('현재 거주 도시', 'Artist Current City')]: submission.release?.artistCurrentCity,
+        [t('고향', 'Artist Hometown')]: submission.release?.artistHometown,
+        [t('아티스트 바이오', 'Artist Bio')]: submission.release?.artistBio,
+        
+        // Social & Platform
+        [t('Toundates URL', 'Toundates URL')]: submission.release?.toundatesUrl,
+        [t('Spotify 아티스트 ID', 'Spotify Artist ID')]: submission.release?.spotifyArtistId,
+        [t('Apple Music 아티스트 ID', 'Apple Music Artist ID')]: submission.release?.appleMusicArtistId,
+        [t('SoundCloud 아티스트 ID', 'SoundCloud Artist ID')]: submission.release?.soundcloudArtistId,
+        
+        // Social Media URLs
+        [t('YouTube URL', 'YouTube URL')]: submission.release?.youtubeUrl,
+        [t('TikTok URL', 'TikTok URL')]: submission.release?.tiktokUrl,
+        [t('Facebook URL', 'Facebook URL')]: submission.release?.facebookUrl,
+        [t('Instagram URL', 'Instagram URL')]: submission.release?.instagramUrl,
+        [t('X (Twitter) URL', 'X URL')]: submission.release?.xUrl,
+        [t('Twitch URL', 'Twitch URL')]: submission.release?.twitchUrl,
+        [t('Threads URL', 'Threads URL')]: submission.release?.threadsUrl,
+        
+        // Marketing Details
+        [t('사회 운동', 'Social Movements')]: submission.release?.socialMovements,
+        [t('유사 아티스트', 'Similar Artists')]: submission.release?.similarArtists,
+        [t('싱크 이력 여부', 'Has Sync History')]: submission.release?.hasSyncHistory,
+        [t('싱크 이력', 'Sync History')]: submission.release?.syncHistory,
+        [t('아티스트 UGC 우선순위', 'Artist UGC Priorities')]: submission.release?.artistUgcPriorities,
+        
+        // Music Characteristics
+        [t('무드', 'Moods')]: submission.release?.moods?.join(', '),
+        [t('악기', 'Instruments')]: submission.release?.instruments?.join(', '),
+        [t('훅', 'Hook')]: submission.release?.hook,
+        [t('메인 피치', 'Main Pitch')]: submission.release?.mainPitch,
+        
+        // Marketing Strategy
+        [t('마케팅 동력', 'Marketing Drivers')]: submission.release?.marketingDrivers,
+        [t('소셜 미디어 계획', 'Social Media Plan')]: submission.release?.socialMediaPlan,
+        
+        // Visual Assets
+        [t('아티스트 아바타', 'Artist Avatar')]: submission.release?.artistAvatar,
+        [t('아티스트 로고', 'Artist Logo')]: submission.release?.artistLogo,
+        [t('프레스 샷 URL', 'Press Shot URL')]: submission.release?.pressShotUrl,
+        [t('프레스 샷 크레딧', 'Press Shot Credits')]: submission.release?.pressShotCredits,
+      }
+    })
+
     return sections
   }
 
