@@ -17,6 +17,7 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-https://n3rve-onboarding.com/api/auth/google/callback}
       CORS_ORIGIN: ${CORS_ORIGIN:-https://n3rve-onboarding.com}
+      DROPBOX_ACCESS_TOKEN: ${DROPBOX_ACCESS_TOKEN}
       VITE_DROPBOX_ACCESS_TOKEN: ${VITE_DROPBOX_ACCESS_TOKEN}
     volumes:
       - ./backend/uploads:/app/backend/uploads
