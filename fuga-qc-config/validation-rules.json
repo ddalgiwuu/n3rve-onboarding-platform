@@ -6,7 +6,26 @@
     "invalidCharsArtist": "[<>{}[\\]\\\\|^`~]",
     "emoji": "[\\u{1F600}-\\u{1F64F}]|[\\u{1F300}-\\u{1F5FF}]|[\\u{1F680}-\\u{1F6FF}]|[\\u{1F1E0}-\\u{1F1FF}]|[\\u{2600}-\\u{26FF}]|[\\u{2700}-\\u{27BF}]",
     "isrc": "^[A-Z]{2}[A-Z0-9]{3}\\d{7}$",
-    "copyrightYear": "^(19|20)\\d{2}$"
+    "copyrightYear": "^(19|20)\\d{2}$",
+    "upc": "^\\d{12,14}$",
+    "allCaps": "^[A-Z\\s]+$",
+    "multipleExclamation": "!!+",
+    "multipleQuestion": "\\?\\?+",
+    "multiplePunctuation": "[\\.!\\?]{3,}",
+    "url": "(https?://|www\\.)",
+    "email": "[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}",
+    "phoneNumber": "[\\+\\d\\s\\-\\(\\)]+\\d{6,}",
+    "repeatedChars": "(.)\\1{4,}",
+    "versionInBrackets": "\\([^)]*(?:version|ver|v\\d|remix|mix|edit|instrumental|acoustic|live|demo|clean|explicit|remastered).*\\)",
+    "classicalCatalog": "(Op\\.|BWV|K\\.|D\\.|Hob\\.|RV|WoO|KV)\\s*\\d+",
+    "movement": "(I{1,3}V?|IV|VI{0,3}|I{0,3}X|[1-9]\\d*)\\s*\\.\\s*(Allegro|Andante|Adagio|Presto|Largo|Vivace|Moderato|Lento)",
+    "timeDuration": "^\\d{1,3}:[0-5]\\d$",
+    "featPattern": "(feat\\.|ft\\.|featuring)\\s+[^,]+",
+    "withPattern": "(with|w\\/)\\s+[^,]+",
+    "producedBy": "(prod\\.|produced by)\\s+[^,]+",
+    "remixPattern": "\\(([^)]+)\\s+(Remix|Mix|Edit|Bootleg|Rework|VIP)\\)",
+    "ostAbbreviation": "(O\\.S\\.T\\.|OST|o\\.s\\.t\\.)",
+    "composerAbbreviation": "(Jr\\.|Sr\\.|Dr\\.|Mr\\.|Mrs\\.|Ms\\.|Prof\\.)(?!\\s*[A-Za-z]+)"
   },
   
   "terms": {
@@ -14,36 +33,66 @@
       "NEW", "HOT", "EXCLUSIVE", "FRESH", "LATEST", "BEST", "TOP", "SALE", 
       "FREE", "DOWNLOAD", "CLICK", "STREAM NOW", "OUT NOW", "AVAILABLE NOW", 
       "LIMITED EDITION", "SPECIAL EDITION", "DELUXE", "BONUS", "PRE-ORDER", 
-      "DIGITAL DOWNLOAD", "STREAMING", "MUST HAVE", "HIT", "CHART"
+      "DIGITAL DOWNLOAD", "STREAMING", "MUST HAVE", "HIT", "CHART",
+      "PREMIERE", "DEBUT", "WORLD EXCLUSIVE", "FIRST LISTEN", "BREAKING"
     ],
     "genericArtistNames": [
       "Various Artists", "Various", "Unknown Artist", "Unknown", 
-      "Artist", "TBD", "TBA", "N/A", "None", "Untitled"
+      "Artist", "TBD", "TBA", "N/A", "None", "Untitled",
+      "Anonymous", "Unnamed", "No Artist", "VA", "V/A", "Varios Artistas",
+      "Artisti Vari", "Divers Artistes", "Diverse Kunstenaars"
     ],
     "misleadingArtistTerms": [
       "feat.", "featuring", "with", "vs", "versus", 
-      "presents", "pres.", "&", "and"
+      "presents", "pres.", "&", "and", "meets", "X", "×",
+      "prod.", "produced by", "remix", "edit", "bootleg"
     ],
     "forbiddenVersionTerms": [
       "Original", "Original Mix", "Original Version", 
-      "Studio Version", "Album Version"
+      "Studio Version", "Album Version", "Standard Version",
+      "Normal Version", "Regular Version"
     ],
     "versionKeywords": [
       "Remix", "Acoustic", "Live", "Instrumental", "Demo", 
       "Radio Edit", "Extended", "Clean", "Explicit", "Remastered", 
       "Unplugged", "Mix", "Version", "Special Edition", 
-      "Deluxe Edition", "Anniversary Edition"
+      "Deluxe Edition", "Anniversary Edition", "Reissue",
+      "Alternate Take", "Session", "Rehearsal", "Bootleg",
+      "Club Mix", "Dub Mix", "VIP", "Edit", "Rework",
+      "Stripped", "Orchestral", "Piano Version", "Strings Version"
+    ],
+    "classicalTerms": [
+      "Symphony", "Concerto", "Sonata", "Suite", "Prelude",
+      "Fugue", "Etude", "Nocturne", "Waltz", "March",
+      "Overture", "Aria", "Requiem", "Mass", "Cantata",
+      "Chamber", "Quartet", "Quintet", "Trio", "Duet"
+    ],
+    "soundtrackTerms": [
+      "OST", "Original Soundtrack", "Score", "Theme",
+      "Music from", "Songs from", "Inspired by",
+      "Motion Picture", "Film Music", "Game Music"
+    ],
+    "explicitWords": [
+      "fuck", "shit", "bitch", "ass", "damn", "hell",
+      "dick", "pussy", "cock", "bastard", "whore",
+      "nigga", "nigger", "faggot", "cunt"
+    ],
+    "cleanVersionIndicators": [
+      "clean", "edited", "radio", "censored", "family friendly"
     ]
   },
   
   "languageSpecific": {
     "articles": {
-      "french": ["le", "la", "les", "un", "une", "des", "du", "de"],
+      "french": ["le", "la", "les", "un", "une", "des", "du", "de", "d'"],
       "italian": ["il", "lo", "la", "i", "gli", "le", "un", "uno", "una", "del", "dello", "della", "dei", "degli", "delle"],
       "spanish": ["el", "la", "los", "las", "un", "una", "unos", "unas", "del", "al"],
-      "german": ["der", "die", "das", "den", "dem", "des", "ein", "eine", "einer", "einem", "eines"]
+      "german": ["der", "die", "das", "den", "dem", "des", "ein", "eine", "einer", "einem", "eines"],
+      "portuguese": ["o", "a", "os", "as", "um", "uma", "uns", "umas", "do", "da", "dos", "das"],
+      "dutch": ["de", "het", "een"],
+      "swedish": ["en", "ett", "den", "det"]
     },
-    "sentenceCaseLanguages": ["french", "italian", "spanish", "swedish", "norwegian", "danish"],
+    "sentenceCaseLanguages": ["french", "italian", "spanish", "swedish", "norwegian", "danish", "portuguese", "catalan"],
     "germanWords": {
       "fuer": "für",
       "ueber": "über",
@@ -51,21 +100,46 @@
       "moechte": "möchte",
       "waehrend": "während",
       "grosse": "große",
-      "strasse": "straße"
+      "strasse": "straße",
+      "muessen": "müssen",
+      "duerfen": "dürfen",
+      "koenig": "könig",
+      "schoene": "schöne"
+    },
+    "accentedCharacters": {
+      "french": ["à", "â", "ç", "è", "é", "ê", "ë", "î", "ï", "ô", "ù", "û", "ü", "ÿ", "æ", "œ"],
+      "spanish": ["á", "é", "í", "ñ", "ó", "ú", "ü"],
+      "portuguese": ["ã", "á", "à", "â", "ç", "é", "ê", "í", "õ", "ó", "ô", "ú"],
+      "german": ["ä", "ö", "ü", "ß"],
+      "italian": ["à", "è", "é", "ì", "ò", "ù"],
+      "swedish": ["å", "ä", "ö"],
+      "danish": ["æ", "ø", "å"],
+      "norwegian": ["æ", "ø", "å"]
     }
   },
   
   "formatting": {
-    "titleCaseSkipWords": ["a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with"],
+    "titleCaseSkipWords": [
+      "a", "an", "the", "and", "or", "but", "in", "on", "at", "to", "for", "of", "with",
+      "by", "from", "as", "is", "was", "are", "been", "be", "have", "has", "had",
+      "do", "does", "did", "will", "would", "should", "could", "may", "might", "must",
+      "can", "shall", "vs", "v", "vs.", "v.", "per", "via"
+    ],
     "featuringFormats": {
       "valid": ["feat.", "Feat.", "ft.", "Ft.", "featuring", "Featuring"],
-      "incorrect": ["Feat", "feat", "FT", "ft", "Featuring.", "featuring."]
+      "incorrect": ["Feat", "feat", "FT", "ft", "Featuring.", "featuring.", "FEAT", "FEATURING"]
     },
     "abbreviations": {
       "ft.": "featuring",
       "feat.": "featuring",
       "vs.": "versus",
-      "pres.": "presents"
+      "pres.": "presents",
+      "prod.": "produced by",
+      "incl.": "including",
+      "excl.": "excluding",
+      "vol.": "volume",
+      "pt.": "part",
+      "no.": "number"
     },
     "versionCapitalization": {
       "remix": "Remix",
@@ -79,8 +153,150 @@
       "clean": "Clean",
       "explicit": "Explicit",
       "remastered": "Remastered",
-      "unplugged": "Unplugged"
+      "unplugged": "Unplugged",
+      "club mix": "Club Mix",
+      "dub mix": "Dub Mix",
+      "vip": "VIP",
+      "edit": "Edit",
+      "bootleg": "Bootleg",
+      "rework": "Rework",
+      "orchestral": "Orchestral Version",
+      "piano version": "Piano Version",
+      "acoustic version": "Acoustic Version",
+      "strings version": "Strings Version",
+      "alternate take": "Alternate Take"
+    },
+    "classicalFormatting": {
+      "composerFirst": true,
+      "workBeforeMovement": true,
+      "catalogNumberFormat": "after_title",
+      "movementSeparator": ": ",
+      "multiMovementSeparator": " - "
     }
+  },
+  
+  "audioSpecs": {
+    "sampleRate": {
+      "minimum": 44100,
+      "recommended": [44100, 48000, 88200, 96000],
+      "maximum": 192000
+    },
+    "bitDepth": {
+      "minimum": 16,
+      "recommended": [16, 24],
+      "maximum": 32
+    },
+    "formats": {
+      "accepted": ["WAV", "FLAC", "AIFF", "ALAC"],
+      "notAccepted": ["MP3", "AAC", "OGG", "WMA", "M4A"],
+      "video": ["MP4", "MOV", "AVI", "MKV", "ProRes"]
+    },
+    "loudness": {
+      "targetLUFS": -14,
+      "maxLUFS": -9,
+      "minLUFS": -30,
+      "truePeak": -1
+    },
+    "duration": {
+      "minimumSeconds": 30,
+      "maximumSeconds": 36000,
+      "singleMaxSeconds": 600,
+      "epMaxSeconds": 1800,
+      "albumMaxSeconds": 36000
+    },
+    "fileSize": {
+      "maxAudioMB": 4096,
+      "maxVideoGB": 50,
+      "maxCoverMB": 50
+    },
+    "channels": {
+      "stereo": 2,
+      "mono": 1,
+      "surround": [6, 8],
+      "dolbyAtmos": true
+    }
+  },
+  
+  "videoSpecs": {
+    "resolution": {
+      "minimum": "1280x720",
+      "standard": ["1920x1080", "3840x2160"],
+      "aspectRatios": ["16:9", "4:3", "1:1", "9:16"]
+    },
+    "frameRate": {
+      "standard": [23.976, 24, 25, 29.97, 30, 50, 59.94, 60],
+      "minimum": 23.976,
+      "maximum": 60
+    },
+    "bitrate": {
+      "minMbps": 5,
+      "recommendedMbps": 25,
+      "maxMbps": 100
+    },
+    "codec": {
+      "video": ["H.264", "H.265", "ProRes", "VP9"],
+      "audio": ["AAC", "PCM", "Dolby Digital"]
+    },
+    "thumbnail": {
+      "requiredAspectRatio": "16:9",
+      "recommendedResolution": "1920x1080",
+      "mustBeVideoCapture": true,
+      "forbiddenContent": [
+        "Album cover art",
+        "Black bars",
+        "Letterboxing",
+        "Inactive pixels",
+        "Color bars",
+        "Masked video",
+        "Cropped frames"
+      ]
+    }
+  },
+  
+  "classicalMusic": {
+    "titleFormat": "{composer}: {work}, {catalog} - {movement}",
+    "requiredFields": ["composer", "work", "performers"],
+    "performerRoles": [
+      "Orchestra", "Conductor", "Soloist", "Ensemble",
+      "Choir", "Chamber Orchestra", "Philharmonic"
+    ],
+    "catalogSystems": [
+      "Op.", "BWV", "K.", "D.", "Hob.", "RV", "WoO", "KV",
+      "L.", "S.", "H.", "B.", "P.", "T.", "WAB", "Sz."
+    ],
+    "movementNames": [
+      "Allegro", "Andante", "Adagio", "Presto", "Largo",
+      "Vivace", "Moderato", "Lento", "Grave", "Maestoso"
+    ]
+  },
+  
+  "soundtracks": {
+    "titleFormat": "{title} (From \"{source}\")",
+    "requiredMetadata": ["source_type", "source_title", "composer"],
+    "sourceTypes": ["Film", "TV Series", "Game", "Musical", "Documentary"],
+    "versionTypes": [
+      "Original Motion Picture Soundtrack",
+      "Original Game Soundtrack",
+      "Original Television Soundtrack",
+      "Score", "Songs From", "Music Inspired By"
+    ],
+    "titleFormats": [
+      "Original Soundtrack of {title}",
+      "{title} (Original Soundtrack)",
+      "{title} (Original Score)",
+      "{title} (Music from the Original TV Series)",
+      "{title} (Original Motion Picture Soundtrack)",
+      "{title} (From '{show name}')"
+    ],
+    "forbiddenAbbreviations": ["O.S.T.", "OST", "o.s.t."]
+  },
+  
+  "compilations": {
+    "artistName": "Various Artists",
+    "requiredFields": ["compiler", "compilation_type"],
+    "types": ["Greatest Hits", "Best Of", "Collection", "Anthology", "Sampler"],
+    "minimumTracks": 5,
+    "uniqueArtistsMinimum": 3
   },
   
   "rules": {
@@ -93,7 +309,13 @@
       "preventPromotionalText": true,
       "preventGenericNames": true,
       "preventMisleadingTerms": true,
-      "preventEmojis": true
+      "preventEmojis": true,
+      "preventAllCaps": true,
+      "requireProperCapitalization": true,
+      "preventURLs": true,
+      "preventEmail": true,
+      "preventPhoneNumbers": true,
+      "maxWords": 10
     },
     
     "title": {
@@ -104,24 +326,33 @@
       "preventPromotionalText": true,
       "preventEmojis": true,
       "checkBracketMatching": true,
-      "enforceSentenceCaseForLanguages": true
+      "enforceSentenceCaseForLanguages": true,
+      "preventAllCaps": true,
+      "preventMultiplePunctuation": true,
+      "preventRepeatedCharacters": true,
+      "enforceVersionFormat": true,
+      "requireVersionInParentheses": true,
+      "preventDuplicateVersionInfo": true
     },
     
     "format": {
       "single": {
         "minTracks": 1,
         "maxTracks": 3,
-        "requireSameTitle": true
+        "requireSameTitle": true,
+        "maxDuration": 600
       },
       "ep": {
         "minTracks": 4,
         "maxTracks": 6,
-        "requireSameTitle": false
+        "requireSameTitle": false,
+        "maxDuration": 1800
       },
       "album": {
         "minTracks": 7,
         "maxTracks": null,
-        "requireSameTitle": false
+        "requireSameTitle": false,
+        "maxDuration": 36000
       }
     },
     
@@ -129,19 +360,107 @@
       "minDaysNotice": 14,
       "preventPastDates": true,
       "requireCopyrightYear": true,
-      "preventCopyrightSymbols": true
+      "preventCopyrightSymbols": true,
+      "maxFutureYears": 1,
+      "requireISRC": true,
+      "requireUPC": true,
+      "requireTerritories": true,
+      "minimumTerritories": 1
     },
     
     "genre": {
       "minCount": 1,
       "maxCount": 3,
-      "requireSelection": true
+      "requireSelection": true,
+      "preventMismatch": true,
+      "classicalRequiresClassicalFormat": true
     },
     
     "isrc": {
       "format": "CCXXXYYNNNNNNN",
       "example": "USKRE2400001",
-      "required": false
+      "required": true,
+      "preventDuplicates": true,
+      "validateCountryCode": true,
+      "validateYear": true
+    },
+    
+    "upc": {
+      "format": "12-14 digits",
+      "example": "123456789012",
+      "required": true,
+      "validateChecksum": true,
+      "preventDuplicates": true
+    },
+    
+    "copyright": {
+      "requireHolder": true,
+      "requireYear": true,
+      "format": "{year} {holder}",
+      "preventSymbols": true,
+      "validateYear": true
+    },
+    
+    "credits": {
+      "composer": {
+        "requireFullName": true,
+        "minimumParts": 2,
+        "preventAbbreviations": true,
+        "preventPseudonyms": true,
+        "format": "FirstName LastName"
+      },
+      "lyricist": {
+        "requireFullName": true,
+        "minimumParts": 2,
+        "preventAbbreviations": true,
+        "preventPseudonyms": true,
+        "format": "FirstName LastName"
+      }
+    },
+    
+    "featuring": {
+      "format": "feat.",
+      "position": "afterTitle",
+      "separator": " ",
+      "preventInArtistName": true,
+      "consistentFormat": true
+    },
+    
+    "parentalAdvisory": {
+      "autoDetect": true,
+      "requireForExplicitContent": true,
+      "explicitRequiresCleanVersion": false,
+      "checkLyrics": true
+    },
+    
+    "audio": {
+      "requireLossless": true,
+      "minSampleRate": 44100,
+      "minBitDepth": 16,
+      "requireStereo": true,
+      "preventClipping": true,
+      "requireProperLoudness": true
+    },
+    
+    "artwork": {
+      "minResolution": 3000,
+      "maxResolution": 6000,
+      "aspectRatio": "1:1",
+      "format": ["JPG", "PNG"],
+      "colorSpace": "RGB",
+      "maxFileSizeMB": 50,
+      "preventText": true,
+      "preventURLs": true,
+      "requireHighQuality": true
+    },
+    
+    "video": {
+      "minResolution": "1280x720",
+      "requireHD": true,
+      "preventLetterboxing": true,
+      "requireProperAspectRatio": true,
+      "preventWatermarks": true,
+      "requireClosedCaptions": false
     }
   },
   
@@ -164,7 +483,38 @@
       "singleTitleMismatch": "싱글 포맷에서는 모든 트랙 제목이 앨범 제목과 동일해야 합니다 (Single format requires matching titles)",
       "pastReleaseDate": "과거 날짜는 선택할 수 없습니다 (Past dates not allowed)",
       "noGenre": "장르를 선택해주세요 (Genre selection required)",
-      "abbreviationInArtistName": "약어 대신 전체 단어를 사용해주세요 (Use full words instead of abbreviations)"
+      "abbreviationInArtistName": "약어 대신 전체 단어를 사용해주세요 (Use full words instead of abbreviations)",
+      "allCapsNotAllowed": "모든 글자를 대문자로 사용할 수 없습니다 (All caps not allowed)",
+      "invalidUPC": "UPC 형식이 올바르지 않습니다 (Invalid UPC format)",
+      "duplicateISRC": "이미 사용된 ISRC입니다 (ISRC already in use)",
+      "duplicateUPC": "이미 사용된 UPC입니다 (UPC already in use)",
+      "missingCopyrightHolder": "저작권 소유자를 입력해주세요 (Copyright holder required)",
+      "invalidAudioFormat": "지원하지 않는 오디오 형식입니다 (Unsupported audio format)",
+      "audioQualityTooLow": "오디오 품질이 너무 낮습니다 (Audio quality too low)",
+      "artworkResolutionTooLow": "앨범아트 해상도가 너무 낮습니다 (Artwork resolution too low)",
+      "artworkNotSquare": "앨범아트는 정사각형이어야 합니다 (Artwork must be square)",
+      "artworkContainsText": "앨범아트에 텍스트가 포함되어 있습니다 (Text in artwork not allowed)",
+      "videoResolutionTooLow": "비디오 해상도가 너무 낮습니다 (Video resolution too low)",
+      "classicalFormatIncorrect": "클래식 음악 형식이 올바르지 않습니다 (Incorrect classical music format)",
+      "soundtrackFormatIncorrect": "사운드트랙 형식이 올바르지 않습니다 (Incorrect soundtrack format)",
+      "versionNotInParentheses": "버전 정보는 괄호 안에 있어야 합니다 (Version must be in parentheses)",
+      "multiplePunctuationMarks": "과도한 구두점 사용은 허용되지 않습니다 (Excessive punctuation not allowed)",
+      "repeatedCharacters": "반복되는 문자가 너무 많습니다 (Too many repeated characters)",
+      "urlInMetadata": "URL은 메타데이터에 포함할 수 없습니다 (URLs not allowed in metadata)",
+      "emailInMetadata": "이메일 주소는 메타데이터에 포함할 수 없습니다 (Email addresses not allowed)",
+      "phoneInMetadata": "전화번호는 메타데이터에 포함할 수 없습니다 (Phone numbers not allowed)",
+      "insufficientTerritories": "최소 1개 이상의 배포 지역을 선택해주세요 (At least one territory required)",
+      "dolbyAtmosIncorrectFormat": "Dolby Atmos 파일 형식이 올바르지 않습니다 (Incorrect Dolby Atmos format)",
+      "videoThumbnailNotVideoCapture": "뮤직비디오 썸네일은 비디오에서 캡처한 이미지여야 합니다 (Music video thumbnail must be a video capture)",
+      "videoThumbnailWrongAspectRatio": "썸네일은 16:9 비율이어야 합니다 (Thumbnail must be 16:9 aspect ratio)",
+      "videoThumbnailHasBlackBars": "썸네일에 검은 막대가 포함되어 있습니다 (Thumbnail contains black bars)",
+      "videoThumbnailHasLetterbox": "썸네일에 레터박스가 포함되어 있습니다 (Thumbnail contains letterboxing)",
+      "soundtrackOSTAbbreviation": "O.S.T. 약어는 사용할 수 없습니다 (O.S.T. abbreviation not allowed)",
+      "soundtrackIncorrectFormat": "사운드트랙 제목 형식이 올바르지 않습니다 (Incorrect soundtrack title format)",
+      "composerNameIncomplete": "작곡가 이름은 전체 이름과 성을 포함해야 합니다 (Composer name must include full first and last name)",
+      "lyricistNameIncomplete": "작사가 이름은 전체 이름과 성을 포함해야 합니다 (Lyricist name must include full first and last name)",
+      "creditsContainAbbreviation": "크레딧에 약어를 사용할 수 없습니다 (Abbreviations not allowed in credits)",
+      "creditsContainPseudonym": "크레딧에 가명을 사용할 수 없습니다 (Pseudonyms not allowed in credits)"
     },
     
     "warning": {
@@ -181,11 +531,35 @@
       "cleanVersionWithoutExplicit": "Clean 버전이 있지만 Explicit 버전이 없습니다 (Clean version without explicit version)",
       "mixedLanguages": "여러 언어가 혼재되어 있습니다 (Multiple languages detected)",
       "shortReleaseNotice": "출시일까지 14일 미만입니다. 처리가 지연될 수 있습니다 (Less than 14 days notice)",
-      "tooManyGenres": "장르는 최대 3개까지 선택 가능합니다 (Maximum 3 genres allowed)"
+      "tooManyGenres": "장르는 최대 3개까지 선택 가능합니다 (Maximum 3 genres allowed)",
+      "accentedCharactersMissing": "악센트 문자가 누락되었을 수 있습니다 (Accented characters may be missing)",
+      "longTitle": "제목이 너무 깁니다. 간결하게 작성하는 것이 좋습니다 (Title is very long)",
+      "multipleArtists": "여러 아티스트는 쉼표로 구분해주세요 (Separate multiple artists with commas)",
+      "classicalNeedsMoreInfo": "클래식 음악은 작곡가, 작품, 연주자 정보가 필요합니다 (Classical music needs composer, work, and performer info)",
+      "soundtrackNeedsSource": "사운드트랙은 출처 정보가 필요합니다 (Soundtracks need source information)",
+      "compilationNeedsCompiler": "컴필레이션은 편집자 정보가 필요합니다 (Compilations need compiler information)",
+      "audioLoudnessTooHigh": "오디오 음량이 너무 높습니다 (Audio loudness too high)",
+      "audioLoudnessTooLow": "오디오 음량이 너무 낮습니다 (Audio loudness too low)",
+      "considerHigherQuality": "더 높은 품질의 오디오 파일 사용을 권장합니다 (Consider using higher quality audio)",
+      "artworkTextDetected": "앨범아트에 텍스트가 감지되었습니다 (Text detected in artwork)",
+      "videoLetterboxDetected": "비디오에 레터박스가 감지되었습니다 (Letterbox detected in video)",
+      "lowBitrateVideo": "비디오 비트레이트가 낮습니다 (Low video bitrate)"
     },
     
     "info": {
-      "versionFormat": "버전 정보는 제목 끝에 괄호로 표시하는 것이 좋습니다 (Version should be in parentheses at end of title)"
+      "versionFormat": "버전 정보는 제목 끝에 괄호로 표시하는 것이 좋습니다 (Version should be in parentheses at end of title)",
+      "classicalTitleFormat": "클래식: 작곡가: 작품명, 작품번호 - 악장 (Classical: Composer: Work, Catalog - Movement)",
+      "soundtrackTitleFormat": "사운드트랙: 곡명 (From \"작품명\") (Soundtrack: Title (From \"Source\"))",
+      "featuringPosition": "피처링은 제목 뒤에 위치해야 합니다 (Featuring should be after title)",
+      "useOfficialVersionNames": "공식 버전명을 사용해주세요 (Use official version names)",
+      "multiVolumeFormat": "멀티 볼륨: 볼륨 번호를 명확히 표시해주세요 (Multi-volume: Clearly indicate volume numbers)",
+      "seriesFormat": "시리즈: 파트/에피소드 번호를 포함해주세요 (Series: Include part/episode numbers)",
+      "liveRecordingInfo": "라이브 녹음: 날짜와 장소를 포함하는 것이 좋습니다 (Live: Include date and venue)",
+      "remixerCredit": "리믹스: 리믹서 이름을 괄호 안에 포함해주세요 (Remix: Include remixer name in parentheses)",
+      "remastered Year": "리마스터: 리마스터 연도를 포함하는 것이 좋습니다 (Remastered: Include remaster year)",
+      "audioMastering": "마스터링: -14 LUFS를 목표로 해주세요 (Mastering: Target -14 LUFS)",
+      "dolbyAtmosInfo": "Dolby Atmos: ADM BWF 파일 형식을 사용해주세요 (Dolby Atmos: Use ADM BWF format)",
+      "stemDelivery": "스템 파일: 각 스템을 별도 파일로 제공해주세요 (Stems: Provide each stem as separate file)"
     }
   }
 }
