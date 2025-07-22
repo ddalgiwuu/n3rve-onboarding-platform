@@ -2,6 +2,25 @@
 
 ## Version History
 
+### v1.3.79 (2025-07-22)
+- **Type**: Feature Enhancement & Bug Fix - Contributor Form
+- **Changes**:
+  - Fixed "toLowerCase is not a function" error by adding null safety checks
+  - Added Korean translations for all contributor roles and instruments
+  - Enhanced search functionality to support partial matches (e.g., "com" finds "Composer")
+  - Display Korean names alongside English names in dropdowns
+  - Added feature: When "New Artist" is checked, Spotify and Apple Music fields are disabled
+  - Disabled "Page Check" button for new artists to improve visibility
+  - Created translation files: contributorRolesKo.json and instrumentsKo.json
+  - Improved search with better null/undefined handling
+- **Files Modified**: 
+  - `/frontend/src/components/ContributorForm.tsx`
+  - `/frontend/src/data/contributorRolesKo.json` (new)
+  - `/frontend/src/data/instrumentsKo.json` (new)
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.78 (2025-07-21)
 - **Type**: UI/UX Reorganization - Territory Selection
 - **Changes**:
