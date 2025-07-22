@@ -293,8 +293,9 @@ When simulation is absolutely necessary, I will always ask for permission first 
 ### File Storage Architecture
 - **Method**: Company Dropbox account (users don't need personal Dropbox)
 - **Structure**: `/n3rve-submissions/[year-month]/[submissionID]_[artist]_[album]/[filetype]/`
-- **Configuration**: Requires `VITE_DROPBOX_ACCESS_TOKEN` in environment variables
-- **Important**: Never commit Access Token to version control
+- **Configuration**: Requires `DROPBOX_ACCESS_TOKEN` in backend environment variables
+- **Access Token**: Configured in `.env.production` (백엔드)
+- **Important**: Access Token은 백엔드에서만 사용 (보안 강화)
 
 ### Platform Features
 - Dolby Atmos tracking for each track

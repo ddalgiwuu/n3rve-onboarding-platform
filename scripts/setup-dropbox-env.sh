@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Dropbox 환경 변수 설정 스크립트
+# EC2 서버에서 실행할 것
+
+echo "Setting up Dropbox environment variables..."
+
+# .env 파일 생성/업데이트
+cat > /home/ubuntu/n3rve-onboarding-platform/.env << 'EOF'
+# Production Environment Variables
+NODE_ENV=production
+PORT=3001
+
+# MongoDB Atlas Configuration
+MONGODB_URI=mongodb+srv://n3rve-admin:n3rve2024!@n3rve-cluster.mongodb.net/n3rve-platform?retryWrites=true&w=majority
+
+# JWT Configuration
+JWT_SECRET=n3rve-platform-jwt-secret-2024
+JWT_EXPIRES_IN=7d
+
+# Frontend URL
+FRONTEND_URL=https://n3rve-onboarding.com
+
+# CORS
+CORS_ORIGIN=https://n3rve-onboarding.com,http://n3rve-onboarding.com
+
+# Dropbox Configuration
+DROPBOX_ACCESS_TOKEN=sl.u.AF24zrvkRICB3ipPOacFijyJx97nYg-_qArwFaHWBMSEIGYtyGt_HqfsgZgnMUu9oC8FDh_uXWmxmUJhk2VJrRraIAHhtcNl2S4IATODmtmMW6sMsXsbMJeVQ2HxpMlUcONXc22mLNE2-oCplDQYJJYdGU0wig4NiEFlfODp-x1y_WI1l3jAggHxvyfN-kvOn37Og2YC-RmWA8xWEtRloTZMzQZHgKOlIeAfAFOuSft947vBgIsDNimj5i9AluyVr1j3cS1bHi3llsGoRgk8stJQsXChTN3-mVzZE0tD07BwOj6eSll5UW5OUFX-LYsH3iuc205N0z5WlGX3nbuWiky7t6FiDTPUGv_kX364ifTfzlMloT90rS0RrBKhnqi_Mhd23B4b1Yaj5l8FpKJQIgXdT4pdHy6Rt9rL2xcgtZv-gL3foiI3CCO84ezcXrPoCpeUQhqEhpkuIfjbU_fT8oBUKKKkvyFyciFe7b6X4GFosyUCnMG5OVDkP8RQ6VYCvr0t67qoA0qpAnPI22PXIfDmrkNh3fEF9C-B7pc5vjK_Mi2FIksh9WLdPInC2Yk7I46s5NEE8rU5azeC5Mc0WeUHX81wx2I48R1dH_kx6AfiFNL4CF2I43qaEhjwsFU5k1RRqPyaYOH-sg-4zZMm3eHicHbdu4oIm69jljZhp8tDSeWDGaFx9hPdaDJRKN3Bq8ByfAAFFrMZlVnh5H7UGe7G1wZpaStvZhvafY8eajrlIrRGJCLF9GXYA7_Lg9ZJwDd0M5rCVEeyt5VWg99IF7R22yBpSYe7LcV1Y1mCg6lUnjjir-El5w8B_RUGOXhv5wUBP4zmb4WT8uvMem2dY8ZPeVpoQmFQ_GB0_qYIpXkgTI4216zhsji5mB0OpXJC2W4faa2PxhIFXAly9hEinujRHTZpc3EGc1Q4CnudvGFXdYArZ4YeMFovDZamkAiZnhPM7b-tEhX6xvXSiC9pah1jtryOmBEe7kOdl_6TNjBQG3Ihw_t2TzhMgR-__EIawk8TKuOlDD03w4zRjSrN4CZz2J8H1ytqWsWHuXH1n_UAqwqUDp0mvSIhqneBUIBLDtqXyfeP92ng4QhUkd7G6HSUfo4P5IGlGhSAXbuqeOAwIFdOnV9d0i66wtvNh6M4QQhgTjizNG3RHMMnnUuDLglF77whPXk7Ik5dC-tppdssI5Lz_Pq_SdEbISQ64bCSAyjKk6siCCVZGECRX6Jz-sfNGL1tIFpF6KuHJ3Nk9ZCpDsVAsV-adM38eoiUuiW9ESn6pBAl4ZuvPUxSpdM9qnVt
+
+# Sentry
+SENTRY_DSN=https://c2a321a69585df4bea2ef45251ed9250@o4509598008672256.ingest.us.sentry.io/4509598010114048
+EOF
+
+echo "Environment variables set successfully!"
+echo "Restarting application..."
+
+cd /home/ubuntu/n3rve-onboarding-platform
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml pull
+docker-compose -f docker-compose.prod.yml up -d
+
+echo "Application restarted with new Dropbox configuration!"
