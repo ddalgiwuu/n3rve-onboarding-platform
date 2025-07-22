@@ -8,7 +8,8 @@ import {
   GripVertical,
   HelpCircle, AlertTriangle, Star,
   ExternalLink,
-  ChevronUp, ChevronDown, User, Languages
+  ChevronUp, ChevronDown, User, Languages,
+  Film, FileText, Folder
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { submissionService } from '@/services/submission.service'
@@ -18,7 +19,6 @@ import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCVali
 import QCWarnings from '@/components/submission/QCWarnings'
 import DatePicker from '@/components/DatePicker'
 import { v4 as uuidv4 } from 'uuid'
-import RegionSelector from '@/components/RegionSelector'
 import MultiSelect from '@/components/ui/MultiSelect'
 import SearchableSelect from '@/components/ui/SearchableSelect'
 import ArtistManagementModal from '@/components/ArtistManagementModal'
@@ -195,7 +195,10 @@ interface FormData {
   audioFiles: File[]
   dolbyAtmosFiles?: File[]
   motionArtFile?: File
-  musicVideoFile?: File
+  musicVideoFiles?: File[]
+  musicVideoThumbnails?: File[]
+  lyricsFiles?: File[]
+  marketingAssets?: File[]
   
   // Distribution
   distributionType: 'all' | 'selected'
@@ -325,6 +328,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
     tracks: [],
     audioFiles: [],
     dolbyAtmosFiles: [],
+    musicVideoFiles: [],
+    musicVideoThumbnails: [],
+    lyricsFiles: [],
+    marketingAssets: [],
     distributionType: 'all',
     selectedStores: [],
     excludedStores: [],
@@ -670,11 +677,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
           highlightField('store-selection')
           return false
         }
-        if (formData.territories.length === 0) {
-          toast.error(t('최소 1개 이상의 지역을 선택해주세요', 'Please select at least one territory'))
-          highlightField('territory-selection')
-          return false
-        }
+        // Territory validation is handled by TerritorySelector component
         return true
         
       default:
@@ -864,6 +867,46 @@ const ImprovedReleaseSubmission: React.FC = () => {
       formData.audioFiles.forEach((file, index) => {
         submissionData.append('audioFiles', file)
       })
+
+      // Add Dolby Atmos files
+      if (formData.dolbyAtmosFiles) {
+        formData.dolbyAtmosFiles.forEach((file) => {
+          submissionData.append('dolbyAtmosFiles', file)
+        })
+      }
+
+      // Add Motion Art file
+      if (formData.motionArtFile) {
+        submissionData.append('motionArtFile', formData.motionArtFile)
+      }
+
+      // Add Music Video files
+      if (formData.musicVideoFiles) {
+        formData.musicVideoFiles.forEach((file) => {
+          submissionData.append('musicVideoFiles', file)
+        })
+      }
+
+      // Add Music Video Thumbnails
+      if (formData.musicVideoThumbnails) {
+        formData.musicVideoThumbnails.forEach((file) => {
+          submissionData.append('musicVideoThumbnails', file)
+        })
+      }
+
+      // Add Lyrics files
+      if (formData.lyricsFiles) {
+        formData.lyricsFiles.forEach((file) => {
+          submissionData.append('lyricsFiles', file)
+        })
+      }
+
+      // Add Marketing Assets
+      if (formData.marketingAssets) {
+        formData.marketingAssets.forEach((file) => {
+          submissionData.append('marketingAssets', file)
+        })
+      }
       
       // Submit based on mode
       if (isEditMode && editId) {
@@ -1908,14 +1951,6 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   )}
                 </p>
               </div>
-
-              {/* Territory Selection */}
-              <div className="md:col-span-2">
-                <TerritorySelector
-                  value={formData.territorySelection}
-                  onChange={(value) => setFormData(prev => ({ ...prev, territorySelection: value }))}
-                />
-              </div>
             </div>
           </div>
         )
@@ -2206,28 +2241,60 @@ const ImprovedReleaseSubmission: React.FC = () => {
               )}
             </div>
             
-            {/* Music Video */}
+            {/* Music Videos */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
-                {t('뮤직비디오', 'Music Video')} 
+                {t('뮤직비디오', 'Music Videos')} 
                 <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
               </label>
               
-              {formData.musicVideoFile ? (
-                <div className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
-                  <ExternalLink className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900 dark:text-gray-100">{formData.musicVideoFile.name}</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {(formData.musicVideoFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
+              {formData.musicVideoFiles && formData.musicVideoFiles.length > 0 ? (
+                <div className="space-y-2">
+                  {formData.musicVideoFiles.map((file, index) => (
+                    <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                      <Film className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{file.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ 
+                          ...prev, 
+                          musicVideoFiles: prev.musicVideoFiles?.filter((_, i) => i !== index) 
+                        }))}
+                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
                   <button
                     type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, musicVideoFile: undefined }))}
-                    className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                    onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = 'video/mp4,video/quicktime'
+                      input.multiple = true
+                      input.onchange = (e) => {
+                        const files = Array.from((e.target as HTMLInputElement).files || [])
+                        if (files.length) {
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            musicVideoFiles: [...(prev.musicVideoFiles || []), ...files] 
+                          }))
+                        }
+                      }
+                      input.click()
+                    }}
+                    className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer"
                   >
-                    <X className="w-5 h-5" />
+                    <Plus className="w-5 h-5 mx-auto text-gray-400 dark:text-gray-500" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {t('뮤직비디오 추가', 'Add More Videos')}
+                    </p>
                   </button>
                 </div>
               ) : (
@@ -2237,20 +2304,290 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     const input = document.createElement('input')
                     input.type = 'file'
                     input.accept = 'video/mp4,video/quicktime'
+                    input.multiple = true
                     input.onchange = (e) => {
-                      const file = (e.target as HTMLInputElement).files?.[0]
-                      if (file) setFormData(prev => ({ ...prev, musicVideoFile: file }))
+                      const files = Array.from((e.target as HTMLInputElement).files || [])
+                      if (files.length) {
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          musicVideoFiles: files 
+                        }))
+                      }
                     }
                     input.click()
                   }}
                   className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
                 >
-                  <ExternalLink className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+                  <Film className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
                   <p className="text-gray-700 dark:text-gray-300 font-medium">
-                    {t('뮤직비디오 추가', 'Add Music Video')}
+                    {t('뮤직비디오 추가', 'Add Music Videos')}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {t('MP4/MOV, H.264, 1920x1080 이상', 'MP4/MOV, H.264, 1920x1080+')}
+                    {t('MP4/MOV, H.264, 1920x1080 이상 (여러 개 선택 가능)', 'MP4/MOV, H.264, 1920x1080+ (multiple selection)')}
+                  </p>
+                </button>
+              )}
+            </div>
+
+            {/* Music Video Thumbnails */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                {t('뮤직비디오 썸네일', 'Music Video Thumbnails')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+              </label>
+              
+              {formData.musicVideoThumbnails && formData.musicVideoThumbnails.length > 0 ? (
+                <div className="space-y-2">
+                  {formData.musicVideoThumbnails.map((file, index) => (
+                    <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                      <Image className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{file.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ 
+                          ...prev, 
+                          musicVideoThumbnails: prev.musicVideoThumbnails?.filter((_, i) => i !== index) 
+                        }))}
+                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = 'image/jpeg,image/jpg,image/png'
+                      input.multiple = true
+                      input.onchange = (e) => {
+                        const files = Array.from((e.target as HTMLInputElement).files || [])
+                        if (files.length) {
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            musicVideoThumbnails: [...(prev.musicVideoThumbnails || []), ...files] 
+                          }))
+                        }
+                      }
+                      input.click()
+                    }}
+                    className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-5 h-5 mx-auto text-gray-400 dark:text-gray-500" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {t('썸네일 추가', 'Add More Thumbnails')}
+                    </p>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = 'image/jpeg,image/jpg,image/png'
+                    input.multiple = true
+                    input.onchange = (e) => {
+                      const files = Array.from((e.target as HTMLInputElement).files || [])
+                      if (files.length) {
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          musicVideoThumbnails: files 
+                        }))
+                      }
+                    }
+                    input.click()
+                  }}
+                  className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+                >
+                  <Image className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+                  <p className="text-gray-700 dark:text-gray-300 font-medium">
+                    {t('썸네일 추가', 'Add Thumbnails')}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {t('JPG, PNG 형식 (여러 개 선택 가능)', 'JPG, PNG format (multiple selection)')}
+                  </p>
+                </button>
+              )}
+            </div>
+
+            {/* Lyrics Files */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                {t('가사 파일', 'Lyrics Files')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+              </label>
+              
+              {formData.lyricsFiles && formData.lyricsFiles.length > 0 ? (
+                <div className="space-y-2">
+                  {formData.lyricsFiles.map((file, index) => (
+                    <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                      <FileText className="w-8 h-8 text-green-600 dark:text-green-400" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{file.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {(file.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ 
+                          ...prev, 
+                          lyricsFiles: prev.lyricsFiles?.filter((_, i) => i !== index) 
+                        }))}
+                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = '.txt,.lrc,.pdf'
+                      input.multiple = true
+                      input.onchange = (e) => {
+                        const files = Array.from((e.target as HTMLInputElement).files || [])
+                        if (files.length) {
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            lyricsFiles: [...(prev.lyricsFiles || []), ...files] 
+                          }))
+                        }
+                      }
+                      input.click()
+                    }}
+                    className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-5 h-5 mx-auto text-gray-400 dark:text-gray-500" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {t('가사 파일 추가', 'Add More Lyrics')}
+                    </p>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = '.txt,.lrc,.pdf'
+                    input.multiple = true
+                    input.onchange = (e) => {
+                      const files = Array.from((e.target as HTMLInputElement).files || [])
+                      if (files.length) {
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          lyricsFiles: files 
+                        }))
+                      }
+                    }
+                    input.click()
+                  }}
+                  className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+                >
+                  <FileText className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+                  <p className="text-gray-700 dark:text-gray-300 font-medium">
+                    {t('가사 파일 추가', 'Add Lyrics Files')}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {t('TXT, LRC, PDF 형식 (여러 개 선택 가능)', 'TXT, LRC, PDF format (multiple selection)')}
+                  </p>
+                </button>
+              )}
+            </div>
+
+            {/* Marketing Assets */}
+            <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
+              <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                {t('마케팅 자료', 'Marketing Assets')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+              </label>
+              
+              {formData.marketingAssets && formData.marketingAssets.length > 0 ? (
+                <div className="space-y-2">
+                  {formData.marketingAssets.map((file, index) => (
+                    <div key={index} className="flex items-center gap-4 p-4 border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-800/50">
+                      <Folder className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900 dark:text-gray-100">{file.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {(file.size / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData(prev => ({ 
+                          ...prev, 
+                          marketingAssets: prev.marketingAssets?.filter((_, i) => i !== index) 
+                        }))}
+                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.createElement('input')
+                      input.type = 'file'
+                      input.accept = 'image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.zip'
+                      input.multiple = true
+                      input.onchange = (e) => {
+                        const files = Array.from((e.target as HTMLInputElement).files || [])
+                        if (files.length) {
+                          setFormData(prev => ({ 
+                            ...prev, 
+                            marketingAssets: [...(prev.marketingAssets || []), ...files] 
+                          }))
+                        }
+                      }
+                      input.click()
+                    }}
+                    className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-center hover:border-gray-400 dark:hover:border-gray-500 transition-colors cursor-pointer"
+                  >
+                    <Plus className="w-5 h-5 mx-auto text-gray-400 dark:text-gray-500" />
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      {t('마케팅 자료 추가', 'Add More Assets')}
+                    </p>
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const input = document.createElement('input')
+                    input.type = 'file'
+                    input.accept = 'image/*,video/*,.pdf,.doc,.docx,.ppt,.pptx,.zip'
+                    input.multiple = true
+                    input.onchange = (e) => {
+                      const files = Array.from((e.target as HTMLInputElement).files || [])
+                      if (files.length) {
+                        setFormData(prev => ({ 
+                          ...prev, 
+                          marketingAssets: files 
+                        }))
+                      }
+                    }
+                    input.click()
+                  }}
+                  className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors bg-gray-50 dark:bg-gray-800/30 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+                >
+                  <Folder className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+                  <p className="text-gray-700 dark:text-gray-300 font-medium">
+                    {t('마케팅 자료 추가', 'Add Marketing Assets')}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {t('이미지, 비디오, PDF, 문서 형식 (여러 개 선택 가능)', 'Images, Videos, PDF, Documents (multiple selection)')}
                   </p>
                 </button>
               )}
@@ -2304,14 +2641,11 @@ const ImprovedReleaseSubmission: React.FC = () => {
               </div>
             )}
             
-            {/* Territories */}
+            {/* Territory Selection */}
             <div id="territory-selection">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('배포 지역', 'Distribution Territories')} *
-              </label>
-              <RegionSelector
-                selectedRegions={formData.territories}
-                onChange={(territories) => setFormData(prev => ({ ...prev, territories }))}
+              <TerritorySelector
+                value={formData.territorySelection}
+                onChange={(value) => setFormData(prev => ({ ...prev, territorySelection: value }))}
               />
             </div>
             
@@ -2402,10 +2736,28 @@ const ImprovedReleaseSubmission: React.FC = () => {
                       <span>{t('모션 아트', 'Motion Art')}: {formData.motionArtFile.name}</span>
                     </div>
                   )}
-                  {formData.musicVideoFile && (
+                  {formData.musicVideoFiles && formData.musicVideoFiles.length > 0 && (
                     <div className="flex items-center gap-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>{t('뮤직비디오', 'Music Video')}: {formData.musicVideoFile.name}</span>
+                      <span>{t('뮤직비디오', 'Music Videos')}: {formData.musicVideoFiles.length} {t('개 파일', 'files')}</span>
+                    </div>
+                  )}
+                  {formData.musicVideoThumbnails && formData.musicVideoThumbnails.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>{t('썸네일', 'Thumbnails')}: {formData.musicVideoThumbnails.length} {t('개 파일', 'files')}</span>
+                    </div>
+                  )}
+                  {formData.lyricsFiles && formData.lyricsFiles.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>{t('가사 파일', 'Lyrics Files')}: {formData.lyricsFiles.length} {t('개 파일', 'files')}</span>
+                    </div>
+                  )}
+                  {formData.marketingAssets && formData.marketingAssets.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span>{t('마케팅 자료', 'Marketing Assets')}: {formData.marketingAssets.length} {t('개 파일', 'files')}</span>
                     </div>
                   )}
                 </div>
