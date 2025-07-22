@@ -1,6 +1,6 @@
 {
-  "version": "1.0.0",
-  "lastUpdated": "2025-07-13",
+  "version": "2.1.0",
+  "lastUpdated": "2025-07-22",
   "updatedBy": "N3RVE Team",
-  "description": "Initial FUGA QC configuration setup"
+  "description": "Added music video thumbnail rules, soundtrack title formats, and composer/lyricist name requirements"
 }

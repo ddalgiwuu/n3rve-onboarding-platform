@@ -21,7 +21,9 @@
           "특수문자 및 이모지 검사",
           "언어별 대소문자 규칙",
           "공백 및 띄어쓰기 검사",
-          "금지된 홍보 문구 검사"
+          "금지된 홍보 문구 검사",
+          "ISRC/UPC 형식 검증",
+          "오디오 스펙 확인"
         ]
       },
       {
@@ -32,7 +34,9 @@
           "저작권 정보 확인",
           "아티스트 정보 정확성",
           "음원 품질 검사",
-          "앨범아트 품질 확인"
+          "앨범아트 품질 확인",
+          "명시적 콘텐츠 레이블",
+          "클래식/사운드트랙 형식"
         ]
       },
       {
@@ -58,7 +62,9 @@
           "❌ 「사랑해」 → ✅ 사랑해 (특수 괄호 제거)",
           "❌ L O V E → ✅ LOVE (불필요한 공백 제거)",
           "❌ ❤️사랑해❤️ → ✅ 사랑해 (이모지 제거)",
-          "❌ **HOT** 신곡 → ✅ 신곡 (홍보 문구 제거)"
+          "❌ **HOT** 신곡 → ✅ 신곡 (홍보 문구 제거)",
+          "❌ LOVE!!! → ✅ Love! (과도한 구두점 제거)",
+          "❌ 사랑해 Original Version → ✅ 사랑해 (Original 표기 불필요)"
         ]
       },
       {
@@ -67,7 +73,9 @@
           "❌ feat. 아이유 → ✅ 피처링 아티스트로 별도 등록",
           "❌ Various Artists → ✅ 실제 아티스트명 입력",
           "❌ 미정 → ✅ 정확한 아티스트명 필요",
-          "❌ BTS (방탄소년단) → ✅ BTS 또는 방탄소년단 중 하나만"
+          "❌ BTS (방탄소년단) → ✅ BTS 또는 방탄소년단 중 하나만",
+          "❌ DJ ABC → ✅ ABC (불필요한 DJ 제거, 실제 DJ가 아닌 경우)",
+          "❌ www.artist.com → ✅ Artist (URL 제거)"
         ]
       },
       {
@@ -76,7 +84,9 @@
           "❌ Original Version → ✅ 표기하지 않음",
           "❌ Remix Ver. → ✅ (Remix)",
           "❌ [Acoustic] → ✅ (Acoustic)",
-          "❌ Inst → ✅ (Instrumental)"
+          "❌ Inst → ✅ (Instrumental)",
+          "❌ Radio Ver → ✅ (Radio Edit)",
+          "❌ Extended Ver → ✅ (Extended Mix)"
         ]
       },
       {
@@ -85,7 +95,17 @@
           "❌ ℗ 2024 YG → ✅ 2024 YG (기호 제거)",
           "❌ (C) YG → ✅ YG (기호 제거)",
           "❌ 2025 → ✅ 2024 (미래 연도 불가)",
-          "❌ 빈 칸 → ✅ 반드시 입력 필요"
+          "❌ 빈 칸 → ✅ 반드시 입력 필요",
+          "❌ YG Entertainment → ✅ YG Entertainment (정확한 법인명)"
+        ]
+      },
+      {
+        "type": "피처링 표기 오류",
+        "examples": [
+          "❌ 사랑해 (Feat 아이유) → ✅ 사랑해 (feat. 아이유)",
+          "❌ 사랑해 Featuring 아이유 → ✅ 사랑해 (feat. 아이유)",
+          "❌ 사랑해 with 아이유 → ✅ 사랑해 (feat. 아이유)",
+          "❌ 사랑해 X 아이유 → ✅ 사랑해 (feat. 아이유)"
         ]
       }
     ]
@@ -99,7 +119,8 @@
         "불필요한 영어 병기 피하기",
         "맞춤법 준수",
         "띄어쓰기 정확히",
-        "특수문자 최소화"
+        "특수문자 최소화",
+        "외래어 표기법 준수"
       ]
     },
     "english": {
@@ -108,11 +129,13 @@
         "Title Case 사용 (주요 단어 대문자)",
         "관사(a, an, the)는 소문자",
         "전치사(of, in, on)는 소문자",
-        "첫 단어와 마지막 단어는 항상 대문자"
+        "첫 단어와 마지막 단어는 항상 대문자",
+        "약어는 모두 대문자 (DJ, MC, feat.)"
       ],
       "examples": [
         "✅ Love in the Time of Chaos",
         "✅ The Last of Us",
+        "✅ Dance With Me (feat. John)",
         "❌ love in the time of chaos",
         "❌ The last Of us"
       ]
@@ -125,6 +148,15 @@
         "반각/전각 문자 구분",
         "로마자 표기 시 헵번식 사용"
       ]
+    },
+    "classical": {
+      "title": "클래식 음악",
+      "rules": [
+        "작곡가: 작품명, 작품번호 - 악장",
+        "Beethoven: Symphony No. 9, Op. 125 - IV. Presto",
+        "연주자 정보는 아티스트 필드에",
+        "지휘자와 오케스트라 구분 표기"
+      ]
     }
   },
   
@@ -134,13 +166,15 @@
       "메인 장르는 가장 대표적인 것 하나만",
       "서브장르로 세부 스타일 표현",
       "K-Pop은 메인 장르로 선택 가능",
-      "클래식은 세부 장르 필수 (Orchestra, Chamber, Solo 등)"
+      "클래식은 세부 장르 필수 (Orchestra, Chamber, Solo 등)",
+      "최대 3개까지 선택 가능"
     ],
     "mapping": {
       "K-Pop": ["Dance", "Ballad", "Hip Hop", "R&B"],
       "Rock": ["Alternative", "Indie", "Metal", "Punk"],
       "Electronic": ["House", "Techno", "Dubstep", "Ambient"],
-      "Jazz": ["Smooth Jazz", "Bebop", "Fusion", "Vocal Jazz"]
+      "Jazz": ["Smooth Jazz", "Bebop", "Fusion", "Vocal Jazz"],
+      "Classical": ["Orchestra", "Chamber", "Solo", "Opera", "Choral"]
     }
   },
   
@@ -154,17 +188,19 @@
         "트랙명 (한글/영문)",
         "발매일",
         "저작권 정보",
-        "장르"
+        "장르",
+        "ISRC (트랙별)",
+        "UPC/EAN (앨범)"
       ]
     },
     "optional": {
       "title": "선택 정보 (입력 권장)",
       "fields": [
-        "ISRC (없으면 자동 생성)",
-        "UPC/EAN (없으면 자동 생성)",
         "작곡가/작사가 정보",
         "참여 아티스트 정보",
-        "녹음 장소/날짜"
+        "녹음 장소/날짜",
+        "프로듀서 정보",
+        "믹싱/마스터링 엔지니어"
       ]
     }
   },
@@ -172,10 +208,16 @@
   "audioSpecs": {
     "title": "음원 파일 규격",
     "required": {
-      "format": "WAV 또는 FLAC",
-      "bitDepth": "16bit 이상 (24bit 권장)",
-      "sampleRate": "44.1kHz 이상 (48kHz 권장)",
-      "channels": "스테레오 (2채널)"
+      "format": "WAV, FLAC, AIFF, ALAC",
+      "bitDepth": "최소 16bit (24bit 권장)",
+      "sampleRate": "최소 44.1kHz (48kHz, 96kHz 권장)",
+      "channels": "스테레오 (2채널)",
+      "loudness": "목표 -14 LUFS (최대 -9 LUFS)",
+      "truePeak": "최대 -1 dBFS"
+    },
+    "notAccepted": {
+      "formats": ["MP3", "AAC", "OGG", "WMA", "M4A"],
+      "reason": "손실 압축 포맷은 품질 저하로 거절됨"
     },
     "dolbyAtmos": {
       "title": "Dolby Atmos (선택)",
@@ -183,26 +225,172 @@
         "ADM BWF 파일 형식",
         "48kHz/24bit 필수",
         "별도 스테레오 마스터 필요",
-        "Apple Digital Masters 인증 권장"
+        "Apple Digital Masters 인증 권장",
+        "최대 128개 오브젝트",
+        "7.1.4 베드 지원"
       ]
+    },
+    "duration": {
+      "minimum": "30초 이상",
+      "single": "최대 10분",
+      "ep": "최대 30분",
+      "album": "최대 10시간"
     }
+  },
+  
+  "videoSpecs": {
+    "title": "뮤직비디오 규격",
+    "resolution": {
+      "minimum": "1280x720 (HD)",
+      "recommended": "1920x1080 (Full HD) 이상",
+      "supported": ["1920x1080", "3840x2160 (4K)"]
+    },
+    "technical": {
+      "frameRate": "23.976, 24, 25, 29.97, 30, 50, 59.94, 60 fps",
+      "codec": ["H.264", "H.265", "ProRes"],
+      "bitrate": "최소 5Mbps, 권장 25Mbps",
+      "aspectRatio": "16:9, 4:3, 1:1, 9:16"
+    },
+    "forbidden": [
+      "워터마크나 로고",
+      "레터박스 (검은 띠)",
+      "광고나 홍보 내용",
+      "저작권 침해 콘텐츠"
+    ]
   },
   
   "albumArt": {
     "title": "앨범아트 규격",
     "requirements": [
-      "최소 3000x3000 픽셀",
+      "최소 3000x3000 픽셀 (권장 4000x4000)",
       "JPG 또는 PNG 형식",
-      "RGB 색상 모드",
+      "RGB 색상 모드 (CMYK 불가)",
       "해상도 300dpi 이상",
-      "파일 크기 10MB 이하"
+      "파일 크기 50MB 이하",
+      "정사각형 (1:1 비율) 필수"
     ],
     "forbidden": [
       "저작권 침해 이미지",
       "워터마크나 로고",
       "URL이나 소셜미디어 정보",
       "선정적이거나 폭력적인 내용",
-      "흐리거나 픽셀이 깨진 이미지"
+      "흐리거나 픽셀이 깨진 이미지",
+      "텍스트 (앨범명, 아티스트명 등)",
+      "QR코드나 바코드"
+    ]
+  },
+  
+  "isrcUpc": {
+    "title": "ISRC & UPC 가이드",
+    "isrc": {
+      "format": "CC-XXX-YY-NNNNN",
+      "example": "US-ABC-24-00001",
+      "description": "International Standard Recording Code",
+      "components": [
+        "CC: 국가 코드 (KR, US, GB 등)",
+        "XXX: 등록자 코드",
+        "YY: 연도 (24, 25 등)",
+        "NNNNN: 일련번호 (00001-99999)"
+      ]
+    },
+    "upc": {
+      "format": "12-14자리 숫자",
+      "example": "123456789012",
+      "description": "Universal Product Code",
+      "tips": [
+        "앨범당 하나의 고유 코드",
+        "재발매 시 새 UPC 필요",
+        "싱글/EP/앨범 각각 다른 UPC"
+      ]
+    }
+  },
+  
+  "explicitContent": {
+    "title": "명시적 콘텐츠 가이드",
+    "criteria": [
+      "욕설이나 비속어 포함",
+      "성적인 내용 묘사",
+      "폭력적인 내용",
+      "약물 관련 내용"
+    ],
+    "labeling": {
+      "explicit": "명시적 콘텐츠 포함",
+      "clean": "정화된 버전 (욕설 제거/수정)",
+      "notExplicit": "명시적 콘텐츠 없음"
+    },
+    "rules": [
+      "가사에 욕설이 하나라도 있으면 Explicit",
+      "Clean 버전은 별도 트랙으로 등록",
+      "앨범아트에는 Explicit 표시 금지",
+      "제목에는 Clean/Explicit 표기 가능"
+    ]
+  },
+  
+  "classical": {
+    "title": "클래식 음악 특별 규칙",
+    "titleFormat": {
+      "pattern": "{작곡가}: {작품명}, {작품번호} - {악장}",
+      "example": "Mozart: Symphony No. 40, K. 550 - I. Allegro"
+    },
+    "required": [
+      "작곡가명 (성, 이름 순서)",
+      "작품명 (원어 또는 영어)",
+      "작품번호 (Op., BWV, K. 등)",
+      "악장 정보 (로마 숫자 + 템포)"
+    ],
+    "artistField": {
+      "format": "{연주자} / {지휘자} / {오케스트라}",
+      "example": "Martha Argerich / Claudio Abbado / Berlin Philharmonic"
+    }
+  },
+  
+  "soundtracks": {
+    "title": "사운드트랙 특별 규칙",
+    "titleFormat": {
+      "pattern": "{곡명} (From \"{작품명}\")",
+      "example": "My Heart Will Go On (From \"Titanic\")"
+    },
+    "types": [
+      "Original Motion Picture Soundtrack",
+      "Original Game Soundtrack",
+      "Original Television Soundtrack"
+    ],
+    "metadata": [
+      "작품 유형 명시 (Film, Game, TV Series)",
+      "작품명 정확히 표기",
+      "작곡가와 아티스트 구분"
+    ]
+  },
+  
+  "compilations": {
+    "title": "컴필레이션 앨범 규칙",
+    "artist": "Various Artists (고정)",
+    "requirements": [
+      "최소 5개 트랙",
+      "최소 3명 이상의 다른 아티스트",
+      "컴파일러 정보 필수",
+      "각 트랙 원 아티스트 명시"
+    ],
+    "types": [
+      "Greatest Hits",
+      "Best Of",
+      "Collection",
+      "Anthology"
+    ]
+  },
+  
+  "territories": {
+    "title": "배포 지역 설정",
+    "options": [
+      "전 세계 (Worldwide) - 권장",
+      "특정 지역 제외",
+      "특정 지역만 선택"
+    ],
+    "considerations": [
+      "저작권 제한 확인",
+      "샘플링 사용 시 지역 제한 가능",
+      "커버곡은 원곡 배포 지역 확인",
+      "최소 1개 지역은 필수"
     ]
   },
   
@@ -229,6 +417,11 @@
         "time": "총 5-10 영업일",
         "description": "전 세계 스트리밍 시작"
       }
+    ],
+    "notes": [
+      "최소 14일 전 제출 권장",
+      "금요일 발매 권장 (차트 집계)",
+      "공휴일은 처리 시간에서 제외"
     ]
   },
   
@@ -239,7 +432,10 @@
       "금요일 발매가 차트 집계에 유리합니다",
       "사전 예약(Pre-save) 캠페인을 고려하세요",
       "크레딧 정보는 최대한 상세히 입력하세요",
-      "시리즈 앨범은 일관된 네이밍을 사용하세요"
+      "시리즈 앨범은 일관된 네이밍을 사용하세요",
+      "리믹스는 원곡 권리자 승인 필요합니다",
+      "커버곡은 작곡가 정보 정확히 입력하세요",
+      "멀티 볼륨은 각 볼륨별로 명확히 구분하세요"
     ]
   },
   
@@ -277,7 +473,7 @@
     },
     {
       "question": "Feat. 아티스트는 어떻게 표기하나요?",
-      "answer": "트랙 정보에서 \"피처링 아티스트\"로 별도 등록하세요. 제목에는 표기하지 않습니다."
+      "answer": "제목에 (feat. 아티스트명) 형식으로 표기하고, 피처링 아티스트 필드에도 별도 등록하세요."
     },
     {
       "question": "여러 버전을 한 번에 등록할 수 있나요?",
@@ -286,6 +482,26 @@
     {
       "question": "ISRC가 뭔가요? 꼭 필요한가요?",
       "answer": "International Standard Recording Code로, 음원의 고유 식별 코드입니다. 없으면 자동 생성되므로 걱정하지 마세요."
+    },
+    {
+      "question": "왜 MP3는 안 되나요?",
+      "answer": "MP3는 손실 압축 포맷으로 음질이 저하됩니다. 스트리밍 플랫폼은 원본 품질의 무손실 포맷을 요구합니다."
+    },
+    {
+      "question": "앨범아트에 앨범명을 넣으면 안 되나요?",
+      "answer": "네, 텍스트가 없는 순수한 이미지만 사용해야 합니다. 앨범명은 메타데이터로 표시됩니다."
+    },
+    {
+      "question": "Dolby Atmos 마스터링은 필수인가요?",
+      "answer": "선택사항입니다. 하지만 Apple Music 등에서 공간 음향을 지원하므로 고려해볼 만합니다."
+    },
+    {
+      "question": "발매일을 수정할 수 있나요?",
+      "answer": "제출 전에는 가능하지만, DSP에 제출된 후에는 수정이 어렵습니다. 신중히 선택하세요."
+    },
+    {
+      "question": "Clean 버전과 Explicit 버전의 ISRC는 달라야 하나요?",
+      "answer": "네, 각각 다른 녹음으로 간주되므로 별도의 ISRC가 필요합니다."
     }
   ]
 }
