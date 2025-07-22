@@ -2,6 +2,41 @@
 
 ## Version History
 
+### v1.3.78 (2025-07-21)
+- **Type**: UI/UX Reorganization - Territory Selection
+- **Changes**:
+  - Moved Territory Selection from Step 1 (Album Info) to Step 4 (Distribution Settings)
+  - Removed duplicate territory configuration to keep all distribution-related settings in one place
+  - Replaced RegionSelector with TerritorySelector in Step 4 for consistent UI
+  - Updated validation logic for Step 4 to reflect the change
+  - Removed unused RegionSelector import
+  - Better logical grouping: Album metadata in Step 1, all distribution settings in Step 4
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
+### v1.3.77 (2025-07-21)
+- **Type**: Major Feature Enhancement - File Upload Expansion
+- **Changes**:
+  - Expanded file upload functionality to support multiple files and new file types
+  - Added support for multiple music video files (changed from single to array)
+  - Added new file upload sections:
+    - Music Video Thumbnails (JPG, PNG formats)
+    - Lyrics Files (TXT, LRC, PDF formats)
+    - Marketing Assets (images, videos, PDFs, documents, ZIP files)
+  - Updated UI with appropriate icons for each file type (Film, Image, FileText, Folder)
+  - All new file sections support multiple file selection and management
+  - Added individual file deletion with preview of file name and size
+  - Updated form submission to properly append all new file types
+  - Updated file summary section to show count of uploaded files for each type
+- **Files Modified**: 
+  - `/frontend/src/pages/ImprovedReleaseSubmissionWithDnD.tsx`
+  - `/VERSION_LOG.md`
+  - `/package.json`
+- **Commit**: pending
+
 ### v1.3.76 (2025-07-21)
 - **Type**: Bug Fix - Modal Scrolling Issue
 - **Changes**:
