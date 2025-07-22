@@ -173,7 +173,7 @@ export class SubmissionsController {
           const artistName = submissionData.artist?.nameKo || 'Unknown Artist';
           const albumTitle = submissionData.album?.titleKo || 'Unknown Album';
           
-          const dropboxFiles = [];
+          const dropboxFiles: { buffer: Buffer; fileName: string; fileType: string }[] = [];
           
           // Upload cover image
           if (files.coverImage?.[0]) {
@@ -207,21 +207,25 @@ export class SubmissionsController {
           // Upload motion art
           if (files.motionArt?.[0] || files.motionArtFile?.[0]) {
             const motionFile = files.motionArt?.[0] || files.motionArtFile?.[0];
-            dropboxFiles.push({
-              buffer: motionFile.buffer,
-              fileName: motionFile.originalname,
-              fileType: 'motion'
-            });
+            if (motionFile) {
+              dropboxFiles.push({
+                buffer: motionFile.buffer,
+                fileName: motionFile.originalname,
+                fileType: 'motion'
+              });
+            }
           }
           
           // Upload music video
           if (files.musicVideo?.[0] || files.musicVideoFiles?.[0]) {
             const videoFile = files.musicVideo?.[0] || files.musicVideoFiles?.[0];
-            dropboxFiles.push({
-              buffer: videoFile.buffer,
-              fileName: videoFile.originalname,
-              fileType: 'video'
-            });
+            if (videoFile) {
+              dropboxFiles.push({
+                buffer: videoFile.buffer,
+                fileName: videoFile.originalname,
+                fileType: 'video'
+              });
+            }
           }
           
           // Upload all files to Dropbox
