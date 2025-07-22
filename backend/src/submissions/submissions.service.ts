@@ -153,7 +153,6 @@ export class SubmissionsService {
         cRights: data.release?.cRights || data.cRights || data.release?.copyrightHolder || data.copyrightHolder || '',
         pRights: data.release?.pRights || data.pRights || data.release?.productionHolder || data.productionHolder || '',
         upc: data.release?.upc || data.upc,
-        ean: data.release?.ean || data.ean,
         catalogNumber: data.release?.catalogNumber || data.catalogNumber,
         
         // All 31 marketing fields - check both release and root level
