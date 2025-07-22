@@ -142,16 +142,19 @@ interface Track {
   featuringArtists: Artist[]
   contributors: Contributor[]
   isrc?: string
+  musicVideoISRC?: string
   duration?: string
   genre?: string
   subgenre?: string
   language?: string
+  audioLanguage?: string
   lyrics?: string
   explicit?: boolean
   remixVersion?: string
   titleLanguage?: 'Korean' | 'English' | 'Japanese' | 'Chinese' | 'Other'
   trackNumber?: number
   dolbyAtmos?: boolean
+  volume?: number
 }
 
 interface FormData {
@@ -170,6 +173,7 @@ interface FormData {
   secondaryGenre?: string
   secondarySubgenre?: string
   language: string
+  totalVolumes: number
   releaseTime: string
   timezone: string
   originalReleaseDate: string
@@ -220,7 +224,7 @@ interface FormData {
   excludedTerritories: string[]
   
   // Additional
-  previouslyReleased: boolean
+  albumNote?: string
   marketingInfo?: {
     artist_spotify_id?: string
     artist_apple_id?: string
@@ -316,6 +320,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
     primaryGenre: '',
     primarySubgenre: '',
     language: '',
+    totalVolumes: 1,
     releaseTime: '',
     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Seoul',
     consumerReleaseDate: '',
@@ -344,7 +349,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
       dspOverrides: []
     },
     excludedTerritories: [],
-    previouslyReleased: false,
+    albumNote: '',
     marketingInfo: {}
   })
   
@@ -1184,6 +1189,20 @@ const ImprovedReleaseSubmission: React.FC = () => {
               />
             </div>
             
+            {/* Music Video ISRC */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('뮤직비디오 ISRC', 'Music Video ISRC')}
+              </label>
+              <input
+                type="text"
+                value={track.musicVideoISRC || ''}
+                onChange={(e) => updateTrack(track.id, { musicVideoISRC: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                placeholder="KR-XXX-YY-NNNNN"
+              />
+            </div>
+            
             {/* Title Language */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -1201,6 +1220,47 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 <option value="Other">{t('기타', 'Other')}</option>
               </select>
             </div>
+            
+            {/* Audio Language */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                {t('오디오 언어', 'Audio Language')}
+              </label>
+              <select
+                value={track.audioLanguage || 'Korean'}
+                onChange={(e) => updateTrack(track.id, { audioLanguage: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+              >
+                <option value="Korean">{t('한국어', 'Korean')}</option>
+                <option value="English">{t('영어', 'English')}</option>
+                <option value="Japanese">{t('일본어', 'Japanese')}</option>
+                <option value="Chinese">{t('중국어', 'Chinese')}</option>
+                <option value="Spanish">{t('스페인어', 'Spanish')}</option>
+                <option value="French">{t('프랑스어', 'French')}</option>
+                <option value="German">{t('독일어', 'German')}</option>
+                <option value="Other">{t('기타', 'Other')}</option>
+              </select>
+            </div>
+            
+            {/* Volume (for multi-volume albums) */}
+            {formData.totalVolumes > 1 && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  {t('볼륨', 'Volume')}
+                </label>
+                <select
+                  value={track.volume || 1}
+                  onChange={(e) => updateTrack(track.id, { volume: parseInt(e.target.value) || 1 })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                >
+                  {Array.from({ length: formData.totalVolumes }, (_, i) => i + 1).map(vol => (
+                    <option key={vol} value={vol}>
+                      {t(`볼륨 ${vol}`, `Volume ${vol}`)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             
             {/* Dolby Atmos Toggle */}
             <div className="md:col-span-2">
@@ -1653,20 +1713,41 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 />
               </div>
               
-              {/* Language */}
-              <div id="language-section">
+              {/* Total Volumes */}
+              <div>
                 <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-                  {t('주요 가사 언어', 'Primary Lyrics Language')} <span className="text-red-500">*</span>
+                  {t('총 볼륨 수', 'Total Volumes')}
                   <span className="ml-1 text-xs text-gray-600 dark:text-gray-400">
-                    {t('(가장 많이 사용된 언어)', '(Most used language)')}
+                    {t('(멀티 볼륨 앨범의 경우)', '(For multi-volume albums)')}
                   </span>
                 </label>
-                <SearchableSelect
-                  options={languageList.map(lang => ({ value: lang.code, label: lang.name }))}
-                  value={formData.language}
-                  onChange={(value) => setFormData(prev => ({ ...prev, language: value }))}
-                  placeholder={t('언어 선택', 'Select language')}
-                  searchPlaceholder={t('언어 검색...', 'Search languages...')}
+                <input
+                  type="number"
+                  min="1"
+                  value={formData.totalVolumes || 1}
+                  onChange={(e) => setFormData(prev => ({ ...prev, totalVolumes: Math.max(1, parseInt(e.target.value) || 1) }))}
+                  className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
+                />
+                {formData.totalVolumes > 1 && (
+                  <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                    {t('⚠️ 승인 후에는 볼륨 수와 트랙 순서 변경 불가', '⚠️ Cannot change volume count or track order after approval')}
+                  </p>
+                )}
+              </div>
+              
+              {/* Album Note */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                  {t('앨범 노트', 'Album Note')} 
+                  <span className="ml-1 text-xs text-gray-600 dark:text-gray-400">
+                    {t('(한국 DSP용 앨범 소개 및 크레딧)', '(Album intro & credits for Korean DSPs)')}
+                  </span>
+                </label>
+                <textarea
+                  value={formData.albumNote || ''}
+                  onChange={(e) => setFormData(prev => ({ ...prev, albumNote: e.target.value }))}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 min-h-[120px]"
+                  placeholder={t('앨범 소개, 참여 아티스트, 크레딧 등을 자유롭게 작성해주세요', 'Write album introduction, participating artists, credits, etc.')}
                 />
               </div>
               
@@ -1998,6 +2079,45 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 </>
               )}
             </div>
+            
+            {/* Volume Setup Guide */}
+            {formData.totalVolumes > 1 && (
+              <div className="mt-6 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                  <div className="text-sm">
+                    <p className="font-semibold text-amber-900 dark:text-amber-200 mb-2">
+                      {t('멀티 볼륨 설정 가이드', 'Multi-Volume Setup Guide')}
+                    </p>
+                    <div className="space-y-2 text-amber-800 dark:text-amber-300">
+                      <p>
+                        {t(
+                          '⚠️ 중요: 제품 승인 후에는 볼륨 수나 볼륨별 트랙 순서를 변경할 수 없습니다.',
+                          '⚠️ Important: Once approved, you cannot change the number of volumes or track order per volume.'
+                        )}
+                      </p>
+                      <p className="font-medium">
+                        {t('현재 설정:', 'Current setup:')} {formData.totalVolumes} {t('볼륨', 'volumes')}
+                      </p>
+                      <div className="mt-3">
+                        <p className="font-medium mb-1">{t('예시 (3개 볼륨, 각 3곡):', 'Example (3 volumes, 3 tracks each):')}</p>
+                        <ul className="space-y-1 ml-4">
+                          <li>• {t('트랙 1-3 → 볼륨 1 선택', 'Tracks 1-3 → Select Volume 1')}</li>
+                          <li>• {t('트랙 4-6 → 볼륨 2 선택', 'Tracks 4-6 → Select Volume 2')}</li>
+                          <li>• {t('트랙 7-9 → 볼륨 3 선택', 'Tracks 7-9 → Select Volume 3')}</li>
+                        </ul>
+                      </div>
+                      <p className="text-xs mt-2">
+                        {t(
+                          '각 트랙을 올바른 볼륨에 연속적으로 할당해야 DSP에 정확히 표시됩니다.',
+                          'Assign tracks consecutively per volume for correct display on DSPs.'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )
         
@@ -2646,16 +2766,6 @@ const ImprovedReleaseSubmission: React.FC = () => {
               <TerritorySelector
                 value={formData.territorySelection}
                 onChange={(value) => setFormData(prev => ({ ...prev, territorySelection: value }))}
-              />
-            </div>
-            
-            {/* Previously Released */}
-            <div>
-              <Toggle
-                checked={formData.previouslyReleased}
-                onChange={(checked) => setFormData(prev => ({ ...prev, previouslyReleased: checked }))}
-                label={t('이전 발매 여부', 'Previously Released')}
-                helpText={t('이 음원이 다른 플랫폼에서 이미 발매되었나요?', 'Has this content been released on other platforms?')}
               />
             </div>
           </div>
