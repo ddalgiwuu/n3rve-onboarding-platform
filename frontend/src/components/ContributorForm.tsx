@@ -7,7 +7,9 @@ import {
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import contributorRolesData from '@/data/contributorRoles.json'
+import contributorRolesKo from '@/data/contributorRolesKo.json'
 import instrumentsData from '@/data/instruments.json'
+import instrumentsKo from '@/data/instrumentsKo.json'
 import { v4 as uuidv4 } from 'uuid'
 
 interface Translation {
@@ -103,15 +105,19 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
   }, [])
 
   // Filter roles and instruments based on search
-  const filteredRoles = contributorRolesData.roles.filter(role =>
-    role.name.toLowerCase().includes(searchQuery.roles.toLowerCase()) ||
-    role.category.toLowerCase().includes(searchQuery.roles.toLowerCase())
-  )
+  const filteredRoles = contributorRolesData.roles.filter(role => {
+    const searchTerm = (searchQuery.roles || '').toLowerCase()
+    const roleName = (role.name || '').toLowerCase()
+    const roleCategory = (role.category || '').toLowerCase()
+    return roleName.includes(searchTerm) || roleCategory.includes(searchTerm)
+  })
 
-  const filteredInstruments = instrumentsData.instruments.filter(instrument =>
-    instrument.name.toLowerCase().includes(searchQuery.instruments.toLowerCase()) ||
-    instrument.category.toLowerCase().includes(searchQuery.instruments.toLowerCase())
-  )
+  const filteredInstruments = instrumentsData.instruments.filter(instrument => {
+    const searchTerm = (searchQuery.instruments || '').toLowerCase()
+    const instrumentName = (instrument.name || '').toLowerCase()
+    const instrumentCategory = (instrument.category || '').toLowerCase()
+    return instrumentName.includes(searchTerm) || instrumentCategory.includes(searchTerm)
+  })
 
   // Group by category
   const groupedRoles = filteredRoles.reduce((acc, role) => {
@@ -466,7 +472,14 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                             onClick={() => toggleRole(role.id)}
                             className="w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between"
                           >
-                            <span className="text-sm">{role.name}</span>
+                            <span className="text-sm">
+                              {role.name}
+                              {contributorRolesKo.translations[role.id] && (
+                                <span className="text-gray-500 dark:text-gray-400 ml-1">
+                                  ({contributorRolesKo.translations[role.id]})
+                                </span>
+                              )}
+                            </span>
                             {formData.roles.includes(role.id) && (
                               <Check className="w-4 h-4 text-purple-500" />
                             )}
@@ -556,7 +569,14 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                             onClick={() => toggleInstrument(instrument.id)}
                             className="w-full px-3 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center justify-between"
                           >
-                            <span className="text-sm">{instrument.name}</span>
+                            <span className="text-sm">
+                              {instrument.name}
+                              {instrumentsKo.translations[instrument.id] && (
+                                <span className="text-gray-500 dark:text-gray-400 ml-1">
+                                  ({instrumentsKo.translations[instrument.id]})
+                                </span>
+                              )}
+                            </span>
                             {formData.instruments.includes(instrument.id) && (
                               <Check className="w-4 h-4 text-blue-500" />
                             )}
@@ -603,10 +623,13 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                             type="text"
                             value={identifier.value}
                             onChange={(e) => updateIdentifier(index, e.target.value)}
+                            disabled={formData.isNewArtist}
                             className={`w-full px-4 py-3 border-2 rounded-lg dark:bg-gray-700 font-mono text-sm ${
                               !isValid ? 'border-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:border-purple-500'
-                            } focus:outline-none focus:ring-2 focus:ring-purple-500/20`}
-                            placeholder={config.placeholder}
+                            } focus:outline-none focus:ring-2 focus:ring-purple-500/20 ${
+                              formData.isNewArtist ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' : ''
+                            }`}
+                            placeholder={formData.isNewArtist ? t('신규 아티스트는 입력 불가', 'Not available for new artists') : config.placeholder}
                           />
                           {identifier.value && (
                             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -631,10 +654,15 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
 
                         {/* Page Check Button */}
                         <a
-                          href={platformUrl || '#'}
-                          target="_blank"
+                          href={formData.isNewArtist ? '#' : (platformUrl || '#')}
+                          target={formData.isNewArtist ? '_self' : '_blank'}
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+                          onClick={formData.isNewArtist ? (e) => e.preventDefault() : undefined}
+                          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                            formData.isNewArtist 
+                              ? 'bg-gray-400 cursor-not-allowed text-gray-200' 
+                              : 'bg-purple-600 hover:bg-purple-700 text-white'
+                          }`}
                         >
                           <ExternalLink className="w-4 h-4" />
                           {t('페이지 확인', 'Check Page')}
