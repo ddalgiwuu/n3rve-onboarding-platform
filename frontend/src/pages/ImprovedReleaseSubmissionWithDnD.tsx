@@ -931,14 +931,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
         toast.success(t('릴리즈가 성공적으로 재제출되었습니다!', 'Release resubmitted successfully!', 'リリースが正常に再提出されました！'))
       } else {
         await submissionService.createSubmission(submissionData)
-        toast.success(t('릴리즈가 성공적으로 제출되었습니다!', 'Release submitted successfully!', 'リリースが正常に提出されました！')}
+        toast.success(t('릴리즈가 성공적으로 제출되었습니다!', 'Release submitted successfully!', 'リリースが正常に提出されました！'))
       }
       
       navigate('/submissions')
       
     } catch (error) {
       console.error('Submission error:', error)
-      toast.error(t('제출 중 오류가 발생했습니다', 'Error submitting release', 'リリースの提出中にエラーが発生しました')}
+      toast.error(t('제출 중 오류가 발생했습니다', 'Error submitting release', 'リリースの提出中にエラーが発生しました'))
     } finally {
       setIsSubmitting(false)
     }
