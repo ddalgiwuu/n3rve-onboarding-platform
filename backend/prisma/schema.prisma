@@ -10,11 +10,11 @@ datasource db {
   url      = env("MONGODB_URI")
 }
 
-// User model - 변경 없음
+// User model - 계정 관리 시스템 지원을 위해 업데이트
 model User {
   id                String   @id @default(auto()) @map("_id") @db.ObjectId
   email             String   @unique
-  googleId          String   @unique
+  googleId          String?  @unique
   provider          Provider @default(GOOGLE)
   role              Role     @default(USER)
   name              String
@@ -25,6 +25,15 @@ model User {
   emailVerified     Boolean  @default(true)
   isProfileComplete Boolean  @default(false)
   lastLogin         DateTime?
+  
+  // Password support for email/password login
+  password          String?
+  
+  // Company account support
+  isCompanyAccount  Boolean  @default(false)
+  parentAccountId   String?  @db.ObjectId
+  parentAccount     User?    @relation("CompanySubAccounts", fields: [parentAccountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subAccounts       User[]   @relation("CompanySubAccounts")
   
   // Preferences as embedded document
   preferences       UserPreferences
@@ -356,11 +365,14 @@ type DspProfileUpdate {
 // Enums - 변경 없음
 enum Provider {
   GOOGLE
+  EMAIL
 }
 
 enum Role {
   ADMIN
   USER
+  CUSTOMER
+  SUB_ACCOUNT
   GUEST
 }
 
