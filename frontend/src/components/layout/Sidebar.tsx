@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield } from 'lucide-react'
+import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield, UserCog } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { useAuthStore } from '@/store/auth.store'
 import { useLanguageStore } from '@/store/language.store'
@@ -118,6 +118,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { icon: Shield, label: language === 'ko' ? '관리자 대시보드' : 'Admin Dashboard', path: '/admin', color: 'text-red-600' },
     { icon: ClipboardList, label: language === 'ko' ? '제출 관리' : 'Submission Management', path: '/admin/submission-management', color: 'text-blue-600' },
     { icon: Users, label: language === 'ko' ? '고객 관리' : 'Customer Management', path: '/admin/customers', color: 'text-green-600' },
+    { icon: UserCog, label: language === 'ko' ? '계정 관리' : 'Account Management', path: '/admin/accounts', color: 'text-purple-600' },
     { icon: Settings, label: language === 'ko' ? '설정' : 'Settings', path: '/admin/settings', color: 'text-gray-600' },
   ] as const
   
