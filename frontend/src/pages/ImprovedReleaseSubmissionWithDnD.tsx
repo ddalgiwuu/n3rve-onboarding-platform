@@ -2111,17 +2111,18 @@ const ImprovedReleaseSubmission: React.FC = () => {
                         {t('현재 설정:', 'Current setup:', '現在の設定:')} {formData.totalVolumes} {t('볼륨', 'volumes', 'ボリューム')}
                       </p>
                       <div className="mt-3">
-                        <p className="font-medium mb-1">{t('예시 (3개 볼륨, 각 3곡):', 'Example (3 volumes, 3 tracks each):')}</p>
+                        <p className="font-medium mb-1">{t('예시 (3개 볼륨, 각 3곡):', 'Example (3 volumes, 3 tracks each):', '例（3ボリューム、各3曲）：')}</p>
                         <ul className="space-y-1 ml-4">
-                          <li>• {t('트랙 1-3 → 볼륨 1 선택', 'Tracks 1-3 → Select Volume 1')}</li>
-                          <li>• {t('트랙 4-6 → 볼륨 2 선택', 'Tracks 4-6 → Select Volume 2')}</li>
-                          <li>• {t('트랙 7-9 → 볼륨 3 선택', 'Tracks 7-9 → Select Volume 3')}</li>
+                          <li>• {t('트랙 1-3 → 볼륨 1 선택', 'Tracks 1-3 → Select Volume 1', 'トラック1-3 → ボリューム1選択')}</li>
+                          <li>• {t('트랙 4-6 → 볼륨 2 선택', 'Tracks 4-6 → Select Volume 2', 'トラック4-6 → ボリューム2選択')}</li>
+                          <li>• {t('트랙 7-9 → 볼륨 3 선택', 'Tracks 7-9 → Select Volume 3', 'トラック7-9 → ボリューム3選択')}</li>
                         </ul>
                       </div>
                       <p className="text-xs mt-2">
                         {t(
                           '각 트랙을 올바른 볼륨에 연속적으로 할당해야 DSP에 정확히 표시됩니다.',
-                          'Assign tracks consecutively per volume for correct display on DSPs.'
+                          'Assign tracks consecutively per volume for correct display on DSPs.',
+                          '各トラックを正しいボリュームに連続的に割り当てる必要があります。'
                         )}
                       </p>
                     </div>
@@ -2136,7 +2137,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('파일 업로드', 'File Upload')}
+              {t('파일 업로드', 'File Upload', 'ファイルアップロード')}
             </h2>
             
             {/* File Guidelines */}
@@ -2145,14 +2146,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
                 <div className="text-sm">
                   <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
-                    {t('파일 형식 가이드라인', 'File Format Guidelines')}
+                    {t('파일 형식 가이드라인', 'File Format Guidelines', 'ファイル形式ガイドライン')}
                   </p>
                   <ul className="space-y-1 text-blue-800 dark:text-blue-300">
-                    <li>• {t('커버 아트: 3000x3000px 이상, JPG/PNG, RGB 색상 모드', 'Cover Art: Min 3000x3000px, JPG/PNG, RGB color mode')}</li>
-                    <li>• {t('오디오: WAV/FLAC, 24bit/96kHz 이상 권장, 스테레오', 'Audio: WAV/FLAC, 24bit/96kHz+ recommended, Stereo')}</li>
-                    <li>• {t('Dolby Atmos: ADM BWF 또는 .atmos 파일', 'Dolby Atmos: ADM BWF or .atmos file')}</li>
-                    <li>• {t('모션 아트: MP4/MOV, 3-10초, 최대 100MB', 'Motion Art: MP4/MOV, 3-10 seconds, Max 100MB')}</li>
-                    <li>• {t('뮤직비디오: MP4/MOV, H.264, 1920x1080 이상', 'Music Video: MP4/MOV, H.264, 1920x1080+')}</li>
+                    <li>• {t('커버 아트: 3000x3000px 이상, JPG/PNG, RGB 색상 모드', 'Cover Art: Min 3000x3000px, JPG/PNG, RGB color mode', 'カバーアート：3000x3000px以上、JPG/PNG、RGBカラーモード')}</li>
+                    <li>• {t('오디오: WAV/FLAC, 24bit/96kHz 이상 권장, 스테레오', 'Audio: WAV/FLAC, 24bit/96kHz+ recommended, Stereo', 'オーディオ：WAV/FLAC、24bit/96kHz以上推奨、ステレオ')}</li>
+                    <li>• {t('Dolby Atmos: ADM BWF 또는 .atmos 파일', 'Dolby Atmos: ADM BWF or .atmos file', 'Dolby Atmos：ADM BWFまたは.atmosファイル')}</li>
+                    <li>• {t('모션 아트: MP4/MOV, 3-10초, 최대 100MB', 'Motion Art: MP4/MOV, 3-10 seconds, Max 100MB', 'モーションアート：MP4/MOV、3-10秒、最大100MB')}</li>
+                    <li>• {t('뮤직비디오: MP4/MOV, H.264, 1920x1080 이상', 'Music Video: MP4/MOV, H.264, 1920x1080+', 'ミュージックビデオ：MP4/MOV、H.264、1920x1080以上')}</li>
                   </ul>
                 </div>
               </div>
@@ -2161,7 +2162,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {/* Cover Art */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
-                {t('커버 아트', 'Cover Art')} 
+                {t('커버 아트', 'Cover Art', 'カバーアート')} 
                 <span className="text-red-500 ml-1">*</span>
               </label>
               {formData.coverArt ? (
@@ -2190,10 +2191,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 >
                   <Upload className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
                   <p className="text-gray-700 dark:text-gray-300 font-medium">
-                    {t('클릭하여 이미지 선택', 'Click to select image')}
+                    {t('클릭하여 이미지 선택', 'Click to select image', 'クリックして画像を選択')}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-                    {t('최소 3000x3000px, JPG/PNG, RGB 색상 모드', 'Min 3000x3000px, JPG/PNG, RGB color mode')}
+                    {t('최소 3000x3000px, JPG/PNG, RGB 색상 모드', 'Min 3000x3000px, JPG/PNG, RGB color mode', '最小3000x3000px、JPG/PNG、RGBカラーモード')}
                   </p>
                 </button>
               )}
@@ -2209,7 +2210,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {/* Audio Files */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
-                {t('오디오 파일', 'Audio Files')} 
+                {t('오디오 파일', 'Audio Files', 'オーディオファイル')} 
                 <span className="text-red-500 ml-1">*</span>
                 <span className="ml-2 text-gray-600 dark:text-gray-400">
                   ({formData.audioFiles.length}/{formData.tracks.length})
@@ -2247,10 +2248,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
               >
                 <Upload className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
                 <p className="text-gray-700 dark:text-gray-300 font-medium">
-                  {t('오디오 파일 추가', 'Add audio files')}
+                  {t('오디오 파일 추가', 'Add audio files', 'オーディオファイルを追加')}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {t('WAV, FLAC (24bit/96kHz 이상 권장)', 'WAV, FLAC (24bit/96kHz or higher recommended)')}
+                  {t('WAV, FLAC (24bit/96kHz 이상 권장)', 'WAV, FLAC (24bit/96kHz or higher recommended)', 'WAV、FLAC（24bit/96kHz以上推奨）')}
                 </p>
               </button>
               <input
@@ -2266,8 +2267,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {/* Dolby Atmos Files */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
-                {t('Dolby Atmos 파일', 'Dolby Atmos Files')} 
-                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+                {t('Dolby Atmos 파일', 'Dolby Atmos Files', 'Dolby Atmosファイル')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)', '（オプション）')}</span>
               </label>
               
               {formData.dolbyAtmosFiles && formData.dolbyAtmosFiles.length > 0 && (
@@ -2314,10 +2315,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
               >
                 <Disc className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
                 <p className="text-gray-700 dark:text-gray-300 font-medium">
-                  {t('Dolby Atmos 파일 추가', 'Add Dolby Atmos files')}
+                  {t('Dolby Atmos 파일 추가', 'Add Dolby Atmos files', 'Dolby Atmosファイルを追加')}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {t('ADM BWF 또는 .atmos 파일', 'ADM BWF or .atmos files')}
+                  {t('ADM BWF 또는 .atmos 파일', 'ADM BWF or .atmos files', 'ADM BWFまたは.atmosファイル')}
                 </p>
               </button>
             </div>
@@ -2325,8 +2326,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {/* Motion Art */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
-                {t('모션 아트', 'Motion Art')} 
-                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+                {t('모션 아트', 'Motion Art', 'モーションアート')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)', '（オプション）')}</span>
               </label>
               
               {formData.motionArtFile ? (
@@ -2363,10 +2364,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 >
                   <Star className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
                   <p className="text-gray-700 dark:text-gray-300 font-medium">
-                    {t('모션 아트 추가', 'Add Motion Art')}
+                    {t('모션 아트 추가', 'Add Motion Art', 'モーションアートを追加')}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {t('MP4/MOV, 3-10초, 최대 100MB', 'MP4/MOV, 3-10 seconds, Max 100MB')}
+                    {t('MP4/MOV, 3-10초, 최대 100MB', 'MP4/MOV, 3-10 seconds, Max 100MB', 'MP4/MOV、3-10秒、最大100MB')}
                   </p>
                 </button>
               )}
@@ -2375,8 +2376,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {/* Music Videos */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
-                {t('뮤직비디오', 'Music Videos')} 
-                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+                {t('뮤직비디오', 'Music Videos', 'ミュージックビデオ')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)', '（オプション）')}</span>
               </label>
               
               {formData.musicVideoFiles && formData.musicVideoFiles.length > 0 ? (
@@ -2424,7 +2425,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   >
                     <Plus className="w-5 h-5 mx-auto text-gray-400 dark:text-gray-500" />
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      {t('뮤직비디오 추가', 'Add More Videos')}
+                      {t('뮤직비디오 추가', 'Add More Videos', 'ミュージックビデオを追加')}
                     </p>
                   </button>
                 </div>
@@ -2451,10 +2452,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 >
                   <Film className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
                   <p className="text-gray-700 dark:text-gray-300 font-medium">
-                    {t('뮤직비디오 추가', 'Add Music Videos')}
+                    {t('뮤직비디오 추가', 'Add Music Videos', 'ミュージックビデオを追加')}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {t('MP4/MOV, H.264, 1920x1080 이상 (여러 개 선택 가능)', 'MP4/MOV, H.264, 1920x1080+ (multiple selection)')}
+                    {t('MP4/MOV, H.264, 1920x1080 이상 (여러 개 선택 가능)', 'MP4/MOV, H.264, 1920x1080+ (multiple selection)', 'MP4/MOV、H.264、1920x1080以上（複数選択可能）')}
                   </p>
                 </button>
               )}
@@ -2463,8 +2464,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {/* Music Video Thumbnails */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
-                {t('뮤직비디오 썸네일', 'Music Video Thumbnails')} 
-                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+                {t('뮤직비디오 썸네일', 'Music Video Thumbnails', 'ミュージックビデオサムネイル')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)', '（オプション）')}</span>
               </label>
               
               {formData.musicVideoThumbnails && formData.musicVideoThumbnails.length > 0 ? (
@@ -2512,7 +2513,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   >
                     <Plus className="w-5 h-5 mx-auto text-gray-400 dark:text-gray-500" />
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      {t('썸네일 추가', 'Add More Thumbnails')}
+                      {t('썸네일 추가', 'Add More Thumbnails', 'サムネイルを追加')}
                     </p>
                   </button>
                 </div>
@@ -2539,10 +2540,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 >
                   <Image className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
                   <p className="text-gray-700 dark:text-gray-300 font-medium">
-                    {t('썸네일 추가', 'Add Thumbnails')}
+                    {t('썸네일 추가', 'Add Thumbnails', 'サムネイルを追加')}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {t('JPG, PNG 형식 (여러 개 선택 가능)', 'JPG, PNG format (multiple selection)')}
+                    {t('JPG, PNG 형식 (여러 개 선택 가능)', 'JPG, PNG format (multiple selection)', 'JPG、PNG形式（複数選択可能）')}
                   </p>
                 </button>
               )}
@@ -2551,8 +2552,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {/* Lyrics Files */}
             <div className="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-700">
               <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
-                {t('가사 파일', 'Lyrics Files')} 
-                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)')}</span>
+                {t('가사 파일', 'Lyrics Files', '歌詞ファイル')} 
+                <span className="text-gray-500 ml-1">{t('(선택사항)', '(Optional)', '（オプション）')}</span>
               </label>
               
               {formData.lyricsFiles && formData.lyricsFiles.length > 0 ? (
