@@ -4,8 +4,6 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { format } from 'date-fns';
 import { adminService } from '@/services/admin.service';
 import toast from 'react-hot-toast';
-import LanguageToggle from '@/components/common/LanguageToggle';
-import DarkModeToggle from '@/components/common/DarkModeToggle';
 
 interface Customer {
   id: string;
@@ -106,14 +104,10 @@ const AdminCustomers = () => {
               </h1>
               <p className="text-gray-700 dark:text-gray-300">{t('고객 정보를 관리하고 분석합니다', 'Manage and analyze customer information')}</p>
             </div>
-            <div className="flex items-center gap-3">
-              <LanguageToggle />
-              <DarkModeToggle />
-              <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
-                <UserPlus className="w-5 h-5" />
-                {t('새 고객 추가', 'Add New Customer')}
-              </button>
-            </div>
+            <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
+              <UserPlus className="w-5 h-5" />
+              {t('새 고객 추가', 'Add New Customer')}
+            </button>
           </div>
         </div>
 
