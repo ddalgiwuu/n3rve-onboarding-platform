@@ -299,7 +299,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string, ja?: string) => {
+    switch (language) {
+      case 'ko': return ko
+      case 'en': return en
+      case 'ja': return ja || en
+      default: return en
+    }
+  }
 
   // Steps
   const [currentStep, setCurrentStep] = useState(1)
@@ -409,16 +416,16 @@ const ImprovedReleaseSubmission: React.FC = () => {
           setIsEditMode(true)
           // Load all data for editing
           // TODO: Map submission data to formData structure
-          toast.success(t('수정할 데이터를 불러왔습니다', 'Edit data loaded successfully'))
+          toast.success(t('수정할 데이터를 불러왔습니다', 'Edit data loaded successfully', '編集データを読み込みました'))
         } else if (resubmitId) {
           setIsResubmitMode(true)
           // Load data but clear status-related fields
           // TODO: Map submission data to formData structure
-          toast.success(t('재제출할 데이터를 불러왔습니다', 'Resubmission data loaded successfully'))
+          toast.success(t('재제출할 데이터를 불러왔습니다', 'Resubmission data loaded successfully', '再提出データを読み込みました'))
         }
       } catch (error) {
         console.error('Error loading submission:', error)
-        toast.error(t('데이터를 불러오는데 실패했습니다', 'Failed to load submission data'))
+        toast.error(t('데이터를 불러오는데 실패했습니다', 'Failed to load submission data', 'データの読み込みに失敗しました'))
         navigate('/submissions')
       }
     }
@@ -434,7 +441,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
   const handleGenerateUPC = () => {
     const upc = generateUPC()
     setFormData(prev => ({ ...prev, upc }))
-    toast.success(t('UPC가 생성되었습니다', 'UPC generated successfully'))
+    toast.success(t('UPC가 생성되었습니다', 'UPC generated successfully', 'UPCが生成されました'))
   }
 
 
@@ -576,7 +583,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
         ...prev,
         audioFiles: [...prev.audioFiles, ...files]
       }))
-      toast.success(t(`${files.length}개의 오디오 파일이 추가되었습니다`, `${files.length} audio files added`))
+      toast.success(t(`${files.length}개의 오디오 파일이 추가되었습니다`, `${files.length} audio files added`, `${files.length}個のオーディオファイルが追加されました`))
     }
   }
 
@@ -584,7 +591,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
     const file = e.target.files?.[0]
     if (file) {
       setFormData(prev => ({ ...prev, coverArt: file }))
-      toast.success(t('커버 아트가 업로드되었습니다', 'Cover art uploaded'))
+      toast.success(t('커버 아트가 업로드되었습니다', 'Cover art uploaded', 'カバーアートがアップロードされました'))
     }
   }
 
@@ -593,7 +600,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
       ...prev,
       audioFiles: prev.audioFiles.filter((_, i) => i !== index)
     }))
-    toast.success(t('오디오 파일이 제거되었습니다', 'Audio file removed'))
+    toast.success(t('오디오 파일이 제거되었습니다', 'Audio file removed', 'オーディオファイルが削除されました'))
   }
 
   // Validation with visual feedback
@@ -612,37 +619,37 @@ const ImprovedReleaseSubmission: React.FC = () => {
     switch (step) {
       case 1: // Album Info
         if (!formData.albumTitle) {
-          toast.error(t('앨범 제목을 입력해주세요', 'Please enter album title'))
+          toast.error(t('앨범 제목을 입력해주세요', 'Please enter album title', 'アルバムタイトルを入力してください'))
           highlightField('album-title-input')
           return false
         }
         if (formData.albumArtists.length === 0) {
-          toast.error(t('아티스트명을 입력해주세요', 'Please enter artist name'))
+          toast.error(t('아티스트명을 입력해주세요', 'Please enter artist name', 'アーティスト名を入力してください'))
           highlightField('album-artist-section')
           return false
         }
         if (!formData.primaryGenre) {
-          toast.error(t('장르를 선택해주세요', 'Please select genre'))
+          toast.error(t('장르를 선택해주세요', 'Please select genre', 'ジャンルを選択してください'))
           highlightField('genre-section')
           return false
         }
         if (!formData.language) {
-          toast.error(t('언어를 선택해주세요', 'Please select language'))
+          toast.error(t('언어를 선택해주세요', 'Please select language', '言語を選択してください'))
           highlightField('language-section')
           return false
         }
         if (!formData.consumerReleaseDate) {
-          toast.error(t('컨슈머 발매일을 선택해주세요', 'Please select consumer release date'))
+          toast.error(t('컨슈머 발매일을 선택해주세요', 'Please select consumer release date', 'コンシューマーリリース日を選択してください'))
           highlightField('consumer-release-date')
           return false
         }
         if (!formData.originalReleaseDate) {
-          toast.error(t('오리지널 발매일을 선택해주세요', 'Please select original release date'))
+          toast.error(t('오리지널 발매일을 선택해주세요', 'Please select original release date', 'オリジナルリリース日を選択してください'))
           highlightField('original-release-date')
           return false
         }
         if (!formData.releaseTime) {
-          toast.error(t('발매 시간을 입력해주세요', 'Please enter release time'))
+          toast.error(t('발매 시간을 입력해주세요', 'Please enter release time', 'リリース時間を入力してください'))
           highlightField('release-time-input')
           return false
         }
@@ -650,13 +657,13 @@ const ImprovedReleaseSubmission: React.FC = () => {
         
       case 2: // Tracks
         if (formData.tracks.length === 0) {
-          toast.error(t('최소 1개 이상의 트랙을 추가해주세요', 'Please add at least one track'))
+          toast.error(t('최소 1개 이상의 트랙을 추가해주세요', 'Please add at least one track', '少なくとも1つのトラックを追加してください'))
           highlightField('add-track-button')
           return false
         }
         for (const track of formData.tracks) {
           if (!track.title || track.artists.length === 0) {
-            toast.error(t('모든 트랙의 제목과 아티스트를 입력해주세요', 'Please enter title and artist for all tracks'))
+            toast.error(t('모든 트랙의 제목과 아티스트를 입력해주세요', 'Please enter title and artist for all tracks', 'すべてのトラックのタイトルとアーティストを入力してください'))
             highlightField('tracks-section')
             return false
           }
@@ -665,12 +672,12 @@ const ImprovedReleaseSubmission: React.FC = () => {
         
       case 3: // Files
         if (!formData.coverArt) {
-          toast.error(t('커버 아트를 업로드해주세요', 'Please upload cover art'))
+          toast.error(t('커버 아트를 업로드해주세요', 'Please upload cover art', 'カバーアートをアップロードしてください'))
           highlightField('cover-art-upload')
           return false
         }
         if (formData.audioFiles.length !== formData.tracks.length) {
-          toast.error(t('트랙 수와 오디오 파일 수가 일치해야 합니다', 'Number of tracks and audio files must match'))
+          toast.error(t('트랙 수와 오디오 파일 수가 일치해야 합니다', 'Number of tracks and audio files must match', 'トラック数とオーディオファイル数が一致する必要があります'))
           highlightField('audio-files-upload')
           return false
         }
@@ -678,7 +685,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
         
       case 4: // Distribution
         if (formData.distributionType === 'selected' && formData.selectedStores.length === 0) {
-          toast.error(t('최소 1개 이상의 스토어를 선택해주세요', 'Please select at least one store'))
+          toast.error(t('최소 1개 이상의 스토어를 선택해주세요', 'Please select at least one store', '少なくとも1つのストアを選択してください'))
           highlightField('store-selection')
           return false
         }
@@ -726,27 +733,27 @@ const ImprovedReleaseSubmission: React.FC = () => {
     if (daysUntilRelease < 0) {
       return {
         type: 'error',
-        message: t('과거 날짜는 선택할 수 없습니다', 'Cannot select past dates')
+        message: t('과거 날짜는 선택할 수 없습니다', 'Cannot select past dates', '過去の日付は選択できません')
       }
     } else if (daysUntilRelease < 7) {
       return {
         type: 'warning',
-        message: t('발매일까지 일주일 미만입니다. 마케팅 기회가 매우 제한적입니다.', 'Less than a week until release. Marketing opportunities are very limited.')
+        message: t('발매일까지 일주일 미만입니다. 마케팅 기회가 매우 제한적입니다.', 'Less than a week until release. Marketing opportunities are very limited.', 'リリースまで1週間未満です。マーケティング機会が非常に限られています。')
       }
     } else if (daysUntilRelease < 21) {
       return {
         type: 'warning',
-        message: t(`발매일까지 ${daysUntilRelease}일 남았습니다. 마케팅 기회가 제한적일 수 있습니다.`, `${daysUntilRelease} days until release. Marketing opportunities may be limited.`)
+        message: t(`발매일까지 ${daysUntilRelease}일 남았습니다. 마케팅 기회가 제한적일 수 있습니다.`, `${daysUntilRelease} days until release. Marketing opportunities may be limited.`, `リリースまで${daysUntilRelease}日です。マーケティング機会が制限される可能性があります。`)
       }
     } else if (daysUntilRelease < 28) {
       return {
         type: 'caution',
-        message: t(`발매일까지 ${daysUntilRelease}일 남았습니다. 마케팅 기회를 위해 빠른 제출을 권장합니다.`, `${daysUntilRelease} days until release. Quick submission recommended for marketing opportunities.`)
+        message: t(`발매일까지 ${daysUntilRelease}일 남았습니다. 마케팅 기회를 위해 빠른 제출을 권장합니다.`, `${daysUntilRelease} days until release. Quick submission recommended for marketing opportunities.`, `リリースまで${daysUntilRelease}日です。マーケティング機会のために早めの提出をお勧めします。`)
       }
     } else {
       return {
         type: 'success',
-        message: t(`발매일까지 ${daysUntilRelease}일 남았습니다. 충분한 마케팅 기회가 있습니다!`, `${daysUntilRelease} days until release. Great marketing opportunities available!`)
+        message: t(`발매일까지 ${daysUntilRelease}일 남았습니다. 충분한 마케팅 기회가 있습니다!`, `${daysUntilRelease} days until release. Great marketing opportunities available!`, `リリースまで${daysUntilRelease}日です。十分なマーケティング機会があります！`)
       }
     }
   }
@@ -758,22 +765,22 @@ const ImprovedReleaseSubmission: React.FC = () => {
       
       // Basic form validation
       if (!formData.consumerReleaseDate) {
-        toast.error(t('컨슈머 발매일을 선택해주세요', 'Please select consumer release date'))
+        toast.error(t('컨슈머 발매일을 선택해주세요', 'Please select consumer release date', 'コンシューマーリリース日を選択してください'))
         return
       }
       
       if (!formData.originalReleaseDate) {
-        toast.error(t('오리지널 발매일을 선택해주세요', 'Please select original release date'))
+        toast.error(t('오리지널 발매일을 선택해주세요', 'Please select original release date', 'オリジナルリリース日を選択してください'))
         return
       }
       
       if (!formData.releaseTime) {
-        toast.error(t('발매 시간을 입력해주세요', 'Please enter release time'))
+        toast.error(t('발매 시간을 입력해주세요', 'Please enter release time', 'リリース時間を入力してください'))
         return
       }
       
       if (!formData.timezone) {
-        toast.error(t('타임존을 선택해주세요', 'Please select timezone'))
+        toast.error(t('타임존을 선택해주세요', 'Please select timezone', 'タイムゾーンを選択してください'))
         return
       }
       
@@ -802,7 +809,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
       
       if (results.errors.length > 0) {
         setShowWarnings(true)
-        toast.error(t('QC 검증 실패: 오류를 수정해주세요', 'QC validation failed: Please fix the errors'))
+        toast.error(t('QC 검증 실패: 오류를 수정해주세요', 'QC validation failed: Please fix the errors', 'QC検証失敗：エラーを修正してください'))
         return
       }
       
@@ -916,22 +923,22 @@ const ImprovedReleaseSubmission: React.FC = () => {
       // Submit based on mode
       if (isEditMode && editId) {
         await submissionService.updateSubmission(editId, submissionData)
-        toast.success(t('릴리즈가 성공적으로 수정되었습니다!', 'Release updated successfully!'))
+        toast.success(t('릴리즈가 성공적으로 수정되었습니다!', 'Release updated successfully!', 'リリースが正常に更新されました！'))
       } else if (isResubmitMode && resubmitId) {
         // For resubmit, create a new submission but mark it as a resubmission
         submissionData.append('resubmittedFrom', resubmitId)
         await submissionService.createSubmission(submissionData)
-        toast.success(t('릴리즈가 성공적으로 재제출되었습니다!', 'Release resubmitted successfully!'))
+        toast.success(t('릴리즈가 성공적으로 재제출되었습니다!', 'Release resubmitted successfully!', 'リリースが正常に再提出されました！'))
       } else {
         await submissionService.createSubmission(submissionData)
-        toast.success(t('릴리즈가 성공적으로 제출되었습니다!', 'Release submitted successfully!'))
+        toast.success(t('릴리즈가 성공적으로 제출되었습니다!', 'Release submitted successfully!', 'リリースが正常に提出されました！')}
       }
       
       navigate('/submissions')
       
     } catch (error) {
       console.error('Submission error:', error)
-      toast.error(t('제출 중 오류가 발생했습니다', 'Error submitting release'))
+      toast.error(t('제출 중 오류가 발생했습니다', 'Error submitting release', 'リリースの提出中にエラーが発生しました')}
     } finally {
       setIsSubmitting(false)
     }
@@ -956,7 +963,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
         onChange={(e) => setLocalValue(e.target.value)}
         onBlur={handleBlur}
         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-        placeholder={t('트랙 제목 입력', 'Enter track title')}
+        placeholder={t('트랙 제목 입력', 'Enter track title', 'トラックタイトルを入力')}
       />
     )
   })
@@ -1008,7 +1015,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
             <div className="md:col-span-2">
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('트랙 제목', 'Track Title')} *
+                  {t('트랙 제목', 'Track Title', 'トラックタイトル')} *
                 </label>
                 <button
                   type="button"
@@ -1022,7 +1029,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   `}
                 >
                   <Globe className="w-3.5 h-3.5" />
-                  <span>{t('번역 추가', 'Add Translation')}</span>
+                  <span>{t('번역 추가', 'Add Translation', '翻訳を追加')}</span>
                 </button>
               </div>
               <TrackTitleInput trackId={track.id} initialValue={track.title || ''} />
@@ -1059,7 +1066,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {/* Track Artists */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('트랙 아티스트', 'Track Artists')} *
+                {t('트랙 아티스트', 'Track Artists', 'トラックアーティスト')} *
               </label>
               
               {/* Artist List */}
@@ -1082,14 +1089,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
               >
                 <Plus className="w-4 h-4 inline-block mr-1" />
-                {t('아티스트 관리', 'Manage Artists')}
+                {t('아티스트 관리', 'Manage Artists', 'アーティスト管理')}
               </button>
             </div>
             
             {/* Featuring Artists */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('피처링 아티스트', 'Featuring Artists')}
+                {t('피처링 아티스트', 'Featuring Artists', 'フィーチャリングアーティスト')}
               </label>
               
               {/* Featuring Artist List */}
@@ -1112,14 +1119,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
               >
                 <Plus className="w-4 h-4 inline-block mr-1" />
-                {t('피처링 관리', 'Manage Featuring')}
+                {t('피처링 관리', 'Manage Featuring', 'フィーチャリング管理')}
               </button>
             </div>
             
             {/* Contributors */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t('기여자', 'Contributors')}
+                {t('기여자', 'Contributors', '貢献者')}
               </label>
               
               {/* Contributor List */}
@@ -1171,7 +1178,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4" />
-                {t('기여자 관리', 'Manage Contributors')}
+                {t('기여자 관리', 'Manage Contributors', '貢献者管理')}
               </button>
             </div>
             
@@ -1192,7 +1199,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {/* Music Video ISRC */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('뮤직비디오 ISRC', 'Music Video ISRC')}
+                {t('뮤직비디오 ISRC', 'Music Video ISRC', 'ミュージックビデオISRC')}
               </label>
               <input
                 type="text"
@@ -1206,39 +1213,39 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {/* Title Language */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('제목 언어', 'Title Language')}
+                {t('제목 언어', 'Title Language', 'タイトル言語')}
               </label>
               <select
                 value={track.titleLanguage || 'Korean'}
                 onChange={(e) => updateTrack(track.id, { titleLanguage: e.target.value as any })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
               >
-                <option value="Korean">{t('한국어', 'Korean')}</option>
-                <option value="English">{t('영어', 'English')}</option>
-                <option value="Japanese">{t('일본어', 'Japanese')}</option>
-                <option value="Chinese">{t('중국어', 'Chinese')}</option>
-                <option value="Other">{t('기타', 'Other')}</option>
+                <option value="Korean">{t('한국어', 'Korean', '韓国語')}</option>
+                <option value="English">{t('영어', 'English', '英語')}</option>
+                <option value="Japanese">{t('일본어', 'Japanese', '日本語')}</option>
+                <option value="Chinese">{t('중국어', 'Chinese', '中国語')}</option>
+                <option value="Other">{t('기타', 'Other', 'その他')}</option>
               </select>
             </div>
             
             {/* Audio Language */}
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                {t('오디오 언어', 'Audio Language')}
+                {t('오디오 언어', 'Audio Language', 'オーディオ言語')}
               </label>
               <select
                 value={track.audioLanguage || 'Korean'}
                 onChange={(e) => updateTrack(track.id, { audioLanguage: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
               >
-                <option value="Korean">{t('한국어', 'Korean')}</option>
-                <option value="English">{t('영어', 'English')}</option>
-                <option value="Japanese">{t('일본어', 'Japanese')}</option>
-                <option value="Chinese">{t('중국어', 'Chinese')}</option>
-                <option value="Spanish">{t('스페인어', 'Spanish')}</option>
-                <option value="French">{t('프랑스어', 'French')}</option>
-                <option value="German">{t('독일어', 'German')}</option>
-                <option value="Other">{t('기타', 'Other')}</option>
+                <option value="Korean">{t('한국어', 'Korean', '韓国語')}</option>
+                <option value="English">{t('영어', 'English', '英語')}</option>
+                <option value="Japanese">{t('일본어', 'Japanese', '日本語')}</option>
+                <option value="Chinese">{t('중국어', 'Chinese', '中国語')}</option>
+                <option value="Spanish">{t('스페인어', 'Spanish', 'スペイン語')}</option>
+                <option value="French">{t('프랑스어', 'French', 'フランス語')}</option>
+                <option value="German">{t('독일어', 'German', 'ドイツ語')}</option>
+                <option value="Other">{t('기타', 'Other', 'その他')}</option>
               </select>
             </div>
             
@@ -1246,7 +1253,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
             {formData.totalVolumes > 1 && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('볼륨', 'Volume')}
+                  {t('볼륨', 'Volume', 'ボリューム')}
                 </label>
                 <select
                   value={track.volume || 1}
@@ -1255,7 +1262,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 >
                   {Array.from({ length: formData.totalVolumes }, (_, i) => i + 1).map(vol => (
                     <option key={vol} value={vol}>
-                      {t(`볼륨 ${vol}`, `Volume ${vol}`)}
+                      {t(`볼륨 ${vol}`, `Volume ${vol}`, `ボリューム ${vol}`)}
                     </option>
                   ))}
                 </select>
@@ -1267,8 +1274,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
               <Toggle
                 checked={track.dolbyAtmos || false}
                 onChange={(checked) => updateTrack(track.id, { dolbyAtmos: checked })}
-                label={t('Dolby Atmos 지원', 'Dolby Atmos Support')}
-                helpText={t('이 트랙이 Dolby Atmos로 마스터링되었나요?', 'Is this track mastered in Dolby Atmos?')}
+                label={t('Dolby Atmos 지원', 'Dolby Atmos Support', 'Dolby Atmosサポート')}
+                helpText={t('이 트랙이 Dolby Atmos로 마스터링되었나요?', 'Is this track mastered in Dolby Atmos?', 'このトラックはDolby Atmosでマスタリングされていますか？')}
               />
             </div>
           </div>
@@ -1280,7 +1287,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               onClick={() => moveTrackUp(index)}
               disabled={index === 0}
               className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              title={t('위로 이동', 'Move up')}
+              title={t('위로 이동', 'Move up', '上に移動')}
             >
               <ChevronUp className="w-4 h-4" />
             </button>
@@ -1289,7 +1296,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               onClick={() => moveTrackDown(index)}
               disabled={index === formData.tracks.length - 1}
               className="p-1 text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-              title={t('아래로 이동', 'Move down')}
+              title={t('아래로 이동', 'Move down', '下に移動')}
             >
               <ChevronDown className="w-4 h-4" />
             </button>
@@ -1297,7 +1304,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               type="button"
               onClick={() => removeTrack(track.id)}
               className="p-1 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
-              title={t('삭제', 'Delete')}
+              title={t('삭제', 'Delete', '削除')}
             >
               <Trash2 className="w-4 h-4" />
             </button>
@@ -1328,7 +1335,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('앨범 정보', 'Album Information')}
+              {t('앨범 정보', 'Album Information', 'アルバム情報')}
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1336,7 +1343,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               <div className="md:col-span-2">
                 <div className="flex items-center justify-between mb-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('앨범 제목', 'Album Title')} *
+                    {t('앨범 제목', 'Album Title', 'アルバムタイトル')} *
                   </label>
                   <button
                     type="button"
@@ -1350,7 +1357,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     `}
                   >
                     <Globe className="w-3.5 h-3.5" />
-                    <span>{t('번역 추가', 'Add Translation')}</span>
+                    <span>{t('번역 추가', 'Add Translation', '翻訳を追加')}</span>
                   </button>
                 </div>
                 <input
@@ -1359,7 +1366,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   value={formData.albumTitle}
                   onChange={(e) => setFormData(prev => ({ ...prev, albumTitle: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  placeholder={t('앨범 제목을 입력하세요', 'Enter album title')}
+                  placeholder={t('앨범 제목을 입력하세요', 'Enter album title', 'アルバムタイトルを入力')}
                 />
                 
                 {/* Album Title Translations - Modern Design */}
@@ -1375,15 +1382,15 @@ const ImprovedReleaseSubmission: React.FC = () => {
                           </div>
                           <div>
                             <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                              {t('글로벌 번역', 'Global Translations')}
+                              {t('글로벌 번역', 'Global Translations', 'グローバル翻訳')}
                             </h4>
                             <p className="text-xs text-gray-600 dark:text-gray-400">
-                              {t('전 세계 팬들을 위한 다국어 지원', 'Multilingual support for global fans')}
+                              {t('전 세계 팬들을 위한 다국어 지원', 'Multilingual support for global fans', 'グローバルファンのための多言語サポート')}
                             </p>
                           </div>
                         </div>
                         <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
-                          {activeAlbumTranslations.length}/{translationLanguages.length} {t('언어', 'languages')}
+                          {activeAlbumTranslations.length}/{translationLanguages.length} {t('언어', 'languages', '言語')}
                         </span>
                       </div>
                       
@@ -1393,7 +1400,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                           <div className="text-center py-8">
                             <Languages className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {t('아래에서 언어를 선택하여 번역을 추가하세요', 'Select a language below to add translations')}
+                              {t('아래에서 언어를 선택하여 번역을 추가하세요', 'Select a language below to add translations', '下から言語を選択して翻訳を追加してください')}
                             </p>
                           </div>
                         ) : (
@@ -1433,7 +1440,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                                                  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white dark:focus:bg-gray-800
                                                  transition-all duration-200 text-sm text-gray-900 dark:text-gray-100 
                                                  placeholder-gray-400 dark:placeholder-gray-500"
-                                        placeholder={t(`${lang?.name}로 번역`, `Translate to ${lang?.name}`)}
+                                        placeholder={t(`${lang?.name}로 번역`, `Translate to ${lang?.name}`, `${lang?.name}へ翻訳`)}
                                       />
                                     </div>
                                     
@@ -1490,7 +1497,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                                          rounded-full cursor-pointer transition-all duration-200 appearance-none pr-8"
                                 style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
                               >
-                                <option value="">{t('더 많은 언어...', 'More languages...')}</option>
+                                <option value="">{t('더 많은 언어...', 'More languages...', 'その他の言語...')}</option>
                                 {translationLanguages
                                   .filter(lang => !activeAlbumTranslations.includes(lang.code))
                                   .slice(6)
@@ -1512,7 +1519,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               {/* Album Artists */}
               <div id="album-artist-section" className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('앨범 아티스트', 'Album Artists')} *
+                  {t('앨범 아티스트', 'Album Artists', 'アルバムアーティスト')} *
                 </label>
                 
                 {/* Artist List Display */}
@@ -1538,9 +1545,9 @@ const ImprovedReleaseSubmission: React.FC = () => {
                               {artist.name}
                             </p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {artist.role === 'main' && t('메인 아티스트', 'Main Artist')}
-                              {artist.role === 'featured' && t('피처링', 'Featured')}
-                              {artist.role === 'additional' && t('참여 아티스트', 'Additional Artist')}
+                              {artist.role === 'main' && t('메인 아티스트', 'Main Artist', 'メインアーティスト')}
+                              {artist.role === 'featured' && t('피처링', 'Featured', 'フィーチャリング')}
+                              {artist.role === 'additional' && t('참여 아티스트', 'Additional Artist', '参加アーティスト')}
                             </p>
                           </div>
                         </div>
@@ -1559,14 +1566,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
                            text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
                 >
                   <Plus className="w-4 h-4" />
-                  {t('아티스트 관리', 'Manage Artists')}
+                  {t('아티스트 관리', 'Manage Artists', 'アーティスト管理')}
                 </button>
               </div>
               
               {/* Featuring Artists */}
               <div id="featuring-artist-section" className="space-y-3">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                  {t('피처링 아티스트', 'Featuring Artists')}
+                  {t('피처링 아티스트', 'Featuring Artists', 'フィーチャリングアーティスト')}
                 </label>
                 
                 {/* Featuring Artist List */}
@@ -1586,7 +1593,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                               {artist.name}
                             </p>
                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {t('피처링 아티스트', 'Featuring Artist')}
+                              {t('피처링 아티스트', 'Featuring Artist', 'フィーチャリングアーティスト')}
                             </p>
                           </div>
                         </div>
@@ -1604,41 +1611,41 @@ const ImprovedReleaseSubmission: React.FC = () => {
                            text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
                 >
                   <Plus className="w-4 h-4" />
-                  {t('피처링 관리', 'Manage Featuring')}
+                  {t('피처링 관리', 'Manage Featuring', 'フィーチャリング管理')}
                 </button>
               </div>
 
               {/* Label and Display Artist */}
               <div className="md:col-span-2">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  {t('레이블 및 표시 정보', 'Label & Display Information')}
+                  {t('레이블 및 표시 정보', 'Label & Display Information', 'レーベル・表示情報')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('레이블', 'Label')}
+                      {t('레이블', 'Label', 'レーベル')}
                     </label>
                     <input
                       type="text"
                       value={formData.label || ''}
                       onChange={(e) => setFormData(prev => ({ ...prev, label: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                      placeholder={t('레이블명 입력', 'Enter label name')}
+                      placeholder={t('레이블명 입력', 'Enter label name', 'レーベル名を入力')}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('디스플레이 아티스트', 'Display Artist')}
+                      {t('디스플레이 아티스트', 'Display Artist', '表示アーティスト')}
                     </label>
                     <input
                       type="text"
                       value={formData.displayArtist || ''}
                       readOnly
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 cursor-not-allowed"
-                      placeholder={t('아티스트 정보에서 자동 생성됨', 'Auto-generated from artist info')}
+                      placeholder={t('아티스트 정보에서 자동 생성됨', 'Auto-generated from artist info', 'アーティスト情報から自動生成')}
                     />
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                      {t('메인 및 피처링 아티스트 정보를 기반으로 자동 생성됩니다', 'Automatically generated based on main and featuring artists')}
+                      {t('메인 및 피처링 아티스트 정보를 기반으로 자동 생성됩니다', 'Automatically generated based on main and featuring artists', 'メイン・フィーチャリングアーティスト情報に基づいて自動生成されます')}
                     </p>
                   </div>
                 </div>
@@ -1656,10 +1663,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   />
                   <label htmlFor="explicit-content" className="flex-1 cursor-pointer">
                     <span className="font-medium text-gray-900 dark:text-white">
-                      {t('이 앨범은 청소년 유해 컨텐츠를 포함합니다', 'This album contains explicit content')}
+                      {t('이 앨범은 청소년 유해 컨텐츠를 포함합니다', 'This album contains explicit content', 'このアルバムには明示的なコンテンツが含まれています')}
                     </span>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                      {t('욕설, 성적 내용, 폭력적 내용 등이 포함된 경우 체크하세요', 'Check if album contains profanity, sexual content, violence, etc.')}
+                      {t('욕설, 성적 내용, 폭력적 내용 등이 포함된 경우 체크하세요', 'Check if album contains profanity, sexual content, violence, etc.', '不適切な言葉、性的内容、暴力的内容などが含まれている場合はチェックしてください')}
                     </p>
                   </label>
                 </div>
@@ -1668,16 +1675,16 @@ const ImprovedReleaseSubmission: React.FC = () => {
               {/* Release Type */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('릴리즈 타입', 'Release Type')} *
+                  {t('릴리즈 타입', 'Release Type', 'リリースタイプ')} *
                 </label>
                 <RadioGroup
                   name="releaseType"
                   value={formData.releaseType}
                   onChange={(value) => setFormData(prev => ({ ...prev, releaseType: value as any }))}
                   options={[
-                    { value: 'single', label: t('싱글', 'Single'), description: t('1-3곡', '1-3 tracks') },
-                    { value: 'ep', label: 'EP', description: t('4-6곡', '4-6 tracks') },
-                    { value: 'album', label: t('정규', 'Album'), description: t('7곡 이상', '7+ tracks') }
+                    { value: 'single', label: t('싱글', 'Single', 'シングル'), description: t('1-3곡', '1-3 tracks', '1-3曲') },
+                    { value: 'ep', label: 'EP', description: t('4-6곡', '4-6 tracks', '4-6曲') },
+                    { value: 'album', label: t('정규', 'Album', 'アルバム'), description: t('7곡 이상', '7+ tracks', '7曲以上') }
                   ]}
                 />
               </div>
@@ -1685,7 +1692,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               {/* Primary Genre */}
               <div id="genre-section">
                 <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-                  {t('주 장르', 'Primary Genre')} <span className="text-red-500">*</span>
+                  {t('주 장르', 'Primary Genre', 'メインジャンル')} <span className="text-red-500">*</span>
                 </label>
                 <SearchableSelect
                   options={genreList}
@@ -1693,22 +1700,22 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   onChange={(value) => {
                     setFormData(prev => ({ ...prev, primaryGenre: value, primarySubgenre: '' }))
                   }}
-                  placeholder={t('장르 선택', 'Select genre')}
-                  searchPlaceholder={t('장르 검색...', 'Search genres...')}
+                  placeholder={t('장르 선택', 'Select genre', 'ジャンルを選択')}
+                  searchPlaceholder={t('장르 검색...', 'Search genres...', 'ジャンルを検索...')}
                 />
               </div>
               
               {/* Primary Subgenre */}
               <div>
                 <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-                  {t('주 서브장르', 'Primary Subgenre')}
+                  {t('주 서브장르', 'Primary Subgenre', 'メインサブジャンル')}
                 </label>
                 <SearchableSelect
                   options={formData.primaryGenre && subgenreList[formData.primaryGenre] ? subgenreList[formData.primaryGenre] : []}
                   value={formData.primarySubgenre}
                   onChange={(value) => setFormData(prev => ({ ...prev, primarySubgenre: value }))}
-                  placeholder={t('서브장르 선택', 'Select subgenre')}
-                  searchPlaceholder={t('서브장르 검색...', 'Search subgenres...')}
+                  placeholder={t('서브장르 선택', 'Select subgenre', 'サブジャンルを選択')}
+                  searchPlaceholder={t('서브장르 검색...', 'Search subgenres...', 'サブジャンルを検索...')}
                   disabled={!formData.primaryGenre}
                 />
               </div>
@@ -1716,9 +1723,9 @@ const ImprovedReleaseSubmission: React.FC = () => {
               {/* Total Volumes */}
               <div>
                 <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-                  {t('총 볼륨 수', 'Total Volumes')}
+                  {t('총 볼륨 수', 'Total Volumes', '総ボリューム数')}
                   <span className="ml-1 text-xs text-gray-600 dark:text-gray-400">
-                    {t('(멀티 볼륨 앨범의 경우)', '(For multi-volume albums)')}
+                    {t('(멀티 볼륨 앨범의 경우)', '(For multi-volume albums)', '(マルチボリュームアルバムの場合)')}
                   </span>
                 </label>
                 <input
@@ -1730,7 +1737,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 />
                 {formData.totalVolumes > 1 && (
                   <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
-                    {t('⚠️ 승인 후에는 볼륨 수와 트랙 순서 변경 불가', '⚠️ Cannot change volume count or track order after approval')}
+                    {t('⚠️ 승인 후에는 볼륨 수와 트랙 순서 변경 불가', '⚠️ Cannot change volume count or track order after approval', '⚠️ 承認後はボリューム数とトラック順序の変更不可')}
                   </p>
                 )}
               </div>
@@ -1738,16 +1745,16 @@ const ImprovedReleaseSubmission: React.FC = () => {
               {/* Album Note */}
               <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
-                  {t('앨범 노트', 'Album Note')} 
+                  {t('앨범 노트', 'Album Note', 'アルバムノート')} 
                   <span className="ml-1 text-xs text-gray-600 dark:text-gray-400">
-                    {t('(한국 DSP용 앨범 소개 및 크레딧)', '(Album intro & credits for Korean DSPs)')}
+                    {t('(한국 DSP용 앨범 소개 및 크레딧)', '(Album intro & credits for Korean DSPs)', '(韓国DSP用アルバム紹介・クレジット)')}
                   </span>
                 </label>
                 <textarea
                   value={formData.albumNote || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, albumNote: e.target.value }))}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 min-h-[120px]"
-                  placeholder={t('앨범 소개, 참여 아티스트, 크레딧 등을 자유롭게 작성해주세요', 'Write album introduction, participating artists, credits, etc.')}
+                  placeholder={t('앨범 소개, 참여 아티스트, 크레딧 등을 자유롭게 작성해주세요', 'Write album introduction, participating artists, credits, etc.', 'アルバム紹介、参加アーティスト、クレジットなどを自由に記載してください')}
                 />
               </div>
               
@@ -1759,7 +1766,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                       <span className="text-white font-bold text-sm">📅</span>
                     </div>
                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {t('발매일 및 시간 설정', 'Release Date & Time Settings')}
+                      {t('발매일 및 시간 설정', 'Release Date & Time Settings', 'リリース日時設定')}
                     </h3>
                   </div>
                   
@@ -1770,12 +1777,13 @@ const ImprovedReleaseSubmission: React.FC = () => {
                         <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                         <div>
                           <p className="text-sm font-medium text-amber-800 dark:text-amber-200 mb-1">
-                            {t('마케팅 기회 안내', 'Marketing Opportunity Notice')}
+                            {t('마케팅 기회 안내', 'Marketing Opportunity Notice', 'マーケティング機会のお知らせ')}
                           </p>
                           <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
                             {t(
                               '발매일 최소 3-4주 전에 제출해야 마케팅 기회를 얻을 수 있습니다. Apple Music은 4주 전 제출 시 마케팅 기회가 주어지나 보장되지는 않습니다.',
-                              'Submit at least 3-4 weeks before release date for marketing opportunities. Apple Music provides marketing opportunities for submissions 4 weeks in advance, but it is not guaranteed.'
+                              'Submit at least 3-4 weeks before release date for marketing opportunities. Apple Music provides marketing opportunities for submissions 4 weeks in advance, but it is not guaranteed.',
+                              'リリース日の最低3-4週間前に提出することでマーケティング機会を得ることができます。Apple Musicは4週間前の提出時にマーケティング機会が与えられますが、保証されていません。'
                             )}
                           </p>
                         </div>
@@ -1789,7 +1797,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
                         <p className="text-xs text-blue-700 dark:text-blue-300">
                           {t(
                             '💡 컨슈머 발매일을 입력하면 오리지널 발매일이 자동으로 같은 날짜로 설정됩니다. 재발매인 경우 오리지널 발매일을 별도로 수정해주세요.',
-                            '💡 When you enter Consumer Release Date, Original Release Date will be automatically set to the same date. For re-releases, please adjust the Original Release Date separately.'
+                            '💡 When you enter Consumer Release Date, Original Release Date will be automatically set to the same date. For re-releases, please adjust the Original Release Date separately.',
+                            '💡 コンシューマーリリース日を入力すると、オリジナルリリース日が自動的に同じ日付に設定されます。再発売の場合は、オリジナルリリース日を別途修正してください。'
                           )}
                         </p>
                       </div>
@@ -1799,7 +1808,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                       {/* Consumer Release Date */}
                       <div id="consumer-release-date">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('컨슈머 발매일', 'Consumer Release Date')} <span className="text-red-500">*</span>
+                          {t('컨슈머 발매일', 'Consumer Release Date', 'コンシューマーリリース日')} <span className="text-red-500">*</span>
                         </label>
                         <DatePicker
                           value={formData.consumerReleaseDate || ''}
@@ -1814,7 +1823,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                           minDate={new Date().toISOString().split('T')[0]}
                         />
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {t('실제 발매될 날짜', 'Actual release date')}
+                          {t('실제 발매될 날짜', 'Actual release date', '実際のリリース日')}
                         </p>
                         
                         {/* Days until release and marketing message */}
@@ -1861,7 +1870,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                       {/* Original Release Date */}
                       <div id="original-release-date">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('오리지널 발매일', 'Original Release Date')} <span className="text-red-500">*</span>
+                          {t('오리지널 발매일', 'Original Release Date', 'オリジナルリリース日')} <span className="text-red-500">*</span>
                         </label>
                         <DatePicker
                           value={formData.originalReleaseDate || ''}
@@ -1869,14 +1878,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
                           maxDate={new Date().toISOString().split('T')[0]}
                         />
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          {t('최초 발매된 날짜', 'First release date')}
+                          {t('최초 발매된 날짜', 'First release date', '最初のリリース日')}
                         </p>
                       </div>
                       
                       {/* Release Time */}
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {t('발매 시간', 'Release Time')} <span className="text-red-500">*</span>
+                          {t('발매 시간', 'Release Time', 'リリース時間')} <span className="text-red-500">*</span>
                         </label>
                         <div className="space-y-2">
                           <input
@@ -1888,7 +1897,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                             required
                           />
                           <p className="text-xs text-gray-500 dark:text-gray-400">
-                            {t('정확한 발매 시간을 입력해주세요', 'Please enter the exact release time')}
+                            {t('정확한 발매 시간을 입력해주세요', 'Please enter the exact release time', '正確なリリース時間を入力してください')}
                           </p>
                         </div>
                       </div>
@@ -1897,7 +1906,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     {/* Timezone Selection */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('타임존 (시간대)', 'Timezone')} <span className="text-red-500">*</span>
+                        {t('타임존 (시간대)', 'Timezone', 'タイムゾーン')} <span className="text-red-500">*</span>
                       </label>
                       <SearchableSelect
                         options={timezones.map(tz => ({ 
@@ -1906,12 +1915,12 @@ const ImprovedReleaseSubmission: React.FC = () => {
                         }))}
                         value={formData.timezone}
                         onChange={(value) => setFormData(prev => ({ ...prev, timezone: value }))}
-                        placeholder={t('시간대 선택', 'Select timezone')}
-                        searchPlaceholder={t('시간대 검색...', 'Search timezones...')}
+                        placeholder={t('시간대 선택', 'Select timezone', 'タイムゾーンを選択')}
+                        searchPlaceholder={t('시간대 검색...', 'Search timezones...', 'タイムゾーンを検索...')}
                         className="w-full"
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {t('선택한 시간대를 기준으로 발매 시간이 설정됩니다', 'Release time will be set based on selected timezone')}
+                        {t('선택한 시간대를 기준으로 발매 시간이 설정됩니다', 'Release time will be set based on selected timezone', '選択したタイムゾーンに基づいてリリース時間が設定されます')}
                       </p>
                     </div>
 
@@ -1921,15 +1930,15 @@ const ImprovedReleaseSubmission: React.FC = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <Globe className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                           <h4 className="text-sm font-medium text-purple-800 dark:text-purple-200">
-                            {t('UTC 변환 정보', 'UTC Conversion Info')}
+                            {t('UTC 변환 정보', 'UTC Conversion Info', 'UTC変換情報')}
                           </h4>
                         </div>
                         <div className="space-y-1">
                           <p className="text-sm text-purple-700 dark:text-purple-300">
-                            <span className="font-medium">{t('컨슈머 발매시간', 'Consumer Release Time')}:</span> {formData.consumerReleaseDate} {formData.releaseTime} ({formData.timezone})
+                            <span className="font-medium">{t('컨슈머 발매시간', 'Consumer Release Time', 'コンシューマーリリース時間')}:</span> {formData.consumerReleaseDate} {formData.releaseTime} ({formData.timezone})
                           </p>
                           <p className="text-sm text-purple-700 dark:text-purple-300">
-                            <span className="font-medium">{t('UTC 변환', 'UTC Time')}:</span> {
+                            <span className="font-medium">{t('UTC 변환', 'UTC Time', 'UTC時間')}:</span> {
                               (() => {
                                 const utcDate = convertToUTC(formData.consumerReleaseDate, formData.releaseTime, formData.timezone);
                                 const hours = utcDate.getUTCHours();
@@ -1958,14 +1967,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     value={formData.upc || ''}
                     onChange={(e) => setFormData(prev => ({ ...prev, upc: e.target.value }))}
                     className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                    placeholder={t('UPC 코드', 'UPC code')}
+                    placeholder={t('UPC 코드', 'UPC code', 'UPCコード')}
                   />
                   <button
                     type="button"
                     onClick={handleGenerateUPC}
                     className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
                   >
-                    {t('생성', 'Generate')}
+                    {t('생성', 'Generate', '生成')}
                   </button>
                 </div>
               </div>
@@ -1973,24 +1982,24 @@ const ImprovedReleaseSubmission: React.FC = () => {
               {/* Copyright Info (P&C) */}
               <div className="md:col-span-2">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  {t('저작권 정보 (P&C)', 'Copyright Information (P&C)')}
+                  {t('저작권 정보 (P&C)', 'Copyright Information (P&C)', '著作権情報 (P&C)')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('© 저작권자 (Copyright)', '© Copyright Holder')} *
+                      {t('© 저작권자 (Copyright)', '© Copyright Holder', '© 著作権者 (Copyright)')} *
                     </label>
                     <input
                       type="text"
                       value={formData.copyrightHolder}
                       onChange={(e) => setFormData(prev => ({ ...prev, copyrightHolder: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                      placeholder={t('저작권 소유자명', 'Copyright holder name')}
+                      placeholder={t('저작권 소유자명', 'Copyright holder name', '著作権所有者名')}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('© 저작권 연도', '© Copyright Year')} *
+                      {t('© 저작권 연도', '© Copyright Year', '© 著作権年')} *
                     </label>
                     <input
                       type="text"
@@ -2002,19 +2011,19 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('℗ 제작권자 (Production)', '℗ Production Holder')} *
+                      {t('℗ 제작권자 (Production)', '℗ Production Holder', '℗ 制作権者 (Production)')} *
                     </label>
                     <input
                       type="text"
                       value={formData.productionHolder}
                       onChange={(e) => setFormData(prev => ({ ...prev, productionHolder: e.target.value }))}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                      placeholder={t('음원 제작권 소유자명', 'Production rights holder name')}
+                      placeholder={t('음원 제작권 소유자명', 'Production rights holder name', '音源制作権所有者名')}
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('℗ 제작권 연도', '℗ Production Year')} *
+                      {t('℗ 제작권 연도', '℗ Production Year', '℗ 制作権年')} *
                     </label>
                     <input
                       type="text"
@@ -2028,7 +2037,8 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                   {t(
                     '© (Copyright)는 작곡/작사 권리, ℗ (Production)는 녹음/제작 권리를 의미합니다',
-                    '© (Copyright) refers to composition/lyrics rights, ℗ (Production) refers to recording/production rights'
+                    '© (Copyright) refers to composition/lyrics rights, ℗ (Production) refers to recording/production rights',
+                    '© (Copyright)は作曲/作詞権利、℗ (Production)は録音/制作権利を意味します'
                   )}
                 </p>
               </div>
@@ -2041,7 +2051,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
           <div className="space-y-6">
             <div className="flex justify-between items-center">
               <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {t('트랙 정보', 'Track Information')}
+                {t('트랙 정보', 'Track Information', 'トラック情報')}
               </h2>
               <button
                 id="add-track-button"
@@ -2050,7 +2060,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
               >
                 <Plus className="w-4 h-4" />
-                {t('트랙 추가', 'Add Track')}
+                {t('트랙 추가', 'Add Track', 'トラックを追加')}
               </button>
             </div>
             
@@ -2059,13 +2069,13 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
                   <Music className="w-12 h-12 mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-500 dark:text-gray-400">
-                    {t('트랙을 추가해주세요', 'Please add tracks')}
+                    {t('트랙을 추가해주세요', 'Please add tracks', 'トラックを追加してください')}
                   </p>
                 </div>
               ) : (
                 <>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {t('드래그하여 트랙 순서를 변경할 수 있습니다', 'Drag to reorder tracks')}
+                    {t('드래그하여 트랙 순서를 변경할 수 있습니다', 'Drag to reorder tracks', 'ドラッグしてトラックの順序を変更できます')}
                   </p>
                   {formData.tracks.map((track, index) => (
                     <TrackItem 
@@ -2087,17 +2097,18 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   <Info className="w-5 h-5 text-amber-600 dark:text-amber-400 mt-0.5" />
                   <div className="text-sm">
                     <p className="font-semibold text-amber-900 dark:text-amber-200 mb-2">
-                      {t('멀티 볼륨 설정 가이드', 'Multi-Volume Setup Guide')}
+                      {t('멀티 볼륨 설정 가이드', 'Multi-Volume Setup Guide', 'マルチボリューム設定ガイド')}
                     </p>
                     <div className="space-y-2 text-amber-800 dark:text-amber-300">
                       <p>
                         {t(
                           '⚠️ 중요: 제품 승인 후에는 볼륨 수나 볼륨별 트랙 순서를 변경할 수 없습니다.',
-                          '⚠️ Important: Once approved, you cannot change the number of volumes or track order per volume.'
+                          '⚠️ Important: Once approved, you cannot change the number of volumes or track order per volume.',
+                          '⚠️ 重要：製品承認後はボリューム数やボリューム別トラック順序を変更できません。'
                         )}
                       </p>
                       <p className="font-medium">
-                        {t('현재 설정:', 'Current setup:')} {formData.totalVolumes} {t('볼륨', 'volumes')}
+                        {t('현재 설정:', 'Current setup:', '現在の設定:')} {formData.totalVolumes} {t('볼륨', 'volumes', 'ボリューム')}
                       </p>
                       <div className="mt-3">
                         <p className="font-medium mb-1">{t('예시 (3개 볼륨, 각 3곡):', 'Example (3 volumes, 3 tracks each):')}</p>
