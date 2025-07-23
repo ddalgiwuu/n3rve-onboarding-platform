@@ -150,12 +150,18 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="p-6 border-b border-gray-200/30 dark:border-gray-700/30">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-lg">N</span>
-                </div>
-                <div>
-                  <h1 className="font-bold text-xl text-gray-900 dark:text-white">N3RVE</h1>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">Music Distribution</p>
+                {/* Logo with light/dark mode support */}
+                <div className="h-10 flex items-center">
+                  <img 
+                    src="/assets/logos/n3rve-logo.svg" 
+                    alt="N3RVE" 
+                    className="h-full w-auto dark:hidden"
+                  />
+                  <img 
+                    src="/assets/logos/n3rve-logo-white.svg" 
+                    alt="N3RVE" 
+                    className="h-full w-auto hidden dark:block"
+                  />
                 </div>
               </div>
               

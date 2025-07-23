@@ -93,18 +93,18 @@ const AdminCustomers = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-gray-900 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/20 to-gray-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="glass-effect rounded-2xl p-8 mb-8 animate-fade-in">
+        <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 mb-8 animate-fade-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-400 to-blue-500 bg-clip-text text-transparent mb-4">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-500 bg-clip-text text-transparent mb-4">
                 {t('고객 관리', 'Customer Management')}
               </h1>
-              <p className="text-gray-300">{t('고객 정보를 관리하고 분석합니다', 'Manage and analyze customer information')}</p>
+              <p className="text-gray-600 dark:text-gray-300">{t('고객 정보를 관리하고 분석합니다', 'Manage and analyze customer information')}</p>
             </div>
-            <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
+            <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
               <UserPlus className="w-5 h-5" />
               {t('새 고객 추가', 'Add New Customer')}
             </button>
@@ -261,7 +261,7 @@ const AdminCustomers = () => {
                           {customer.status === 'active' ? t('활성', 'Active') : t('비활성', 'Inactive')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-gray-300">
+                      <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
                         {customer.lastActive && customer.lastActive !== '' ? (
                           (() => {
                             try {
