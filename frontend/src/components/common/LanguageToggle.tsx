@@ -29,7 +29,7 @@ export default function LanguageToggle() {
           className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium glass-effect rounded-lg hover:shadow-lg transition-all duration-300"
         >
           <Languages className="w-4 h-4" />
-          <span>{language === 'ko' ? 'KO' : 'EN'}</span>
+          <span>{language === 'ko' ? 'KO' : language === 'en' ? 'EN' : 'JA'}</span>
           <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
         
@@ -60,6 +60,18 @@ export default function LanguageToggle() {
             >
               English
             </button>
+            <button
+              onClick={() => {
+                setLanguage('ja')
+                setIsOpen(false)
+              }}
+              className={cn(
+                'w-full text-left px-4 py-2 text-sm hover:bg-white/10 dark:hover:bg-white/5 transition-all duration-300',
+                language === 'ja' && 'text-purple-600 dark:text-purple-400 font-medium bg-purple-50/50 dark:bg-purple-900/20'
+              )}
+            >
+              日本語
+            </button>
           </div>
         )}
       </div>
@@ -87,6 +99,17 @@ export default function LanguageToggle() {
           )}
         >
           English
+        </button>
+        <button
+          onClick={() => setLanguage('ja')}
+          className={cn(
+            'px-3 py-1 text-sm rounded-full transition-all duration-300 whitespace-nowrap',
+            language === 'ja'
+              ? 'glass-effect text-gray-900 dark:text-white shadow-md'
+              : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-white/20'
+          )}
+        >
+          日本語
         </button>
       </div>
     </div>

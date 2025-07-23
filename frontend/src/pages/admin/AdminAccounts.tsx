@@ -62,7 +62,7 @@ export default function AdminAccounts() {
       setAccounts(response.data)
     } catch (error) {
       console.error('Error fetching accounts:', error)
-      toast.error(t('admin.accounts.fetchError', '계정 목록을 불러오는데 실패했습니다', 'Failed to fetch accounts'))
+      toast.error(t('admin.accounts.fetchError', '계정 목록을 불러오는데 실패했습니다', 'Failed to fetch accounts', 'アカウントリストの読み込みに失敗しました'))
     } finally {
       setLoading(false)
     }
@@ -71,7 +71,7 @@ export default function AdminAccounts() {
   const handleCreateAccount = async () => {
     try {
       if (!formData.email || !formData.name || !formData.password) {
-        toast.error(t('common.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields'))
+        toast.error(t('common.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべてのフィールドに入力してください'))
         return
       }
 
@@ -81,7 +81,7 @@ export default function AdminAccounts() {
       }
 
       await api.post('/admin/accounts', payload)
-      toast.success(t('admin.accounts.createSuccess', '계정이 생성되었습니다', 'Account created successfully'))
+      toast.success(t('admin.accounts.createSuccess', '계정이 생성되었습니다', 'Account created successfully', 'アカウントが作成されました'))
       setShowCreateModal(false)
       setFormData({
         email: '',
@@ -97,30 +97,30 @@ export default function AdminAccounts() {
       if (error.response?.data?.message) {
         toast.error(error.response.data.message)
       } else {
-        toast.error(t('admin.accounts.createError', '계정 생성에 실패했습니다', 'Failed to create account'))
+        toast.error(t('admin.accounts.createError', '계정 생성에 실패했습니다', 'Failed to create account', 'アカウント作成に失敗しました'))
       }
     }
   }
 
   const handleDeleteAccount = async (accountId: string) => {
-    if (!confirm(t('admin.accounts.deleteConfirm', '정말로 이 계정을 삭제하시겠습니까?', 'Are you sure you want to delete this account?'))) {
+    if (!confirm(t('admin.accounts.deleteConfirm', '정말로 이 계정을 삭제하시겠습니까?', 'Are you sure you want to delete this account?', '本当にこのアカウントを削除しますか？'))) {
       return
     }
 
     try {
       await api.delete(`/admin/accounts/${accountId}`)
-      toast.success(t('admin.accounts.deleteSuccess', '계정이 삭제되었습니다', 'Account deleted successfully'))
+      toast.success(t('admin.accounts.deleteSuccess', '계정이 삭제되었습니다', 'Account deleted successfully', 'アカウントが削除されました'))
       fetchAccounts()
     } catch (error) {
       console.error('Error deleting account:', error)
-      toast.error(t('admin.accounts.deleteError', '계정 삭제에 실패했습니다', 'Failed to delete account'))
+      toast.error(t('admin.accounts.deleteError', '계정 삭제에 실패했습니다', 'Failed to delete account', 'アカウント削除に失敗しました'))
     }
   }
 
   const handleCreateSubAccount = async () => {
     try {
       if (!formData.email || !formData.name || !formData.password || !formData.parentAccountId) {
-        toast.error(t('common.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields'))
+        toast.error(t('common.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべてのフィールドに入力してください'))
         return
       }
 
@@ -131,7 +131,7 @@ export default function AdminAccounts() {
         parentAccountId: formData.parentAccountId
       })
 
-      toast.success(t('admin.accounts.subAccountCreated', '하위 계정이 생성되었습니다', 'Sub-account created successfully'))
+      toast.success(t('admin.accounts.subAccountCreated', '하위 계정이 생성되었습니다', 'Sub-account created successfully', 'サブアカウントが作成されました'))
       setShowCreateModal(false)
       setFormData({
         email: '',
@@ -144,7 +144,7 @@ export default function AdminAccounts() {
       fetchAccounts()
     } catch (error: any) {
       console.error('Error creating sub-account:', error)
-      toast.error(error.response?.data?.message || t('admin.accounts.subAccountError', '하위 계정 생성에 실패했습니다', 'Failed to create sub-account'))
+      toast.error(error.response?.data?.message || t('admin.accounts.subAccountError', '하위 계정 생성에 실패했습니다', 'Failed to create sub-account', 'サブアカウント作成に失敗しました'))
     }
   }
 
@@ -182,10 +182,10 @@ export default function AdminAccounts() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {t('admin.accounts.title', '계정 관리', 'Account Management')}
+            {t('admin.accounts.title', '계정 관리', 'Account Management', 'アカウント管理')}
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {t('admin.accounts.subtitle', '사용자 계정을 생성하고 관리합니다', 'Create and manage user accounts')}
+            {t('admin.accounts.subtitle', '사용자 계정을 생성하고 관리합니다', 'Create and manage user accounts', 'ユーザーアカウントを作成および管理します')}
           </p>
         </div>
         <button
@@ -193,7 +193,7 @@ export default function AdminAccounts() {
           className="btn-primary flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
-          {t('admin.accounts.createAccount', '계정 생성', 'Create Account')}
+          {t('admin.accounts.createAccount', '계정 생성', 'Create Account', 'アカウント作成')}
         </button>
       </div>
 
@@ -204,7 +204,7 @@ export default function AdminAccounts() {
           type="text"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          placeholder={t('admin.accounts.searchPlaceholder', '이메일, 이름, 회사명으로 검색...', 'Search by email, name, or company...')}
+          placeholder={t('admin.accounts.searchPlaceholder', '이메일, 이름, 회사명으로 검색...', 'Search by email, name, or company...', 'メール、名前、会社名で検索...')}
           className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
         />
       </div>
@@ -214,7 +214,7 @@ export default function AdminAccounts() {
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
             <Building2 className="w-5 h-5" />
-            {t('admin.accounts.companyAccounts', '회사 계정', 'Company Accounts')}
+            {t('admin.accounts.companyAccounts', '회사 계정', 'Company Accounts', '会社アカウント')}
           </h2>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
             {companyAccounts.map((company) => (
@@ -238,7 +238,7 @@ export default function AdminAccounts() {
                         {company.companyName}
                       </div>
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {company.email} • {company.subAccounts?.length || 0} {t('admin.accounts.subAccounts', '하위 계정', 'sub-accounts')}
+                        {company.email} • {company.subAccounts?.length || 0} {t('admin.accounts.subAccounts', '하위 계정', 'sub-accounts', 'サブアカウント')}
                       </div>
                     </div>
                   </div>
@@ -253,7 +253,7 @@ export default function AdminAccounts() {
                         setShowCreateModal(true)
                       }}
                       className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                      title={t('admin.accounts.addSubAccount', '하위 계정 추가', 'Add sub-account')}
+                      title={t('admin.accounts.addSubAccount', '하위 계정 추가', 'Add sub-account', 'サブアカウント追加')}
                     >
                       <UserPlus className="w-4 h-4" />
                     </button>
@@ -302,26 +302,26 @@ export default function AdminAccounts() {
       <div className="space-y-4">
         <h2 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
           <Users className="w-5 h-5" />
-          {t('admin.accounts.individualAccounts', '개인 계정', 'Individual Accounts')}
+          {t('admin.accounts.individualAccounts', '개인 계정', 'Individual Accounts', '個人アカウント')}
         </h2>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm overflow-hidden">
           <table className="w-full">
             <thead className="bg-gray-50 dark:bg-gray-700/50">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('admin.accounts.user', '사용자', 'User')}
+                  {t('admin.accounts.user', '사용자', 'User', 'ユーザー')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('admin.accounts.role', '역할', 'Role')}
+                  {t('admin.accounts.role', '역할', 'Role', '役割')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('admin.accounts.createdAt', '생성일', 'Created')}
+                  {t('admin.accounts.createdAt', '생성일', 'Created', '作成日')}
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('admin.accounts.lastLogin', '마지막 로그인', 'Last Login')}
+                  {t('admin.accounts.lastLogin', '마지막 로그인', 'Last Login', '最終ログイン')}
                 </th>
                 <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                  {t('admin.accounts.actions', '작업', 'Actions')}
+                  {t('admin.accounts.actions', '작업', 'Actions', '操作')}
                 </th>
               </tr>
             </thead>
@@ -350,7 +350,7 @@ export default function AdminAccounts() {
                         : 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
                     }`}>
                       {account.role === 'ADMIN' && <Shield className="w-3 h-3" />}
-                      {t(`roles.${account.role.toLowerCase()}`, account.role === 'ADMIN' ? '관리자' : '고객', account.role)}
+                      {t(`roles.${account.role.toLowerCase()}`, account.role === 'ADMIN' ? '관리자' : '고객', account.role, account.role === 'ADMIN' ? '管理者' : '顧客')}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
@@ -385,7 +385,7 @@ export default function AdminAccounts() {
 
           {individualAccounts.length === 0 && (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              {t('admin.accounts.noAccounts', '계정이 없습니다', 'No accounts found')}
+              {t('admin.accounts.noAccounts', '계정이 없습니다', 'No accounts found', 'アカウントがありません')}
             </div>
           )}
         </div>
@@ -397,7 +397,7 @@ export default function AdminAccounts() {
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
               {formData.parentAccountId 
-                ? t('admin.accounts.createSubAccount', '하위 계정 생성', 'Create Sub-Account')
+                ? t('admin.accounts.createSubAccount', '하위 계정 생성', 'Create Sub-Account', 'サブアカウント作成')
                 : t('admin.accounts.createAccount', '계정 생성', 'Create Account')
               }
             </h2>
@@ -406,7 +406,7 @@ export default function AdminAccounts() {
               {!formData.parentAccountId && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('admin.accounts.accountType', '계정 유형', 'Account Type')}
+                    {t('admin.accounts.accountType', '계정 유형', 'Account Type', 'アカウントタイプ')}
                   </label>
                   <div className="flex gap-4">
                     <label className="flex items-center">
@@ -417,7 +417,7 @@ export default function AdminAccounts() {
                         onChange={(e) => setFormData({ ...formData, accountType: e.target.value as 'individual' | 'company' })}
                         className="mr-2"
                       />
-                      {t('admin.accounts.individual', '개인', 'Individual')}
+                      {t('admin.accounts.individual', '개인', 'Individual', '個人')}
                     </label>
                     <label className="flex items-center">
                       <input
@@ -427,7 +427,7 @@ export default function AdminAccounts() {
                         onChange={(e) => setFormData({ ...formData, accountType: e.target.value as 'individual' | 'company' })}
                         className="mr-2"
                       />
-                      {t('admin.accounts.company', '회사', 'Company')}
+                      {t('admin.accounts.company', '회사', 'Company', '会社')}
                     </label>
                   </div>
                 </div>
@@ -435,7 +435,7 @@ export default function AdminAccounts() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('admin.accounts.email', '이메일', 'Email')}
+                  {t('admin.accounts.email', '이메일', 'Email', 'メールアドレス')}
                 </label>
                 <input
                   type="email"
@@ -448,57 +448,57 @@ export default function AdminAccounts() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('admin.accounts.name', '이름', 'Name')}
+                  {t('admin.accounts.name', '이름', 'Name', '名前')}
                 </label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                  placeholder={t('admin.accounts.namePlaceholder', '사용자 이름', 'User name')}
+                  placeholder={t('admin.accounts.namePlaceholder', '사용자 이름', 'User name', 'ユーザー名')}
                 />
               </div>
 
               {formData.accountType === 'company' && !formData.parentAccountId && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('admin.accounts.companyName', '회사명', 'Company Name')}
+                    {t('admin.accounts.companyName', '회사명', 'Company Name', '会社名')}
                   </label>
                   <input
                     type="text"
                     value={formData.companyName}
                     onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                    placeholder={t('admin.accounts.companyPlaceholder', '회사 이름', 'Company name')}
+                    placeholder={t('admin.accounts.companyPlaceholder', '회사 이름', 'Company name', '会社名')}
                   />
                 </div>
               )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  {t('admin.accounts.password', '비밀번호', 'Password')}
+                  {t('admin.accounts.password', '비밀번호', 'Password', 'パスワード')}
                 </label>
                 <input
                   type="password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                  placeholder={t('admin.accounts.passwordPlaceholder', '초기 비밀번호', 'Initial password')}
+                  placeholder={t('admin.accounts.passwordPlaceholder', '초기 비밀번호', 'Initial password', '初期パスワード')}
                 />
               </div>
 
               {!formData.parentAccountId && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('admin.accounts.role', '역할', 'Role')}
+                    {t('admin.accounts.role', '역할', 'Role', '役割')}
                   </label>
                   <select
                     value={formData.role}
                     onChange={(e) => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'CUSTOMER' })}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                   >
-                    <option value="CUSTOMER">{t('roles.customer', '고객', 'Customer')}</option>
-                    <option value="ADMIN">{t('roles.admin', '관리자', 'Admin')}</option>
+                    <option value="CUSTOMER">{t('roles.customer', '고객', 'Customer', '顧客')}</option>
+                    <option value="ADMIN">{t('roles.admin', '관리자', 'Admin', '管理者')}</option>
                   </select>
                 </div>
               )}
@@ -519,13 +519,13 @@ export default function AdminAccounts() {
                 }}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               >
-                {t('common.cancel', '취소', 'Cancel')}
+                {t('common.cancel', '취소', 'Cancel', 'キャンセル')}
               </button>
               <button
                 onClick={formData.parentAccountId ? handleCreateSubAccount : handleCreateAccount}
                 className="btn-primary"
               >
-                {t('common.create', '생성', 'Create')}
+                {t('common.create', '생성', 'Create', '作成')}
               </button>
             </div>
           </div>

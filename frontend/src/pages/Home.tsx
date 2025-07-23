@@ -52,6 +52,14 @@ export default function HomePage() {
                   새로운 기준
                 </span>
               </>
+            ) : language === 'ja' ? (
+              <>
+                <span className="text-gray-900 dark:text-white">グローバル音源流通の</span>
+                <br />
+                <span className="bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent animate-gradient-x">
+                  新しい基準
+                </span>
+              </>
             ) : (
               <>
                 <span className="text-gray-900 dark:text-white">The New Standard for</span>
@@ -66,6 +74,8 @@ export default function HomePage() {
           <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
             {language === 'ko' 
               ? 'N3RVE와 함께 당신의 음악을 전 세계 주요 플랫폼에 배포하세요. 복잡한 절차는 줄이고, 창작에만 집중할 수 있도록 돕습니다.'
+              : language === 'ja'
+              ? 'N3RVEであなたの音楽を世界中の主要プラットフォームに配信しましょう。複雑なプロセスをシンプルにして、創作に集中できるようサポートします。'
               : 'Distribute your music to major platforms worldwide with N3RVE. We simplify the process so you can focus on creating.'
             }
           </p>
@@ -75,7 +85,7 @@ export default function HomePage() {
               to="/login"
               className="group px-10 py-4 btn-primary rounded-full text-white font-medium text-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 flex items-center gap-3"
             >
-              {language === 'ko' ? '지금 시작하기' : 'Start Now'} 
+              {language === 'ko' ? '지금 시작하기' : language === 'ja' ? '今すぐ始める' : 'Start Now'} 
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
             
@@ -83,7 +93,7 @@ export default function HomePage() {
               to="/guide"
               className="px-10 py-4 btn-glass text-gray-700 dark:text-gray-300 rounded-full font-medium text-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5"
             >
-              {language === 'ko' ? '이용 가이드' : 'User Guide'}
+              {language === 'ko' ? '이용 가이드' : language === 'ja' ? '利用ガイド' : 'User Guide'}
             </Link>
           </div>
           
@@ -91,15 +101,15 @@ export default function HomePage() {
           <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm text-gray-700 dark:text-gray-400">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-500" />
-              <span className="text-gray-700 dark:text-gray-400">{language === 'ko' ? '100% 보안 인증' : '100% Secure'}</span>
+              <span className="text-gray-700 dark:text-gray-400">{language === 'ko' ? '100% 보안 인증' : language === 'ja' ? '100%セキュア' : '100% Secure'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Star className="w-4 h-4 text-yellow-500" />
-              <span className="text-gray-700 dark:text-gray-400">{language === 'ko' ? '업계 최고 수준' : 'Industry Leading'}</span>
+              <span className="text-gray-700 dark:text-gray-400">{language === 'ko' ? '업계 최고 수준' : language === 'ja' ? '業界最高水準' : 'Industry Leading'}</span>
             </div>
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-blue-500" />
-              <span className="text-gray-700 dark:text-gray-400">{language === 'ko' ? '150+ 국가 지원' : '150+ Countries'}</span>
+              <span className="text-gray-700 dark:text-gray-400">{language === 'ko' ? '150+ 국가 지원' : language === 'ja' ? '150+ヶ国対応' : '150+ Countries'}</span>
             </div>
           </div>
         </div>
@@ -108,7 +118,7 @@ export default function HomePage() {
       {/* Features Section */}
       <div className="container mx-auto px-4 py-20 relative">
         <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-16">
-          {language === 'ko' ? 'N3RVE가 특별한 이유' : 'Why Choose N3RVE'}
+          {language === 'ko' ? 'N3RVE가 특별한 이유' : language === 'ja' ? 'N3RVEを選ぶ理由' : 'Why Choose N3RVE'}
         </h2>
         
         <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
@@ -118,11 +128,13 @@ export default function HomePage() {
               <Music className="w-7 h-7 text-purple-600 dark:text-purple-400" />
             </div>
             <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
-              {language === 'ko' ? '간편한 음원 등록' : 'Easy Music Registration'}
+              {language === 'ko' ? '간편한 음원 등록' : language === 'ja' ? '簡単な音源登録' : 'Easy Music Registration'}
             </h3>
             <p className="text-gray-700 dark:text-gray-400 leading-relaxed">
               {language === 'ko' 
                 ? '직관적인 인터페이스와 단계별 가이드로 누구나 쉽게 음원을 등록하고 관리할 수 있습니다.'
+                : language === 'ja'
+                ? '直感的なインターフェースとステップバイステップガイドで、誰でも簡単に音源を登録・管理できます。'
                 : 'Register and manage your music easily with our intuitive interface and step-by-step guide.'
               }
             </p>
@@ -134,11 +146,13 @@ export default function HomePage() {
               <Shield className="w-7 h-7 text-blue-600 dark:text-blue-400" />
             </div>
             <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
-              {language === 'ko' ? '안전한 데이터 보호' : 'Secure Data Protection'}
+              {language === 'ko' ? '안전한 데이터 보호' : language === 'ja' ? '安全なデータ保護' : 'Secure Data Protection'}
             </h3>
             <p className="text-gray-700 dark:text-gray-400 leading-relaxed">
               {language === 'ko' 
                 ? '업계 최고 수준의 보안 시스템으로 아티스트의 음원과 개인정보를 안전하게 보호합니다.'
+                : language === 'ja'
+                ? '業界最高レベルのセキュリティシステムで、アーティストの音源と個人情報を安全に保護します。'
                 : 'Protect your music and personal information with industry-leading security systems.'
               }
             </p>
@@ -150,11 +164,13 @@ export default function HomePage() {
               <Globe className="w-7 h-7 text-green-600 dark:text-green-400" />
             </div>
             <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-white">
-              {language === 'ko' ? '글로벌 플랫폼 연동' : 'Global Platform Integration'}
+              {language === 'ko' ? '글로벌 플랫폼 연동' : language === 'ja' ? 'グローバルプラットフォーム連携' : 'Global Platform Integration'}
             </h3>
             <p className="text-gray-700 dark:text-gray-400 leading-relaxed">
               {language === 'ko' 
                 ? '전 세계 주요 음원 플랫폼과 원활하게 연동되어 한 번의 등록으로 모든 곳에 배포됩니다.'
+                : language === 'ja'
+                ? '世界中の主要音楽プラットフォームとシームレスに連携し、ワンクリックですべてのプラットフォームに配信されます。'
                 : 'Seamlessly integrated with major music platforms worldwide for one-click distribution.'
               }
             </p>
@@ -168,11 +184,13 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-black opacity-10"></div>
           <div className="relative">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              {language === 'ko' ? '지금 바로 시작하세요' : 'Start Your Journey Today'}
+              {language === 'ko' ? '지금 바로 시작하세요' : language === 'ja' ? '今すぐジャーニーを始めましょう' : 'Start Your Journey Today'}
             </h2>
             <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
               {language === 'ko' 
                 ? 'N3RVE와 함께 당신의 음악을 세계에 알리는 첫걸음을 내디뎌보세요.'
+                : language === 'ja'
+                ? 'N3RVEと一緒に、あなたの音楽を世界に届ける最初の一歩を踏み出しましょう。'
                 : 'Take the first step to share your music with the world through N3RVE.'
               }
             </p>
@@ -180,7 +198,7 @@ export default function HomePage() {
               to="/login"
               className="inline-flex items-center gap-2 px-8 py-4 glass-effect bg-white/90 text-purple-600 rounded-full font-semibold text-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
             >
-              {language === 'ko' ? '무료로 시작하기' : 'Start Free'} 
+              {language === 'ko' ? '무료로 시작하기' : language === 'ja' ? '無料で始める' : 'Start Free'} 
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
