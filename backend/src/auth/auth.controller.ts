@@ -9,6 +9,7 @@ import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { GoogleUser } from './interfaces/auth.interface';
 import { UsersService } from '../users/users.service';
+import * as bcrypt from 'bcrypt';
 
 interface RequestWithGoogleUser extends Request {
   user: GoogleUser;
@@ -199,6 +200,69 @@ export class AuthController {
       }
       
       throw new HttpException('Failed to refresh token', HttpStatus.UNAUTHORIZED);
+    }
+  }
+
+  @Public()
+  @Post('login')
+  async login(@Body() body: { email: string; password: string }) {
+    console.log('Auth Controller - Email login request for:', body.email);
+
+    if (!body.email || !body.password) {
+      throw new HttpException('Email and password are required', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      // Find user by email
+      const user = await this.usersService.findOne(body.email);
+      
+      if (!user) {
+        throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Check if user has a password (was created with email/password)
+      if (!user.password || user.provider !== 'EMAIL') {
+        throw new HttpException('Please use Google login for this account', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(body.password, user.password);
+      
+      if (!isPasswordValid) {
+        throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
+      }
+
+      // Check if user is active
+      if (!user.isActive) {
+        throw new HttpException('Account is deactivated', HttpStatus.FORBIDDEN);
+      }
+
+      // Update last login
+      await this.usersService.updateLastLogin(user.id);
+
+      // Generate tokens
+      const tokens = await this.authService.generateTokens(user);
+
+      // Transform role for frontend compatibility
+      const userResponse = {
+        ...user,
+        role: user.role === 'USER' ? 'CUSTOMER' : user.role,
+        password: undefined, // Remove password from response
+      };
+
+      return {
+        user: userResponse,
+        accessToken: tokens.access_token,
+        refreshToken: tokens.refresh_token,
+      };
+    } catch (error) {
+      console.error('Auth Controller - Login error:', error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException('Login failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

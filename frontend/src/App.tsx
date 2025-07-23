@@ -22,6 +22,7 @@ const GuidePage = lazy(() => import('./pages/Guide'))
 const SettingsPage = lazy(() => import('./pages/Settings'))
 const AdminCustomersPage = lazy(() => import('./pages/admin/AdminCustomers'))
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettings'))
+const AdminAccountsPage = lazy(() => import('./pages/admin/AdminAccounts'))
 const DropboxCallbackPage = lazy(() => import('./pages/DropboxCallback'))
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallback'))
 const ProfileCompletePage = lazy(() => import('./pages/ProfileComplete'))
@@ -146,6 +147,9 @@ function App() {
           } />
           <Route path="/admin/settings" element={
             isAuthenticated && userRole === 'ADMIN' ? <AdminSettingsPage /> : <Navigate to="/login" />
+          } />
+          <Route path="/admin/accounts" element={
+            isAuthenticated && userRole === 'ADMIN' ? <AdminAccountsPage /> : <Navigate to="/login" />
           } />
         </Route>
 
