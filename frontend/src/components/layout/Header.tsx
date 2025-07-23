@@ -70,6 +70,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
         <div className="flex items-center gap-2 sm:gap-4">
           <LanguageToggle />
           
+          {/* Dark Mode Toggle - Force visibility */}
           <DarkModeToggle />
           
           <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors hidden sm:block">
