@@ -9,7 +9,7 @@ import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { GoogleUser } from './interfaces/auth.interface';
 import { UsersService } from '../users/users.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 
 interface RequestWithGoogleUser extends Request {
   user: GoogleUser;

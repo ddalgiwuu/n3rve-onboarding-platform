@@ -61,6 +61,9 @@ export class UsersService {
         profilePicture: null,
         company: null,
         phone: null,
+        password: null,
+        isCompanyAccount: false,
+        parentAccountId: null,
         preferences: {
           language: 'KO' as const,
           notifications: {
@@ -94,6 +97,9 @@ export class UsersService {
           profilePicture: null,
           company: null,
           phone: null,
+          password: null,
+          isCompanyAccount: false,
+          parentAccountId: null,
           preferences: {
             language: 'KO' as const,
             notifications: {
