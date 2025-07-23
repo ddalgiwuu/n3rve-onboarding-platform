@@ -159,15 +159,112 @@ const translations = {
     'settings.currentPlan': 'Current Plan',
     'settings.upgrade': 'Upgrade',
     'settings.paymentMethod': 'Payment Method',
+  },
+  ja: {
+    // Auth translations
+    'auth.welcomeTitle': 'N3RVEオンボーディングプラットフォームへようこそ',
+    'auth.welcomeSubtitle': 'Googleアカウントでサインインしてください',
+    'auth.continueWithGoogle': 'Googleで続ける',
+    'auth.signingIn': 'サインイン中...',
+    'auth.secureLogin': '安全なログイン',
+    'auth.googleLoginDescription': 'Googleアカウントで安全かつ迅速にログインできます',
+    'auth.oauthFailed': 'OAuth認証に失敗しました。もう一度お試しください。',
+    'auth.loginFailed': 'ログインに失敗しました',
+    'auth.popupBlocked': 'ポップアップがブロックされました。ポップアップを許可してください。',
+    'auth.loginRequired': 'ログインが必要です',
+    'auth.loginSuccess': 'ログインしました',
+    'auth.loginProcessError': 'ログイン処理中にエラーが発生しました',
+    'auth.signingInProgress': 'サインイン中...',
+    
+    // Profile Setup
+    'profile.setupTitle': 'プロフィール設定を完了してください',
+    'profile.setupSubtitle': '続行するには追加情報を入力してください',
+    'profile.company': '会社名',
+    'profile.companyPlaceholder': '会社名またはレーベル名を入力してください',
+    'profile.phone': '電話番号',
+    'profile.phonePlaceholder': '010-1234-5678',
+    'profile.complete': 'プロフィール設定を完了',
+    'profile.completing': '設定中...',
+    'profile.helpText': 'この情報はアカウント管理とサポートに使用されます',
+    'profile.setupComplete': 'プロフィール設定が完了しました！',
+    'profile.setupFailed': 'プロフィール設定に失敗しました。もう一度お試しください。',
+    
+    // Time Picker
+    'time.quickSelect': 'クイック選択',
+    'time.hours': '時間',
+    'time.minutes': '分',
+    'time.done': '完了',
+    
+    // Common UI
+    'common.loading': '読み込み中...',
+    'common.error': 'エラーが発生しました',
+    'common.retry': 'もう一度試す',
+    'common.close': '閉じる',
+    'common.search': '検索...',
+    'common.noResults': '検索結果がありません',
+    
+    // Settings translations
+    'settings.title': '設定',
+    'settings.description': 'アカウントとアプリの設定を管理します',
+    'settings.profile': 'プロフィール',
+    'settings.notifications': '通知',
+    'settings.security': 'セキュリティ',
+    'settings.language': '言語',
+    'settings.billing': '請求',
+    'settings.profileSettings': 'プロフィール設定',
+    'settings.fullName': '氏名',
+    'settings.email': 'メールアドレス',
+    'settings.phone': '電話番号',
+    'settings.company': '会社',
+    'settings.saveChanges': '変更を保存',
+    'settings.notificationSettings': '通知設定',
+    'settings.emailNotifications': 'メール通知',
+    'settings.emailNotificationsDesc': '重要な更新をメールで受け取ります',
+    'settings.pushNotifications': 'プッシュ通知',
+    'settings.pushNotificationsDesc': 'ブラウザのプッシュ通知を受け取ります',
+    'settings.smsNotifications': 'SMS通知',
+    'settings.smsNotificationsDesc': '重要なアラートをテキストで受け取ります',
+    'settings.marketingEmails': 'マーケティングメール',
+    'settings.marketingEmailsDesc': 'プロモーションやニュースを受け取ります',
+    'settings.securitySettings': 'セキュリティ設定',
+    'settings.changePassword': 'パスワード変更',
+    'settings.lastChanged': '最終変更: 30日前',
+    'settings.updatePassword': 'パスワードを更新',
+    'settings.twoFactor': '二要素認証',
+    'settings.twoFactorDesc': 'アカウントに追加のセキュリティレイヤーを追加します',
+    'settings.enable2FA': '2FAを有効化',
+    'settings.languageSettings': '言語設定',
+    'settings.billingSettings': '請求設定',
+    'settings.currentPlan': '現在のプラン',
+    'settings.upgrade': 'アップグレード',
+    'settings.paymentMethod': '支払い方法',
   }
 }
 
 export function useTranslation() {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
   
-  const t = (key: string, fallback?: string): string => {
-    const currentTranslations = translations[language as keyof typeof translations] || translations.en
-    return currentTranslations[key as keyof typeof currentTranslations] || fallback || key
+  // Support for direct language strings instead of key-based translations
+  const t = (key: string, ko: string, en: string, ja?: string): string => {
+    // If using the old format with translations object
+    if (arguments.length === 1 || arguments.length === 2) {
+      const fallback = arguments[1]
+      const lang = language as keyof typeof translations
+      const currentTranslations = translations[lang] || translations.en
+      return currentTranslations[key as keyof typeof currentTranslations] || fallback || key
+    }
+    
+    // New format with direct language strings
+    switch (language) {
+      case 'ko':
+        return ko
+      case 'en':
+        return en
+      case 'ja':
+        return ja || en // Fallback to English if Japanese not provided
+      default:
+        return en
+    }
   }
   
   return { t, language }

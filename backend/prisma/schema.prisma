@@ -379,6 +379,7 @@ enum Role {
 enum Language {
   KO
   EN
+  JA
 }
 
 enum SubmissionStatus {

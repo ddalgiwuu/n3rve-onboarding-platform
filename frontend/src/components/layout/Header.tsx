@@ -15,7 +15,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const user = useSafeStore(useAuthStore, (state) => state.user)
   const clearAuth = useSafeStore(useAuthStore, (state) => state.clearAuth)
   const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string, ja?: string) => {
+    switch (language) {
+      case 'ko': return ko
+      case 'en': return en
+      case 'ja': return ja || en
+      default: return en
+    }
+  }
   const navigate = useNavigate()
   const location = useLocation()
   const isAdmin = user?.role === 'ADMIN'
@@ -25,7 +32,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
     if (clearAuth) {
       clearAuth()
     }
-    toast.success(t('로그아웃되었습니다', 'Logged out successfully'))
+    toast.success(t('로그아웃되었습니다', 'Logged out successfully', 'ログアウトしました'))
     navigate('/login')
   }
 
@@ -115,7 +122,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
-                  {t('로그아웃', 'Logout')}
+                  {t('로그아웃', 'Logout', 'ログアウト')}
                 </button>
               </div>
             </div>

@@ -21,7 +21,14 @@ interface Customer {
 
 const AdminCustomers = () => {
   const { language } = useTranslation();
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const t = (ko: string, en: string, ja?: string) => {
+    switch (language) {
+      case 'ko': return ko;
+      case 'en': return en;
+      case 'ja': return ja || en;
+      default: return en;
+    }
+  };
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -62,7 +69,7 @@ const AdminCustomers = () => {
       setCustomers(customerData);
     } catch (error) {
       console.error('Error fetching customers:', error);
-      toast.error(t('고객 정보를 불러오는 중 오류가 발생했습니다.', 'Error fetching customers'));
+      toast.error(t('고객 정보를 불러오는 중 오류가 발생했습니다.', 'Error fetching customers', '顧客情報の読み込み中にエラーが発生しました'));
       setCustomers([]); // Set empty array on error
     } finally {
       setLoading(false);
@@ -100,13 +107,13 @@ const AdminCustomers = () => {
           <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-500 bg-clip-text text-transparent mb-4">
-                {t('고객 관리', 'Customer Management')}
+                {t('고객 관리', 'Customer Management', '顧客管理')}
               </h1>
-              <p className="text-gray-700 dark:text-gray-300">{t('고객 정보를 관리하고 분석합니다', 'Manage and analyze customer information')}</p>
+              <p className="text-gray-700 dark:text-gray-300">{t('고객 정보를 관리하고 분석합니다', 'Manage and analyze customer information', '顧客情報を管理・分析します')}</p>
             </div>
             <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
               <UserPlus className="w-5 h-5" />
-              {t('새 고객 추가', 'Add New Customer')}
+              {t('새 고객 추가', 'Add New Customer', '新規顧客追加')}
             </button>
           </div>
         </div>
@@ -118,7 +125,7 @@ const AdminCustomers = () => {
               <UserPlus className="w-8 h-8 text-purple-500 dark:text-purple-400" />
               <span className="text-2xl font-bold text-gray-900 dark:text-white">{customers.length}</span>
             </div>
-            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('전체 고객', 'Total Customers')}</p>
+            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('전체 고객', 'Total Customers', '全顧客数')}</p>
           </div>
           
           <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-slide-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50" style={{ animationDelay: '0.1s' }}>
@@ -126,7 +133,7 @@ const AdminCustomers = () => {
               <TrendingUp className="w-8 h-8 text-green-500 dark:text-green-400" />
               <span className="text-2xl font-bold text-gray-900 dark:text-white">{customers.filter(c => c.status === 'active').length}</span>
             </div>
-            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('활성 고객', 'Active Customers')}</p>
+            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('활성 고객', 'Active Customers', 'アクティブ顧客')}</p>
           </div>
           
           <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-slide-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50" style={{ animationDelay: '0.2s' }}>
@@ -134,7 +141,7 @@ const AdminCustomers = () => {
               <Music className="w-8 h-8 text-blue-500 dark:text-blue-400" />
               <span className="text-2xl font-bold text-gray-900 dark:text-white">{customers.reduce((sum, c) => sum + (c.submissionCount || 0), 0)}</span>
             </div>
-            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('전체 제출', 'Total Submissions')}</p>
+            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('전체 제출', 'Total Submissions', '総提出数')}</p>
           </div>
           
           <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-slide-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50" style={{ animationDelay: '0.3s' }}>
@@ -148,7 +155,7 @@ const AdminCustomers = () => {
                 }).length}
               </span>
             </div>
-            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('이번 달 신규', 'New This Month')}</p>
+            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('이번 달 신규', 'New This Month', '今月の新規')}</p>
           </div>
         </div>
 
@@ -159,7 +166,7 @@ const AdminCustomers = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder={t('고객 검색...', 'Search customers...')}
+                placeholder={t('고객 검색...', 'Search customers...', '顧客を検索...')}
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -170,13 +177,13 @@ const AdminCustomers = () => {
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
-              <option value="all">{t('모든 상태', 'All Statuses')}</option>
-              <option value="active">{t('활성', 'Active')}</option>
-              <option value="inactive">{t('비활성', 'Inactive')}</option>
+              <option value="all">{t('모든 상태', 'All Statuses', 'すべてのステータス')}</option>
+              <option value="active">{t('활성', 'Active', 'アクティブ')}</option>
+              <option value="inactive">{t('비활성', 'Inactive', '非アクティブ')}</option>
             </select>
             <button className="px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
               <Download className="w-5 h-5" />
-              {t('내보내기', 'Export')}
+              {t('내보내기', 'Export', 'エクスポート')}
             </button>
           </div>
         </div>
@@ -200,13 +207,13 @@ const AdminCustomers = () => {
                         className="rounded border-gray-600 text-purple-600 focus:ring-purple-500"
                       />
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('이름', 'Name')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('연락처', 'Contact')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('가입일', 'Joined')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('제출', 'Submissions')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('회사', 'Company')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('상태', 'Status')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('마지막 활동', 'Last Active')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('이름', 'Name', '名前')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('연락처', 'Contact', '連絡先')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('가입일', 'Joined', '登録日')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('제출', 'Submissions', '提出')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('회사', 'Company', '会社')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('상태', 'Status', 'ステータス')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('마지막 활동', 'Last Active', '最終アクティビティ')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -258,7 +265,7 @@ const AdminCustomers = () => {
                             ? 'bg-green-500/20 text-green-300 border border-green-500/30'
                             : 'bg-gray-500/20 text-gray-300 border border-gray-500/30'
                         }`}>
-                          {customer.status === 'active' ? t('활성', 'Active') : t('비활성', 'Inactive')}
+                          {customer.status === 'active' ? t('활성', 'Active', 'アクティブ') : t('비활성', 'Inactive', '非アクティブ')}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-medium">
