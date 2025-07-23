@@ -57,7 +57,7 @@ const Submissions = () => {
       }
     } catch (error) {
       console.error('Error fetching submissions:', error);
-      toast.error(t('submissions.fetchError'));
+      toast.error(t('submissions.fetchError', '제출 내역을 불러오는데 실패했습니다', 'Failed to fetch submissions', '提出履歴の読み込みに失敗しました'));
       setSubmissions([]);
     } finally {
       setLoading(false);
@@ -75,12 +75,12 @@ const Submissions = () => {
     try {
       // TODO: Implement delete API call
       // await submissionService.deleteSubmission(deletingId);
-      toast.success(t('submissions.deleteSuccess'));
+      toast.success(t('submissions.deleteSuccess', '제출이 삭제되었습니다', 'Submission deleted successfully', '提出が削除されました'));
       setSubmissions(submissions.filter(s => s.id !== deletingId));
       setShowDeleteModal(false);
       setDeletingId(null);
     } catch (error) {
-      toast.error(t('submissions.deleteError'));
+      toast.error(t('submissions.deleteError', '삭제 중 오류가 발생했습니다', 'Error deleting submission', '削除中にエラーが発生しました'));
     }
   };
 
@@ -105,12 +105,12 @@ const Submissions = () => {
   const getStatusText = (status: string) => {
     switch (status) {
       case 'APPROVED':
-        return t('승인완료', 'Approved');
+        return t('승인완료', 'Approved', '承認済み');
       case 'REJECTED':
-        return t('반려됨', 'Rejected');
+        return t('반려됨', 'Rejected', '却下');
       case 'PENDING':
       default:
-        return t('검토중', 'Pending');
+        return t('검토중', 'Pending', '審査中');
     }
   };
 
@@ -143,16 +143,16 @@ const Submissions = () => {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                {t('내 제출 내역', 'My Submissions')}
+                {t('내 제출 내역', 'My Submissions', '提出履歴')}
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">{t('제출한 릴리즈를 확인하고 관리하세요', 'View and manage your submitted releases')}</p>
+              <p className="text-gray-600 dark:text-gray-400">{t('제출한 릴리즈를 확인하고 관리하세요', 'View and manage your submitted releases', '提出したリリースを確認・管理します')}</p>
             </div>
             <button
               onClick={() => navigate('/release-submission-modern')}
               className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium shadow-sm"
             >
               <Plus className="w-5 h-5" />
-              {t('새 릴리즈 등록', 'New Release')}
+              {t('새 릴리즈 등록', 'New Release', '新規リリース登録')}
             </button>
           </div>
         </div>
@@ -167,7 +167,7 @@ const Submissions = () => {
               <span className="text-2xl font-bold text-gray-900 dark:text-white">{submissions.length}</span>
             </div>
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('전체 제출', 'Total Submissions')}
+              {t('전체 제출', 'Total Submissions', '総提出数')}
             </h3>
           </div>
           
@@ -181,7 +181,7 @@ const Submissions = () => {
               </span>
             </div>
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('승인됨', 'Approved')}
+              {t('승인됨', 'Approved', '承認済み')}
             </h3>
           </div>
           
@@ -195,7 +195,7 @@ const Submissions = () => {
               </span>
             </div>
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('검토 중', 'Under Review')}
+              {t('검토 중', 'Under Review', '審査中')}
             </h3>
           </div>
           
@@ -209,7 +209,7 @@ const Submissions = () => {
               </span>
             </div>
             <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-              {t('반려됨', 'Rejected')}
+              {t('반려됨', 'Rejected', '却下')}
             </h3>
           </div>
         </div>
@@ -221,7 +221,7 @@ const Submissions = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder={t('앨범명 또는 아티스트명으로 검색', 'Search by album or artist name')}
+                placeholder={t('앨범명 또는 아티스트명으로 검색', 'Search by album or artist name', 'アルバム名またはアーティスト名で検索')}
                 className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -233,10 +233,10 @@ const Submissions = () => {
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
-                <option value="all">{t('모든 상태', 'All Status')}</option>
-                <option value="pending">{t('검토 중', 'Pending')}</option>
-                <option value="approved">{t('승인됨', 'Approved')}</option>
-                <option value="rejected">{t('반려됨', 'Rejected')}</option>
+                <option value="all">{t('모든 상태', 'All Status', 'すべてのステータス')}</option>
+                <option value="pending">{t('검토 중', 'Pending', '審査中')}</option>
+                <option value="approved">{t('승인됨', 'Approved', '承認済み')}</option>
+                <option value="rejected">{t('반려됨', 'Rejected', '却下')}</option>
               </select>
               <button
                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
@@ -253,18 +253,18 @@ const Submissions = () => {
           {loading ? (
             <div className="col-span-full bg-white dark:bg-gray-800 rounded-xl p-12 text-center shadow-sm">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-400">{t('불러오는 중...', 'Loading...')}</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">{t('불러오는 중...', 'Loading...', '読み込み中...')}</p>
             </div>
           ) : filteredSubmissions.length === 0 ? (
             <div className="col-span-full bg-white dark:bg-gray-800 rounded-xl p-12 text-center shadow-sm">
               <Music className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 mb-6">{t('제출된 릴리즈가 없습니다', 'No submissions found')}</p>
+              <p className="text-gray-500 dark:text-gray-400 mb-6">{t('제출된 릴리즈가 없습니다', 'No submissions found', '提出されたリリースがありません')}</p>
               <button
                 onClick={() => navigate('/release-submission-modern')}
                 className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium"
               >
                 <Plus className="w-5 h-5" />
-                {t('첫 번째 릴리즈 등록하기', 'Create your first release')}
+                {t('첫 번째 릴리즈 등록하기', 'Create your first release', '最初のリリースを登録')}
               </button>
             </div>
           ) : (
@@ -299,7 +299,7 @@ const Submissions = () => {
                           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
                             <span className="flex items-center gap-1">
                               <Music className="w-4 h-4" />
-                              {submission.tracks?.length || 0} {t('트랙', 'tracks')}
+                              {submission.tracks?.length || 0} {t('트랙', 'tracks', 'トラック')}
                             </span>
                             {submission.albumGenre?.length > 0 && (
                               <span className="flex items-center gap-1">
@@ -328,7 +328,7 @@ const Submissions = () => {
                                 <Info className="w-4 h-4 text-red-600 dark:text-red-400 mt-0.5" />
                                 <div>
                                   <p className="text-sm font-medium text-red-800 dark:text-red-200 mb-1">
-                                    {t('반려 사유', 'Rejection Reason')}
+                                    {t('반려 사유', 'Rejection Reason', '却下理由')}
                                   </p>
                                   <p className="text-sm text-red-700 dark:text-red-300">
                                     {submission.adminNotes}
@@ -346,7 +346,7 @@ const Submissions = () => {
                       <button
                         onClick={() => navigate(`/submission/${submission.id}`)}
                         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
-                        title={t('상세보기', 'View Details')}
+                        title={t('상세보기', 'View Details', '詳細を見る')}
                       >
                         <Eye className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400" />
                       </button>
@@ -355,7 +355,7 @@ const Submissions = () => {
                         <button
                           onClick={(e) => handleEdit(submission.id, e)}
                           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
-                          title={t('수정', 'Edit')}
+                          title={t('수정', 'Edit', '編集')}
                         >
                           <Edit className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                         </button>
@@ -365,7 +365,7 @@ const Submissions = () => {
                         <button
                           onClick={(e) => handleResubmit(submission.id, e)}
                           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
-                          title={t('재제출', 'Resubmit')}
+                          title={t('재제출', 'Resubmit', '再提出')}
                         >
                           <RefreshCw className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400" />
                         </button>
@@ -378,7 +378,7 @@ const Submissions = () => {
                           setShowDeleteModal(true);
                         }}
                         className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors group"
-                        title={t('삭제', 'Delete')}
+                        title={t('삭제', 'Delete', '削除')}
                       >
                         <Trash2 className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-red-600 dark:group-hover:text-red-400" />
                       </button>
@@ -396,11 +396,12 @@ const Submissions = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 max-w-md w-full">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              {t('제출 삭제', 'Delete Submission')}
+              {t('제출 삭제', 'Delete Submission', '提出削除')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               {t('이 제출을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.', 
-                'Are you sure you want to delete this submission? This action cannot be undone.')}
+                'Are you sure you want to delete this submission? This action cannot be undone.',
+                'この提出を削除してもよろしいですか？この操作は元に戻せません。')}
             </p>
             <div className="flex gap-3 justify-end">
               <button
@@ -410,13 +411,13 @@ const Submissions = () => {
                 }}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                {t('취소', 'Cancel')}
+                {t('취소', 'Cancel', 'キャンセル')}
               </button>
               <button
                 onClick={handleDelete}
                 className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
               >
-                {t('삭제', 'Delete')}
+                {t('삭제', 'Delete', '削除')}
               </button>
             </div>
           </div>

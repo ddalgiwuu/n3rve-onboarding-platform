@@ -32,7 +32,7 @@ export default function LoginPage() {
     const error = urlParams.get('error')
     
     if (error === 'oauth_failed') {
-      toast.error(t('auth.oauthFailed'))
+      toast.error(t('auth.oauthFailed', 'OAuth 인증에 실패했습니다', 'OAuth authentication failed', 'OAuth認証に失敗しました'))
     }
   }, [location, t])
   
@@ -54,7 +54,7 @@ export default function LoginPage() {
           navigate(`/auth/callback?${params.toString()}`)
         } else {
           setIsLoading(false)
-          toast.error(t('auth.loginFailed'))
+          toast.error(t('auth.loginFailed', '로그인에 실패했습니다', 'Login failed', 'ログインに失敗しました'))
         }
       }
     }
@@ -90,7 +90,7 @@ export default function LoginPage() {
       )
       
       if (!popupRef.current) {
-        toast.error(t('auth.popupBlocked'))
+        toast.error(t('auth.popupBlocked', '팝업이 차단되었습니다. 팝업 차단을 해제해주세요.', 'Popup blocked. Please allow popups and try again.', 'ポップアップがブロックされました。ポップアップを許可してください'))
         setIsLoading(false)
         return
       }
@@ -107,7 +107,7 @@ export default function LoginPage() {
     e.preventDefault()
     
     if (!email || !password) {
-      toast.error(t('auth.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields'))
+      toast.error(t('auth.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべての項目を入力してください'))
       return
     }
     
@@ -140,11 +140,11 @@ export default function LoginPage() {
         navigate(returnUrl)
       }
       
-      toast.success(t('auth.loginSuccess'))
+      toast.success(t('auth.loginSuccess', '로그인되었습니다', 'Logged in successfully', 'ログインしました'))
     } catch (error: any) {
       console.error('Login error:', error)
       if (error.response?.status === 401) {
-        toast.error(t('auth.invalidCredentials', '이메일 또는 비밀번호가 올바르지 않습니다', 'Invalid email or password'))
+        toast.error(t('auth.invalidCredentials', '이메일 또는 비밀번호가 올바르지 않습니다', 'Invalid email or password', 'メールアドレスまたはパスワードが正しくありません'))
       } else {
         toast.error(t('auth.loginFailed'))
       }
@@ -180,7 +180,7 @@ export default function LoginPage() {
               N3RVE Platform
             </h1>
             <p className="mt-2 text-gray-600 dark:text-gray-400">
-              {t('auth.subtitle')}
+              {t('auth.subtitle', '공식 음원 유통 플랫폼', 'Official Music Distribution Platform', '公式音楽配信プラットフォーム')}
             </p>
           </div>
 
@@ -194,7 +194,7 @@ export default function LoginPage() {
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              {t('auth.googleLogin', 'Google 로그인', 'Google Login')}
+              {t('auth.googleLogin', 'Google 로그인', 'Google Login', 'Googleログイン')}
             </button>
             <button
               onClick={() => setLoginMethod('email')}
@@ -204,7 +204,7 @@ export default function LoginPage() {
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
-              {t('auth.emailLogin', '이메일 로그인', 'Email Login')}
+              {t('auth.emailLogin', '이메일 로그인', 'Email Login', 'メールログイン')}
             </button>
           </div>
 
@@ -239,7 +239,7 @@ export default function LoginPage() {
                       />
                     </svg>
                     <span className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-gray-700 dark:group-hover:text-white">
-                      {t('auth.continueWithGoogle')}
+                      {t('auth.continueWithGoogle', 'Google로 계속하기', 'Continue with Google', 'Googleで続ける')}
                     </span>
                   </>
                 )}
@@ -247,10 +247,10 @@ export default function LoginPage() {
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('auth.noAccount')}
+                  {t('auth.noAccount', '계정이 없으신가요?', "Don't have an account?", 'アカウントがありませんか？')}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">
-                  {t('auth.contactAdmin', '관리자에게 계정 생성을 요청하세요', 'Contact admin for account creation')}
+                  {t('auth.contactAdmin', '관리자에게 계정 생성을 요청하세요', 'Contact admin for account creation', '管理者にアカウント作成を依頼してください')}
                 </p>
               </div>
             </>
@@ -260,7 +260,7 @@ export default function LoginPage() {
               <form onSubmit={handleEmailLogin} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('auth.email', '이메일', 'Email')}
+                    {t('auth.email', '이메일', 'Email', 'メールアドレス')}
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -269,7 +269,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
-                      placeholder={t('auth.emailPlaceholder', '이메일을 입력하세요', 'Enter your email')}
+                      placeholder={t('auth.emailPlaceholder', '이메일을 입력하세요', 'Enter your email', 'メールアドレスを入力')}
                       disabled={isLoading}
                     />
                   </div>
@@ -277,7 +277,7 @@ export default function LoginPage() {
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('auth.password', '비밀번호', 'Password')}
+                    {t('auth.password', '비밀번호', 'Password', 'パスワード')}
                   </label>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -286,7 +286,7 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full pl-10 pr-12 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
-                      placeholder={t('auth.passwordPlaceholder', '비밀번호를 입력하세요', 'Enter your password')}
+                      placeholder={t('auth.passwordPlaceholder', '비밀번호를 입력하세요', 'Enter your password', 'パスワードを入力')}
                       disabled={isLoading}
                     />
                     <button
@@ -307,17 +307,17 @@ export default function LoginPage() {
                   {isLoading ? (
                     <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
                   ) : (
-                    t('auth.login', '로그인', 'Login')
+                    t('auth.login', '로그인', 'Login', 'ログイン')
                   )}
                 </button>
               </form>
 
               <div className="mt-6 text-center">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('auth.forgotPassword', '비밀번호를 잊으셨나요?', 'Forgot your password?')}
+                  {t('auth.forgotPassword', '비밀번호를 잊으셨나요?', 'Forgot your password?', 'パスワードをお忘れですか？')}
                 </p>
                 <button className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium mt-1">
-                  {t('auth.resetPassword', '비밀번호 재설정', 'Reset password')}
+                  {t('auth.resetPassword', '비밀번호 재설정', 'Reset password', 'パスワードをリセット')}
                 </button>
               </div>
             </>
@@ -326,7 +326,7 @@ export default function LoginPage() {
           {/* Security Notice */}
           <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
             <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-              {t('auth.securityNotice')}
+              {t('auth.securityNotice', '안전한 SSL 암호화 연결', 'Secure SSL encrypted connection', '安全なSSL暗号化接続')}
             </p>
           </div>
         </div>

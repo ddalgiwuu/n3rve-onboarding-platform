@@ -5,7 +5,14 @@ import toast from 'react-hot-toast';
 
 const AdminSettings = () => {
   const { language } = useTranslation();
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const t = (ko: string, en: string, ja?: string) => {
+    switch (language) {
+      case 'ko': return ko;
+      case 'en': return en;
+      case 'ja': return ja || en;
+      default: return en;
+    }
+  };
   
   const [settings, setSettings] = useState({
     // FUGA QC Management
@@ -76,11 +83,11 @@ const AdminSettings = () => {
 
   const handleSave = () => {
     // Save settings logic here
-    toast.success(t('설정이 저장되었습니다', 'Settings saved successfully'));
+    toast.success(t('설정이 저장되었습니다', 'Settings saved successfully', '設定が保存されました'));
   };
 
   const addTrustedArtist = () => {
-    const artistId = prompt(t('신뢰할 아티스트 ID 입력:', 'Enter trusted artist ID:'));
+    const artistId = prompt(t('신뢰할 아티스트 ID 입력:', 'Enter trusted artist ID:', '信頼するアーティストIDを入力:'));
     if (artistId) {
       setSettings({
         ...settings,
@@ -102,10 +109,10 @@ const AdminSettings = () => {
         {/* Header */}
         <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 mb-8 animate-fade-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-500 bg-clip-text text-transparent mb-4">
-            {t('관리자 설정', 'Admin Settings')}
+            {t('관리자 설정', 'Admin Settings', '管理者設定')}
           </h1>
           <p className="text-gray-700 dark:text-gray-300">
-            {t('플랫폼 운영에 필요한 핵심 설정을 관리합니다', 'Manage essential settings for platform operations')}
+            {t('플랫폼 운영에 필요한 핵심 설정을 관리합니다', 'Manage essential settings for platform operations', 'プラットフォーム運用に必要な重要設定を管理します')}
           </p>
         </div>
 
@@ -116,7 +123,7 @@ const AdminSettings = () => {
               <div className="flex items-center gap-3">
                 <FileText className="w-6 h-6 text-purple-500" />
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {t('FUGA QC 관리', 'FUGA QC Management')}
+                  {t('FUGA QC 관리', 'FUGA QC Management', 'FUGA QC管理')}
                 </h2>
               </div>
               <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm">
@@ -128,7 +135,7 @@ const AdminSettings = () => {
               <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('QC 자동 승인', 'QC Auto-Approval')}
+                    {t('QC 자동 승인', 'QC Auto-Approval', 'QC自動承認')}
                   </span>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input
@@ -141,14 +148,14 @@ const AdminSettings = () => {
                   </label>
                 </div>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {t('QC 오류가 0개일 때 자동으로 승인합니다', 'Auto-approve when QC errors = 0')}
+                  {t('QC 오류가 0개일 때 자동으로 승인합니다', 'Auto-approve when QC errors = 0', 'QCエラーが0件の場合自動承認')}
                 </p>
               </div>
               
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('오류 임계값', 'Error Threshold')}
+                    {t('오류 임계값', 'Error Threshold', 'エラーしきい値')}
                   </label>
                   <input
                     type="number"
@@ -161,7 +168,7 @@ const AdminSettings = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('마지막 업데이트', 'Last Updated')}
+                    {t('마지막 업데이트', 'Last Updated', '最終更新')}
                   </label>
                   <input
                     type="text"
@@ -175,10 +182,10 @@ const AdminSettings = () => {
               <div className="flex gap-3">
                 <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all flex items-center gap-2">
                   <FileText className="w-4 h-4" />
-                  {t('검증 규칙 편집', 'Edit Validation Rules')}
+                  {t('검증 규칙 편집', 'Edit Validation Rules', '検証ルール編集')}
                 </button>
                 <button className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-all">
-                  {t('QC 테스트', 'Test QC Rules')}
+                  {t('QC 테스트', 'Test QC Rules', 'QCルールテスト')}
                 </button>
               </div>
             </div>
@@ -189,7 +196,7 @@ const AdminSettings = () => {
             <div className="flex items-center gap-3 mb-6">
               <Zap className="w-6 h-6 text-yellow-500" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {t('제출 처리 규칙', 'Submission Processing')}
+                {t('제출 처리 규칙', 'Submission Processing', '提出処理ルール')}
               </h2>
             </div>
             
@@ -197,7 +204,7 @@ const AdminSettings = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('검토 SLA (시간)', 'Review SLA (hours)')}
+                    {t('검토 SLA (시간)', 'Review SLA (hours)', 'レビューSLA(時間)')}
                   </label>
                   <input
                     type="number"
@@ -209,7 +216,7 @@ const AdminSettings = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('일괄 작업 제한', 'Bulk Action Limit')}
+                    {t('일괄 작업 제한', 'Bulk Action Limit', '一括操作制限')}
                   </label>
                   <input
                     type="number"
@@ -222,29 +229,29 @@ const AdminSettings = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('중복 감지 민감도', 'Duplicate Detection Sensitivity')}
+                  {t('중복 감지 민감도', 'Duplicate Detection Sensitivity', '重複検出感度')}
                 </label>
                 <select
                   value={settings.duplicateDetectionSensitivity}
                   onChange={(e) => setSettings({ ...settings, duplicateDetectionSensitivity: e.target.value })}
                   className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
                 >
-                  <option value="low">{t('낮음', 'Low')}</option>
-                  <option value="medium">{t('중간', 'Medium')}</option>
-                  <option value="high">{t('높음', 'High')}</option>
+                  <option value="low">{t('낮음', 'Low', '低')}</option>
+                  <option value="medium">{t('중간', 'Medium', '中')}</option>
+                  <option value="high">{t('높음', 'High', '高')}</option>
                 </select>
               </div>
               
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('신뢰할 아티스트', 'Trusted Artists')}
+                    {t('신뢰할 아티스트', 'Trusted Artists', '信頼できるアーティスト')}
                   </label>
                   <button
                     onClick={addTrustedArtist}
                     className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400"
                   >
-                    {t('+ 추가', '+ Add')}
+                    {t('+ 추가', '+ Add', '+ 追加')}
                   </button>
                 </div>
                 <div className="flex flex-wrap gap-2">
@@ -269,14 +276,14 @@ const AdminSettings = () => {
             <div className="flex items-center gap-3 mb-6">
               <Mail className="w-6 h-6 text-blue-500" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {t('커뮤니케이션 센터', 'Communication Center')}
+                {t('커뮤니케이션 센터', 'Communication Center', 'コミュニケーションセンター')}
               </h2>
             </div>
             
             <div className="grid gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  {t('이메일 템플릿', 'Email Templates')}
+                  {t('이메일 템플릿', 'Email Templates', 'メールテンプレート')}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   {Object.entries(settings.emailTemplates).map(([key, enabled]) => (
@@ -291,10 +298,10 @@ const AdminSettings = () => {
                         className="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
                       />
                       <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {key === 'submissionReceived' && t('제출 접수', 'Submission Received')}
-                        {key === 'approved' && t('승인됨', 'Approved')}
-                        {key === 'rejected' && t('반려됨', 'Rejected')}
-                        {key === 'additionalInfoNeeded' && t('추가 정보 필요', 'Additional Info Needed')}
+                        {key === 'submissionReceived' && t('제출 접수', 'Submission Received', '提出受付')}
+                        {key === 'approved' && t('승인됨', 'Approved', '承認済み')}
+                        {key === 'rejected' && t('반려됨', 'Rejected', '却下')}
+                        {key === 'additionalInfoNeeded' && t('추가 정보 필요', 'Additional Info Needed', '追加情報が必要')}
                       </span>
                     </label>
                   ))}
@@ -303,7 +310,7 @@ const AdminSettings = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  {t('알림 채널', 'Notification Channels')}
+                  {t('알림 채널', 'Notification Channels', '通知チャンネル')}
                 </label>
                 <div className="grid grid-cols-3 gap-3">
                   {Object.entries(settings.notificationChannels).map(([channel, enabled]) => (
@@ -326,7 +333,7 @@ const AdminSettings = () => {
               </div>
               
               <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all w-full sm:w-auto">
-                {t('템플릿 편집', 'Edit Templates')}
+                {t('템플릿 편집', 'Edit Templates', 'テンプレート編集')}
               </button>
             </div>
           </div>
@@ -336,7 +343,7 @@ const AdminSettings = () => {
             <div className="flex items-center gap-3 mb-6">
               <Building className="w-6 h-6 text-green-500" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {t('비즈니스 운영', 'Business Operations')}
+                {t('비즈니스 운영', 'Business Operations', 'ビジネス運用')}
               </h2>
             </div>
             
@@ -344,7 +351,7 @@ const AdminSettings = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('업무 시작 시간', 'Business Start Time')}
+                    {t('업무 시작 시간', 'Business Start Time', '業務開始時間')}
                   </label>
                   <input
                     type="time"
@@ -359,7 +366,7 @@ const AdminSettings = () => {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {t('업무 종료 시간', 'Business End Time')}
+                    {t('업무 종료 시간', 'Business End Time', '業務終了時間')}
                   </label>
                   <input
                     type="time"
@@ -375,7 +382,7 @@ const AdminSettings = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('근무일', 'Working Days')}
+                  {t('근무일', 'Working Days', '勤務日')}
                 </label>
                 <div className="flex gap-2">
                   {['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'].map((day) => (
@@ -415,7 +422,7 @@ const AdminSettings = () => {
             <div className="flex items-center gap-3 mb-6">
               <Package className="w-6 h-6 text-indigo-500" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {t('배포 설정', 'Distribution Settings')}
+                {t('배포 설정', 'Distribution Settings', '配信設定')}
               </h2>
             </div>
             
@@ -423,17 +430,17 @@ const AdminSettings = () => {
               <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    {t('FUGA API 연결', 'FUGA API Connection')}
+                    {t('FUGA API 연결', 'FUGA API Connection', 'FUGA API接続')}
                   </span>
                   <span className={`px-2 py-1 rounded-full text-xs ${settings.fugaApiEnabled ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'}`}>
-                    {settings.fugaApiEnabled ? t('연결됨', 'Connected') : t('연결 안됨', 'Disconnected')}
+                    {settings.fugaApiEnabled ? t('연결됨', 'Connected', '接続済み') : t('연결 안됨', 'Disconnected', '未接続')}
                   </span>
                 </div>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('릴리즈 리드 타임 (일)', 'Release Lead Time (days)')}
+                  {t('릴리즈 리드 타임 (일)', 'Release Lead Time (days)', 'リリースリードタイム(日)')}
                 </label>
                 <input
                   type="number"
@@ -445,7 +452,7 @@ const AdminSettings = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-                  {t('메타데이터 요구사항', 'Metadata Requirements')}
+                  {t('메타데이터 요구사항', 'Metadata Requirements', 'メタデータ要件')}
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   {Object.entries(settings.metadataRequirements).map(([key, required]) => (
@@ -460,10 +467,10 @@ const AdminSettings = () => {
                         className="w-4 h-4 text-purple-600 focus:ring-purple-500 rounded"
                       />
                       <span className="text-sm text-gray-700 dark:text-gray-300">
-                        {key === 'artistBio' && t('아티스트 소개', 'Artist Bio')}
-                        {key === 'albumDescription' && t('앨범 설명', 'Album Description')}
-                        {key === 'trackCredits' && t('트랙 크레딧', 'Track Credits')}
-                        {key === 'artwork3000x3000' && t('3000x3000 아트워크', '3000x3000 Artwork')}
+                        {key === 'artistBio' && t('아티스트 소개', 'Artist Bio', 'アーティスト紹介')}
+                        {key === 'albumDescription' && t('앨범 설명', 'Album Description', 'アルバム説明')}
+                        {key === 'trackCredits' && t('트랙 크레딧', 'Track Credits', 'トラッククレジット')}
+                        {key === 'artwork3000x3000' && t('3000x3000 아트워크', '3000x3000 Artwork', '3000x3000アートワーク')}
                       </span>
                     </label>
                   ))}
@@ -477,7 +484,7 @@ const AdminSettings = () => {
             <div className="flex items-center gap-3 mb-6">
               <Activity className="w-6 h-6 text-red-500" />
               <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                {t('플랫폼 모니터링', 'Platform Monitoring')}
+                {t('플랫폼 모니터링', 'Platform Monitoring', 'プラットフォーム監視')}
               </h2>
             </div>
             
@@ -486,19 +493,19 @@ const AdminSettings = () => {
                 <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t('Dropbox 동기화', 'Dropbox Sync')}
+                      {t('Dropbox 동기화', 'Dropbox Sync', 'Dropbox同期')}
                     </span>
                     <Check className="w-5 h-5 text-green-500" />
                   </div>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {t('마지막 동기화: 5분 전', 'Last sync: 5 minutes ago')}
+                    {t('마지막 동기화: 5분 전', 'Last sync: 5 minutes ago', '最後の同期: 5分前')}
                   </p>
                 </div>
                 
                 <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {t('이메일 전달률', 'Email Delivery Rate')}
+                      {t('이메일 전달률', 'Email Delivery Rate', 'メール配信率')}
                     </span>
                     <span className="text-sm font-semibold text-green-600 dark:text-green-400">
                       {settings.emailDeliveryRate}%
@@ -512,7 +519,7 @@ const AdminSettings = () => {
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('오류율 임계값 (%)', 'Error Rate Threshold (%)')}
+                  {t('오류율 임계값 (%)', 'Error Rate Threshold (%)', 'エラー率しきい値(%)')}
                 </label>
                 <input
                   type="number"
@@ -527,7 +534,7 @@ const AdminSettings = () => {
                   <div className="flex items-center gap-2">
                     <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                     <span className="font-medium text-yellow-800 dark:text-yellow-200">
-                      {t('유지보수 모드', 'Maintenance Mode')}
+                      {t('유지보수 모드', 'Maintenance Mode', 'メンテナンスモード')}
                     </span>
                   </div>
                   <label className="relative inline-flex items-center cursor-pointer">
@@ -544,7 +551,7 @@ const AdminSettings = () => {
                   <textarea
                     value={settings.maintenanceMessage}
                     onChange={(e) => setSettings({ ...settings, maintenanceMessage: e.target.value })}
-                    placeholder={t('유지보수 메시지 입력...', 'Enter maintenance message...')}
+                    placeholder={t('유지보수 메시지 입력...', 'Enter maintenance message...', 'メンテナンスメッセージを入力...')}
                     rows={3}
                     className="w-full px-3 py-2 bg-white dark:bg-gray-800 border border-yellow-300 dark:border-yellow-700 rounded-lg focus:border-yellow-500 focus:outline-none focus:ring-2 focus:ring-yellow-500/20 text-gray-900 dark:text-white"
                   />
@@ -556,14 +563,14 @@ const AdminSettings = () => {
           {/* Save Button */}
           <div className="flex justify-end gap-3">
             <button className="px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-all">
-              {t('취소', 'Cancel')}
+              {t('취소', 'Cancel', 'キャンセル')}
             </button>
             <button
               onClick={handleSave}
               className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift flex items-center gap-2"
             >
               <Save className="w-5 h-5" />
-              {t('설정 저장', 'Save Settings')}
+              {t('설정 저장', 'Save Settings', '設定を保存')}
             </button>
           </div>
         </div>

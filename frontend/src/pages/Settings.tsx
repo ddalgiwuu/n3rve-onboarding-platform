@@ -269,6 +269,23 @@ const Settings = () => {
                       {language === 'ko' && <CheckCircle className="w-5 h-5 text-purple-400" />}
                     </div>
                   </button>
+                  
+                  <button
+                    onClick={() => setLanguage?.('ja')}
+                    className={`w-full p-4 rounded-lg border transition-all ${
+                      language === 'ja'
+                        ? 'border-purple-500 bg-purple-500/10 dark:bg-purple-500/20'
+                        : 'border-gray-300 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-600 bg-white dark:bg-transparent'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">🇯🇵</span>
+                        <span className="text-gray-900 dark:text-white font-medium">日本語</span>
+                      </div>
+                      {language === 'ja' && <CheckCircle className="w-5 h-5 text-purple-400" />}
+                    </div>
+                  </button>
                 </div>
               </div>
             )}

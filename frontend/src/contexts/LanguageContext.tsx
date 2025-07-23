@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 
-type Language = 'ko' | 'en'
+type Language = 'ko' | 'en' | 'ja'
 
 interface LanguageState {
   language: Language

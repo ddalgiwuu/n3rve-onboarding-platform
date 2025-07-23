@@ -106,20 +106,20 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   
   // Make menu items reactive to language changes
   const customerMenuItems = [
-    { icon: Home, label: language === 'ko' ? '대시보드' : 'Dashboard', path: '/dashboard', color: 'text-blue-600' },
-    { icon: Upload, label: language === 'ko' ? '새 음원 제출' : 'New Submission', path: '/release-submission-modern', color: 'text-n3rve-main', badge: 'NEW' },
-    { icon: FolderOpen, label: language === 'ko' ? '제출 내역' : 'Submissions', path: '/submissions', color: 'text-purple-600' },
-    { icon: FileText, label: language === 'ko' ? '가이드' : 'Guide', path: '/guide', color: 'text-green-600' },
-    { icon: Music, label: language === 'ko' ? '아티스트 프로필' : 'Artist Profile', path: '/artist-profile-guide', color: 'text-pink-600' },
-    { icon: Settings, label: language === 'ko' ? '설정' : 'Settings', path: '/settings', color: 'text-gray-600' },
+    { icon: Home, label: language === 'ko' ? '대시보드' : language === 'en' ? 'Dashboard' : 'ダッシュボード', path: '/dashboard', color: 'text-blue-600' },
+    { icon: Upload, label: language === 'ko' ? '새 음원 제출' : language === 'en' ? 'New Submission' : '新規提出', path: '/release-submission-modern', color: 'text-n3rve-main', badge: 'NEW' },
+    { icon: FolderOpen, label: language === 'ko' ? '제출 내역' : language === 'en' ? 'Submissions' : '提出履歴', path: '/submissions', color: 'text-purple-600' },
+    { icon: FileText, label: language === 'ko' ? '가이드' : language === 'en' ? 'Guide' : 'ガイド', path: '/guide', color: 'text-green-600' },
+    { icon: Music, label: language === 'ko' ? '아티스트 프로필' : language === 'en' ? 'Artist Profile' : 'アーティストプロフィール', path: '/artist-profile-guide', color: 'text-pink-600' },
+    { icon: Settings, label: language === 'ko' ? '설정' : language === 'en' ? 'Settings' : '設定', path: '/settings', color: 'text-gray-600' },
   ] as const
   
   const adminMenuItems = [
-    { icon: Shield, label: language === 'ko' ? '관리자 대시보드' : 'Admin Dashboard', path: '/admin', color: 'text-red-600' },
-    { icon: ClipboardList, label: language === 'ko' ? '제출 관리' : 'Submission Management', path: '/admin/submission-management', color: 'text-blue-600' },
-    { icon: Users, label: language === 'ko' ? '고객 관리' : 'Customer Management', path: '/admin/customers', color: 'text-green-600' },
-    { icon: UserCog, label: language === 'ko' ? '계정 관리' : 'Account Management', path: '/admin/accounts', color: 'text-purple-600' },
-    { icon: Settings, label: language === 'ko' ? '설정' : 'Settings', path: '/admin/settings', color: 'text-gray-600' },
+    { icon: Shield, label: language === 'ko' ? '관리자 대시보드' : language === 'en' ? 'Admin Dashboard' : '管理者ダッシュボード', path: '/admin', color: 'text-red-600' },
+    { icon: ClipboardList, label: language === 'ko' ? '제출 관리' : language === 'en' ? 'Submission Management' : '提出管理', path: '/admin/submission-management', color: 'text-blue-600' },
+    { icon: Users, label: language === 'ko' ? '고객 관리' : language === 'en' ? 'Customer Management' : '顧客管理', path: '/admin/customers', color: 'text-green-600' },
+    { icon: UserCog, label: language === 'ko' ? '계정 관리' : language === 'en' ? 'Account Management' : 'アカウント管理', path: '/admin/accounts', color: 'text-purple-600' },
+    { icon: Settings, label: language === 'ko' ? '설정' : language === 'en' ? 'Settings' : '設定', path: '/admin/settings', color: 'text-gray-600' },
   ] as const
   
   // Show menu items based on admin status and current console

@@ -18,25 +18,25 @@ export default function Dashboard() {
 
   const stats = [
     {
-      label: t('총 릴리스'),
+      label: t('총 릴리스', '총 릴리스', 'Total Releases', '総リリース'),
       value: '0',
       icon: Music,
       color: 'from-purple-500 to-pink-500',
-      description: t('등록된 앨범'),
+      description: t('등록된 앨범', '등록된 앨범', 'Registered Albums', '登録済みアルバム'),
     },
     {
-      label: t('대기 중'),
+      label: t('대기 중', '대기 중', 'Pending', '待機中'),
       value: '0',
       icon: FileText,
       color: 'from-blue-500 to-cyan-500',
-      description: t('검토 대기 중'),
+      description: t('검토 대기 중', '검토 대기 중', 'Awaiting Review', 'レビュー待ち'),
     },
     {
-      label: t('아티스트'),
+      label: t('아티스트', '아티스트', 'Artists', 'アーティスト'),
       value: '0',
       icon: Users,
       color: 'from-green-500 to-emerald-500',
-      description: t('등록된 아티스트'),
+      description: t('등록된 아티스트', '등록된 아티스트', 'Registered Artists', '登録済みアーティスト'),
     },
   ]
 
@@ -53,9 +53,9 @@ export default function Dashboard() {
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'approved': return t('승인됨')
-      case 'pending': return t('대기 중')
-      case 'review': return t('검토 중')
+      case 'approved': return t('승인됨', '승인됨', 'Approved', '承認済み')
+      case 'pending': return t('대기 중', '대기 중', 'Pending', '待機中')
+      case 'review': return t('검토 중', '검토 중', 'In Review', 'レビュー中')
       default: return status
     }
   }
@@ -68,10 +68,10 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold gradient-text mb-2">
-                {t('환영합니다')}, {user?.name || user?.email}!
+                {t('환영합니다', '환영합니다', 'Welcome', 'ようこそ')}, {user?.name || user?.email}!
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {t('오늘도 좋은 하루 되세요')}
+                {t('오늘도 좋은 하루 되세요', '오늘도 좋은 하루 되세요', 'Have a great day', '今日も良い一日を')}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -80,7 +80,7 @@ export default function Dashboard() {
                 className="btn-modern btn-primary flex items-center gap-2 hover-lift"
               >
                 <Upload className="w-5 h-5" />
-                {t('새 릴리스')}
+                {t('새 릴리스', '새 릴리스', 'New Release', '新規リリース')}
               </Link>
             </div>
           </div>
@@ -119,13 +119,13 @@ export default function Dashboard() {
         <div className="glass-effect rounded-2xl p-6 animate-fade-in-delay">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('최근 제출')}
+              {t('최근 제출', '최근 제출', 'Recent Submissions', '最近の提出')}
             </h2>
             <Link
               to="/submissions"
               className="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1 transition-colors"
             >
-              {t('모두 보기')}
+              {t('모두 보기', '모두 보기', 'View All', 'すべて表示')}
               <ChevronRight className="w-4 h-4" />
             </Link>
           </div>
@@ -134,7 +134,7 @@ export default function Dashboard() {
             {recentSubmissions.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500 dark:text-gray-400">
-                  {t('아직 제출된 음원이 없습니다')}
+                  {t('아직 제출된 음원이 없습니다', '아직 제출된 음원이 없습니다', 'No submitted tracks yet', 'まだ提出された音源がありません')}
                 </p>
               </div>
             ) : (
@@ -179,10 +179,10 @@ export default function Dashboard() {
               <Upload className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-              {t('새 릴리스 등록')}
+              {t('새 릴리스 등록', '새 릴리스 등록', 'Register New Release', '新規リリース登録')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('음원을 등록하고 배포하세요')}
+              {t('음원을 등록하고 배포하세요', '음원을 등록하고 배포하세요', 'Register and distribute your music', '音源を登録して配信しましょう')}
             </p>
           </Link>
 
@@ -195,10 +195,10 @@ export default function Dashboard() {
               <FileText className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-              {t('가이드 보기')}
+              {t('가이드 보기', '가이드 보기', 'View Guide', 'ガイドを見る')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('제출 가이드라인 확인')}
+              {t('제출 가이드라인 확인', '제출 가이드라인 확인', 'Check submission guidelines', '提出ガイドラインを確認')}
             </p>
           </Link>
 
@@ -211,10 +211,10 @@ export default function Dashboard() {
               <Users className="w-8 h-8 text-white" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-              {t('아티스트 프로필')}
+              {t('아티스트 프로필', '아티스트 프로필', 'Artist Profile', 'アーティストプロフィール')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('프로필 작성 가이드')}
+              {t('프로필 작성 가이드', '프로필 작성 가이드', 'Profile Writing Guide', 'プロフィール作成ガイド')}
             </p>
           </Link>
         </div>
