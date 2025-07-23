@@ -82,17 +82,18 @@ export default function DarkModeToggle() {
       <button
         onClick={toggleDarkMode}
         className={`
-          relative inline-flex h-8 w-14 items-center rounded-full glass-effect
+          relative inline-flex h-8 w-14 items-center rounded-full
           transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2
-          hover:shadow-lg ${isDark ? 'bg-indigo-600/30' : 'bg-gray-300/30'}
+          hover:shadow-lg ${isDark ? 'bg-indigo-600 dark:bg-indigo-600/70' : 'bg-gray-300 dark:bg-gray-600'}
+          border border-gray-300 dark:border-gray-600
         `}
         aria-label={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
       >
         <span
           className={`
             ${isDark ? 'translate-x-7' : 'translate-x-1'}
-            relative flex h-6 w-6 transform rounded-full glass-effect-strong transition-transform duration-300
-            shadow-xl items-center justify-center hover:scale-110
+            relative flex h-6 w-6 transform rounded-full bg-white transition-transform duration-300
+            shadow-lg items-center justify-center hover:scale-110
           `}
         >
           {isDark ? (
@@ -112,7 +113,7 @@ export default function DarkModeToggle() {
       </button>
       
       {/* Tooltip */}
-      <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-3 py-1.5 glass-effect text-gray-700 dark:text-gray-300 text-xs rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg">
+      <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-gray-800 dark:bg-gray-200 text-white dark:text-gray-800 text-xs rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-lg">
         {isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
       </div>
     </div>
