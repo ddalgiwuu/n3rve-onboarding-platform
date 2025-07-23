@@ -4,6 +4,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { format } from 'date-fns';
 import { adminService } from '@/services/admin.service';
 import toast from 'react-hot-toast';
+import LanguageToggle from '@/components/common/LanguageToggle';
+import DarkModeToggle from '@/components/common/DarkModeToggle';
 
 interface Customer {
   id: string;
@@ -97,50 +99,54 @@ const AdminCustomers = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 mb-8 animate-fade-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50">
-          <div className="flex justify-between items-start">
+          <div className="flex flex-col lg:flex-row justify-between items-start gap-4">
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-500 bg-clip-text text-transparent mb-4">
                 {t('고객 관리', 'Customer Management')}
               </h1>
-              <p className="text-gray-600 dark:text-gray-300">{t('고객 정보를 관리하고 분석합니다', 'Manage and analyze customer information')}</p>
+              <p className="text-gray-700 dark:text-gray-300">{t('고객 정보를 관리하고 분석합니다', 'Manage and analyze customer information')}</p>
             </div>
-            <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
-              <UserPlus className="w-5 h-5" />
-              {t('새 고객 추가', 'Add New Customer')}
-            </button>
+            <div className="flex items-center gap-3">
+              <LanguageToggle />
+              <DarkModeToggle />
+              <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
+                <UserPlus className="w-5 h-5" />
+                {t('새 고객 추가', 'Add New Customer')}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="glass-effect rounded-xl p-6 animate-slide-in">
+          <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-slide-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50">
             <div className="flex items-center justify-between mb-4">
-              <UserPlus className="w-8 h-8 text-purple-400" />
-              <span className="text-2xl font-bold text-white">{customers.length}</span>
+              <UserPlus className="w-8 h-8 text-purple-500 dark:text-purple-400" />
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">{customers.length}</span>
             </div>
-            <p className="text-gray-400 text-sm">{t('전체 고객', 'Total Customers')}</p>
+            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('전체 고객', 'Total Customers')}</p>
           </div>
           
-          <div className="glass-effect rounded-xl p-6 animate-slide-in" style={{ animationDelay: '0.1s' }}>
+          <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-slide-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center justify-between mb-4">
-              <TrendingUp className="w-8 h-8 text-green-400" />
-              <span className="text-2xl font-bold text-white">{customers.filter(c => c.status === 'active').length}</span>
+              <TrendingUp className="w-8 h-8 text-green-500 dark:text-green-400" />
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">{customers.filter(c => c.status === 'active').length}</span>
             </div>
-            <p className="text-gray-400 text-sm">{t('활성 고객', 'Active Customers')}</p>
+            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('활성 고객', 'Active Customers')}</p>
           </div>
           
-          <div className="glass-effect rounded-xl p-6 animate-slide-in" style={{ animationDelay: '0.2s' }}>
+          <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-slide-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between mb-4">
-              <Music className="w-8 h-8 text-blue-400" />
-              <span className="text-2xl font-bold text-white">{customers.reduce((sum, c) => sum + (c.submissionCount || 0), 0)}</span>
+              <Music className="w-8 h-8 text-blue-500 dark:text-blue-400" />
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">{customers.reduce((sum, c) => sum + (c.submissionCount || 0), 0)}</span>
             </div>
-            <p className="text-gray-400 text-sm">{t('전체 제출', 'Total Submissions')}</p>
+            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('전체 제출', 'Total Submissions')}</p>
           </div>
           
-          <div className="glass-effect rounded-xl p-6 animate-slide-in" style={{ animationDelay: '0.3s' }}>
+          <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-slide-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between mb-4">
-              <Calendar className="w-8 h-8 text-yellow-400" />
-              <span className="text-2xl font-bold text-white">
+              <Calendar className="w-8 h-8 text-yellow-500 dark:text-yellow-400" />
+              <span className="text-2xl font-bold text-gray-900 dark:text-white">
                 {customers.filter(c => {
                   const joinDate = new Date(c.joinedAt);
                   const now = new Date();
@@ -148,25 +154,25 @@ const AdminCustomers = () => {
                 }).length}
               </span>
             </div>
-            <p className="text-gray-400 text-sm">{t('이번 달 신규', 'New This Month')}</p>
+            <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('이번 달 신규', 'New This Month')}</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="glass-effect rounded-xl p-6 mb-8 animate-slide-in-delayed">
+        <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 mb-8 animate-slide-in-delayed shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder={t('고객 검색...', 'Search customers...')}
-                className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-white"
+                className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <select
-              className="px-4 py-3 bg-gray-800/50 border border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-white"
+              className="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 dark:text-white"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -174,7 +180,7 @@ const AdminCustomers = () => {
               <option value="active">{t('활성', 'Active')}</option>
               <option value="inactive">{t('비활성', 'Inactive')}</option>
             </select>
-            <button className="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
+            <button className="px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
               <Download className="w-5 h-5" />
               {t('내보내기', 'Export')}
             </button>
@@ -182,7 +188,7 @@ const AdminCustomers = () => {
         </div>
 
         {/* Customers Table */}
-        <div className="glass-effect rounded-xl overflow-hidden animate-slide-in-delayed">
+        <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl overflow-hidden animate-slide-in-delayed shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50">
           {loading ? (
             <div className="p-12 text-center">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
@@ -190,7 +196,7 @@ const AdminCustomers = () => {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gray-800/50 border-b border-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
                   <tr>
                     <th className="px-6 py-4 text-left">
                       <input
@@ -200,18 +206,18 @@ const AdminCustomers = () => {
                         className="rounded border-gray-600 text-purple-600 focus:ring-purple-500"
                       />
                     </th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">{t('이름', 'Name')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">{t('연락처', 'Contact')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">{t('가입일', 'Joined')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">{t('제출', 'Submissions')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">{t('회사', 'Company')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">{t('상태', 'Status')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-300">{t('마지막 활동', 'Last Active')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('이름', 'Name')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('연락처', 'Contact')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('가입일', 'Joined')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('제출', 'Submissions')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('회사', 'Company')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('상태', 'Status')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('마지막 활동', 'Last Active')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-700">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filteredCustomers.map((customer) => (
-                    <tr key={customer.id} className="hover:bg-gray-800/30 transition-colors">
+                    <tr key={customer.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/30 transition-colors">
                       <td className="px-6 py-4">
                         <input
                           type="checkbox"
@@ -227,31 +233,31 @@ const AdminCustomers = () => {
                               {customer.name ? customer.name.split(' ').map(n => n[0] || '').join('') : '?'}
                             </span>
                           </div>
-                          <p className="text-white font-medium">{customer.name}</p>
+                          <p className="text-gray-900 dark:text-white font-medium">{customer.name}</p>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-gray-300">
-                            <Mail className="w-4 h-4 text-gray-400" />
-                            {customer.email}
+                          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                            <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                            <span className="font-medium">{customer.email}</span>
                           </div>
                           {customer.phone && (
-                            <div className="flex items-center gap-2 text-gray-300">
-                              <Phone className="w-4 h-4 text-gray-400" />
-                              {customer.phone}
+                            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+                              <Phone className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                              <span className="font-medium">{customer.phone}</span>
                             </div>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-300">
+                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300">
                         <div className="flex items-center gap-2">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          {format(new Date(customer.joinedAt), 'MMM dd, yyyy')}
+                          <Calendar className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                          <span className="font-medium">{format(new Date(customer.joinedAt), 'MMM dd, yyyy')}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-gray-300">{customer.submissionCount}</td>
-                      <td className="px-6 py-4 text-gray-300">{customer.company || '-'}</td>
+                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-medium">{customer.submissionCount}</td>
+                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-medium">{customer.company || '-'}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex px-3 py-1 rounded-full text-sm ${
                           customer.status === 'active'
@@ -261,7 +267,7 @@ const AdminCustomers = () => {
                           {customer.status === 'active' ? t('활성', 'Active') : t('비활성', 'Inactive')}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-medium">
                         {customer.lastActive && customer.lastActive !== '' ? (
                           (() => {
                             try {
