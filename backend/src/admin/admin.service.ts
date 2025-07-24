@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
 
 interface PaginationOptions {
@@ -365,6 +365,14 @@ export class AdminService {
         role: createUserDto.role.toUpperCase() as 'USER' | 'ADMIN',
         provider: 'EMAIL',
         isProfileComplete: true,
+        preferences: {
+          language: 'KO',
+          notifications: {
+            email: true,
+            sms: false,
+            push: true,
+          },
+        },
       },
     });
   }
