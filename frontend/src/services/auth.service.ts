@@ -1,3 +1,4 @@
+// Production-safe auth service with no console logging
 class AuthService {
   private refreshPromise: Promise<string | null> | null = null
 
@@ -10,7 +11,7 @@ class AuthService {
       ).join(''))
       return JSON.parse(jsonPayload)
     } catch (error) {
-      console.error('AuthService: parseJwt error:', error)
+      // Silently handle error in production
       return null
     }
   }
@@ -18,7 +19,7 @@ class AuthService {
   isTokenExpired(token: string): boolean {
     const payload = this.parseJwt(token)
     if (!payload || !payload.exp) {
-      console.log('AuthService: Token has no expiration or invalid payload')
+      // Token has no expiration or invalid payload
       return true
     }
     
@@ -26,13 +27,7 @@ class AuthService {
     const expirationTime = payload.exp
     const bufferTime = 60 // 1 minute buffer before actual expiration
     
-    console.log('AuthService: Token expiration check:', {
-      currentTime: new Date(currentTime * 1000).toISOString(),
-      expirationTime: new Date(expirationTime * 1000).toISOString(),
-      timeUntilExpiry: expirationTime - currentTime,
-      bufferTime: bufferTime,
-      isExpired: currentTime >= (expirationTime - bufferTime)
-    })
+    // Token expiration check performed
     
     return currentTime >= (expirationTime - bufferTime)
   }
@@ -40,7 +35,7 @@ class AuthService {
   async refreshAccessToken(): Promise<string | null> {
     // Prevent multiple simultaneous refresh attempts
     if (this.refreshPromise) {
-      console.log('AuthService: Refresh already in progress, waiting...')
+      // Refresh already in progress, waiting...
       return this.refreshPromise
     }
 
@@ -58,11 +53,11 @@ class AuthService {
     try {
       const refreshToken = this.getRefreshToken()
       if (!refreshToken) {
-        console.log('AuthService: No refresh token available')
+        // No refresh token available
         return null
       }
 
-      console.log('AuthService: Attempting to refresh access token...')
+      // Attempting to refresh access token...
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: {
@@ -72,7 +67,7 @@ class AuthService {
       })
 
       if (!response.ok) {
-        console.error('AuthService: Failed to refresh token:', response.status)
+        // Failed to refresh token
         if (response.status === 401) {
           // Refresh token is invalid, logout user
           this.logout()
@@ -107,12 +102,12 @@ class AuthService {
         }
         
         localStorage.setItem('auth-storage', JSON.stringify(parsed))
-        console.log('AuthService: Access token refreshed successfully')
+        // Access token refreshed successfully
       }
       
       return data.accessToken
     } catch (error) {
-      console.error('AuthService: Error refreshing token:', error)
+      // Error refreshing token
       return null
     }
   }
@@ -120,23 +115,21 @@ class AuthService {
   async getToken(): Promise<string | null> {
     try {
       const storedValue = localStorage.getItem('auth-storage')
-      console.log('AuthService: getToken - localStorage auth-storage exists:', !!storedValue)
+      // Check localStorage auth-storage
       
       if (storedValue) {
         const parsed = JSON.parse(storedValue)
-        console.log('AuthService: getToken - parsed structure:', Object.keys(parsed))
-        console.log('AuthService: getToken - has state:', !!parsed.state)
-        console.log('AuthService: getToken - state.accessToken:', !!parsed.state?.accessToken)
+        // Parse auth storage structure
         
         const token = parsed.state?.accessToken || parsed.accessToken || null
-        console.log('AuthService: getToken - final token exists:', !!token)
+        // Token retrieved from storage
         
         if (token) {
           const isExpired = this.isTokenExpired(token)
-          console.log('AuthService: Token expired check:', isExpired)
+          // Check if token is expired
           
           if (isExpired) {
-            console.log('AuthService: Token expired, attempting refresh...')
+            // Token expired, attempting refresh...
             const newToken = await this.refreshAccessToken()
             return newToken || null
           }
@@ -147,7 +140,7 @@ class AuthService {
       
       return null
     } catch (error) {
-      console.error('AuthService: getToken error:', error)
+      // Handle getToken error silently
       return null
     }
   }
@@ -215,7 +208,7 @@ class AuthService {
 
       return await response.json()
     } catch (error) {
-      console.error('AuthService: Registration error:', error)
+      // Registration error occurred
       throw error
     }
   }

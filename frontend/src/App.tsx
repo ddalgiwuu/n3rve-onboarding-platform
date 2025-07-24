@@ -28,7 +28,8 @@ const AuthCallbackPage = lazy(() => import('./pages/AuthCallback'))
 const ProfileCompletePage = lazy(() => import('./pages/ProfileComplete'))
 const ProfileSetupPage = lazy(() => import('./pages/ProfileSetup'))
 const RoleSelectPage = lazy(() => import('./pages/RoleSelect'))
-const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
+// DebugAuthPage removed for production security
+// const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
 const AccountSettingsPage = lazy(() => import('./pages/AccountSettings'))
 const RegisterPage = lazy(() => import('./pages/Register'))
 
@@ -100,7 +101,8 @@ function App() {
           isAuthenticated ? <ProfileCompletePage /> : <Navigate to="/login" />
         } />
         <Route path="/role-select" element={<RoleSelectPage />} />
-        <Route path="/debug-auth" element={<DebugAuthPage />} />
+        {/* Debug route removed for production security
+        <Route path="/debug-auth" element={<DebugAuthPage />} /> */}
 
         {/* Protected routes */}
         <Route element={<Layout />}>

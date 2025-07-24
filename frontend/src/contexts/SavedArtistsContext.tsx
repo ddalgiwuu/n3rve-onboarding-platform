@@ -2,6 +2,7 @@ import { createContext, useContext, ReactNode, useState, useEffect } from 'react
 import { savedArtistsService, SavedArtist, SavedContributor } from '@/services/savedArtists.service'
 import { authService } from '@/services/auth.service'
 import { useAuthStore } from '@/contexts/AuthContext'
+import { logger } from '@/utils/logger'
 
 interface SavedArtistsState {
   artists: SavedArtist[]
@@ -47,10 +48,10 @@ const loadFromLocalStorage = <T,>(baseKey: string, userId?: string, defaultValue
   try {
     const key = getLocalStorageKey(baseKey, userId)
     const stored = localStorage.getItem(key)
-    console.log(`SavedArtistsContext: Loading from localStorage key: ${key}, found:`, !!stored)
+    logger.debug(`SavedArtistsContext: Loading from localStorage key: ${key}, found:`, !!stored)
     return stored ? JSON.parse(stored) : defaultValue
   } catch (error) {
-    console.error(`Error loading ${baseKey} from localStorage:`, error)
+    logger.error(`Error loading ${baseKey} from localStorage:`, error)
     return defaultValue
   }
 }
@@ -59,9 +60,9 @@ const saveToLocalStorage = <T,>(baseKey: string, data: T[], userId?: string): vo
   try {
     const key = getLocalStorageKey(baseKey, userId)
     localStorage.setItem(key, JSON.stringify(data))
-    console.log(`SavedArtistsContext: Saved ${data.length} items to localStorage key: ${key}`)
+    logger.debug(`SavedArtistsContext: Saved ${data.length} items to localStorage key: ${key}`)
   } catch (error) {
-    console.error(`Error saving ${baseKey} to localStorage:`, error)
+    logger.error(`Error saving ${baseKey} to localStorage:`, error)
   }
 }
 
@@ -79,23 +80,23 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
   const fetchArtists = async () => {
     try {
       const isAuth = await authService.isAuthenticated()
-      console.log('SavedArtistsContext: fetchArtists called, isAuthenticated:', isAuth, 'userId:', userId)
+      logger.debug('SavedArtistsContext: fetchArtists called, isAuthenticated:', isAuth, 'userId:', userId)
       setState(prev => ({ ...prev, loading: true, error: null }))
       
       // If authenticated, fetch from server and sync with localStorage
       if (isAuth) {
         const artists = await savedArtistsService.getArtists()
-        console.log('SavedArtistsContext: Fetched', artists.length, 'artists from server')
+        logger.debug('SavedArtistsContext: Fetched', artists.length, 'artists from server')
         setState(prev => ({ ...prev, artists, loading: false }))
         saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, artists, userId)
       } else {
         // Not authenticated, use localStorage data
         const localArtists = loadFromLocalStorage<SavedArtist>(LOCAL_STORAGE_ARTISTS_KEY, userId)
-        console.log('SavedArtistsContext: Loaded', localArtists.length, 'artists from localStorage')
+        logger.debug('SavedArtistsContext: Loaded', localArtists.length, 'artists from localStorage')
         setState(prev => ({ ...prev, artists: localArtists, loading: false }))
       }
     } catch (error) {
-      console.error('SavedArtistsContext: Error fetching artists:', error)
+      logger.error('SavedArtistsContext: Error fetching artists:', error)
       // On error, fallback to localStorage
       const localArtists = loadFromLocalStorage<SavedArtist>(LOCAL_STORAGE_ARTISTS_KEY, userId)
       setState(prev => ({ ...prev, artists: localArtists, error, loading: false }))
@@ -118,7 +119,7 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
         setState(prev => ({ ...prev, contributors: localContributors, loading: false }))
       }
     } catch (error) {
-      console.error('Error fetching contributors:', error)
+      logger.error('Error fetching contributors:', error)
       // On error, fallback to localStorage
       const localContributors = loadFromLocalStorage<SavedContributor>(LOCAL_STORAGE_CONTRIBUTORS_KEY, userId)
       setState(prev => ({ ...prev, contributors: localContributors, error, loading: false }))
@@ -127,14 +128,14 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   const addArtist = async (artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
     try {
-      console.log('SavedArtistsContext: addArtist called with:', artist)
+      logger.debug('SavedArtistsContext: addArtist called with:', artist)
       let newArtist: SavedArtist
       
       const isAuth = await authService.isAuthenticated()
       if (isAuth) {
         // If authenticated, save to server
         newArtist = await savedArtistsService.addArtist(artist)
-        console.log('SavedArtistsContext: Artist added to server:', newArtist)
+        logger.debug('SavedArtistsContext: Artist added to server:', newArtist)
         // Refetch to sync
         await fetchArtists()
       } else {
@@ -154,7 +155,7 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
       
       return newArtist
     } catch (error) {
-      console.error('SavedArtistsContext: Error adding artist:', error)
+      logger.error('SavedArtistsContext: Error adding artist:', error)
       setState(prev => ({ ...prev, error }))
       throw error
     }
@@ -277,7 +278,7 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
       
       return newContributor
     } catch (error) {
-      console.error('Error adding contributor:', error)
+      logger.error('Error adding contributor:', error)
       setState(prev => ({ ...prev, error }))
       throw error
     }
@@ -336,7 +337,7 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
 
   // Load data on mount and when user changes
   useEffect(() => {
-    console.log('SavedArtistsContext: useEffect triggered, userId:', userId, 'hasToken:', authService.hasToken())
+    logger.debug('SavedArtistsContext: useEffect triggered, userId:', userId, 'hasToken:', authService.hasToken())
     fetchArtists()
     fetchContributors()
   }, [userId])
@@ -344,7 +345,7 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
   // Sync localStorage data with server when user logs in
   useEffect(() => {
     if (authService.hasToken() && userId) {
-      console.log('SavedArtistsContext: User logged in, syncing localStorage data for user:', userId)
+      logger.debug('SavedArtistsContext: User logged in, syncing localStorage data for user:', userId)
       // Get local artists (those with IDs starting with 'local_')
       const localArtists = state.artists.filter(a => a.id.startsWith('local_'))
       
@@ -354,7 +355,7 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
           const { id, createdAt, lastUsed, usageCount, ...artistData } = localArtist
           await savedArtistsService.addArtist(artistData)
         } catch (error) {
-          console.error('Failed to sync local artist:', error)
+          logger.error('Failed to sync local artist:', error)
         }
       })
       
