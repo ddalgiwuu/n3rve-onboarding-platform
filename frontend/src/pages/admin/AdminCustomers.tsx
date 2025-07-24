@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Search, UserPlus, Mail, Phone, Calendar, Music, TrendingUp, Download, Shield, User, X } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Search, UserPlus, Mail, Phone, Calendar, Music, TrendingUp, Download, Shield, User, X, ChevronDown, Check } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { format } from 'date-fns';
 import { adminService } from '@/services/admin.service';
@@ -47,6 +47,22 @@ const AdminCustomers = () => {
     fetchCustomers();
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (editingRole) {
+        const target = event.target as HTMLElement;
+        if (!target.closest('.role-dropdown')) {
+          setEditingRole(null);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [editingRole]);
+
   const fetchCustomers = async () => {
     try {
       setLoading(true);
@@ -70,7 +86,7 @@ const AdminCustomers = () => {
         submissionCount: 0, // TODO: Get from submissions count
         status: user.isActive ? 'active' : 'inactive',
         lastActive: user.lastLogin || user.createdAt || new Date().toISOString(),
-        role: user.role || 'user',
+        role: user.role ? user.role.toLowerCase() : 'user',
         isProfileComplete: user.isProfileComplete || false
       }));
       
@@ -294,21 +310,41 @@ const AdminCustomers = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        {editingRole === customer.id ? (
-                          <select
-                            className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 dark:text-white text-sm"
-                            value={customer.role}
-                            onChange={(e) => handleRoleChange(customer.id, e.target.value)}
-                            onBlur={() => setEditingRole(null)}
-                            autoFocus
-                          >
-                            <option value="user">{t('사용자', 'User', 'ユーザー')}</option>
-                            <option value="admin">{t('관리자', 'Admin', '管理者')}</option>
-                          </select>
-                        ) : (
-                          <div
-                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:opacity-80 ${getRoleColor(customer.role)}`}
-                            onClick={() => setEditingRole(customer.id)}
+                        <div className="relative role-dropdown">
+                          {editingRole === customer.id ? (
+                            <div className="absolute z-10 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 animate-fade-in">
+                              <button
+                                onClick={() => {
+                                  handleRoleChange(customer.id, 'user');
+                                  setEditingRole(null);
+                                }}
+                                className={`w-full px-4 py-2 flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                                  customer.role === 'user' ? 'bg-gray-50 dark:bg-gray-700/50' : ''
+                                }`}
+                              >
+                                <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                <span className="flex-1 text-left text-gray-900 dark:text-white">{t('사용자', 'User', 'ユーザー')}</span>
+                                {customer.role === 'user' && <Check className="w-4 h-4 text-green-500" />}
+                              </button>
+                              <button
+                                onClick={() => {
+                                  handleRoleChange(customer.id, 'admin');
+                                  setEditingRole(null);
+                                }}
+                                className={`w-full px-4 py-2 flex items-center gap-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                                  customer.role === 'admin' ? 'bg-gray-50 dark:bg-gray-700/50' : ''
+                                }`}
+                              >
+                                <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                                <span className="flex-1 text-left text-gray-900 dark:text-white">{t('관리자', 'Admin', '管理者')}</span>
+                                {customer.role === 'admin' && <Check className="w-4 h-4 text-green-500" />}
+                              </button>
+                            </div>
+                          ) : null}
+                          
+                          <button
+                            className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${getRoleColor(customer.role)} hover:shadow-md`}
+                            onClick={() => setEditingRole(editingRole === customer.id ? null : customer.id)}
                           >
                             {(() => {
                               const Icon = getRoleIcon(customer.role);
@@ -319,8 +355,9 @@ const AdminCustomers = () => {
                                 ? t('관리자', 'Admin', '管理者') 
                                 : t('사용자', 'User', 'ユーザー')}
                             </span>
-                          </div>
-                        )}
+                            <ChevronDown className={`w-4 h-4 transition-transform ${editingRole === customer.id ? 'rotate-180' : ''}`} />
+                          </button>
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <div className="space-y-1">
