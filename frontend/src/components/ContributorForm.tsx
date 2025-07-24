@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { 
   X, Plus, Trash2, Search, Music, User, Globe, 
   Info, Link as LinkIcon, ChevronDown, ChevronUp,
-  Check, AlertCircle, ExternalLink
+  Check, AlertCircle, ExternalLink, Languages
 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
@@ -68,7 +68,13 @@ const identifierTypes = {
 
 export default function ContributorForm({ contributor, onSave, onCancel }: ContributorFormProps) {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string, ja?: string) => {
+    switch (language) {
+      case 'ko': return ko
+      case 'ja': return ja || en
+      default: return en
+    }
+  }
 
   const [formData, setFormData] = useState<Contributor>({
     id: contributor?.id || uuidv4(),
@@ -104,19 +110,44 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
+  // Enhanced search with partial matching
+  const searchFilter = (text: string, searchTerm: string): boolean => {
+    const normalizedText = text.toLowerCase()
+    const normalizedSearch = searchTerm.toLowerCase()
+    
+    // Check if search term matches start of any word in the text
+    const words = normalizedText.split(/[\s-]+/)
+    const startsWithMatch = words.some(word => word.startsWith(normalizedSearch))
+    
+    // Also check for general inclusion
+    return startsWithMatch || normalizedText.includes(normalizedSearch)
+  }
+
   // Filter roles and instruments based on search
   const filteredRoles = contributorRolesData.roles.filter(role => {
     const searchTerm = (searchQuery.roles || '').toLowerCase()
+    if (!searchTerm) return true
+    
     const roleName = (role.name || '').toLowerCase()
     const roleCategory = (role.category || '').toLowerCase()
-    return roleName.includes(searchTerm) || roleCategory.includes(searchTerm)
+    const roleKo = contributorRolesKo.translations[role.id] || ''
+    
+    return searchFilter(roleName, searchTerm) || 
+           searchFilter(roleCategory, searchTerm) ||
+           searchFilter(roleKo, searchTerm)
   })
 
   const filteredInstruments = instrumentsData.instruments.filter(instrument => {
     const searchTerm = (searchQuery.instruments || '').toLowerCase()
+    if (!searchTerm) return true
+    
     const instrumentName = (instrument.name || '').toLowerCase()
     const instrumentCategory = (instrument.category || '').toLowerCase()
-    return instrumentName.includes(searchTerm) || instrumentCategory.includes(searchTerm)
+    const instrumentKo = instrumentsKo.translations[instrument.id] || ''
+    
+    return searchFilter(instrumentName, searchTerm) || 
+           searchFilter(instrumentCategory, searchTerm) ||
+           searchFilter(instrumentKo, searchTerm)
   })
 
   // Group by category
@@ -170,7 +201,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
     }))
   }
 
-  // Toggle role/instrument selection
+  // Toggle role/instrument selection with auto-clear
   const toggleRole = (roleId: string) => {
     setFormData(prev => ({
       ...prev,
@@ -178,6 +209,9 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
         ? prev.roles.filter(r => r !== roleId)
         : [...prev.roles, roleId]
     }))
+    // Clear search input after selection
+    setSearchQuery(prev => ({ ...prev, roles: '' }))
+    setShowDropdown(prev => ({ ...prev, roles: false }))
   }
 
   const toggleInstrument = (instrumentId: string) => {
@@ -187,6 +221,9 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
         ? prev.instruments.filter(i => i !== instrumentId)
         : [...prev.instruments, instrumentId]
     }))
+    // Clear search input after selection
+    setSearchQuery(prev => ({ ...prev, instruments: '' }))
+    setShowDropdown(prev => ({ ...prev, instruments: false }))
   }
 
   // Validate identifiers
@@ -217,12 +254,12 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
   // Save handler
   const handleSave = () => {
     if (!formData.name.trim()) {
-      alert(t('기여자 이름을 입력해주세요', 'Please enter the contributor name'))
+      alert(t('기여자 이름을 입력해주세요', 'Please enter the contributor name', 'コントリビューター名を入力してください'))
       return
     }
 
     if (formData.roles.length === 0) {
-      alert(t('최소 하나의 역할을 선택해주세요', 'Please select at least one role'))
+      alert(t('최소 하나의 역할을 선택해주세요', 'Please select at least one role', '少なくとも1つの役割を選択してください'))
       return
     }
 
@@ -232,7 +269,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
     )
 
     if (invalidIdentifiers.length > 0) {
-      alert(t('올바르지 않은 식별자가 있습니다', 'There are invalid identifiers'))
+      alert(t('올바르지 않은 식별자가 있습니다', 'There are invalid identifiers', '無効な識別子があります'))
       return
     }
 
@@ -247,7 +284,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-semibold flex items-center gap-2">
               <User className="w-5 h-5" />
-              {contributor ? t('기여자 수정', 'Edit Contributor') : t('기여자 추가', 'Add Contributor')}
+              {contributor ? t('기여자 수정', 'Edit Contributor', 'コントリビューター編集') : t('기여자 추가', 'Add Contributor', 'コントリビューター追加')}
             </h3>
             <button
               onClick={onCancel}
@@ -265,20 +302,20 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
             <div>
               <h4 className="font-medium mb-4 flex items-center gap-2">
                 <User className="w-4 h-4" />
-                {t('기본 정보', 'Basic Information')}
+                {t('기본 정보', 'Basic Information', '基本情報')}
               </h4>
               
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium mb-1">
-                    {t('이름', 'Name')} <span className="text-red-500">*</span>
+                    {t('이름', 'Name', '名前')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.name}
                     onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
-                    placeholder={t('아티스트/기여자 이름', 'Artist/Contributor Name')}
+                    placeholder={t('아티스트/기여자 이름', 'Artist/Contributor Name', 'アーティスト/コントリビューター名')}
                   />
                   
                   {/* Spotify Full Name Policy Alert */}
@@ -291,16 +328,17 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                         <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
                         <div className="text-xs text-yellow-800 dark:text-yellow-200">
                           <p className="font-medium mb-1">
-                            {t('Spotify 정책 안내', 'Spotify Policy Notice')}
+                            {t('Spotify 정책 안내', 'Spotify Policy Notice', 'Spotifyポリシー通知')}
                           </p>
                           <p>
                             {t(
                               '작곡가, 작사가의 경우 반드시 전체 이름(Full Name)을 입력해야 합니다. 예명이나 약어는 사용할 수 없습니다.',
-                              'Composers and lyricists must use their full legal names. Stage names or abbreviations are not allowed.'
+                              'Composers and lyricists must use their full legal names. Stage names or abbreviations are not allowed.',
+                              '作曲家、作詞家の場合、必ずフルネームを入力する必要があります。芸名や略称は使用できません。'
                             )}
                           </p>
                           <p className="mt-1 text-yellow-700 dark:text-yellow-300">
-                            {t('예: ❌ JD, DJ Kim → ✅ John Doe, Kim Minsu', 'Example: ❌ JD, DJ Kim → ✅ John Doe, Kim Minsu')}
+                            {t('예: ❌ JD, DJ Kim → ✅ John Doe, Kim Minsu', 'Example: ❌ JD, DJ Kim → ✅ John Doe, Kim Minsu', '例：❌ JD, DJ Kim → ✅ John Doe, Kim Minsu')}
                           </p>
                         </div>
                       </div>
@@ -319,10 +357,10 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                     />
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-base">{t('신규 아티스트', 'New Artist')}</span>
+                        <span className="font-medium text-base">{t('신규 아티스트', 'New Artist', '新規アーティスト')}</span>
                         {formData.isNewArtist && (
                           <span className="px-2 py-0.5 bg-orange-100 dark:bg-orange-800/30 text-orange-700 dark:text-orange-300 text-xs rounded-full font-medium">
-                            {t('활성화됨', 'ACTIVE')}
+                            {t('활성화됨', 'ACTIVE', 'アクティブ')}
                           </span>
                         )}
                       </div>
@@ -330,67 +368,94 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                         {formData.isNewArtist ? (
                           <>
                             <span className="text-orange-600 dark:text-orange-400 font-medium">
-                              {t('⚠️ 새로운 아티스트 페이지가 생성됩니다', '⚠️ A new artist page will be created')}
+                              {t('⚠️ 새로운 아티스트 페이지가 생성됩니다', '⚠️ A new artist page will be created', '⚠️ 新しいアーティストページが作成されます')}
                             </span>
                             <br />
-                            {t('각 플랫폼(Spotify, Apple Music 등)에 새 아티스트 프로필이 만들어집니다.', 'New artist profiles will be created on each platform (Spotify, Apple Music, etc.).')}
+                            {t('각 플랫폼(Spotify, Apple Music 등)에 새 아티스트 프로필이 만들어집니다.', 'New artist profiles will be created on each platform (Spotify, Apple Music, etc.).', '各プラットフォーム（Spotify、Apple Musicなど）に新しいアーティストプロフィールが作成されます。')}
                           </>
                         ) : (
-                          t('기존 아티스트와 연결하려면 체크하지 마세요', 'Leave unchecked to link with existing artist')
+                          t('기존 아티스트와 연결하려면 체크하지 마세요', 'Leave unchecked to link with existing artist', '既存のアーティストと連携する場合はチェックしないでください')
                         )}
                       </p>
                     </div>
                   </label>
                 </div>
 
-                {/* Translations */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-medium flex items-center gap-2">
-                      <Globe className="w-4 h-4" />
-                      {t('다국어 이름', 'Multilingual Names')}
-                    </label>
+                {/* Translations - Modern UI */}
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <label className="text-sm font-semibold flex items-center gap-2">
+                        <Languages className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                        {t('다국어 이름', 'Multilingual Names', '多言語名')}
+                      </label>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                        {t('글로벌 플랫폼에서 표시될 이름을 추가하세요', 'Add names for global platforms', 'グローバルプラットフォーム用の名前を追加')}
+                      </p>
+                    </div>
                     <button
                       onClick={addTranslation}
-                      className="text-sm text-purple-600 hover:text-purple-700 flex items-center gap-1"
+                      className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg flex items-center gap-1 transition-colors"
                     >
-                      <Plus className="w-4 h-4" />
-                      {t('번역 추가', 'Add Translation')}
+                      <Plus className="w-3 h-3" />
+                      {t('추가', 'Add', '追加')}
                     </button>
                   </div>
                   
-                  <div className="space-y-2">
-                    {formData.translations.map(translation => (
-                      <div key={translation.id} className="flex gap-2">
-                        <select
-                          value={translation.language}
-                          onChange={(e) => updateTranslation(translation.id, 'language', e.target.value)}
-                          className="w-32 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
-                        >
-                          <option value="">{t('언어', 'Language')}</option>
-                          <option value="en">English</option>
-                          <option value="ja">日本語</option>
-                          <option value="zh-CN">中文(简体)</option>
-                          <option value="zh-TW">中文(繁體)</option>
-                          <option value="es">Español</option>
-                          <option value="fr">Français</option>
-                        </select>
-                        <input
-                          type="text"
-                          value={translation.name}
-                          onChange={(e) => updateTranslation(translation.id, 'name', e.target.value)}
-                          className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
-                          placeholder={t('번역된 이름', 'Translated Name')}
-                        />
-                        <button
-                          onClick={() => removeTranslation(translation.id)}
-                          className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                  {formData.translations.length === 0 ? (
+                    <div className="text-center py-8 bg-white/50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
+                      <Globe className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('번역된 이름이 없습니다', 'No translations added', '翻訳された名前がありません')}
+                      </p>
+                      <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                        {t('위 버튼을 클릭하여 추가하세요', 'Click the button above to add', '上のボタンをクリックして追加')}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {formData.translations.map((translation, index) => (
+                        <div key={translation.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-sm font-medium text-purple-700 dark:text-purple-300">
+                              {index + 1}
+                            </div>
+                            <select
+                              value={translation.language}
+                              onChange={(e) => updateTranslation(translation.id, 'language', e.target.value)}
+                              className="w-36 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500"
+                            >
+                              <option value="">{t('언어 선택', 'Select', '言語選択')}</option>
+                              <option value="en">🇺🇸 English</option>
+                              <option value="ja">🇯🇵 日本語</option>
+                              <option value="zh-CN">🇨🇳 中文(简体)</option>
+                              <option value="zh-TW">🇹🇼 中文(繁體)</option>
+                              <option value="es">🇪🇸 Español</option>
+                              <option value="fr">🇫🇷 Français</option>
+                              <option value="de">🇩🇪 Deutsch</option>
+                              <option value="it">🇮🇹 Italiano</option>
+                              <option value="pt">🇵🇹 Português</option>
+                              <option value="ru">🇷🇺 Русский</option>
+                            </select>
+                            <input
+                              type="text"
+                              value={translation.name}
+                              onChange={(e) => updateTranslation(translation.id, 'name', e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500"
+                              placeholder={translation.language === 'ja' ? 'カタカナまたはひらがな' : t('번역된 이름', 'Translated Name', '翻訳された名前')}
+                            />
+                            <button
+                              onClick={() => removeTranslation(translation.id)}
+                              className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                              title={t('삭제', 'Delete', '削除')}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -399,7 +464,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
             <div>
               <h4 className="font-medium mb-4 flex items-center gap-2">
                 <User className="w-4 h-4" />
-                {t('역할', 'Role')} <span className="text-red-500">*</span>
+                {t('역할', 'Role', '役割')} <span className="text-red-500">*</span>
               </h4>
               
               {/* Selected Roles */}
@@ -441,7 +506,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                     }}
                     onFocus={() => setShowDropdown(prev => ({ ...prev, roles: true }))}
                     className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
-                    placeholder={t('역할 검색 (예: Producer, Composer)', 'Search roles (e.g., Producer, Composer)')}
+                    placeholder={t('역할 검색 (예: Producer, Composer)', 'Search roles (e.g., Producer, Composer)', '役割を検索（例：Producer, Composer）')}
                   />
                   <button
                     onClick={() => setShowDropdown(prev => ({ ...prev, roles: !prev.roles }))}
@@ -454,7 +519,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                 {/* Search Results Count */}
                 {searchQuery.roles && (
                   <div className="absolute right-12 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 dark:text-gray-400">
-                    {filteredRoles.length} {t('개 결과', 'results')}
+                    {filteredRoles.length} {t('개 결과', 'results', '件の結果')}
                   </div>
                 )}
 
@@ -496,7 +561,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
             <div>
               <h4 className="font-medium mb-4 flex items-center gap-2">
                 <Music className="w-4 h-4" />
-                {t('악기', 'Instruments')}
+                {t('악기', 'Instruments', '楽器')}
               </h4>
               
               {/* Selected Instruments */}
@@ -538,7 +603,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                     }}
                     onFocus={() => setShowDropdown(prev => ({ ...prev, instruments: true }))}
                     className="w-full pl-10 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
-                    placeholder={t('악기 검색 (예: Guitar, Piano)', 'Search instruments (e.g., Guitar, Piano)')}
+                    placeholder={t('악기 검색 (예: Guitar, Piano)', 'Search instruments (e.g., Guitar, Piano)', '楽器を検索（例：Guitar, Piano）')}
                   />
                   <button
                     onClick={() => setShowDropdown(prev => ({ ...prev, instruments: !prev.instruments }))}
@@ -551,7 +616,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                 {/* Search Results Count */}
                 {searchQuery.instruments && (
                   <div className="absolute right-12 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 dark:text-gray-400">
-                    {filteredInstruments.length} {t('개 결과', 'results')}
+                    {filteredInstruments.length} {t('개 결과', 'results', '件の結果')}
                   </div>
                 )}
 
@@ -593,7 +658,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
             <div>
               <h4 className="font-medium mb-4 flex items-center gap-2">
                 <LinkIcon className="w-4 h-4" />
-                {t('플랫폼 연동', 'Platform Integration')}
+                {t('플랫폼 연동', 'Platform Integration', 'プラットフォーム連携')}
               </h4>
 
               {/* Platform fields - Always show Spotify and Apple Music */}
@@ -612,7 +677,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                           <span className="text-xl">{config.icon}</span>
                           {config.name}
                           <span className="text-xs text-gray-500 dark:text-gray-400">
-                            {t('(필수)', '(Required)')}
+                            {t('(필수)', '(Required)', '(必須)')}
                           </span>
                         </h5>
                       </div>
@@ -629,7 +694,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                             } focus:outline-none focus:ring-2 focus:ring-purple-500/20 ${
                               formData.isNewArtist ? 'opacity-50 cursor-not-allowed bg-gray-100 dark:bg-gray-800' : ''
                             }`}
-                            placeholder={formData.isNewArtist ? t('신규 아티스트는 입력 불가', 'Not available for new artists') : config.placeholder}
+                            placeholder={formData.isNewArtist ? t('신규 아티스트는 입력 불가', 'Not available for new artists', '新規アーティストは入力不可') : config.placeholder}
                           />
                           {identifier.value && (
                             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -665,10 +730,10 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                           }`}
                         >
                           <ExternalLink className="w-4 h-4" />
-                          {t('페이지 확인', 'Check Page')}
+                          {t('페이지 확인', 'Check Page', 'ページ確認')}
                           {!identifier.value && (
                             <span className="text-xs opacity-75">
-                              {t('(검색 페이지로 이동)', '(Opens search)')}
+                              {t('(검색 페이지로 이동)', '(Opens search)', '(検索ページへ移動)')}
                             </span>
                           )}
                         </a>
@@ -684,11 +749,11 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                   <div className="flex items-start gap-2">
                     <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5" />
                     <div className="text-sm text-blue-700 dark:text-blue-300">
-                      <p className="font-medium mb-1">{t('신규 아티스트 안내', 'New Artist Guide')}</p>
+                      <p className="font-medium mb-1">{t('신규 아티스트 안내', 'New Artist Guide', '新規アーティストガイド')}</p>
                       <ul className="space-y-1 text-xs">
-                        <li>• {t('각 플랫폼에 새로운 아티스트 페이지가 생성됩니다', 'A new artist page will be created on each platform')}</li>
-                        <li>• {t('기존 아티스트와 연결하려면 위의 식별자를 입력하세요', 'To connect with existing artists, enter the identifiers above')}</li>
-                        <li>• {t('생성 후 약 24-48시간 내 플랫폼에 반영됩니다', 'It will be reflected on platforms within 24-48 hours after creation')}</li>
+                        <li>• {t('각 플랫폼에 새로운 아티스트 페이지가 생성됩니다', 'A new artist page will be created on each platform', '各プラットフォームに新しいアーティストページが作成されます')}</li>
+                        <li>• {t('기존 아티스트와 연결하려면 위의 식별자를 입력하세요', 'To connect with existing artists, enter the identifiers above', '既存のアーティストと連携するには、上記の識別子を入力してください')}</li>
+                        <li>• {t('생성 후 약 24-48시간 내 플랫폼에 반영됩니다', 'It will be reflected on platforms within 24-48 hours after creation', '作成後約24-48時間以内にプラットフォームに反映されます')}</li>
                       </ul>
                     </div>
                   </div>
@@ -705,14 +770,14 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
               onClick={onCancel}
               className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
             >
-              {t('취소', 'Cancel')}
+              {t('취소', 'Cancel', 'キャンセル')}
             </button>
             <button
               onClick={handleSave}
               disabled={!formData.name || formData.roles.length === 0}
               className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {contributor ? t('수정', 'Edit') : t('추가', 'Add')}
+              {contributor ? t('수정', 'Edit', '編集') : t('추가', 'Add', '追加')}
             </button>
           </div>
         </div>
