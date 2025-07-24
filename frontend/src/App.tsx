@@ -83,7 +83,7 @@ function App() {
     }
     
     initializeSecurity(logout)
-  }, [])
+  }, [authStore])
 
   // Wait for both stores to hydrate
   if (!hasAuthHydrated || !hasLanguageHydrated) {
