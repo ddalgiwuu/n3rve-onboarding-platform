@@ -47,6 +47,21 @@ export const adminService = {
     await api.delete(`/admin/users/${userId}`);
   },
 
+  async updateUserRole(userId: string, role: string): Promise<AdminUser> {
+    const { data } = await api.patch(`/admin/users/${userId}/role`, { role });
+    return data;
+  },
+
+  async createUser(userData: {
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+  }): Promise<AdminUser> {
+    const { data } = await api.post('/admin/users', userData);
+    return data;
+  },
+
   // Submission management
   async getSubmissions(params?: {
     page?: number;

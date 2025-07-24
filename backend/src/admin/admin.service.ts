@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 import { Prisma } from '@prisma/client';
 
 interface PaginationOptions {
@@ -335,6 +336,35 @@ export class AdminService {
       include: {
         submitter: true,
         reviewer: true,
+      },
+    });
+  }
+
+  async updateUserRole(userId: string, role: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        role: role.toUpperCase() as 'USER' | 'ADMIN',
+      },
+    });
+  }
+
+  async createUser(createUserDto: {
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+  }) {
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    
+    return this.prisma.user.create({
+      data: {
+        name: createUserDto.name,
+        email: createUserDto.email,
+        password: hashedPassword,
+        role: createUserDto.role.toUpperCase() as 'USER' | 'ADMIN',
+        provider: 'EMAIL',
+        isProfileComplete: true,
       },
     });
   }

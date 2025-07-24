@@ -62,6 +62,34 @@ export class AdminController {
     return this.adminService.toggleUserStatus(userId);
   }
 
+  @Patch('users/:id/role')
+  async updateUserRole(
+    @CurrentUser() user: any,
+    @Param('id') userId: string,
+    @Body('role') role: string,
+  ) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    return this.adminService.updateUserRole(userId, role);
+  }
+
+  @Post('users')
+  async createUser(
+    @CurrentUser() user: any,
+    @Body() createUserDto: {
+      name: string;
+      email: string;
+      password: string;
+      role: string;
+    },
+  ) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    return this.adminService.createUser(createUserDto);
+  }
+
   @Get('submissions')
   async getSubmissions(
     @CurrentUser() user: any,
