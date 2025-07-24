@@ -56,68 +56,24 @@ export function detectDevTools() {
 // Protect global objects
 export function protectGlobalObjects() {
   if (import.meta.env.PROD) {
-    // Protect localStorage - but allow auth-storage
-    const originalLocalStorage = window.localStorage;
-    const originalGetItem = originalLocalStorage.getItem;
-    const originalSetItem = originalLocalStorage.setItem;
-    
-    // Override only specific methods to prevent console access
-    Storage.prototype.getItem = function(key: string) {
-      // Always allow auth-storage for app functionality
-      if (key === 'auth-storage' || key === 'language-storage' || key === 'theme') {
-        return originalGetItem.call(this, key);
-      }
+    try {
+      // Only freeze immutable objects
+      Object.freeze(window.location);
+      Object.freeze(window.navigator);
       
-      // Check if this is a console access attempt
-      const stack = new Error().stack || '';
-      const isConsoleAccess = stack.includes('console') || 
-                             stack.includes('debugger') ||
-                             stack.includes('eval');
+      // Disable eval
+      window.eval = () => {
+        throw new Error('eval is disabled');
+      };
       
-      if (isConsoleAccess && (key.includes('auth') || key.includes('token'))) {
-        return null;
-      }
-      
-      return originalGetItem.call(this, key);
-    };
-    
-    // Prevent direct property access from console
-    Object.defineProperty(window, 'localStorage', {
-      get: function() {
-        const stack = new Error().stack || '';
-        const isConsoleAccess = stack.includes('console') || 
-                               stack.includes('debugger') ||
-                               stack.includes('eval');
-        
-        if (isConsoleAccess) {
-          return new Proxy(originalLocalStorage, {
-            get(target, prop) {
-              if (prop === 'getItem' || prop === 'setItem' || prop === 'removeItem') {
-                return () => null;
-              }
-              return target[prop as keyof Storage];
-            }
-          });
-        }
-        
-        return originalLocalStorage;
-      },
-      configurable: false
-    });
-    
-    // Protect window object
-    Object.freeze(window.location);
-    Object.freeze(window.navigator);
-    
-    // Disable eval
-    window.eval = () => {
-      throw new Error('eval is disabled');
-    };
-    
-    // Disable Function constructor
-    window.Function = function() {
-      throw new Error('Function constructor is disabled');
-    } as any;
+      // Disable Function constructor
+      window.Function = function() {
+        throw new Error('Function constructor is disabled');
+      } as any;
+    } catch (error) {
+      // Security protections failed, but app should continue
+      console.warn('Some security features could not be enabled');
+    }
   }
 }
 
