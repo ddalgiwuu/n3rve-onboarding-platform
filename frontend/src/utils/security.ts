@@ -76,16 +76,30 @@ export function protectGlobalObjects() {
       get: function() {
         return new Proxy(originalLocalStorage, {
           get(target, prop) {
-            if (prop === 'getItem') {
-              return function(key: string) {
-                // Block access to sensitive keys
-                if (key.includes('auth') || key.includes('token')) {
+            const value = target[prop as keyof Storage];
+            
+            if (typeof value === 'function') {
+              return function(...args: any[]) {
+                // Don't block internal app usage of auth-storage
+                // Only block direct console access attempts
+                const isInternalCall = new Error().stack?.includes('api.ts') || 
+                                     new Error().stack?.includes('auth.store') ||
+                                     new Error().stack?.includes('auth.service');
+                
+                if (!isInternalCall && prop === 'getItem' && args[0] && 
+                    (args[0].includes('auth') || args[0].includes('token'))) {
+                  // Only log in development
+                  if (import.meta.env.DEV) {
+                    console.warn('Blocked external access to sensitive storage key');
+                  }
                   return null;
                 }
-                return target.getItem(key);
+                // Bind the correct context
+                return value.apply(target, args);
               };
             }
-            return target[prop as keyof Storage];
+            
+            return value;
           }
         });
       },
