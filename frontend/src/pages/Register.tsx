@@ -4,7 +4,8 @@ import { Building2, User, Mail, Lock, Eye, EyeOff, Check, Phone, ArrowRight, Mus
 import { useTranslation } from '@/hooks/useTranslation';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
-import toast from 'react-hot-toast';
+import toast from 'react-hot-toast'
+import { logger } from '@/utils/logger';
 
 export default function Register() {
   const { t } = useTranslation();
@@ -62,7 +63,7 @@ export default function Register() {
         navigate('/dashboard');
       }
     } catch (error: any) {
-      console.error('Registration error:', error);
+      logger.error('Registration error:', error);
       const message = error.response?.data?.message || error.message;
       if (message?.includes('already exists')) {
         toast.error(t('이미 사용중인 이메일입니다.', 'Email already in use', 'このメールアドレスは既に使用されています'));
