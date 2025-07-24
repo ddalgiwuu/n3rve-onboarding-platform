@@ -5,15 +5,30 @@
 // Disable console in production
 export function disableConsole() {
   if (import.meta.env.PROD) {
-    const noop = () => {};
-    
-    // Override all console methods
-    ['log', 'debug', 'info', 'warn', 'error', 'table', 'trace', 'dir'].forEach(method => {
-      (console as any)[method] = noop;
-    });
-    
-    // Prevent console restoration
-    Object.freeze(console);
+    try {
+      const noop = () => {};
+      
+      // Check if console is already frozen
+      if (!Object.isFrozen(console)) {
+        // Override all console methods
+        ['log', 'debug', 'info', 'warn', 'error', 'table', 'trace', 'dir'].forEach(method => {
+          try {
+            Object.defineProperty(console, method, {
+              value: noop,
+              writable: false,
+              configurable: false
+            });
+          } catch (e) {
+            // If we can't override, it's already protected
+          }
+        });
+        
+        // Prevent console restoration
+        Object.freeze(console);
+      }
+    } catch (error) {
+      // Console protection failed, but app should continue
+    }
   }
 }
 
