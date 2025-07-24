@@ -47,7 +47,13 @@ export default function ArtistManagementModal({
   isFeaturing = false
 }: ArtistManagementModalProps) {
   const { language } = useLanguageStore()
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string, ja?: string) => {
+    switch (language) {
+      case 'ko': return ko
+      case 'ja': return ja || en
+      default: return en
+    }
+  }
   
   const savedArtistsStore = useSavedArtistsStore()
   
@@ -83,16 +89,16 @@ export default function ArtistManagementModal({
   const validateArtist = () => {
     const errs: string[] = []
     if (!newArtist.name?.trim()) {
-      errs.push(t('아티스트 이름을 입력하세요', 'Please enter artist name'))
+      errs.push(t('아티스트 이름을 입력하세요', 'Please enter artist name', 'アーティスト名を入力してください'))
     }
     if (artists.some(a => a.name.toLowerCase() === newArtist.name?.toLowerCase())) {
-      errs.push(t('이미 추가된 아티스트입니다', 'Artist already added'))
+      errs.push(t('이미 추가된 아티스트입니다', 'Artist already added', 'すでに追加されたアーティストです'))
     }
     if (!newArtist.spotifyId?.trim() || newArtist.spotifyId?.trim() === '') {
-      errs.push(t('Spotify Artist ID는 필수입니다', 'Spotify Artist ID is required'))
+      errs.push(t('Spotify Artist ID는 필수입니다', 'Spotify Artist ID is required', 'Spotify Artist IDは必須です'))
     }
     if (!newArtist.appleId?.trim() || newArtist.appleId?.trim() === '') {
-      errs.push(t('Apple Music Artist ID는 필수입니다', 'Apple Music Artist ID is required'))
+      errs.push(t('Apple Music Artist ID는 필수입니다', 'Apple Music Artist ID is required', 'Apple Music Artist IDは必須です'))
     }
     setErrors(errs)
     return errs.length === 0
@@ -117,7 +123,7 @@ export default function ArtistManagementModal({
       toast.success(
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5" />
-          <span>{t('아티스트가 추가되었습니다!', 'Artist added!')}</span>
+          <span>{t('아티스트가 추가되었습니다!', 'Artist added!', 'アーティストが追加されました！')}</span>
         </div>,
         {
           duration: 2000,
@@ -232,26 +238,26 @@ export default function ArtistManagementModal({
                 {isFeaturing ? (
                   <>
                     <Music className="w-6 h-6" />
-                    {t('피처링 아티스트 관리', 'Manage Featuring Artists')}
+                    {t('피처링 아티스트 관리', 'Manage Featuring Artists', 'フィーチャリングアーティスト管理')}
                   </>
                 ) : albumLevel ? (
                   <>
                     <Users className="w-6 h-6" />
-                    {t('앨범 아티스트 관리', 'Manage Album Artists')}
+                    {t('앨범 아티스트 관리', 'Manage Album Artists', 'アルバムアーティスト管理')}
                   </>
                 ) : (
                   <>
                     <User className="w-6 h-6" />
-                    {t('트랙 아티스트 관리', 'Manage Track Artists')}
+                    {t('트랙 아티스트 관리', 'Manage Track Artists', 'トラックアーティスト管理')}
                   </>
                 )}
               </h2>
               <p className="text-purple-100 text-sm mt-1">
                 {isFeaturing 
-                  ? t('피처링 아티스트를 추가하고 관리하세요', 'Add and manage featuring artists')
+                  ? t('피처링 아티스트를 추가하고 관리하세요', 'Add and manage featuring artists', 'フィーチャリングアーティストを追加・管理')
                   : albumLevel 
-                  ? t('앨범의 메인 아티스트를 추가하고 관리하세요', 'Add and manage main album artists')
-                  : t('트랙의 아티스트를 추가하고 관리하세요', 'Add and manage track artists')
+                  ? t('앨범의 메인 아티스트를 추가하고 관리하세요', 'Add and manage main album artists', 'アルバムのメインアーティストを追加・管理')
+                  : t('트랙의 아티스트를 추가하고 관리하세요', 'Add and manage track artists', 'トラックのアーティストを追加・管理')
                 }
               </p>
             </div>
@@ -270,14 +276,14 @@ export default function ArtistManagementModal({
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                {t('아티스트 관리', 'Artist Management')}
+                {t('아티스트 관리', 'Artist Management', 'アーティスト管理')}
               </h3>
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
-                  {t('현재 세션', 'Current Session')}: {artists.length}
+                  {t('현재 세션', 'Current Session', '現在のセッション')}: {artists.length}
                 </span>
                 <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
-                  {t('라이브러리', 'Library')}: {savedArtistsStore.artists.length}
+                  {t('라이브러리', 'Library', 'ライブラリ')}: {savedArtistsStore.artists.length}
                 </span>
               </div>
             </div>
@@ -288,7 +294,7 @@ export default function ArtistManagementModal({
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <input
                     type="text"
-                    placeholder={t('아티스트 이름으로 검색...', 'Search by artist name...')}
+                    placeholder={t('아티스트 이름으로 검색...', 'Search by artist name...', 'アーティスト名で検索...')}
                     value={savedArtistSearch}
                     onChange={(e) => setSavedArtistSearch(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-sm"
@@ -303,7 +309,7 @@ export default function ArtistManagementModal({
                       <div className="px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-gray-200 dark:border-gray-700">
                         <p className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wider flex items-center gap-2">
                           <span className="animate-pulse w-2 h-2 bg-purple-500 rounded-full"></span>
-                          {t('현재 세션 아티스트', 'Current Session Artists')}
+                          {t('현재 세션 아티스트', 'Current Session Artists', '現在のセッションアーティスト')}
                         </p>
                       </div>
                       {artists.map((artist, index) => (
@@ -334,7 +340,7 @@ export default function ArtistManagementModal({
                                   {recentlyAddedIds.has(artist.id) && (
                                     <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-700">
                                       <Sparkles className="w-3 h-3 mr-1" />
-                                      {t('방금 추가됨', 'Just Added')}
+                                      {t('방금 추가됨', 'Just Added', '追加されました')}
                                     </span>
                                   )}
                                 </div>
@@ -392,17 +398,17 @@ export default function ArtistManagementModal({
                                     // Remove the artist from current list to edit
                                     setArtists(artists.filter(a => a.id !== artist.id))
                                     
-                                    toast.success(t('수정하려면 아래 폼에서 변경하세요', 'Edit in the form below'))
+                                    toast.success(t('수정하려면 아래 폼에서 변경하세요', 'Edit in the form below', '下のフォームで編集してください'))
                                   }}
                                   className="p-2 text-purple-600 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20 rounded-lg transition-all transform hover:scale-110"
-                                  title={t('수정', 'Edit')}
+                                  title={t('수정', 'Edit', '編集')}
                                 >
                                   <Edit2 className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => removeArtist(artist.id)}
                                   className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all transform hover:scale-110"
-                                  title={t('삭제', 'Delete')}
+                                  title={t('삭제', 'Delete', '削除')}
                                 >
                                   <Trash2 className="w-4 h-4" />
                                 </button>
@@ -419,7 +425,7 @@ export default function ArtistManagementModal({
                     <>
                       <div className="px-4 py-2 bg-blue-50 dark:bg-blue-900/10 border-b border-gray-200 dark:border-gray-700 sticky top-0">
                         <p className="text-xs font-medium text-blue-700 dark:text-blue-300 uppercase tracking-wider">
-                          {t('아티스트 라이브러리', 'Artist Library')}
+                          {t('아티스트 라이브러리', 'Artist Library', 'アーティストライブラリ')}
                         </p>
                       </div>
                   {savedArtistsStore.searchArtists(savedArtistSearch).filter(savedArtist => !artists.some(a => a.name === savedArtist.name)).map((savedArtist) => (
@@ -491,12 +497,12 @@ export default function ArtistManagementModal({
                               setArtists([...artists, artist])
                               setRecentlyAddedIds(new Set([...recentlyAddedIds, artist.id]))
                               savedArtistsStore.useArtist(savedArtist.id)
-                              toast.success(t('아티스트가 추가되었습니다', 'Artist added'))
+                              toast.success(t('아티스트가 추가되었습니다', 'Artist added', 'アーティストが追加されました'))
                             }}
                             className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-1"
                           >
                             <Plus className="w-3 h-3" />
-                            {t('사용', 'Use')}
+                            {t('사용', 'Use', '使用')}
                           </button>
                           <button
                             onClick={() => {
@@ -527,23 +533,23 @@ export default function ArtistManagementModal({
                                 }
                               }, 100)
                               
-                              toast.success(t('수정하려면 아래 폼에서 변경하세요', 'Edit in the form below'))
+                              toast.success(t('수정하려면 아래 폼에서 변경하세요', 'Edit in the form below', '下のフォームで編集してください'))
                             }}
                             className="px-3 py-1.5 text-xs bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center gap-1"
                           >
                             <Edit2 className="w-3 h-3" />
-                            {t('수정', 'Edit')}
+                            {t('수정', 'Edit', '編集')}
                           </button>
                           <button
                             onClick={() => {
-                              if (confirm(t('정말 삭제하시겠습니까?', 'Are you sure you want to delete?'))) {
+                              if (confirm(t('정말 삭제하시겠습니까?', 'Are you sure you want to delete?', '本当に削除しますか？'))) {
                                 savedArtistsStore.deleteArtist(savedArtist.id)
                                   .then(() => {
-                                    toast.success(t('아티스트가 삭제되었습니다', 'Artist deleted'))
+                                    toast.success(t('아티스트가 삭제되었습니다', 'Artist deleted', 'アーティストが削除されました'))
                                   })
                                   .catch(error => {
                                     if (!error.message?.includes('401')) {
-                                      toast.error(t('삭제에 실패했습니다', 'Failed to delete'))
+                                      toast.error(t('삭제에 실패했습니다', 'Failed to delete', '削除に失敗しました'))
                                     }
                                   })
                               }
@@ -551,7 +557,7 @@ export default function ArtistManagementModal({
                             className="px-3 py-1.5 text-xs bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium flex items-center gap-1"
                           >
                             <Trash2 className="w-3 h-3" />
-                            {t('삭제', 'Delete')}
+                            {t('삭제', 'Delete', '削除')}
                           </button>
                         </div>
                       </div>
@@ -564,10 +570,10 @@ export default function ArtistManagementModal({
                     <div className="text-center py-8">
                       <Users className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" />
                       <p className="text-gray-500 dark:text-gray-400 font-medium">
-                        {savedArtistSearch ? t('검색 결과가 없습니다', 'No search results') : t('저장된 아티스트가 없습니다', 'No saved artists')}
+                        {savedArtistSearch ? t('검색 결과가 없습니다', 'No search results', '検索結果がありません') : t('저장된 아티스트가 없습니다', 'No saved artists', '保存されたアーティストがありません')}
                       </p>
                       <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-                        {savedArtistSearch ? t('다른 검색어를 시도해보세요', 'Try a different search term') : t('아티스트를 추가하면 자동으로 저장됩니다', 'Artists are automatically saved when added')}
+                        {savedArtistSearch ? t('다른 검색어를 시도해보세요', 'Try a different search term', '別の検索語を試してください') : t('아티스트를 추가하면 자동으로 저장됩니다', 'Artists are automatically saved when added', 'アーティストを追加すると自動的に保存されます')}
                       </p>
                     </div>
                   )}
@@ -582,7 +588,7 @@ export default function ArtistManagementModal({
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="px-4 bg-gray-50 dark:bg-gray-900 text-gray-500 dark:text-gray-400">
-                {t('또는', 'OR')}
+                {t('또는', 'OR', 'または')}
               </span>
             </div>
           </div>
@@ -591,20 +597,20 @@ export default function ArtistManagementModal({
           <div className="bg-gray-50 dark:bg-gray-900 rounded-xl p-6 mb-6 border border-gray-200 dark:border-gray-700">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <Plus className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              {t('새 아티스트 입력', 'Enter New Artist')}
+              {t('새 아티스트 입력', 'Enter New Artist', '新規アーティスト入力')}
             </h3>
             
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('아티스트 이름', 'Artist Name')} <span className="text-red-500">*</span>
+                    {t('아티스트 이름', 'Artist Name', 'アーティスト名')} <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={newArtist.name || ''}
                     onChange={(e) => setNewArtist({ ...newArtist, name: e.target.value })}
-                    placeholder={t('아티스트명 입력', 'Enter artist name')}
+                    placeholder={t('아티스트명 입력', 'Enter artist name', 'アーティスト名を入力')}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
                   />
                 </div>
@@ -613,15 +619,15 @@ export default function ArtistManagementModal({
                 {!albumLevel && !isFeaturing && (
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('역할', 'Role')}
+                      {t('역할', 'Role', '役割')}
                     </label>
                     <select
                       value={newArtist.role}
                       onChange={(e) => setNewArtist({ ...newArtist, role: e.target.value as Artist['role'] })}
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-800"
                     >
-                      <option value="featured">{t('피처링', 'Featured')}</option>
-                      <option value="additional">{t('참여 아티스트', 'Additional Artist')}</option>
+                      <option value="featured">{t('피처링', 'Featured', 'フィーチャリング')}</option>
+                      <option value="additional">{t('참여 아티스트', 'Additional Artist', '参加アーティスト')}</option>
                     </select>
                   </div>
                 )}
@@ -635,10 +641,10 @@ export default function ArtistManagementModal({
                       <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-blue-600 rounded-lg flex items-center justify-center">
                         <Globe className="w-5 h-5 text-white" />
                       </div>
-                      {t('아티스트명 번역', 'Artist Name Translations')}
+                      {t('아티스트명 번역', 'Artist Name Translations', 'アーティスト名翻訳')}
                     </label>
                     <span className="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full">
-                      {t('선택사항', 'Optional')}
+                      {t('선택사항', 'Optional', 'オプション')}
                     </span>
                   </div>
                   
@@ -674,7 +680,7 @@ export default function ArtistManagementModal({
                                       [langCode]: e.target.value
                                     }
                                   })}
-                                  placeholder={t(`${lang?.name}로 아티스트명 입력`, `Enter artist name in ${lang?.name}`)}
+                                  placeholder={t(`${lang?.name}로 아티스트명 입력`, `Enter artist name in ${lang?.name}`, `${lang?.name}でアーティスト名を入力`)}
                                   className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-gray-50 dark:bg-gray-900 focus:bg-white dark:focus:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
                                 />
                               </div>
@@ -695,10 +701,10 @@ export default function ArtistManagementModal({
                       <div className="text-center py-8 bg-gray-50 dark:bg-gray-800/50 rounded-xl">
                         <Globe className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
                         <p className="text-gray-500 dark:text-gray-400 font-medium mb-1">
-                          {t('아직 번역이 없습니다', 'No translations yet')}
+                          {t('아직 번역이 없습니다', 'No translations yet', 'まだ翻訳がありません')}
                         </p>
                         <p className="text-sm text-gray-400 dark:text-gray-500">
-                          {t('아래에서 언어를 선택하여 번역을 추가하세요', 'Select a language below to add translations')}
+                          {t('아래에서 언어를 선택하여 번역을 추가하세요', 'Select a language below to add translations', '下から言語を選択して翻訳を追加してください')}
                         </p>
                       </div>
                     )}
@@ -712,7 +718,7 @@ export default function ArtistManagementModal({
                       className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium rounded-xl transition-all duration-200 transform hover:scale-[1.02]"
                     >
                       <Plus className="w-5 h-5" />
-                      {t('언어 추가', 'Add Language')}
+                      {t('언어 추가', 'Add Language', '言語を追加')}
                     </button>
                     
                     {showLanguageSelector && (
@@ -769,10 +775,10 @@ export default function ArtistManagementModal({
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-purple-900 dark:text-purple-100">
-                          {t('새 아티스트로 등록됩니다', 'Will be registered as a new artist')}
+                          {t('새 아티스트로 등록됩니다', 'Will be registered as a new artist', '新規アーティストとして登録されます')}
                         </p>
                         <p className="text-sm text-purple-700 dark:text-purple-300">
-                          {t('Spotify에 아직 등록되지 않은 아티스트', 'Artist not yet on Spotify')}
+                          {t('Spotify에 아직 등록되지 않은 아티스트', 'Artist not yet on Spotify', 'Spotifyにまだ登録されていないアーティスト')}
                         </p>
                       </div>
                       <button
@@ -801,7 +807,7 @@ export default function ArtistManagementModal({
                       <span className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                       <span className="relative flex items-center gap-2 font-bold">
                         <Plus className="w-4 h-4" />
-                        {t('아직 없음', 'Not Listed')}
+                        {t('아직 없음', 'Not Listed', 'まだ登録なし')}
                       </span>
                     </button>
                   </div>
@@ -810,29 +816,30 @@ export default function ArtistManagementModal({
                 {showSpotifyHelp && (
                   <div className="mt-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg text-sm">
                     <p className="font-medium text-green-800 dark:text-green-200 mb-2">
-                      {t('Spotify Artist ID 찾는 방법', 'How to find Spotify Artist ID')}
+                      {t('Spotify Artist ID 찾는 방법', 'How to find Spotify Artist ID', 'Spotify Artist IDの見つけ方')}
                     </p>
                     <div className="space-y-2 text-green-700 dark:text-green-300">
                       <div>
-                        <p className="font-medium">{t('Mac:', 'Mac:')}</p>
+                        <p className="font-medium">{t('Mac:', 'Mac:', 'Mac:')}</p>
                         <ol className="list-decimal list-inside ml-2">
-                          <li>{t('Spotify 앱에서 아티스트 페이지 열기', 'Open artist page in Spotify app')}</li>
-                          <li>{t('Option(⌥) 키를 누른 상태에서 아티스트 이름 옆 ⋯ 클릭', 'Hold Option(⌥) key and click ⋯ next to artist name')}</li>
-                          <li>{t('"Copy Spotify URI" 선택', 'Select "Copy Spotify URI"')}</li>
-                          <li>{t('복사된 URI 예시: spotify:artist:XXXXXXXXX', 'Copied URI example: spotify:artist:XXXXXXXXX')}</li>
+                          <li>{t('Spotify 앱에서 아티스트 페이지 열기', 'Open artist page in Spotify app', 'Spotifyアプリでアーティストページを開く')}</li>
+                          <li>{t('Option(⌥) 키를 누른 상태에서 아티스트 이름 옆 ⋯ 클릭', 'Hold Option(⌥) key and click ⋯ next to artist name', 'Option(⌥)キーを押しながらアーティスト名の横の⋯をクリック')}</li>
+                          <li>{t('"Copy Spotify URI" 선택', 'Select "Copy Spotify URI"', '"Copy Spotify URI"を選択')}</li>
+                          <li>{t('복사된 URI 예시: spotify:artist:XXXXXXXXX', 'Copied URI example: spotify:artist:XXXXXXXXX', 'コピーされたURIの例: spotify:artist:XXXXXXXXX')}</li>
                         </ol>
-                        <p className="font-medium mt-2">{t('Windows:', 'Windows:')}</p>
+                        <p className="font-medium mt-2">{t('Windows:', 'Windows:', 'Windows:')}</p>
                         <ol className="list-decimal list-inside ml-2">
-                          <li>{t('Spotify 앱에서 아티스트 페이지 열기', 'Open artist page in Spotify app')}</li>
-                          <li>{t('Ctrl 키를 누른 상태에서 아티스트 이름 옆 ⋯ 클릭', 'Hold Ctrl key and click ⋯ next to artist name')}</li>
-                          <li>{t('"Copy Spotify URI" 선택', 'Select "Copy Spotify URI"')}</li>
-                          <li>{t('복사된 URI 예시: spotify:artist:XXXXXXXXX', 'Copied URI example: spotify:artist:XXXXXXXXX')}</li>
-                          <li>{t('또는 웹에서 "Share" → "Copy link to artist"로 URL 복사 후 ID 추출', 'Or copy URL via web "Share" → "Copy link to artist" and extract ID')}</li>
+                          <li>{t('Spotify 앱에서 아티스트 페이지 열기', 'Open artist page in Spotify app', 'Spotifyアプリでアーティストページを開く')}</li>
+                          <li>{t('Ctrl 키를 누른 상태에서 아티스트 이름 옆 ⋯ 클릭', 'Hold Ctrl key and click ⋯ next to artist name', 'Ctrlキーを押しながらアーティスト名の横の⋯をクリック')}</li>
+                          <li>{t('"Copy Spotify URI" 선택', 'Select "Copy Spotify URI"', '"Copy Spotify URI"を選択')}</li>
+                          <li>{t('복사된 URI 예시: spotify:artist:XXXXXXXXX', 'Copied URI example: spotify:artist:XXXXXXXXX', 'コピーされたURIの例: spotify:artist:XXXXXXXXX')}</li>
+                          <li>{t('또는 웹에서 "Share" → "Copy link to artist"로 URL 복사 후 ID 추출', 'Or copy URL via web "Share" → "Copy link to artist" and extract ID', 'またはウェブで"Share" → "Copy link to artist"でURLをコピーしてIDを抽出')}</li>
                         </ol>
                       </div>
                       <p className="text-xs italic">
                         {t('아티스트가 Spotify에 없다면 비워두고 NEW 버튼을 클릭하세요.', 
-                          'If artist is not on Spotify, leave empty and click NEW button.')}
+                          'If artist is not on Spotify, leave empty and click NEW button.',
+                          'アーティストがSpotifyにない場合は、空のままNEWボタンをクリックしてください。')}
                       </p>
                     </div>
                   </div>
@@ -861,10 +868,10 @@ export default function ArtistManagementModal({
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-gray-900 dark:text-gray-100">
-                          {t('새 아티스트로 등록됩니다', 'Will be registered as a new artist')}
+                          {t('새 아티스트로 등록됩니다', 'Will be registered as a new artist', '新規アーティストとして登録されます')}
                         </p>
                         <p className="text-sm text-gray-700 dark:text-gray-300">
-                          {t('Apple Music에 아직 등록되지 않은 아티스트', 'Artist not yet on Apple Music')}
+                          {t('Apple Music에 아직 등록되지 않은 아티스트', 'Artist not yet on Apple Music', 'Apple Musicにまだ登録されていないアーティスト')}
                         </p>
                       </div>
                       <button
@@ -893,7 +900,7 @@ export default function ArtistManagementModal({
                       <span className="absolute inset-0 bg-white/20 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></span>
                       <span className="relative flex items-center gap-2 font-bold">
                         <Plus className="w-4 h-4" />
-                        {t('아직 없음', 'Not Listed')}
+                        {t('아직 없음', 'Not Listed', 'まだ登録なし')}
                       </span>
                     </button>
                   </div>
@@ -902,30 +909,32 @@ export default function ArtistManagementModal({
                 {showAppleHelp && (
                   <div className="mt-2 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg text-sm border border-gray-200 dark:border-gray-700">
                     <p className="font-medium text-gray-800 dark:text-gray-200 mb-2">
-                      {t('Apple Music Artist ID 찾는 방법', 'How to find Apple Music Artist ID')}
+                      {t('Apple Music Artist ID 찾는 방법', 'How to find Apple Music Artist ID', 'Apple Music Artist IDの見つけ方')}
                     </p>
                     <div className="space-y-2 text-gray-700 dark:text-gray-300">
                       <div>
-                        <p className="font-medium">{t('Mac:', 'Mac:')}</p>
+                        <p className="font-medium">{t('Mac:', 'Mac:', 'Mac:')}</p>
                         <ol className="list-decimal list-inside ml-2">
-                          <li>{t('Apple Music 앱에서 아티스트 페이지 열기', 'Open artist page in Apple Music app')}</li>
-                          <li>{t('아티스트 이름 우클릭', 'Right-click artist name')}</li>
-                          <li>{t('"Share" → "Copy Link" 선택', 'Select "Share" → "Copy Link"')}</li>
+                          <li>{t('Apple Music 앱에서 아티스트 페이지 열기', 'Open artist page in Apple Music app', 'Apple Musicアプリでアーティストページを開く')}</li>
+                          <li>{t('아티스트 이름 우클릭', 'Right-click artist name', 'アーティスト名を右クリック')}</li>
+                          <li>{t('"Share" → "Copy Link" 선택', 'Select "Share" → "Copy Link"', '"Share" → "Copy Link"を選択')}</li>
                           <li>{t('URL에서 ID 추출: music.apple.com/artist/artist-name/[이 숫자가 ID]', 
-                            'Extract ID from URL: music.apple.com/artist/artist-name/[this number is the ID]')}</li>
+                            'Extract ID from URL: music.apple.com/artist/artist-name/[this number is the ID]',
+                            'URLからIDを抽出: music.apple.com/artist/artist-name/[この数字がID]')}</li>
                         </ol>
                       </div>
                       <div>
-                        <p className="font-medium">{t('Windows:', 'Windows:')}</p>
+                        <p className="font-medium">{t('Windows:', 'Windows:', 'Windows:')}</p>
                         <ol className="list-decimal list-inside ml-2">
-                          <li>{t('웹브라우저에서 music.apple.com 접속', 'Go to music.apple.com in web browser')}</li>
-                          <li>{t('아티스트 검색 후 페이지 열기', 'Search and open artist page')}</li>
-                          <li>{t('URL에서 마지막 숫자가 ID', 'The last number in URL is the ID')}</li>
+                          <li>{t('웹브라우저에서 music.apple.com 접속', 'Go to music.apple.com in web browser', 'ウェブブラウザでmusic.apple.comにアクセス')}</li>
+                          <li>{t('아티스트 검색 후 페이지 열기', 'Search and open artist page', 'アーティストを検索してページを開く')}</li>
+                          <li>{t('URL에서 마지막 숫자가 ID', 'The last number in URL is the ID', 'URLの最後の数字がID')}</li>
                         </ol>
                       </div>
                       <p className="text-xs italic">
                         {t('아티스트가 Apple Music에 없다면 비워두고 NEW 버튼을 클릭하세요.', 
-                          'If artist is not on Apple Music, leave empty and click NEW button.')}
+                          'If artist is not on Apple Music, leave empty and click NEW button.',
+                          'アーティストがApple Musicにない場合は、空のままNEWボタンをクリックしてください。')}
                       </p>
                     </div>
                   </div>
@@ -944,7 +953,7 @@ export default function ArtistManagementModal({
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
-                  {t('아티스트 추가', 'Add Artist')}
+                  {t('아티스트 추가', 'Add Artist', 'アーティストを追加')}
                 </button>
                 <button
                   onClick={() => {
@@ -960,7 +969,7 @@ export default function ArtistManagementModal({
                   }}
                   className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                 >
-                  {t('초기화', 'Clear')}
+                  {t('초기화', 'Clear', 'クリア')}
                 </button>
               </div>
             </div>
@@ -974,14 +983,14 @@ export default function ArtistManagementModal({
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            {t('취소', 'Cancel')}
+            {t('취소', 'Cancel', 'キャンセル')}
           </button>
           <button
             onClick={handleSave}
             className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium flex items-center gap-2"
           >
             <Check className="w-4 h-4" />
-            {t('완료', 'Done')}
+            {t('완료', 'Done', '完了')}
           </button>
         </div>
       </div>
