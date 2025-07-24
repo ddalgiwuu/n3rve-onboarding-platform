@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Search, UserPlus, Mail, Phone, Calendar, Music, TrendingUp, Download, Shield, User, X, ChevronDown, Check } from 'lucide-react';
+import { Search, UserPlus, Mail, Phone, Calendar, Music, TrendingUp, Download, Shield, User, X, ChevronDown, Check, Building2, Users, Link } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { format } from 'date-fns';
 import { adminService } from '@/services/admin.service';
@@ -17,6 +17,21 @@ interface Customer {
   lastActive?: string;
   role: string;
   isProfileComplete: boolean;
+  isCompanyAccount: boolean;
+  parentAccountId?: string;
+  parentAccount?: {
+    id: string;
+    name: string;
+    company?: string;
+  };
+  subAccounts?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    isActive: boolean;
+  }>;
+  subAccountsCount?: number;
 }
 
 const AdminCustomers = () => {
@@ -40,7 +55,10 @@ const AdminCustomers = () => {
     name: '',
     email: '',
     password: '',
-    role: 'user'
+    role: 'user',
+    company: '',
+    isCompanyAccount: false,
+    parentAccountId: ''
   });
 
   useEffect(() => {
@@ -83,11 +101,16 @@ const AdminCustomers = () => {
         phone: user.phone || '',
         company: user.company || '',
         joinedAt: user.createdAt || new Date().toISOString(),
-        submissionCount: 0, // TODO: Get from submissions count
+        submissionCount: user.submissions || 0,
         status: user.isActive ? 'active' : 'inactive',
         lastActive: user.lastLogin || user.createdAt || new Date().toISOString(),
         role: user.role ? user.role.toLowerCase() : 'user',
-        isProfileComplete: user.isProfileComplete || false
+        isProfileComplete: user.isProfileComplete || false,
+        isCompanyAccount: user.isCompanyAccount || false,
+        parentAccountId: user.parentAccountId,
+        parentAccount: user.parentAccount,
+        subAccounts: user.subAccounts,
+        subAccountsCount: user.subAccountsCount || 0
       }));
       
       setCustomers(customerData);
@@ -155,7 +178,7 @@ const AdminCustomers = () => {
       await adminService.createUser(newCustomer);
       toast.success(t('새 사용자가 추가되었습니다.', 'New user added successfully', '新しいユーザーが正常に追加されました'));
       setShowAddModal(false);
-      setNewCustomer({ name: '', email: '', password: '', role: 'user' });
+      setNewCustomer({ name: '', email: '', password: '', role: 'user', company: '', isCompanyAccount: false, parentAccountId: '' });
       fetchCustomers();
     } catch (error: any) {
       console.error('Error adding customer:', error);
@@ -280,12 +303,11 @@ const AdminCustomers = () => {
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('이름', 'Name', '名前')}</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('역할', 'Role', 'ロール')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('계정 유형', 'Account Type', 'アカウントタイプ')}</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('연락처', 'Contact', '連絡先')}</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('가입일', 'Joined', '登録日')}</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('제출', 'Submissions', '提出')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('회사', 'Company', '会社')}</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('상태', 'Status', 'ステータス')}</th>
-                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('마지막 활동', 'Last Active', '最終アクティビティ')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
@@ -360,6 +382,42 @@ const AdminCustomers = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
+                        <div className="flex flex-col gap-1">
+                          {customer.isCompanyAccount ? (
+                            <div className="flex items-center gap-2">
+                              <Building2 className="w-4 h-4 text-indigo-500" />
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                                {t('회사 계정', 'Company Account', '会社アカウント')}
+                              </span>
+                              {customer.subAccountsCount ? (
+                                <span className="text-xs bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full">
+                                  {customer.subAccountsCount} {t('하위', 'sub', 'サブ')}
+                                </span>
+                              ) : null}
+                            </div>
+                          ) : customer.parentAccount ? (
+                            <div className="flex items-center gap-2">
+                              <Link className="w-4 h-4 text-gray-500" />
+                              <div className="flex flex-col">
+                                <span className="text-sm text-gray-700 dark:text-gray-300">
+                                  {t('하위 계정', 'Sub Account', 'サブアカウント')}
+                                </span>
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
+                                  {customer.parentAccount.company || customer.parentAccount.name}
+                                </span>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <User className="w-4 h-4 text-gray-500" />
+                              <span className="text-sm text-gray-700 dark:text-gray-300">
+                                {t('개인 계정', 'Individual', '個人アカウント')}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                             <Mail className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -380,7 +438,6 @@ const AdminCustomers = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-medium">{customer.submissionCount}</td>
-                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-medium">{customer.company || '-'}</td>
                       <td className="px-6 py-4">
                         <span className={`inline-flex px-3 py-1 rounded-full text-sm ${
                           customer.status === 'active'
@@ -389,17 +446,6 @@ const AdminCustomers = () => {
                         }`}>
                           {customer.status === 'active' ? t('활성', 'Active', 'アクティブ') : t('비활성', 'Inactive', '非アクティブ')}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 text-gray-700 dark:text-gray-300 font-medium">
-                        {customer.lastActive && customer.lastActive !== '' ? (
-                          (() => {
-                            try {
-                              return format(new Date(customer.lastActive), 'MMM dd, yyyy');
-                            } catch {
-                              return 'N/A';
-                            }
-                          })()
-                        ) : 'N/A'}
                       </td>
                     </tr>
                   ))}
@@ -479,6 +525,35 @@ const AdminCustomers = () => {
                   <option value="admin">{t('관리자', 'Admin', '管理者')}</option>
                 </select>
               </div>
+
+              <div>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newCustomer.isCompanyAccount}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, isCompanyAccount: e.target.checked })}
+                    className="rounded border-gray-600 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {t('회사 계정으로 생성', 'Create as Company Account', '会社アカウントとして作成')}
+                  </span>
+                </label>
+              </div>
+
+              {newCustomer.isCompanyAccount && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('회사명', 'Company Name', '会社名')}
+                  </label>
+                  <input
+                    type="text"
+                    value={newCustomer.company}
+                    onChange={(e) => setNewCustomer({ ...newCustomer, company: e.target.value })}
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 dark:text-white"
+                    placeholder={t('회사명 입력', 'Enter company name', '会社名を入力')}
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 mt-6">

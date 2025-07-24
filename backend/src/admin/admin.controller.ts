@@ -82,6 +82,9 @@ export class AdminController {
       email: string;
       password: string;
       role: string;
+      company?: string;
+      isCompanyAccount?: boolean;
+      parentAccountId?: string;
     },
   ) {
     if (user.role !== 'ADMIN') {
