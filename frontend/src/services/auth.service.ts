@@ -190,6 +190,35 @@ class AuthService {
   logout(): void {
     localStorage.removeItem('auth-storage')
   }
+
+  async register(data: {
+    email: string;
+    password: string;
+    name: string;
+    phone?: string;
+    company?: string;
+    isCompanyAccount?: boolean;
+  }): Promise<any> {
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || 'Registration failed')
+      }
+
+      return await response.json()
+    } catch (error) {
+      console.error('AuthService: Registration error:', error)
+      throw error
+    }
+  }
 }
 
 export const authService = new AuthService()
