@@ -180,13 +180,13 @@ export default function HomePage() {
       
       {/* CTA Section */}
       <div className="container mx-auto px-4 py-20">
-        <div className="glass-effect-strong bg-gradient-to-r from-purple-600/90 to-blue-600/90 rounded-3xl p-12 text-center text-white relative overflow-hidden animate-scale-in hover:shadow-2xl transition-all duration-300">
-          <div className="absolute inset-0 bg-black opacity-10"></div>
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 rounded-3xl p-12 text-center text-white relative overflow-hidden animate-scale-in hover:shadow-2xl transition-all duration-300 shadow-xl">
+          <div className="absolute inset-0 bg-black opacity-5"></div>
           <div className="relative">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               {language === 'ko' ? '지금 바로 시작하세요' : language === 'ja' ? '今すぐジャーニーを始めましょう' : 'Start Your Journey Today'}
             </h2>
-            <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
+            <p className="text-xl mb-8 text-white/95 max-w-2xl mx-auto font-medium">
               {language === 'ko' 
                 ? 'N3RVE와 함께 당신의 음악을 세계에 알리는 첫걸음을 내디뎌보세요.'
                 : language === 'ja'
@@ -196,7 +196,7 @@ export default function HomePage() {
             </p>
             <Link
               to="/login"
-              className="inline-flex items-center gap-2 px-8 py-4 glass-effect bg-white/90 text-purple-600 rounded-full font-semibold text-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-white text-purple-600 rounded-full font-bold text-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               {language === 'ko' ? '무료로 시작하기' : language === 'ja' ? '無料で始める' : 'Start Free'} 
               <ArrowRight className="w-5 h-5" />
