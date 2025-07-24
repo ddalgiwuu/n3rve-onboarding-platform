@@ -38,9 +38,6 @@ export default function AuthCallback() {
 
         const user = await response.json()
 
-        // Set auth in store
-        setAuth?.(user, accessToken, refreshToken)
-
         // Get return URL from session storage
         const returnUrl = sessionStorage.getItem('returnUrl')
         sessionStorage.removeItem('returnUrl')
@@ -52,10 +49,15 @@ export default function AuthCallback() {
           sessionStorage.setItem('temp_refresh_token', refreshToken)
           sessionStorage.setItem('temp_user', JSON.stringify(user))
           navigate('/role-select')
-        } else if (!profileComplete) {
-          navigate('/profile-setup')
         } else {
-          navigate(returnUrl || '/dashboard')
+          // Set auth in store for non-admin users or when profile setup is needed
+          setAuth?.(user, accessToken, refreshToken)
+          
+          if (!profileComplete) {
+            navigate('/profile-setup')
+          } else {
+            navigate(returnUrl || '/dashboard')
+          }
         }
 
         toast.success(t('auth.loginSuccess'))
