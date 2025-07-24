@@ -143,9 +143,11 @@ jobs:
           # Navigate to project directory
           cd /home/ubuntu/n3rve-onboarding-platform
           
-          # Pull latest code
+          # Pull latest code (force update)
           echo "Pulling latest code..."
-          git pull origin main
+          git fetch origin main
+          git reset --hard origin/main
+          git clean -fd
           
           # Stop all containers
           echo "Stopping containers..."
