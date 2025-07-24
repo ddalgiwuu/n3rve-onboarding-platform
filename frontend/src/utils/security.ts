@@ -70,38 +70,51 @@ export function detectDevTools() {
 // Protect global objects
 export function protectGlobalObjects() {
   if (import.meta.env.PROD) {
-    // Protect localStorage
+    // Protect localStorage - but allow auth-storage
     const originalLocalStorage = window.localStorage;
+    const originalGetItem = originalLocalStorage.getItem;
+    const originalSetItem = originalLocalStorage.setItem;
+    
+    // Override only specific methods to prevent console access
+    Storage.prototype.getItem = function(key: string) {
+      // Always allow auth-storage for app functionality
+      if (key === 'auth-storage' || key === 'language-storage' || key === 'theme') {
+        return originalGetItem.call(this, key);
+      }
+      
+      // Check if this is a console access attempt
+      const stack = new Error().stack || '';
+      const isConsoleAccess = stack.includes('console') || 
+                             stack.includes('debugger') ||
+                             stack.includes('eval');
+      
+      if (isConsoleAccess && (key.includes('auth') || key.includes('token'))) {
+        return null;
+      }
+      
+      return originalGetItem.call(this, key);
+    };
+    
+    // Prevent direct property access from console
     Object.defineProperty(window, 'localStorage', {
       get: function() {
-        return new Proxy(originalLocalStorage, {
-          get(target, prop) {
-            const value = target[prop as keyof Storage];
-            
-            if (typeof value === 'function') {
-              return function(...args: any[]) {
-                // Don't block internal app usage of auth-storage
-                // Only block direct console access attempts
-                const isInternalCall = new Error().stack?.includes('api.ts') || 
-                                     new Error().stack?.includes('auth.store') ||
-                                     new Error().stack?.includes('auth.service');
-                
-                if (!isInternalCall && prop === 'getItem' && args[0] && 
-                    (args[0].includes('auth') || args[0].includes('token'))) {
-                  // Only log in development
-                  if (import.meta.env.DEV) {
-                    console.warn('Blocked external access to sensitive storage key');
-                  }
-                  return null;
-                }
-                // Bind the correct context
-                return value.apply(target, args);
-              };
+        const stack = new Error().stack || '';
+        const isConsoleAccess = stack.includes('console') || 
+                               stack.includes('debugger') ||
+                               stack.includes('eval');
+        
+        if (isConsoleAccess) {
+          return new Proxy(originalLocalStorage, {
+            get(target, prop) {
+              if (prop === 'getItem' || prop === 'setItem' || prop === 'removeItem') {
+                return () => null;
+              }
+              return target[prop as keyof Storage];
             }
-            
-            return value;
-          }
-        });
+          });
+        }
+        
+        return originalLocalStorage;
       },
       configurable: false
     });
@@ -150,13 +163,14 @@ export function setupAutoLogout(logoutCallback: () => void, timeout = 15 * 60 * 
 
 // Initialize all security measures
 export function initializeSecurity(logoutCallback: () => void) {
-  disableConsole();
-  detectDevTools();
-  protectGlobalObjects();
-  setupAutoLogout(logoutCallback);
-  
-  // Disable React DevTools in production
+  // Only run security measures in production
   if (import.meta.env.PROD) {
+    disableConsole();
+    detectDevTools();
+    protectGlobalObjects();
+    setupAutoLogout(logoutCallback);
+    
+    // Disable React DevTools in production
     // @ts-ignore
     if (typeof window.__REACT_DEVTOOLS_GLOBAL_HOOK__ === 'object') {
       // @ts-ignore

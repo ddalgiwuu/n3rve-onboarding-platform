@@ -37,12 +37,15 @@ export default function RoleSelect() {
       // Set auth with selected role view
       setAuth?.(user, accessToken, refreshToken);
 
-      // Navigate based on role selection
-      if (role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
+      // Force a small delay to ensure state is saved
+      setTimeout(() => {
+        // Navigate based on role selection
+        if (role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
+      }, 100);
     }
   };
 
