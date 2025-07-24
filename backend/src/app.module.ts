@@ -15,6 +15,7 @@ import { WebsocketModule } from './websocket/websocket.module';
 import { SavedArtistsModule } from './saved-artists/saved-artists.module';
 import { DSPModule } from './dsp/dsp.module';
 import { DropboxModule } from './dropbox/dropbox.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { DropboxModule } from './dropbox/dropbox.module';
     SavedArtistsModule,
     DSPModule,
     DropboxModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [

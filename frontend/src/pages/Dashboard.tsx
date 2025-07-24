@@ -1,7 +1,7 @@
 import { useAuthStore } from '@/store/auth.store'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useHydration } from '@/hooks/useHydration'
-import { Music, FileText, Users, Upload, ChevronRight, Calendar } from 'lucide-react'
+import { Music, FileText, Users, Upload, ChevronRight, Calendar, Building2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import useSafeStore from '@/hooks/useSafeStore'
@@ -170,7 +170,7 @@ export default function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <Link
             to="/release-submission-modern"
             className="card-glass p-6 hover-lift text-center group animate-fade-in"
@@ -215,6 +215,22 @@ export default function Dashboard() {
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {t('프로필 작성 가이드', '프로필 작성 가이드', 'Profile Writing Guide', 'プロフィール作成ガイド')}
+            </p>
+          </Link>
+
+          <Link
+            to="/account"
+            className="card-glass p-6 hover-lift text-center group animate-fade-in"
+            style={{ animationDelay: '300ms' }}
+          >
+            <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg mb-4 mx-auto w-fit">
+              <Building2 className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              {t('계정 관리', '계정 관리', 'Account Management', 'アカウント管理')}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {t('회사 및 하위 계정 관리', '회사 및 하위 계정 관리', 'Manage company and sub-accounts', '会社とサブアカウントを管理')}
             </p>
           </Link>
         </div>
