@@ -30,6 +30,7 @@ const ProfileSetupPage = lazy(() => import('./pages/ProfileSetup'))
 const RoleSelectPage = lazy(() => import('./pages/RoleSelect'))
 const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
 const AccountSettingsPage = lazy(() => import('./pages/AccountSettings'))
+const RegisterPage = lazy(() => import('./pages/Register'))
 
 function App() {
   const authStore = useAuthStore()
@@ -84,6 +85,9 @@ function App() {
         {/* Public routes */}
         <Route path="/login" element={
           isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />
+        } />
+        <Route path="/register" element={
+          isAuthenticated ? <Navigate to="/dashboard" /> : <RegisterPage />
         } />
         <Route path="/" element={<HomePage />} />
         <Route path="/technical-guide" element={<TechnicalGuidePage />} />

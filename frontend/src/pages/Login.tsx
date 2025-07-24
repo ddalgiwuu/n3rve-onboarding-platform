@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { useAuthStore } from '@/store/auth.store'
 import useSafeStore from '@/hooks/useSafeStore'
@@ -312,13 +312,35 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              <div className="mt-6 text-center">
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {t('auth.forgotPassword', '비밀번호를 잊으셨나요?', 'Forgot your password?', 'パスワードをお忘れですか？')}
-                </p>
-                <button className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium mt-1">
-                  {t('auth.resetPassword', '비밀번호 재설정', 'Reset password', 'パスワードをリセット')}
-                </button>
+              <div className="mt-6 text-center space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('auth.forgotPassword', '비밀번호를 잊으셨나요?', 'Forgot your password?', 'パスワードをお忘れですか？')}
+                  </p>
+                  <button className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium mt-1">
+                    {t('auth.resetPassword', '비밀번호 재설정', 'Reset password', 'パスワードをリセット')}
+                  </button>
+                </div>
+                
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white dark:bg-gray-900 text-gray-500">
+                      {t('auth.or', '또는', 'or', 'または')}
+                    </span>
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {t('auth.noAccount', '계정이 없으신가요?', "Don't have an account?", 'アカウントをお持ちでない方')}
+                  </p>
+                  <Link to="/register" className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium mt-1 block">
+                    {t('auth.signUp', '회원가입', 'Sign up', '新規登録')}
+                  </Link>
+                </div>
               </div>
             </>
           )}

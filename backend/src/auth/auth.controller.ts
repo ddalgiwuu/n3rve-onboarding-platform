@@ -204,6 +204,83 @@ export class AuthController {
   }
 
   @Public()
+  @Post('register')
+  async register(@Body() body: { 
+    email: string; 
+    password: string; 
+    name: string; 
+    phone?: string;
+    company?: string;
+    isCompanyAccount?: boolean;
+  }) {
+    console.log('Auth Controller - Registration request for:', body.email);
+
+    if (!body.email || !body.password || !body.name) {
+      throw new HttpException('Email, password, and name are required', HttpStatus.BAD_REQUEST);
+    }
+
+    if (body.password.length < 8) {
+      throw new HttpException('Password must be at least 8 characters', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      // Check if user already exists
+      const existingUser = await this.usersService.findOne(body.email);
+      
+      if (existingUser) {
+        throw new HttpException('Email already exists', HttpStatus.CONFLICT);
+      }
+
+      // Hash password
+      const hashedPassword = await bcrypt.hash(body.password, 10);
+
+      // Create user
+      const user = await this.usersService.create({
+        email: body.email,
+        password: hashedPassword,
+        name: body.name,
+        phone: body.phone,
+        company: body.isCompanyAccount ? body.company : undefined,
+        isCompanyAccount: body.isCompanyAccount || false,
+        provider: 'EMAIL',
+        isProfileComplete: true,
+        preferences: {
+          language: 'KO',
+          notifications: {
+            email: true,
+            sms: false,
+            push: true,
+          },
+        },
+      });
+
+      // Generate tokens
+      const tokens = await this.authService.generateTokens(user);
+
+      // Transform role for frontend compatibility
+      const userResponse = {
+        ...user,
+        role: user.role === 'USER' ? 'CUSTOMER' : user.role,
+        password: undefined, // Remove password from response
+      };
+
+      return {
+        user: userResponse,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+      };
+    } catch (error) {
+      console.error('Auth Controller - Registration error:', error);
+      
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      
+      throw new HttpException('Registration failed', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Public()
   @Post('login')
   async login(@Body() body: { email: string; password: string }) {
     console.log('Auth Controller - Email login request for:', body.email);
