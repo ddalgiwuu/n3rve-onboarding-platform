@@ -1,4 +1,5 @@
 import { authService } from './auth.service'
+import { logger } from '@/utils/logger'
 
 export interface SavedArtist {
   id: string
@@ -27,8 +28,7 @@ class SavedArtistsService {
   
   private async getHeaders() {
     const token = await authService.getToken()
-    console.log('SavedArtistsService: Getting headers - token exists:', !!token)
-    console.log('SavedArtistsService: Token preview:', token ? `${token.substring(0, 30)}...` : 'null')
+    // Headers prepared with authentication
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json'
@@ -42,7 +42,7 @@ class SavedArtistsService {
   }
 
   async getArtists(): Promise<SavedArtist[]> {
-    console.log('SavedArtistsService: getArtists - URL:', `${this.baseUrl}/artists`)
+    // Fetching artists from API
     
     const response = await fetch(`${this.baseUrl}/artists`, {
       method: 'GET',
@@ -61,8 +61,7 @@ class SavedArtistsService {
 
   async addArtist(artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedArtist> {
     try {
-      console.log('SavedArtistsService: addArtist - URL:', `${this.baseUrl}/artists`)
-      console.log('SavedArtistsService: addArtist - body:', JSON.stringify(artist))
+      // Adding new artist to API
       
       const response = await fetch(`${this.baseUrl}/artists`, {
         method: 'POST',

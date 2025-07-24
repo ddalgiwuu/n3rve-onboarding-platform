@@ -7,6 +7,7 @@ import { useTranslation } from '@/hooks/useTranslation'
 import LanguageToggle from '@/components/common/LanguageToggle'
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import api from '@/lib/api'
+import { logger } from '@/utils/logger'
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
@@ -142,7 +143,7 @@ export default function LoginPage() {
       
       toast.success(t('auth.loginSuccess', '로그인되었습니다', 'Logged in successfully', 'ログインしました'))
     } catch (error: any) {
-      console.error('Login error:', error)
+      logger.error('Login error:', error)
       if (error.response?.status === 401) {
         toast.error(t('auth.invalidCredentials', '이메일 또는 비밀번호가 올바르지 않습니다', 'Invalid email or password', 'メールアドレスまたはパスワードが正しくありません'))
       } else {

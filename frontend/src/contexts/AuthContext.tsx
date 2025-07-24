@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { logger } from '@/utils/logger'
 
 interface User {
   id: string
@@ -59,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setAuthState(prev => ({ ...prev, _hasHydrated: true }))
         }
       } catch (error) {
-        console.warn('Failed to load auth from localStorage:', error)
+        logger.warn('Failed to load auth from localStorage:', error)
         setAuthState(prev => ({ ...prev, _hasHydrated: true }))
       }
     }
@@ -75,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         localStorage.setItem('auth-storage', JSON.stringify(dataToStore))
       } catch (error) {
-        console.warn('Failed to save auth to localStorage:', error)
+        logger.warn('Failed to save auth to localStorage:', error)
       }
     }
   }, [authState])
@@ -102,7 +103,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         localStorage.removeItem('auth-storage')
       } catch (error) {
-        console.warn('Failed to remove auth from localStorage:', error)
+        logger.warn('Failed to remove auth from localStorage:', error)
       }
     }
   }
