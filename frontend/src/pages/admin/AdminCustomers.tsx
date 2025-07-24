@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, UserPlus, Mail, Phone, Calendar, Music, TrendingUp, Download } from 'lucide-react';
+import { Search, UserPlus, Mail, Phone, Calendar, Music, TrendingUp, Download, Shield, User, X } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { format } from 'date-fns';
 import { adminService } from '@/services/admin.service';
@@ -34,6 +34,14 @@ const AdminCustomers = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
+  const [editingRole, setEditingRole] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newCustomer, setNewCustomer] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'user'
+  });
 
   useEffect(() => {
     fetchCustomers();
@@ -99,6 +107,50 @@ const AdminCustomers = () => {
     }
   };
 
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      await adminService.updateUserRole(userId, newRole);
+      toast.success(t('역할이 성공적으로 변경되었습니다.', 'Role updated successfully', 'ロールが正常に更新されました'));
+      setEditingRole(null);
+      fetchCustomers();
+    } catch (error) {
+      console.error('Error updating role:', error);
+      toast.error(t('역할 변경 중 오류가 발생했습니다.', 'Error updating role', 'ロール更新中にエラーが発生しました'));
+    }
+  };
+
+  const getRoleIcon = (role: string) => {
+    return role === 'admin' ? Shield : User;
+  };
+
+  const getRoleColor = (role: string) => {
+    return role === 'admin' 
+      ? 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30' 
+      : 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30';
+  };
+
+  const handleAddCustomer = async () => {
+    if (!newCustomer.name || !newCustomer.email || !newCustomer.password) {
+      toast.error(t('모든 필드를 입력해주세요.', 'Please fill in all fields', 'すべてのフィールドを入力してください'));
+      return;
+    }
+
+    try {
+      await adminService.createUser(newCustomer);
+      toast.success(t('새 사용자가 추가되었습니다.', 'New user added successfully', '新しいユーザーが正常に追加されました'));
+      setShowAddModal(false);
+      setNewCustomer({ name: '', email: '', password: '', role: 'user' });
+      fetchCustomers();
+    } catch (error: any) {
+      console.error('Error adding customer:', error);
+      if (error.response?.data?.message?.includes('Unique constraint')) {
+        toast.error(t('이미 존재하는 이메일입니다.', 'Email already exists', 'このメールアドレスは既に存在します'));
+      } else {
+        toast.error(t('사용자 추가 중 오류가 발생했습니다.', 'Error adding user', 'ユーザー追加中にエラーが発生しました'));
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50/20 to-gray-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
@@ -111,7 +163,10 @@ const AdminCustomers = () => {
               </h1>
               <p className="text-gray-700 dark:text-gray-300">{t('고객 정보를 관리하고 분석합니다', 'Manage and analyze customer information', '顧客情報を管理・分析します')}</p>
             </div>
-            <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift flex items-center gap-2">
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift flex items-center gap-2"
+            >
               <UserPlus className="w-5 h-5" />
               {t('새 고객 추가', 'Add New Customer', '新規顧客追加')}
             </button>
@@ -208,6 +263,7 @@ const AdminCustomers = () => {
                       />
                     </th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('이름', 'Name', '名前')}</th>
+                    <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('역할', 'Role', 'ロール')}</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('연락처', 'Contact', '連絡先')}</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('가입일', 'Joined', '登録日')}</th>
                     <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 dark:text-gray-300">{t('제출', 'Submissions', '提出')}</th>
@@ -236,6 +292,35 @@ const AdminCustomers = () => {
                           </div>
                           <p className="text-gray-900 dark:text-white font-medium">{customer.name}</p>
                         </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        {editingRole === customer.id ? (
+                          <select
+                            className="px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 dark:text-white text-sm"
+                            value={customer.role}
+                            onChange={(e) => handleRoleChange(customer.id, e.target.value)}
+                            onBlur={() => setEditingRole(null)}
+                            autoFocus
+                          >
+                            <option value="user">{t('사용자', 'User', 'ユーザー')}</option>
+                            <option value="admin">{t('관리자', 'Admin', '管理者')}</option>
+                          </select>
+                        ) : (
+                          <div
+                            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition-all hover:opacity-80 ${getRoleColor(customer.role)}`}
+                            onClick={() => setEditingRole(customer.id)}
+                          >
+                            {(() => {
+                              const Icon = getRoleIcon(customer.role);
+                              return <Icon className="w-4 h-4" />;
+                            })()}
+                            <span>
+                              {customer.role === 'admin' 
+                                ? t('관리자', 'Admin', '管理者') 
+                                : t('사용자', 'User', 'ユーザー')}
+                            </span>
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="space-y-1">
@@ -287,6 +372,95 @@ const AdminCustomers = () => {
           )}
         </div>
       </div>
+
+      {/* Add Customer Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-md w-full animate-scale-in shadow-xl">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                {t('새 고객 추가', 'Add New Customer', '新規顧客追加')}
+              </h2>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('이름', 'Name', '名前')}
+                </label>
+                <input
+                  type="text"
+                  value={newCustomer.name}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 dark:text-white"
+                  placeholder={t('사용자 이름', 'User name', 'ユーザー名')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('이메일', 'Email', 'メール')}
+                </label>
+                <input
+                  type="email"
+                  value={newCustomer.email}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, email: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 dark:text-white"
+                  placeholder={t('이메일 주소', 'Email address', 'メールアドレス')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('비밀번호', 'Password', 'パスワード')}
+                </label>
+                <input
+                  type="password"
+                  value={newCustomer.password}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, password: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 dark:text-white"
+                  placeholder={t('비밀번호', 'Password', 'パスワード')}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('역할', 'Role', 'ロール')}
+                </label>
+                <select
+                  value={newCustomer.role}
+                  onChange={(e) => setNewCustomer({ ...newCustomer, role: e.target.value })}
+                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none text-gray-900 dark:text-white"
+                >
+                  <option value="user">{t('사용자', 'User', 'ユーザー')}</option>
+                  <option value="admin">{t('관리자', 'Admin', '管理者')}</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="flex-1 px-6 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg font-medium transition-all"
+              >
+                {t('취소', 'Cancel', 'キャンセル')}
+              </button>
+              <button
+                onClick={handleAddCustomer}
+                className="flex-1 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift"
+              >
+                {t('추가', 'Add', '追加')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
