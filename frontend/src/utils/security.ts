@@ -35,42 +35,10 @@ export function disableConsole() {
 // Detect and block developer tools
 export function detectDevTools() {
   if (import.meta.env.PROD) {
-    let devtools = { open: false, orientation: null };
+    // Temporarily disable aggressive devtools detection
+    // This was causing false positives and blocking legitimate users
     
-    const threshold = 160;
-    const emitEvent = (state: boolean) => {
-      if (state) {
-        document.body.innerHTML = `
-          <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#000;color:#fff;font-family:monospace;">
-            <div style="text-align:center;">
-              <h1>🚫 보안 경고</h1>
-              <p>개발자 도구가 감지되었습니다.</p>
-              <p>보안상의 이유로 이 페이지는 차단되었습니다.</p>
-            </div>
-          </div>
-        `;
-        // Clear all storage
-        localStorage.clear();
-        sessionStorage.clear();
-      }
-    };
-    
-    setInterval(() => {
-      if (window.outerHeight - window.innerHeight > threshold || 
-          window.outerWidth - window.innerWidth > threshold) {
-        if (!devtools.open) {
-          devtools.open = true;
-          emitEvent(true);
-        }
-      } else {
-        devtools.open = false;
-      }
-    }, 500);
-    
-    // Disable right-click
-    document.addEventListener('contextmenu', (e) => e.preventDefault());
-    
-    // Disable F12, Ctrl+Shift+I, etc.
+    // Only disable keyboard shortcuts for security
     document.addEventListener('keydown', (e) => {
       if (e.key === 'F12' || 
           (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) ||
@@ -79,6 +47,9 @@ export function detectDevTools() {
         return false;
       }
     });
+    
+    // Disable right-click in production
+    document.addEventListener('contextmenu', (e) => e.preventDefault());
   }
 }
 
