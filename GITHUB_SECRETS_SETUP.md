@@ -1,42 +1,51 @@
-# GitHub Secrets 설정 가이드
+# GitHub Secrets 설정 가이드 (필수)
 
-GitHub Repository Settings → Secrets and variables → Actions에서 다음 secrets를 추가해야 합니다:
+자동 배포를 위해서는 다음 3개의 GitHub Secrets을 반드시 설정해야 합니다.
 
-## 필수 Secrets
+## 1. GitHub Repository Secrets 페이지 접속
+https://github.com/ddalgiwuu/n3rve-onboarding-platform/settings/secrets/actions
 
-### Docker Hub 관련
-- `DOCKER_USERNAME`: ddalgiwuu
-- `DOCKER_PASSWORD`: Docker Hub 비밀번호
+## 2. 필수 Secrets 설정
 
-### EC2 관련
-- `EC2_HOST`: 52.78.81.116
-- `EC2_SSH_KEY`: N3RVE_AWS.pem 파일의 전체 내용 (-----BEGIN RSA PRIVATE KEY----- 부터 끝까지)
-- `EC2_INSTANCE_ID`: i-0fd6de9be4fa199a9
+### DOCKER_USERNAME
+- **값**: `ddalgiwuu`
+- **설명**: Docker Hub 사용자명
 
-### MongoDB 관련
-- `MONGODB_URI`: mongodb+srv://ryan:7xojrRbDc6zK37Hr@n3rve-db.ie22loh.mongodb.net/n3rve-platform?retryWrites=true&w=majority&appName=N3RVE-DB
+### DOCKER_PASSWORD
+1. Docker Hub 로그인: https://hub.docker.com
+2. Account Settings → Security → Access Tokens
+3. "New Access Token" 클릭
+4. Token 이름: `n3rve-github-actions`
+5. Access permissions: `Read, Write, Delete` 선택
+6. Generate → 생성된 토큰 복사
+7. GitHub Secrets에 붙여넣기
 
-### JWT 관련
-- `JWT_SECRET`: n3rve-production-jwt-secret-2024-very-secure
-- `JWT_REFRESH_SECRET`: n3rve-production-refresh-secret-2024-very-secure
-
-### Google OAuth 관련
-- `GOOGLE_CLIENT_ID`: 845573085403-drel56srcdvhhqut0suf4i0pul28lkdl.apps.googleusercontent.com
-- `GOOGLE_CLIENT_SECRET`: [Google Cloud Console에서 생성한 Client Secret]
-
-## 설정 방법
-
-1. GitHub 저장소로 이동
-2. Settings 탭 클릭
-3. 왼쪽 메뉴에서 Secrets and variables → Actions 클릭
-4. New repository secret 버튼 클릭
-5. 위의 각 항목을 Name과 Secret 필드에 입력
-6. Add secret 버튼 클릭
-
-## EC2_SSH_KEY 설정 시 주의사항
-
+### EC2_SSH_KEY
+1. N3RVE_AWS.pem 파일 내용 복사:
 ```bash
 cat /Users/ryansong/AWS_KEY/N3RVE_AWS.pem
 ```
+2. 전체 내용 복사 (-----BEGIN RSA PRIVATE KEY----- 부터 -----END RSA PRIVATE KEY-----)
+3. GitHub Secrets에 붙여넣기
 
-위 명령어로 출력된 전체 내용을 복사하여 붙여넣기 (줄바꿈 포함)
+## 3. Secrets 추가 방법
+1. "New repository secret" 버튼 클릭
+2. Name: 위의 이름 입력 (예: DOCKER_USERNAME)
+3. Secret: 해당 값 입력
+4. "Add secret" 클릭
+
+## 4. 설정 확인
+모든 Secrets 설정 후:
+1. Actions 탭으로 이동
+2. 최신 workflow 실행 확인
+3. "check-secrets" job이 성공하는지 확인
+
+## 5. 자동 배포 프로세스
+```
+git push → GitHub Actions 트리거 → Docker 빌드 → Docker Hub 푸시 → EC2 배포
+```
+
+## 버전 관리
+- 자동으로 `v1.3.{run_number}` 형식으로 버전 생성
+- Docker Hub에 버전별 태그 저장
+- 배포 후 Summary에서 버전 정보 확인 가능

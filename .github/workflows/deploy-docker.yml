@@ -7,14 +7,68 @@ on:
 
 env:
   DOCKER_IMAGE: ddalgiwuu/n3rve-platform
+  VERSION: v1.3.${{ github.run_number }}
 
 jobs:
+  check-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      secrets-ok: ${{ steps.check.outputs.ok }}
+    
+    steps:
+    - name: Check required secrets
+      id: check
+      run: |
+        MISSING_SECRETS=""
+        
+        if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then
+          MISSING_SECRETS="${MISSING_SECRETS}- DOCKER_USERNAME\n"
+        fi
+        
+        if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
+          MISSING_SECRETS="${MISSING_SECRETS}- DOCKER_PASSWORD\n"
+        fi
+        
+        if [ -z "${{ secrets.EC2_SSH_KEY }}" ]; then
+          MISSING_SECRETS="${MISSING_SECRETS}- EC2_SSH_KEY\n"
+        fi
+        
+        if [ -n "$MISSING_SECRETS" ]; then
+          echo "::error::Missing required GitHub Secrets:"
+          echo -e "$MISSING_SECRETS"
+          echo ""
+          echo "Please go to: https://github.com/ddalgiwuu/n3rve-onboarding-platform/settings/secrets/actions"
+          echo "And add the missing secrets:"
+          echo "- DOCKER_USERNAME: Your Docker Hub username (ddalgiwuu)"
+          echo "- DOCKER_PASSWORD: Your Docker Hub access token"
+          echo "- EC2_SSH_KEY: Content of N3RVE_AWS.pem file"
+          echo "ok=false" >> $GITHUB_OUTPUT
+          exit 1
+        else
+          echo "✅ All required secrets are configured"
+          echo "ok=true" >> $GITHUB_OUTPUT
+        fi
+
   build-and-push:
+    needs: check-secrets
+    if: needs.check-secrets.outputs.secrets-ok == 'true'
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
+
+    - name: Check Docker Hub credentials
+      run: |
+        if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then
+          echo "::error::DOCKER_USERNAME secret is not set!"
+          exit 1
+        fi
+        if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
+          echo "::error::DOCKER_PASSWORD secret is not set!"
+          exit 1
+        fi
+        echo "Docker Hub credentials are configured"
 
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
@@ -24,6 +78,15 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
+      continue-on-error: true
+
+    - name: Verify Docker login
+      run: |
+        if ! docker info >/dev/null 2>&1; then
+          echo "::error::Docker login failed!"
+          exit 1
+        fi
+        echo "Docker login successful"
 
     - name: Build and push Docker image
       uses: docker/build-push-action@v4
@@ -33,20 +96,36 @@ jobs:
         push: true
         tags: |
           ${{ env.DOCKER_IMAGE }}:latest
+          ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
           ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
         no-cache: true
         build-args: |
           BUILDKIT_INLINE_CACHE=1
+      continue-on-error: true
+
+    - name: Check build result
+      if: failure()
+      run: |
+        echo "::error::Docker build or push failed! Please check:"
+        echo "1. Docker Hub credentials are correct"
+        echo "2. Repository name 'ddalgiwuu/n3rve-platform' exists"
+        echo "3. Your Docker Hub account has push permissions"
+        exit 1
 
   deploy-to-ec2:
     needs: build-and-push
     runs-on: ubuntu-latest
+    if: success()
     
     steps:
-    - name: Check EC2 connectivity
+    - name: Check EC2 SSH key
       run: |
-        echo "Testing connection to EC2..."
-        echo "Host: ${{ secrets.EC2_HOST }}"
+        if [ -z "${{ secrets.EC2_SSH_KEY }}" ]; then
+          echo "::error::EC2_SSH_KEY secret is not set!"
+          echo "Please add your EC2 private key (N3RVE_AWS.pem) content to GitHub Secrets"
+          exit 1
+        fi
+        echo "EC2 SSH key is configured"
         
     - name: Deploy to EC2
       uses: appleboy/ssh-action@v1.0.3
@@ -86,6 +165,9 @@ jobs:
           echo "Pulling latest Docker image..."
           docker pull ${{ env.DOCKER_IMAGE }}:latest
           
+          # Tag version for tracking
+          echo "Deployment version: ${{ env.VERSION }}"
+          
           # Run container directly without docker-compose
           echo "Starting services..."
           docker run -d \
@@ -115,3 +197,16 @@ jobs:
           docker image prune -f
           
           echo "=== Deployment completed ==="
+          echo "Deployed version: ${{ env.VERSION }}"
+          echo "GitHub SHA: ${{ github.sha }}"
+          echo "Deployment time: $(date)"
+          
+    - name: Create deployment summary
+      if: success()
+      run: |
+        echo "## 🚀 Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Version**: ${{ env.VERSION }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Site**: https://n3rve-onboarding.com" >> $GITHUB_STEP_SUMMARY
+        echo "- **Time**: $(date)" >> $GITHUB_STEP_SUMMARY
