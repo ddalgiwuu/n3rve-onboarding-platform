@@ -1804,6 +1804,22 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 />
               </div>
               
+              {/* Language */}
+              <div id="language-section">
+                <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
+                  {t('언어', 'Language', '言語')} <span className="text-red-500">*</span>
+                </label>
+                <SearchableSelect
+                  options={languageList.map(lang => ({ value: lang.code, label: lang.name }))}
+                  value={formData.language}
+                  onChange={(value) => {
+                    setFormData(prev => ({ ...prev, language: value }))
+                  }}
+                  placeholder={t('언어 선택', 'Select language', '言語を選択')}
+                  searchPlaceholder={t('언어 검색...', 'Search languages...', '言語を検索...')}
+                />
+              </div>
+              
               {/* Total Volumes */}
               <div>
                 <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">
