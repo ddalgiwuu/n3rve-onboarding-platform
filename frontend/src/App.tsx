@@ -29,6 +29,7 @@ const ProfileCompletePage = lazy(() => import('./pages/ProfileComplete'))
 const ProfileSetupPage = lazy(() => import('./pages/ProfileSetup'))
 const RoleSelectPage = lazy(() => import('./pages/RoleSelect'))
 const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
+const AccountSettingsPage = lazy(() => import('./pages/AccountSettings'))
 
 function App() {
   const authStore = useAuthStore()
@@ -130,6 +131,9 @@ function App() {
           } />
           <Route path="/settings" element={
             isAuthenticated ? <SettingsPage /> : <Navigate to="/login" state={{ from: '/settings' }} />
+          } />
+          <Route path="/account" element={
+            isAuthenticated ? <AccountSettingsPage /> : <Navigate to="/login" state={{ from: '/account' }} />
           } />
           
           {/* Admin routes */}

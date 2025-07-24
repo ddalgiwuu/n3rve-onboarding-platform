@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
-import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield, UserCog } from 'lucide-react'
+import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield, UserCog, Building2 } from 'lucide-react'
 import { cn } from '@/utils/cn'
 import { useAuthStore } from '@/store/auth.store'
 import { useLanguageStore } from '@/store/language.store'
@@ -57,6 +57,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         active: 'text-red-600',
         inactive: 'text-gray-500 dark:text-gray-400',
         hover: 'group-hover:text-red-600'
+      },
+      'text-indigo-600': {
+        active: 'text-indigo-600',
+        inactive: 'text-gray-500 dark:text-gray-400',
+        hover: 'group-hover:text-indigo-600'
       }
     }
     
@@ -111,6 +116,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { icon: FolderOpen, label: language === 'ko' ? '제출 내역' : language === 'en' ? 'Submissions' : '提出履歴', path: '/submissions', color: 'text-purple-600' },
     { icon: FileText, label: language === 'ko' ? '가이드' : language === 'en' ? 'Guide' : 'ガイド', path: '/guide', color: 'text-green-600' },
     { icon: Music, label: language === 'ko' ? '아티스트 프로필' : language === 'en' ? 'Artist Profile' : 'アーティストプロフィール', path: '/artist-profile-guide', color: 'text-pink-600' },
+    { icon: Building2, label: language === 'ko' ? '계정 관리' : language === 'en' ? 'Account Management' : 'アカウント管理', path: '/account', color: 'text-indigo-600' },
     { icon: Settings, label: language === 'ko' ? '설정' : language === 'en' ? 'Settings' : '設定', path: '/settings', color: 'text-gray-600' },
   ] as const
   
