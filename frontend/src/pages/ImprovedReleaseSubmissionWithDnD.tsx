@@ -9,7 +9,7 @@ import {
   HelpCircle, AlertTriangle, Star,
   ExternalLink,
   ChevronUp, ChevronDown, User, Languages,
-  Film, FileText, Folder
+  Film, FileText, Folder, Megaphone, Target
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { submissionService } from '@/services/submission.service'
@@ -31,6 +31,9 @@ import { SavedArtistsProvider } from '@/contexts/SavedArtistsContext'
 import TranslationInput from '@/components/TranslationInput'
 import TrackTranslationUI from '@/components/TrackTranslationUI'
 import TerritorySelector from '@/components/TerritorySelector'
+import Step11MarketingDetails from '@/components/steps/Step11MarketingDetails'
+import Step12GoalsExpectations from '@/components/steps/Step12GoalsExpectations'
+import SearchableMultiSelect from '@/components/ui/SearchableMultiSelect'
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -234,6 +237,43 @@ interface FormData {
     marketing_subgenre?: string
     pr_line?: string
     internal_note?: string
+    
+    // New marketing fields
+    priorityLevel?: number
+    projectType?: 'FRONTLINE' | 'CATALOG'
+    moods?: string[]
+    instruments?: string[]
+    hook?: string
+    mainPitch?: string
+    marketingDrivers?: string[]
+    socialMediaPlan?: string
+    targetAudience?: string
+    similarArtists?: string[]
+    albumIntroduction?: string
+    albumDescription?: string
+    marketingKeywords?: string
+    promotionPlans?: string
+    
+    // Additional social media
+    youtubeUrl?: string
+    tiktokUrl?: string
+    xUrl?: string
+    twitchUrl?: string
+    threadsUrl?: string
+    soundcloudArtistId?: string
+    
+    // Artist info
+    artistBio?: string
+    artistGender?: string
+    socialMovements?: string[]
+    syncHistory?: string
+    
+    // Goals & Expectations
+    campaignGoals?: {
+      goalType: string
+      responses: string[]
+      confidence: number
+    }[]
   }
 }
 
@@ -690,6 +730,50 @@ const ImprovedReleaseSubmission: React.FC = () => {
           return false
         }
         // Territory validation is handled by TerritorySelector component
+        return true
+        
+      case 5: // Marketing Details
+        if (!formData.marketingInfo?.projectType) {
+          toast.error(t('프로젝트 타입을 선택해주세요', 'Please select project type', 'プロジェクトタイプを選択してください'))
+          return false
+        }
+        if (!formData.marketingInfo?.moods || formData.marketingInfo.moods.length === 0) {
+          toast.error(t('최소 1개 이상의 무드를 선택해주세요', 'Please select at least one mood', '少なくとも1つのムードを選択してください'))
+          return false
+        }
+        if (!formData.marketingInfo?.instruments || formData.marketingInfo.instruments.length === 0) {
+          toast.error(t('최소 1개 이상의 악기를 선택해주세요', 'Please select at least one instrument', '少なくとも1つの楽器を選択してください'))
+          return false
+        }
+        if (!formData.marketingInfo?.hook) {
+          toast.error(t('Hook을 입력해주세요', 'Please enter your hook', 'フックを入力してください'))
+          return false
+        }
+        if (!formData.marketingInfo?.mainPitch) {
+          toast.error(t('메인 피치를 입력해주세요', 'Please enter your main pitch', 'メインピッチを入力してください'))
+          return false
+        }
+        if (!formData.marketingInfo?.marketingDrivers || formData.marketingInfo.marketingDrivers.length === 0) {
+          toast.error(t('마케팅 드라이버를 입력해주세요', 'Please enter marketing drivers', 'マーケティングドライバーを入力してください'))
+          return false
+        }
+        if (!formData.marketingInfo?.socialMediaPlan) {
+          toast.error(t('소셜 미디어 계획을 입력해주세요', 'Please enter social media plan', 'ソーシャルメディア計画を入力してください'))
+          return false
+        }
+        return true
+        
+      case 6: // Goals & Expectations
+        if (!formData.marketingInfo?.campaignGoals || formData.marketingInfo.campaignGoals.length === 0) {
+          toast.error(t('최소 1개 이상의 목표를 추가해주세요', 'Please add at least one goal', '少なくとも1つの目標を追加してください'))
+          return false
+        }
+        for (const goal of formData.marketingInfo.campaignGoals) {
+          if (!goal.goalType) {
+            toast.error(t('모든 목표의 타입을 선택해주세요', 'Please select type for all goals', 'すべての目標のタイプを選択してください'))
+            return false
+          }
+        }
         return true
         
       default:
@@ -2783,7 +2867,23 @@ const ImprovedReleaseSubmission: React.FC = () => {
           </div>
         )
         
-      case 5:
+      case 5: // Marketing Details
+        return (
+          <Step11MarketingDetails 
+            formData={formData}
+            onChange={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
+          />
+        )
+        
+      case 6: // Goals & Expectations
+        return (
+          <Step12GoalsExpectations 
+            formData={formData}
+            onChange={(updates) => setFormData(prev => ({ ...prev, ...updates }))}
+          />
+        )
+        
+      case 7:
         return (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
@@ -2930,8 +3030,10 @@ const ImprovedReleaseSubmission: React.FC = () => {
     { number: 1, title: t('앨범 정보', 'Album Info'), icon: Disc },
     { number: 2, title: t('트랙 정보', 'Track Info'), icon: Music },
     { number: 3, title: t('파일 업로드', 'File Upload'), icon: Upload },
-    { number: 4, title: t('배포 설정', 'Distribution'), icon: Globe },
-    { number: 5, title: t('최종 검토', 'Review'), icon: CheckCircle }
+    { number: 4, title: t('마케팅 정보', 'Marketing Details'), icon: Megaphone },
+    { number: 5, title: t('목표 설정', 'Goals & Expectations'), icon: Target },
+    { number: 6, title: t('배포 설정', 'Distribution'), icon: Globe },
+    { number: 7, title: t('최종 검토', 'Review'), icon: CheckCircle }
   ]
 
   return (
@@ -3023,7 +3125,7 @@ const ImprovedReleaseSubmission: React.FC = () => {
               {t('이전', 'Previous')}
             </button>
             
-            {currentStep < 5 && (
+            {currentStep < 7 && (
               <button
                 type="button"
                 onClick={handleNext}
