@@ -57,6 +57,9 @@ export const adminService = {
     email: string;
     password: string;
     role: string;
+    company?: string;
+    isCompanyAccount?: boolean;
+    parentAccountId?: string;
   }): Promise<AdminUser> {
     const { data } = await api.post('/admin/users', userData);
     return data;

@@ -108,9 +108,29 @@ export class AdminService {
           isProfileComplete: true,
           createdAt: true,
           lastLogin: true,
+          company: true,
+          isCompanyAccount: true,
+          parentAccountId: true,
+          parentAccount: {
+            select: {
+              id: true,
+              name: true,
+              company: true,
+            },
+          },
+          subAccounts: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              isActive: true,
+            },
+          },
           _count: {
             select: {
               submissions: true,
+              subAccounts: true,
             },
           },
         },
@@ -122,6 +142,7 @@ export class AdminService {
       users: users.map(user => ({
         ...user,
         submissions: user._count.submissions,
+        subAccountsCount: user._count.subAccounts,
         status: user.isActive ? 'active' : 'inactive',
       })),
       total,
@@ -354,6 +375,9 @@ export class AdminService {
     email: string;
     password: string;
     role: string;
+    company?: string;
+    isCompanyAccount?: boolean;
+    parentAccountId?: string;
   }) {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
     
@@ -365,6 +389,9 @@ export class AdminService {
         role: createUserDto.role.toUpperCase() as 'USER' | 'ADMIN',
         provider: 'EMAIL',
         isProfileComplete: true,
+        company: createUserDto.company,
+        isCompanyAccount: createUserDto.isCompanyAccount || false,
+        parentAccountId: createUserDto.parentAccountId,
         preferences: {
           language: 'KO',
           notifications: {
@@ -373,6 +400,10 @@ export class AdminService {
             push: true,
           },
         },
+      },
+      include: {
+        parentAccount: true,
+        subAccounts: true,
       },
     });
   }
