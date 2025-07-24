@@ -5,6 +5,7 @@ import { useLanguageStore } from './store/language.store'
 import Layout from './components/layout/Layout'
 import LoadingSpinner from './components/common/LoadingSpinner'
 import ErrorBoundary from './components/ErrorBoundary'
+import { initializeSecurity } from './utils/security'
 
 // Lazy load pages
 const HomePage = lazy(() => import('./pages/Home'))
@@ -72,6 +73,16 @@ function App() {
       }
       document.documentElement.style.colorScheme = 'light'
     }
+  }, [])
+
+  // Initialize security measures
+  useEffect(() => {
+    const logout = () => {
+      authStore.logout()
+      window.location.href = '/login'
+    }
+    
+    initializeSecurity(logout)
   }, [])
 
   // Wait for both stores to hydrate
