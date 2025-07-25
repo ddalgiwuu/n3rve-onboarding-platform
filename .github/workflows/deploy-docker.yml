@@ -93,26 +93,31 @@ jobs:
 
     - name: Build and push Docker image
       run: |
-        # Build the image
-        echo "Building Docker image..."
-        docker build -t ${{ env.DOCKER_IMAGE }}:latest -t ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }} -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
+        # Set up buildx
+        docker buildx create --name mybuilder --use || true
+        docker buildx inspect --bootstrap
         
-        # Push all tags
-        echo "Pushing Docker images..."
-        docker push ${{ env.DOCKER_IMAGE }}:latest
-        docker push ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
-        docker push ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+        # Build the image for linux/amd64
+        echo "Building Docker image for linux/amd64..."
+        docker buildx build \
+          --platform linux/amd64 \
+          --push \
+          -t ${{ env.DOCKER_IMAGE }}:latest \
+          -t ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }} \
+          -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} \
+          .
         
-        echo "Docker push completed successfully"
+        echo "Docker build and push completed successfully"
 
-    - name: Check build result
-      if: failure()
+    - name: Verify Docker image push
       run: |
-        echo "::error::Docker build or push failed! Please check:"
-        echo "1. Docker Hub credentials are correct"
-        echo "2. Repository name 'ddalgiwuu/n3rve-platform' exists"
-        echo "3. Your Docker Hub account has push permissions"
-        exit 1
+        echo "Verifying Docker image was pushed..."
+        docker pull ${{ env.DOCKER_IMAGE }}:latest
+        if [ $? -ne 0 ]; then
+          echo "::error::Failed to verify Docker image push!"
+          exit 1
+        fi
+        echo "Docker image verified successfully!"
 
   deploy-to-ec2:
     needs: build-and-push
