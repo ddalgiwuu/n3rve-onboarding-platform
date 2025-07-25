@@ -298,21 +298,50 @@ export default function HomePage() {
         >
           {/* Feature 1 */}
           <div 
-            className="group relative p-8 bg-gradient-to-br from-purple-900/50 to-purple-800/30 backdrop-blur-sm rounded-2xl border border-purple-500/20 hover:scale-105 hover:border-purple-400/40 transition-all duration-300 animate-fade-in-up"
+            className="group relative p-8 bg-gradient-to-br from-purple-900/50 to-purple-800/30 backdrop-blur-sm rounded-2xl border border-purple-500/20 hover:scale-[1.02] hover:border-purple-400/40 transition-all duration-500 animate-fade-in-up hover:shadow-2xl hover:shadow-purple-500/25 overflow-hidden"
+            onMouseEnter={(e) => {
+              const card = e.currentTarget
+              card.style.transform = 'scale(1.02) translateY(-5px)'
+            }}
+            onMouseLeave={(e) => {
+              const card = e.currentTarget
+              card.style.transform = 'scale(1) translateY(0)'
+            }}
           >
-            <div 
-              className="absolute inset-0 bg-gradient-to-br from-purple-600/0 to-transparent rounded-2xl group-hover:from-purple-600/10 transition-all duration-300"
-            />
+            {/* Animated gradient background */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-purple-600/20 animate-gradient-xy"/>
+            </div>
+            
+            {/* Floating particles on hover */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1 h-1 bg-purple-400 rounded-full animate-float-up"
+                  style={{
+                    left: `${20 + i * 15}%`,
+                    animationDelay: `${i * 0.2}s`,
+                    animationDuration: '3s'
+                  }}
+                />
+              ))}
+            </div>
+            
             <div className="relative z-10">
-              <div 
-                className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-purple-500/50 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300"
-              >
-                <Music className="w-7 h-7 text-white" />
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-purple-500 rounded-xl blur-xl opacity-50 group-hover:opacity-80 animate-pulse-slow transition-opacity duration-500"/>
+                <div 
+                  className="relative w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg shadow-purple-500/50 group-hover:scale-110 group-hover:rotate-[360deg] transition-all duration-700"
+                >
+                  <Music className="w-7 h-7 text-white group-hover:animate-bounce" />
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-white">
+              
+              <h3 className="text-xl font-semibold mb-3 text-white group-hover:text-purple-300 transition-colors duration-300">
                 {language === 'ko' ? '간편한 음원 등록' : language === 'ja' ? '簡単な音源登録' : 'Easy Music Registration'}
               </h3>
-              <p className="text-gray-300 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed group-hover:text-gray-100 transition-colors duration-300">
                 {language === 'ko' 
                   ? '직관적인 인터페이스와 단계별 가이드로 누구나 쉽게 음원을 등록하고 관리할 수 있습니다.'
                   : language === 'ja'
@@ -320,20 +349,60 @@ export default function HomePage() {
                   : 'Register and manage your music easily with our intuitive interface and step-by-step guide.'
                 }
               </p>
+              
+              {/* Hidden arrow that appears on hover */}
+              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-500">
+                <ArrowRight className="w-5 h-5 text-purple-400" />
+              </div>
             </div>
           </div>
 
           {/* Feature 2 */}
-          <div className="group relative p-8 bg-gradient-to-br from-cyan-900/50 to-cyan-800/30 backdrop-blur-sm rounded-2xl border border-cyan-500/20 hover:scale-105 hover:border-cyan-400/40 transition-all duration-300 animate-fade-in-up animation-delay-200">
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/0 to-transparent rounded-2xl group-hover:from-cyan-600/10 transition-all duration-300"/>
+          <div 
+            className="group relative p-8 bg-gradient-to-br from-cyan-900/50 to-cyan-800/30 backdrop-blur-sm rounded-2xl border border-cyan-500/20 hover:scale-[1.02] hover:border-cyan-400/40 transition-all duration-500 animate-fade-in-up animation-delay-200 hover:shadow-2xl hover:shadow-cyan-500/25 overflow-hidden"
+            onMouseEnter={(e) => {
+              const card = e.currentTarget
+              card.style.transform = 'scale(1.02) translateY(-5px)'
+            }}
+            onMouseLeave={(e) => {
+              const card = e.currentTarget
+              card.style.transform = 'scale(1) translateY(0)'
+            }}
+          >
+            {/* Animated gradient background */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+              <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/20 via-blue-600/20 to-cyan-600/20 animate-gradient-xy"/>
+            </div>
+            
+            {/* Floating particles on hover */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1 h-1 bg-cyan-400 rounded-full animate-float-up"
+                  style={{
+                    left: `${20 + i * 15}%`,
+                    animationDelay: `${i * 0.2}s`,
+                    animationDuration: '3s'
+                  }}
+                />
+              ))}
+            </div>
+            
             <div className="relative z-10">
-              <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-cyan-500/50 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
-                <Shield className="w-7 h-7 text-white" />
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-cyan-500 rounded-xl blur-xl opacity-50 group-hover:opacity-80 animate-pulse-slow transition-opacity duration-500"/>
+                <div 
+                  className="relative w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center shadow-lg shadow-cyan-500/50 group-hover:scale-110 group-hover:rotate-[360deg] transition-all duration-700"
+                >
+                  <Shield className="w-7 h-7 text-white group-hover:animate-bounce" />
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-white">
+              
+              <h3 className="text-xl font-semibold mb-3 text-white group-hover:text-cyan-300 transition-colors duration-300">
                 {language === 'ko' ? '안전한 데이터 보호' : language === 'ja' ? '安全なデータ保護' : 'Secure Data Protection'}
               </h3>
-              <p className="text-gray-300 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed group-hover:text-gray-100 transition-colors duration-300">
                 {language === 'ko' 
                   ? '업계 최고 수준의 보안 시스템으로 아티스트의 음원과 개인정보를 안전하게 보호합니다.'
                   : language === 'ja'
@@ -341,20 +410,60 @@ export default function HomePage() {
                   : 'Protect your music and personal information with industry-leading security systems.'
                 }
               </p>
+              
+              {/* Hidden arrow that appears on hover */}
+              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-500">
+                <ArrowRight className="w-5 h-5 text-cyan-400" />
+              </div>
             </div>
           </div>
 
           {/* Feature 3 */}
-          <div className="group relative p-8 bg-gradient-to-br from-pink-900/50 to-pink-800/30 backdrop-blur-sm rounded-2xl border border-pink-500/20 hover:scale-105 hover:border-pink-400/40 transition-all duration-300 animate-fade-in-up animation-delay-400">
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-600/0 to-transparent rounded-2xl group-hover:from-pink-600/10 transition-all duration-300"/>
+          <div 
+            className="group relative p-8 bg-gradient-to-br from-pink-900/50 to-pink-800/30 backdrop-blur-sm rounded-2xl border border-pink-500/20 hover:scale-[1.02] hover:border-pink-400/40 transition-all duration-500 animate-fade-in-up animation-delay-400 hover:shadow-2xl hover:shadow-pink-500/25 overflow-hidden"
+            onMouseEnter={(e) => {
+              const card = e.currentTarget
+              card.style.transform = 'scale(1.02) translateY(-5px)'
+            }}
+            onMouseLeave={(e) => {
+              const card = e.currentTarget
+              card.style.transform = 'scale(1) translateY(0)'
+            }}
+          >
+            {/* Animated gradient background */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-600/20 via-purple-600/20 to-pink-600/20 animate-gradient-xy"/>
+            </div>
+            
+            {/* Floating particles on hover */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className="absolute w-1 h-1 bg-pink-400 rounded-full animate-float-up"
+                  style={{
+                    left: `${20 + i * 15}%`,
+                    animationDelay: `${i * 0.2}s`,
+                    animationDuration: '3s'
+                  }}
+                />
+              ))}
+            </div>
+            
             <div className="relative z-10">
-              <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-pink-500/50 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                <Globe className="w-7 h-7 text-white" />
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-pink-500 rounded-xl blur-xl opacity-50 group-hover:opacity-80 animate-pulse-slow transition-opacity duration-500"/>
+                <div 
+                  className="relative w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/50 group-hover:scale-110 group-hover:rotate-[360deg] transition-all duration-700"
+                >
+                  <Globe className="w-7 h-7 text-white group-hover:animate-bounce" />
+                </div>
               </div>
-              <h3 className="text-xl font-semibold mb-3 text-white">
+              
+              <h3 className="text-xl font-semibold mb-3 text-white group-hover:text-pink-300 transition-colors duration-300">
                 {language === 'ko' ? '글로벌 플랫폼 연동' : language === 'ja' ? 'グローバルプラットフォーム連携' : 'Global Platform Integration'}
               </h3>
-              <p className="text-gray-300 leading-relaxed">
+              <p className="text-gray-300 leading-relaxed group-hover:text-gray-100 transition-colors duration-300">
                 {language === 'ko' 
                   ? '전 세계 주요 음원 플랫폼과 원활하게 연동되어 한 번의 등록으로 모든 곳에 배포됩니다.'
                   : language === 'ja'
@@ -362,6 +471,11 @@ export default function HomePage() {
                   : 'Seamlessly integrated with major music platforms worldwide for one-click distribution.'
                 }
               </p>
+              
+              {/* Hidden arrow that appears on hover */}
+              <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transform translate-x-4 group-hover:translate-x-0 transition-all duration-500">
+                <ArrowRight className="w-5 h-5 text-pink-400" />
+              </div>
             </div>
           </div>
         </div>

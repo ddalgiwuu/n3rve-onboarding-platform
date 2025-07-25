@@ -32,7 +32,7 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
   const [showModal, setShowModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedContinents, setExpandedContinents] = useState<string[]>([])
-  const [activeDSP, setActiveDSP] = useState<string | null>(null)
+  const [, setActiveDSP] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'base' | 'dsp'>('base')
   const [selectedDSPForOverride, setSelectedDSPForOverride] = useState<string | null>(null)
 
