@@ -122,7 +122,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
           {/* Quick Time Options */}
           <div className="mb-4">
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-              {t('time.quickSelect', '빠른 선택')}
+              {t('time.quickSelect')}
             </p>
             <div className="grid grid-cols-4 gap-1">
               {quickTimeOptions.map((option) => (
@@ -181,7 +181,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
                 <ChevronDown className="w-5 h-5" />
               </button>
               <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {t('time.hours', '시간')}
+                {t('time.hours')}
               </span>
             </div>
 
@@ -218,7 +218,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
                 <ChevronDown className="w-5 h-5" />
               </button>
               <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                {t('time.minutes', '분')}
+                {t('time.minutes')}
               </span>
             </div>
           </div>
@@ -228,7 +228,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
             onClick={() => setIsOpen(false)}
             className="w-full mt-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors text-sm font-medium"
           >
-            {t('time.done', '완료')}
+            {t('time.done')}
           </button>
         </div>
       )}

@@ -5,16 +5,6 @@ import useSafeStore from '@/hooks/useSafeStore'
 import { useSavedArtistsStore, SavedArtist, SavedContributor } from '@/store/savedArtists.store'
 import ContributorForm from './ContributorForm'
 
-// Import Contributor type for type casting
-interface ContributorType {
-  id: string
-  name: string
-  translations: Array<{ id: string; language: string; name: string }>
-  roles: string[]
-  instruments: string[]
-  identifiers: Array<{ type: string; value: string; url?: string }>
-  isNewArtist?: boolean
-}
 
 interface ArtistSelectorProps {
   type: 'artist' | 'contributor'
