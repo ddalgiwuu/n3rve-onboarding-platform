@@ -1,4 +1,4 @@
-name: Simple Deploy to Docker Hub and EC2
+name: Deploy to Production
 
 on:
   push:
@@ -10,7 +10,7 @@ env:
   VERSION: v1.3.${{ github.run_number }}
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
@@ -26,7 +26,7 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    - name: Build and push
+    - name: Build and push Docker image
       uses: docker/build-push-action@v4
       with:
         context: .
@@ -35,11 +35,9 @@ jobs:
         tags: |
           ${{ env.DOCKER_IMAGE }}:latest
           ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
-        cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
-        cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
 
     - name: Deploy to EC2
-      uses: appleboy/ssh-action@v1.0.3
+      uses: appleboy/ssh-action@v1.0.0
       with:
         host: 52.78.81.116
         username: ubuntu
