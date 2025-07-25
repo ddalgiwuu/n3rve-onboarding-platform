@@ -1,142 +1,435 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Music, Shield, Globe, CheckCircle, Star } from 'lucide-react'
+import { ArrowRight, Music, Shield, Globe, CheckCircle, Star, Sparkles, Zap } from 'lucide-react'
 import { useTranslation } from '@/hooks/useTranslation'
 import { useAuthStore } from '@/store/auth.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import LanguageToggle from '@/components/common/LanguageToggle'
 import DarkModeToggle from '@/components/common/DarkModeToggle'
+import { motion, useScroll, useTransform, useSpring, useInView } from 'framer-motion'
+import { useRef, useEffect, useState } from 'react'
+
+// Floating particles component
+const FloatingParticles = () => {
+  return (
+    <div className="absolute inset-0 overflow-hidden">
+      {[...Array(20)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute w-1 h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
+          initial={{
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+          }}
+          animate={{
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+          }}
+          transition={{
+            duration: Math.random() * 20 + 20,
+            repeat: Infinity,
+            ease: "linear",
+          }}
+          style={{
+            filter: 'blur(1px)',
+            boxShadow: '0 0 10px rgba(168, 85, 247, 0.5)',
+          }}
+        />
+      ))}
+    </div>
+  )
+}
+
+// Animated text component
+const AnimatedText = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { once: true, amount: 0.5 })
+  
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+      transition={{ duration: 0.5, delay }}
+    >
+      {children}
+    </motion.div>
+  )
+}
 
 export default function HomePage() {
   const { language } = useTranslation()
-  
   const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated)
+  const { scrollYProgress } = useScroll()
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
+  
+  // Parallax effects
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, -100])
+  const blobY = useTransform(scrollYProgress, [0, 1], [0, 200])
+  const scaleProgress = useTransform(scrollYProgress, [0, 0.5], [1, 0.8])
+  
+  // Mouse tracking
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY })
+    }
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+  
+  // Stagger animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.3,
+      },
+    },
+  }
+  
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+      },
+    },
+  }
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+      {/* Floating particles */}
+      <FloatingParticles />
+      
       {/* Language & Dark Mode Toggle */}
-      <div className="absolute top-6 right-6 z-10 flex items-center gap-4">
+      <motion.div 
+        className="absolute top-6 right-6 z-10 flex items-center gap-4"
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.5 }}
+      >
         <DarkModeToggle />
         <LanguageToggle />
-      </div>
+      </motion.div>
       
-      {/* Animated Background */}
+      {/* Animated Background with Parallax */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 -left-4 w-96 h-96 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 -right-4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-20 w-96 h-96 bg-pink-500 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+        <motion.div 
+          className="absolute top-0 -left-4 w-96 h-96 bg-purple-500 rounded-full mix-blend-screen filter blur-3xl opacity-20"
+          animate={{
+            x: [0, 100, 0],
+            y: [0, -100, 0],
+          }}
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          style={{ y: blobY }}
+        />
+        <motion.div 
+          className="absolute top-0 -right-4 w-96 h-96 bg-cyan-500 rounded-full mix-blend-screen filter blur-3xl opacity-20"
+          animate={{
+            x: [0, -100, 0],
+            y: [0, 100, 0],
+          }}
+          transition={{
+            duration: 25,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 2,
+          }}
+          style={{ y: blobY }}
+        />
+        <motion.div 
+          className="absolute -bottom-8 left-20 w-96 h-96 bg-pink-500 rounded-full mix-blend-screen filter blur-3xl opacity-20"
+          animate={{
+            x: [0, -100, 0],
+            y: [0, -100, 0],
+          }}
+          transition={{
+            duration: 30,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 4,
+          }}
+          style={{ y: blobY }}
+        />
         
-        {/* Grid Pattern */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cg fill=%22none%22 fill-rule=%22evenodd%22%3E%3Cg fill=%22%239C92AC%22 fill-opacity=%220.05%22%3E%3Cpath d=%22M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z%22/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')]"></div>
+        {/* Grid Pattern with mouse interaction */}
+        <motion.div 
+          className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')]"
+          style={{
+            transform: `translate(${mousePosition.x * 0.01}px, ${mousePosition.y * 0.01}px)`,
+          }}
+        />
         
         {/* Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
       </div>
 
-      {/* Hero Section */}
-      <div className="container mx-auto px-4 pt-24 pb-16 relative animate-fade-in">
+      {/* Hero Section with Parallax */}
+      <motion.div 
+        className="container mx-auto px-4 pt-24 pb-16 relative"
+        style={{ y: heroY, scale: scaleProgress }}
+      >
         <div className="text-center max-w-5xl mx-auto">
-          {/* Logo with Glow */}
-          <div className="mb-8 flex justify-center">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur-lg group-hover:blur-xl transition-all duration-300 opacity-75"></div>
+          {/* Logo with Glow and Pulse */}
+          <motion.div 
+            className="mb-8 flex justify-center"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, type: "spring" }}
+          >
+            <motion.div 
+              className="relative group"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <motion.div 
+                className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full blur-lg opacity-75"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [0.5, 0.8, 0.5],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              />
               <img 
                 src="/assets/logos/n3rve-logo-white.svg" 
                 alt="N3RVE" 
                 className="h-20 w-auto relative"
               />
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
           
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+          {/* Animated Title */}
+          <motion.h1 
+            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+          >
             {language === 'ko' ? (
               <>
-                <span className="text-white/90">글로벌 음원 유통의</span>
+                <motion.span 
+                  className="text-white/90 inline-block"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                >
+                  글로벌 음원 유통의
+                </motion.span>
                 <br />
-                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent animate-gradient-x">
+                <motion.span 
+                  className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent inline-block"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  style={{
+                    backgroundSize: '200% 100%',
+                    animation: 'gradient-x 3s ease infinite',
+                  }}
+                >
                   새로운 기준
-                </span>
+                </motion.span>
               </>
             ) : language === 'ja' ? (
               <>
-                <span className="text-white/90">グローバル音源流通の</span>
+                <motion.span 
+                  className="text-white/90 inline-block"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                >
+                  グローバル音源流通の
+                </motion.span>
                 <br />
-                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent animate-gradient-x">
+                <motion.span 
+                  className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent inline-block"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  style={{
+                    backgroundSize: '200% 100%',
+                    animation: 'gradient-x 3s ease infinite',
+                  }}
+                >
                   新しい基準
-                </span>
+                </motion.span>
               </>
             ) : (
               <>
-                <span className="text-white/90">The New Standard for</span>
+                <motion.span 
+                  className="text-white/90 inline-block"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
+                >
+                  The New Standard for
+                </motion.span>
                 <br />
-                <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent animate-gradient-x">
+                <motion.span 
+                  className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent inline-block"
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.5, delay: 0.5 }}
+                  style={{
+                    backgroundSize: '200% 100%',
+                    animation: 'gradient-x 3s ease infinite',
+                  }}
+                >
                   Global Music Distribution
-                </span>
+                </motion.span>
               </>
             )}
-          </h1>
+          </motion.h1>
           
-          <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+          {/* Animated Description */}
+          <motion.p 
+            className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+          >
             {language === 'ko' 
               ? 'N3RVE와 함께 당신의 음악을 전 세계 주요 플랫폼에 배포하세요. 복잡한 절차는 줄이고, 창작에만 집중할 수 있도록 돕습니다.'
               : language === 'ja'
               ? 'N3RVEであなたの音楽を世界中の主要プラットフォームに配信しましょう。複雑なプロセスをシンプルにして、創作に集中できるようサポートします。'
               : 'Distribute your music to major platforms worldwide with N3RVE. We simplify the process so you can focus on creating.'
             }
-          </p>
+          </motion.p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link
-              to="/login"
-              className="group relative px-10 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold text-lg overflow-hidden transition-all duration-300 transform hover:scale-105 flex items-center gap-3"
+          {/* CTA Buttons with Spring Animation */}
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+          >
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              <span className="relative z-10">{language === 'ko' ? '지금 시작하기' : language === 'ja' ? '今すぐ始める' : 'Start Now'}</span>
-              <ArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
+              <Link
+                to="/login"
+                className="group relative px-10 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold text-lg overflow-hidden flex items-center gap-3"
+              >
+                <motion.div 
+                  className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: 0 }}
+                  transition={{ duration: 0.3 }}
+                />
+                <span className="relative z-10">{language === 'ko' ? '지금 시작하기' : language === 'ja' ? '今すぐ始める' : 'Start Now'}</span>
+                <motion.div
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity }}
+                >
+                  <ArrowRight className="relative z-10 w-5 h-5" />
+                </motion.div>
+              </Link>
+            </motion.div>
             
-            <Link
-              to="/guide"
-              className="px-10 py-4 border-2 border-white/20 backdrop-blur-sm text-white rounded-full font-medium text-lg hover:bg-white/10 hover:border-white/40 transition-all duration-300"
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              {language === 'ko' ? '이용 가이드' : language === 'ja' ? '利用ガイド' : 'User Guide'}
-            </Link>
-          </div>
+              <Link
+                to="/guide"
+                className="px-10 py-4 border-2 border-white/20 backdrop-blur-sm text-white rounded-full font-medium text-lg hover:bg-white/10 hover:border-white/40 transition-all duration-300"
+              >
+                {language === 'ko' ? '이용 가이드' : language === 'ja' ? '利用ガイド' : 'User Guide'}
+              </Link>
+            </motion.div>
+          </motion.div>
           
-          {/* Trust Indicators */}
-          <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm">
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full">
+          {/* Trust Indicators with Stagger Animation */}
+          <motion.div 
+            className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div 
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full"
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.15)" }}
+            >
               <CheckCircle className="w-4 h-4 text-green-400" />
               <span className="text-white/80">{language === 'ko' ? '100% 보안 인증' : language === 'ja' ? '100%セキュア' : '100% Secure'}</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full">
+            </motion.div>
+            <motion.div 
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full"
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.15)" }}
+            >
               <Star className="w-4 h-4 text-yellow-400" />
               <span className="text-white/80">{language === 'ko' ? '업계 최고 수준' : language === 'ja' ? '業界最高水準' : 'Industry Leading'}</span>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full">
+            </motion.div>
+            <motion.div 
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full"
+              variants={itemVariants}
+              whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.15)" }}
+            >
               <Globe className="w-4 h-4 text-blue-400" />
               <span className="text-white/80">{language === 'ko' ? '150+ 국가 지원' : language === 'ja' ? '150+ヶ国対応' : '150+ Countries'}</span>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* Features Section */}
+      {/* Features Section with Scroll Animations */}
       <div className="container mx-auto px-4 py-20 relative">
-        <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-4">
-          {language === 'ko' ? 'N3RVE가 특별한 이유' : language === 'ja' ? 'N3RVEを選ぶ理由' : 'Why Choose N3RVE'}
-        </h2>
-        <p className="text-center text-gray-400 mb-16 text-lg">
-          {language === 'ko' ? '아티스트를 위한 최고의 선택' : language === 'ja' ? 'アーティストのための最高の選択' : 'The Best Choice for Artists'}
-        </p>
+        <AnimatedText delay={0}>
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-4">
+            {language === 'ko' ? 'N3RVE가 특별한 이유' : language === 'ja' ? 'N3RVEを選ぶ理由' : 'Why Choose N3RVE'}
+          </h2>
+        </AnimatedText>
+        <AnimatedText delay={0.1}>
+          <p className="text-center text-gray-400 mb-16 text-lg">
+            {language === 'ko' ? '아티스트를 위한 최고의 선택' : language === 'ja' ? 'アーティストのための最高の選択' : 'The Best Choice for Artists'}
+          </p>
+        </AnimatedText>
         
-        <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <motion.div 
+          className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+        >
           {/* Feature 1 */}
-          <div className="group relative p-8 bg-gradient-to-br from-purple-900/50 to-purple-800/30 backdrop-blur-sm rounded-2xl border border-purple-500/20 hover:border-purple-500/40 transition-all duration-300 animate-slide-in-up hover:transform hover:-translate-y-2" style={{ animationDelay: '0.1s' }}>
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <motion.div 
+            className="group relative p-8 bg-gradient-to-br from-purple-900/50 to-purple-800/30 backdrop-blur-sm rounded-2xl border border-purple-500/20"
+            variants={itemVariants}
+            whileHover={{ 
+              scale: 1.05,
+              borderColor: "rgba(168, 85, 247, 0.4)",
+              transition: { duration: 0.2 }
+            }}
+          >
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-br from-purple-600/10 to-transparent rounded-2xl"
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            />
             <div className="relative z-10">
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-purple-500/50">
+              <motion.div 
+                className="w-14 h-14 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-purple-500/50"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <Music className="w-7 h-7 text-white" />
-              </div>
+              </motion.div>
               <h3 className="text-xl font-semibold mb-3 text-white">
                 {language === 'ko' ? '간편한 음원 등록' : language === 'ja' ? '簡単な音源登録' : 'Easy Music Registration'}
               </h3>
@@ -149,15 +442,32 @@ export default function HomePage() {
                 }
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Feature 2 */}
-          <div className="group relative p-8 bg-gradient-to-br from-cyan-900/50 to-cyan-800/30 backdrop-blur-sm rounded-2xl border border-cyan-500/20 hover:border-cyan-500/40 transition-all duration-300 animate-slide-in-up hover:transform hover:-translate-y-2" style={{ animationDelay: '0.2s' }}>
-            <div className="absolute inset-0 bg-gradient-to-br from-cyan-600/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <motion.div 
+            className="group relative p-8 bg-gradient-to-br from-cyan-900/50 to-cyan-800/30 backdrop-blur-sm rounded-2xl border border-cyan-500/20"
+            variants={itemVariants}
+            whileHover={{ 
+              scale: 1.05,
+              borderColor: "rgba(6, 182, 212, 0.4)",
+              transition: { duration: 0.2 }
+            }}
+          >
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-br from-cyan-600/10 to-transparent rounded-2xl"
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            />
             <div className="relative z-10">
-              <div className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-cyan-500/50">
+              <motion.div 
+                className="w-14 h-14 bg-gradient-to-br from-cyan-500 to-cyan-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-cyan-500/50"
+                whileHover={{ scale: 1.1, rotate: -5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <Shield className="w-7 h-7 text-white" />
-              </div>
+              </motion.div>
               <h3 className="text-xl font-semibold mb-3 text-white">
                 {language === 'ko' ? '안전한 데이터 보호' : language === 'ja' ? '安全なデータ保護' : 'Secure Data Protection'}
               </h3>
@@ -170,15 +480,32 @@ export default function HomePage() {
                 }
               </p>
             </div>
-          </div>
+          </motion.div>
 
           {/* Feature 3 */}
-          <div className="group relative p-8 bg-gradient-to-br from-pink-900/50 to-pink-800/30 backdrop-blur-sm rounded-2xl border border-pink-500/20 hover:border-pink-500/40 transition-all duration-300 animate-slide-in-up hover:transform hover:-translate-y-2" style={{ animationDelay: '0.3s' }}>
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-600/10 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          <motion.div 
+            className="group relative p-8 bg-gradient-to-br from-pink-900/50 to-pink-800/30 backdrop-blur-sm rounded-2xl border border-pink-500/20"
+            variants={itemVariants}
+            whileHover={{ 
+              scale: 1.05,
+              borderColor: "rgba(236, 72, 153, 0.4)",
+              transition: { duration: 0.2 }
+            }}
+          >
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-br from-pink-600/10 to-transparent rounded-2xl"
+              initial={{ opacity: 0 }}
+              whileHover={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+            />
             <div className="relative z-10">
-              <div className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg shadow-pink-500/50">
+              <motion.div 
+                className="w-14 h-14 bg-gradient-to-br from-pink-500 to-pink-600 rounded-xl flex items-center justify-center mb-6 shadow-lg shadow-pink-500/50"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
                 <Globe className="w-7 h-7 text-white" />
-              </div>
+              </motion.div>
               <h3 className="text-xl font-semibold mb-3 text-white">
                 {language === 'ko' ? '글로벌 플랫폼 연동' : language === 'ja' ? 'グローバルプラットフォーム連携' : 'Global Platform Integration'}
               </h3>
@@ -191,15 +518,64 @@ export default function HomePage() {
                 }
               </p>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </div>
       
-      {/* CTA Section */}
+      {/* CTA Section with Advanced Animation */}
       <div className="container mx-auto px-4 py-20">
-        <div className="relative rounded-3xl overflow-hidden">
-          {/* Background with animation */}
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 animate-gradient-x"></div>
+        <motion.div 
+          className="relative rounded-3xl overflow-hidden"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          {/* Background with complex animation */}
+          <motion.div 
+            className="absolute inset-0"
+            animate={{
+              background: [
+                "linear-gradient(45deg, #7c3aed, #ec4899)",
+                "linear-gradient(90deg, #ec4899, #06b6d4)",
+                "linear-gradient(135deg, #06b6d4, #7c3aed)",
+                "linear-gradient(180deg, #7c3aed, #ec4899)",
+              ],
+            }}
+            transition={{
+              duration: 10,
+              repeat: Infinity,
+              ease: "linear",
+            }}
+          />
+          
+          {/* Sparkle effects */}
+          <div className="absolute inset-0">
+            {[...Array(30)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute"
+                initial={{
+                  opacity: 0,
+                  scale: 0,
+                  x: Math.random() * 100 + "%",
+                  y: Math.random() * 100 + "%",
+                }}
+                animate={{
+                  opacity: [0, 1, 0],
+                  scale: [0, 1, 0],
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  delay: Math.random() * 5,
+                  ease: "easeInOut",
+                }}
+              >
+                <Sparkles className="w-4 h-4 text-white/50" />
+              </motion.div>
+            ))}
+          </div>
           
           {/* Noise texture */}
           <div className="absolute inset-0 opacity-20">
@@ -209,38 +585,87 @@ export default function HomePage() {
           {/* Content */}
           <div className="relative p-16 text-center">
             <div className="max-w-3xl mx-auto">
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">
+              <motion.h2 
+                className="text-4xl md:text-5xl font-bold mb-6 text-white"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
                 {language === 'ko' ? '음악의 미래를 함께 만들어가요' : language === 'ja' ? '音楽の未来を一緒に作りましょう' : 'Shape the Future of Music Together'}
-              </h2>
-              <p className="text-xl mb-10 text-white/90 max-w-2xl mx-auto leading-relaxed">
+              </motion.h2>
+              <motion.p 
+                className="text-xl mb-10 text-white/90 max-w-2xl mx-auto leading-relaxed"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.1 }}
+              >
                 {language === 'ko' 
                   ? '전 세계 아티스트들이 N3RVE를 통해 꿈을 실현하고 있습니다. 지금 합류하세요.'
                   : language === 'ja'
                   ? '世界中のアーティストがN3RVEを通じて夢を実現しています。今すぐ参加しましょう。'
                   : 'Artists worldwide are realizing their dreams through N3RVE. Join us today.'
                 }
-              </p>
+              </motion.p>
               
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-                <Link
-                  to="/login"
-                  className="group relative px-12 py-5 bg-white text-purple-600 rounded-full font-bold text-lg overflow-hidden transition-all duration-300 transform hover:scale-105 shadow-2xl"
+              <motion.div 
+                className="flex flex-col sm:flex-row gap-6 justify-center items-center"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
+                <motion.div
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-pink-100 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <span className="relative z-10 flex items-center gap-3">
-                    {language === 'ko' ? '무료로 시작하기' : language === 'ja' ? '無料で始める' : 'Start Free'}
-                    <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </span>
-                </Link>
+                  <motion.div
+                    className="absolute inset-0 bg-white rounded-full blur-xl"
+                    animate={{ 
+                      scale: [1, 1.2, 1],
+                      opacity: [0.3, 0.5, 0.3] 
+                    }}
+                    transition={{ 
+                      duration: 2, 
+                      repeat: Infinity,
+                      ease: "easeInOut" 
+                    }}
+                  />
+                  <Link
+                    to="/login"
+                    className="group relative px-12 py-5 bg-white text-purple-600 rounded-full font-bold text-lg overflow-hidden shadow-2xl flex items-center gap-3"
+                  >
+                    <motion.div 
+                      className="absolute inset-0 bg-gradient-to-r from-purple-100 to-pink-100"
+                      initial={{ x: "-100%" }}
+                      whileHover={{ x: 0 }}
+                      transition={{ duration: 0.3 }}
+                    />
+                    <span className="relative z-10">
+                      {language === 'ko' ? '무료로 시작하기' : language === 'ja' ? '無料で始める' : 'Start Free'}
+                    </span>
+                    <motion.div
+                      animate={{ x: [0, 5, 0] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                    >
+                      <ArrowRight className="relative z-10 w-5 h-5" />
+                    </motion.div>
+                  </Link>
+                </motion.div>
                 
-                <div className="flex items-center gap-4 text-white/80">
+                <motion.div 
+                  className="flex items-center gap-4 text-white/80"
+                  whileHover={{ scale: 1.05 }}
+                >
                   <CheckCircle className="w-5 h-5" />
                   <span className="text-sm">{language === 'ko' ? '신용카드 불필요' : language === 'ja' ? 'クレジットカード不要' : 'No Credit Card Required'}</span>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   )
