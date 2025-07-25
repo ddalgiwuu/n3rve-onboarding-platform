@@ -1,0 +1,145 @@
+name: Debug Deployment Issues
+
+on:
+  workflow_dispatch:
+
+env:
+  DOCKER_IMAGE: ddalgiwuu/n3rve-platform
+
+jobs:
+  debug-secrets:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check if secrets exist
+      run: |
+        echo "=== CHECKING GITHUB SECRETS ==="
+        
+        echo "1. Checking DOCKER_USERNAME..."
+        if [ -z "${{ secrets.DOCKER_USERNAME }}" ]; then
+          echo "❌ DOCKER_USERNAME is NOT set"
+          echo "Action required: Add DOCKER_USERNAME secret with value 'ddalgiwuu'"
+        else
+          echo "✅ DOCKER_USERNAME is set"
+          echo "Value length: ${#DOCKER_USERNAME_VALUE}"
+          DOCKER_USERNAME_VALUE="${{ secrets.DOCKER_USERNAME }}"
+          echo "First char: ${DOCKER_USERNAME_VALUE:0:1}"
+          echo "Last char: ${DOCKER_USERNAME_VALUE: -1}"
+        fi
+        
+        echo ""
+        echo "2. Checking DOCKER_PASSWORD..."
+        if [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
+          echo "❌ DOCKER_PASSWORD is NOT set"
+          echo "Action required: Create Docker Hub Personal Access Token"
+        else
+          echo "✅ DOCKER_PASSWORD is set"
+          PASSWORD_LENGTH=${#DOCKER_PASSWORD_VALUE}
+          DOCKER_PASSWORD_VALUE="${{ secrets.DOCKER_PASSWORD }}"
+          echo "Password length: $PASSWORD_LENGTH"
+        fi
+        
+        echo ""
+        echo "3. Checking EC2_SSH_KEY..."
+        if [ -z "${{ secrets.EC2_SSH_KEY }}" ]; then
+          echo "❌ EC2_SSH_KEY is NOT set"
+          echo "Action required: Add content of N3RVE_AWS.pem file"
+        else
+          echo "✅ EC2_SSH_KEY is set"
+          KEY_VALUE="${{ secrets.EC2_SSH_KEY }}"
+          if [[ "$KEY_VALUE" == *"BEGIN RSA PRIVATE KEY"* ]]; then
+            echo "✅ Key format looks correct (RSA)"
+          elif [[ "$KEY_VALUE" == *"BEGIN PRIVATE KEY"* ]]; then
+            echo "✅ Key format looks correct (Generic)"
+          else
+            echo "⚠️ Key format might be incorrect"
+          fi
+        fi
+
+  test-docker-login:
+    runs-on: ubuntu-latest
+    needs: debug-secrets
+    if: always()
+    
+    steps:
+    - name: Test Docker Hub login
+      run: |
+        echo "=== TESTING DOCKER HUB LOGIN ==="
+        
+        if [ -z "${{ secrets.DOCKER_USERNAME }}" ] || [ -z "${{ secrets.DOCKER_PASSWORD }}" ]; then
+          echo "❌ Cannot test login - secrets not set"
+          exit 1
+        fi
+        
+        echo "Attempting Docker Hub login..."
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin 2>&1
+        
+        if [ $? -eq 0 ]; then
+          echo "✅ Docker Hub login successful!"
+        else
+          echo "❌ Docker Hub login failed"
+          echo ""
+          echo "Common issues:"
+          echo "1. Password might be your account password instead of Personal Access Token"
+          echo "2. Username might have extra spaces"
+          echo "3. Token might have expired"
+          echo ""
+          echo "To fix:"
+          echo "1. Go to https://hub.docker.com/settings/security"
+          echo "2. Create new Access Token with Read/Write/Delete permissions"
+          echo "3. Update DOCKER_PASSWORD secret with the new token"
+        fi
+
+  test-docker-build:
+    runs-on: ubuntu-latest
+    needs: test-docker-login
+    if: success()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+      
+    - name: Test Docker build
+      run: |
+        echo "=== TESTING DOCKER BUILD ==="
+        
+        echo "Building Docker image locally..."
+        docker buildx build --platform linux/amd64 -t test-build:latest .
+        
+        if [ $? -eq 0 ]; then
+          echo "✅ Docker build successful!"
+        else
+          echo "❌ Docker build failed"
+          echo "Check Dockerfile for issues"
+        fi
+
+  test-ec2-connection:
+    runs-on: ubuntu-latest
+    needs: debug-secrets
+    if: always()
+    
+    steps:
+    - name: Test EC2 SSH connection
+      uses: appleboy/ssh-action@v1.0.0
+      continue-on-error: true
+      with:
+        host: 52.78.81.116
+        username: ubuntu
+        key: ${{ secrets.EC2_SSH_KEY }}
+        port: 22
+        script: |
+          echo "=== TESTING EC2 CONNECTION ==="
+          echo "✅ SSH connection successful!"
+          echo "Current directory: $(pwd)"
+          echo "Checking project directory..."
+          if [ -d "/home/ubuntu/n3rve-onboarding-platform" ]; then
+            echo "✅ Project directory exists"
+            cd /home/ubuntu/n3rve-onboarding-platform
+            echo "Git status:"
+            git status
+          else
+            echo "❌ Project directory not found"
+          fi
