@@ -74,11 +74,14 @@ jobs:
       uses: docker/setup-buildx-action@v2
 
     - name: Log in to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
-      continue-on-error: true
+      run: |
+        echo "Logging in to Docker Hub as ${{ secrets.DOCKER_USERNAME }}..."
+        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        if [ $? -ne 0 ]; then
+          echo "::error::Docker login failed! Please check your Docker Hub credentials."
+          exit 1
+        fi
+        echo "Docker login successful!"
 
     - name: Verify Docker login
       run: |
@@ -89,19 +92,18 @@ jobs:
         echo "Docker login successful"
 
     - name: Build and push Docker image
-      uses: docker/build-push-action@v4
-      with:
-        context: .
-        platforms: linux/amd64
-        push: true
-        tags: |
-          ${{ env.DOCKER_IMAGE }}:latest
-          ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
-          ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
-        no-cache: true
-        build-args: |
-          BUILDKIT_INLINE_CACHE=1
-      continue-on-error: true
+      run: |
+        # Build the image
+        echo "Building Docker image..."
+        docker build -t ${{ env.DOCKER_IMAGE }}:latest -t ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }} -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} .
+        
+        # Push all tags
+        echo "Pushing Docker images..."
+        docker push ${{ env.DOCKER_IMAGE }}:latest
+        docker push ${{ env.DOCKER_IMAGE }}:${{ env.VERSION }}
+        docker push ${{ env.DOCKER_IMAGE }}:${{ github.sha }}
+        
+        echo "Docker push completed successfully"
 
     - name: Check build result
       if: failure()
@@ -158,7 +160,7 @@ jobs:
           # Force remove any existing container with the same name
           echo "Removing existing containers..."
           docker stop n3rve-app || true
-          docker rm n3rve-app || true
+          docker rm -f n3rve-app || true
           docker ps -a | grep n3rve | awk '{print $1}' | xargs -r docker rm -f || true
           
           # Clean up Docker system
