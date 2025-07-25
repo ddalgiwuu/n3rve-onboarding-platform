@@ -92,6 +92,15 @@
   }
 }
 
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
 @keyframes bounce-x {
   0%, 100% {
     transform: translateX(0);
@@ -550,4 +559,60 @@
 
 .animate-blob {
   animation: blob 20s ease-in-out infinite;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 3s ease-in-out infinite;
+}
+
+/* Additional animations for Login page */
+@keyframes float-up-fade {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  20% {
+    opacity: 0.8;
+    transform: translateY(-10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-100vh) scale(0.6);
+  }
+}
+
+@keyframes breathing {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-float-up-fade {
+  animation: float-up-fade var(--duration, 20s) ease-out infinite;
+  animation-delay: var(--delay, 0s);
+}
+
+.animate-breathing {
+  animation: breathing 4s ease-in-out infinite;
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
