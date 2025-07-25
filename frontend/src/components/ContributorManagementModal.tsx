@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Plus, Trash2, Users, Music2, Edit3, Mic2, ChevronRight } from 'lucide-react'
+import { X, Plus, Trash2, Users, Music2, Edit3, Mic2 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import ContributorForm from './ContributorForm'
 import contributorRolesData from '@/data/contributorRoles.json'
@@ -12,7 +12,7 @@ interface Translation {
 }
 
 interface PlatformIdentifier {
-  type: 'spotify' | 'apple' | 'youtube' | 'isni' | 'ipi'
+  type: 'spotify' | 'apple'
   value: string
   url?: string
 }

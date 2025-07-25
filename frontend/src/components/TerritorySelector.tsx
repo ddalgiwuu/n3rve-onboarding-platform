@@ -1,8 +1,7 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import { 
   Globe, Check, X, Search, ChevronDown, ChevronRight, ChevronLeft,
-  Minus, Plus, Info, AlertCircle, Filter, MapPin,
-  Music, Settings, Edit2, Save, Copy, ChevronUp
+  Minus, Plus, Info, Edit2
 } from 'lucide-react'
 import { useLanguageStore } from '@/store/language.store'
 import territoriesData from '@/data/territories.json'
@@ -33,7 +32,6 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
   const [showModal, setShowModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [expandedContinents, setExpandedContinents] = useState<string[]>([])
-  const [showDSPOverrides, setShowDSPOverrides] = useState(false)
   const [activeDSP, setActiveDSP] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'base' | 'dsp'>('base')
   const [selectedDSPForOverride, setSelectedDSPForOverride] = useState<string | null>(null)
@@ -50,7 +48,7 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
   const filteredContinents = useMemo(() => {
     if (!searchQuery) return territoriesData.continents
 
-    const filtered: typeof territoriesData.continents = {}
+    const filtered: Record<string, typeof territoriesData.continents[keyof typeof territoriesData.continents]> = {}
     
     Object.entries(territoriesData.continents).forEach(([key, continent]) => {
       const matchingCountries = continent.countries.filter(country =>
@@ -59,7 +57,7 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
       )
       
       if (matchingCountries.length > 0) {
-        filtered[key] = {
+        filtered[key as keyof typeof territoriesData.continents] = {
           ...continent,
           countries: matchingCountries
         }
@@ -70,18 +68,18 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
   }, [searchQuery])
 
   // Toggle mode
-  const toggleMode = () => {
-    const newMode = value.base.mode === 'worldwide' ? 'include' : 
-                   value.base.mode === 'include' ? 'exclude' : 'worldwide'
-    
-    onChange({
-      ...value,
-      base: {
-        mode: newMode,
-        territories: newMode === 'worldwide' ? [] : value.base.territories
-      }
-    })
-  }
+  // const toggleMode = () => {
+  //   const newMode = value.base.mode === 'worldwide' ? 'include' : 
+  //                  value.base.mode === 'include' ? 'exclude' : 'worldwide'
+  //   
+  //   onChange({
+  //     ...value,
+  //     base: {
+  //       mode: newMode,
+  //       territories: newMode === 'worldwide' ? [] : value.base.territories
+  //     }
+  //   })
+  // }
 
   // Toggle country selection
   const toggleCountry = (countryCode: string) => {
@@ -158,127 +156,13 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
   }
 
   // Calculate selected count for base selection
-  const selectedCount = value.base.mode === 'worldwide' 
-    ? totalCountries 
-    : value.base.mode === 'include' 
-      ? value.base.territories.length 
-      : totalCountries - value.base.territories.length
+  // const selectedCount = value.base.mode === 'worldwide' 
+  //   ? totalCountries 
+  //   : value.base.mode === 'include' 
+  //     ? value.base.territories.length 
+  //     : totalCountries - value.base.territories.length
 
-  // Render DSP item helper function
-  const renderDSPItem = (dsp: typeof territoriesData.dsps[0], compact = false) => {
-    const override = getDSPOverride(dsp.id)
-    const isActive = activeDSP === dsp.id
-
-    return (
-      <div 
-        key={dsp.id}
-        className={`border rounded-lg transition-all ${
-          override 
-            ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/10' 
-            : 'border-gray-200 dark:border-gray-700'
-        } ${compact ? 'p-3' : ''}`}
-      >
-        <div className={`flex items-center justify-between ${compact ? '' : 'p-4'}`}>
-          <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className={compact ? 'text-lg' : 'text-2xl'}>{dsp.icon}</span>
-            <div className="min-w-0 flex-1">
-              <h4 className={`font-medium truncate ${compact ? 'text-sm' : ''}`}>
-                {dsp.name}
-              </h4>
-              {override && !compact && (
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  {override.mode === 'exclude' 
-                    ? t(`${override.territories.length}개국 제외`, `Excluding ${override.territories.length} countries`)
-                    : t(`${override.territories.length}개국만 발매`, `Only ${override.territories.length} countries`)}
-                </p>
-              )}
-            </div>
-          </div>
-
-          <button
-            onClick={() => {
-              toggleDSPOverride(dsp.id)
-              if (!override) setActiveDSP(dsp.id)
-            }}
-            className={`${compact ? 'px-2 py-1 text-xs' : 'px-4 py-2 text-sm'} rounded-lg font-medium transition-colors flex-shrink-0 ml-2 ${
-              override
-                ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50'
-                : 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50'
-            }`}
-          >
-            {override ? (compact ? t('제거', 'Remove') : t('설정 제거', 'Remove Override')) : (compact ? t('설정', 'Set') : t('개별 설정', 'Customize'))}
-          </button>
-        </div>
-
-        {/* DSP Override Settings */}
-        {override && isActive && !compact && (
-          <div className="border-t border-gray-200 dark:border-gray-700 p-4 space-y-4">
-            {/* Mode Toggle */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">{t('모드:', 'Mode:')}</span>
-              <button
-                onClick={() => updateDSPOverride(dsp.id, { 
-                  mode: override.mode === 'exclude' ? 'include' : 'exclude' 
-                })}
-                className={`flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                  override.mode === 'exclude'
-                    ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
-                    : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
-                }`}
-              >
-                {override.mode === 'exclude' ? <Minus className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-                {override.mode === 'exclude' ? t('제외', 'Exclude') : t('포함만', 'Include Only')}
-              </button>
-            </div>
-
-            {/* Quick Selection */}
-            <div className="flex flex-wrap gap-2">
-              {[
-                { code: 'US', name: t('미국', 'USA') },
-                { code: 'JP', name: t('일본', 'Japan') },
-                { code: 'KR', name: t('한국', 'Korea') },
-                { code: 'CN', name: t('중국', 'China') },
-                { code: 'GB', name: t('영국', 'UK') },
-                { code: 'DE', name: t('독일', 'Germany') }
-              ].map(country => {
-                const isSelected = override.territories.includes(country.code)
-                
-                return (
-                  <button
-                    key={country.code}
-                    onClick={() => {
-                      const newTerritories = isSelected
-                        ? override.territories.filter(c => c !== country.code)
-                        : [...override.territories, country.code]
-                      updateDSPOverride(dsp.id, { territories: newTerritories })
-                    }}
-                    className={`px-3 py-1 rounded-lg text-sm transition-colors ${
-                      isSelected
-                        ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-2 border-purple-300 dark:border-purple-700'
-                        : 'bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    {country.name}
-                  </button>
-                )
-              })}
-            </div>
-
-            <p className="text-xs text-gray-500 dark:text-gray-400">
-              {t('더 많은 국가를 선택하려면 위의 전체 목록을 사용하세요.', 
-                 'Use the full list above to select more countries.')}
-            </p>
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  // Get DSP name helper
-  const getDSPName = useCallback((dspId: string) => {
-    const dsp = territoriesData.dsps.find(d => d.id === dspId)
-    return dsp?.name || dspId
-  }, [])
+  // Removed renderDSPItem and getDSPName functions to prevent TypeScript parsing errors with JSX in comments
 
   // Get territory count for display
   const getTerritoryCount = useCallback((mode: string, territories: string[]) => {

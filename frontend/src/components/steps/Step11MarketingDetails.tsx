@@ -1,7 +1,7 @@
 import { useTranslation } from '@/hooks/useTranslation'
 import SearchableMultiSelect from '@/components/ui/SearchableMultiSelect'
 import { MOODS, INSTRUMENTS, PROJECT_TYPES, PRIORITY_LEVELS } from '@/constants/marketingData'
-import { Info, Star, Target, Music, Heart, Hash, Users, Megaphone, Globe, Calendar } from 'lucide-react'
+import { Info, Target, Music, Hash, Users, Megaphone, Globe } from 'lucide-react'
 
 interface Step11MarketingDetailsProps {
   formData: any

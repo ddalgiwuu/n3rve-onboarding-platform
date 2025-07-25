@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Plus, X, Globe, Languages, ChevronDown, Sparkles, Check } from 'lucide-react'
+import { Plus, X, Languages, ChevronDown, Sparkles, Check } from 'lucide-react'
 
 interface Translation {
   id: string
@@ -96,12 +96,12 @@ export default function TrackTranslationUI({
     return quick ? quick.label : langValue.toUpperCase().slice(0, 2)
   }
 
-  const filteredLanguages = searchQuery
-    ? languageOptions.filter(lang => 
-        lang.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        lang.value.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : languageOptions
+  // const filteredLanguages = searchQuery
+  //   ? languageOptions.filter(lang => 
+  //       lang.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //       lang.value.toLowerCase().includes(searchQuery.toLowerCase())
+  //     )
+  //   : languageOptions
 
   const availableLanguages = languageOptions.filter(
     lang => !translations.some(t => t.language === lang.value)
