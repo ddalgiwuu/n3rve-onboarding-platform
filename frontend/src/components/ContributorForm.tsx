@@ -7,9 +7,12 @@ import {
 import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import contributorRolesData from '@/data/contributorRoles.json'
-import contributorRolesKo from '@/data/contributorRolesKo.json'
+import contributorRolesKoData from '@/data/contributorRolesKo.json'
 import instrumentsData from '@/data/instruments.json'
-import instrumentsKo from '@/data/instrumentsKo.json'
+import instrumentsKoData from '@/data/instrumentsKo.json'
+
+const contributorRolesKo = contributorRolesKoData as { translations: Record<string, string> }
+const instrumentsKo = instrumentsKoData as { translations: Record<string, string> }
 import { v4 as uuidv4 } from 'uuid'
 
 interface Translation {
@@ -130,7 +133,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
     
     const roleName = (role.name || '').toLowerCase()
     const roleCategory = (role.category || '').toLowerCase()
-    const roleKo = contributorRolesKo.translations[role.id] || ''
+    const roleKo = contributorRolesKo.translations[role.id as string] || ''
     
     return searchFilter(roleName, searchTerm) || 
            searchFilter(roleCategory, searchTerm) ||
@@ -143,7 +146,7 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
     
     const instrumentName = (instrument.name || '').toLowerCase()
     const instrumentCategory = (instrument.category || '').toLowerCase()
-    const instrumentKo = instrumentsKo.translations[instrument.id] || ''
+    const instrumentKo = instrumentsKo.translations[instrument.id as string] || ''
     
     return searchFilter(instrumentName, searchTerm) || 
            searchFilter(instrumentCategory, searchTerm) ||
@@ -539,9 +542,9 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                           >
                             <span className="text-sm">
                               {role.name}
-                              {contributorRolesKo.translations[role.id] && (
+                              {contributorRolesKo.translations[role.id as string] && (
                                 <span className="text-gray-500 dark:text-gray-400 ml-1">
-                                  ({contributorRolesKo.translations[role.id]})
+                                  ({contributorRolesKo.translations[role.id as string]})
                                 </span>
                               )}
                             </span>
@@ -636,9 +639,9 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                           >
                             <span className="text-sm">
                               {instrument.name}
-                              {instrumentsKo.translations[instrument.id] && (
+                              {instrumentsKo.translations[instrument.id as string] && (
                                 <span className="text-gray-500 dark:text-gray-400 ml-1">
-                                  ({instrumentsKo.translations[instrument.id]})
+                                  ({instrumentsKo.translations[instrument.id as string]})
                                 </span>
                               )}
                             </span>

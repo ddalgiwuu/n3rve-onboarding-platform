@@ -182,7 +182,7 @@ export default function Select({
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={t('common.search', 'Search...')}
+                    placeholder={t('common.search')}
                     className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-n3rve-500/20 focus:border-n3rve-500 text-sm transition-all"
                   />
                 </div>
@@ -193,7 +193,7 @@ export default function Select({
             <div className="max-h-60 overflow-y-auto">
               {filteredOptions.length === 0 ? (
                 <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                  {t('common.noResults', 'No results found')}
+                  {t('common.noResults')}
                 </div>
               ) : (
                 filteredOptions.map((option) => (
