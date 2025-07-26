@@ -34,7 +34,7 @@ import TerritorySelector from '@/components/TerritorySelector'
 import Step11MarketingDetails from '@/components/steps/Step11MarketingDetails'
 import Step12GoalsExpectations from '@/components/steps/Step12GoalsExpectations'
 import SearchableMultiSelect from '@/components/ui/SearchableMultiSelect'
-import { useRealtimeValidation } from '@/utils/inputValidation'
+import { validateAlbumTitle, validateTrackTitle } from '@/utils/inputValidation'
 import ValidatedInput from '@/components/ValidatedInput'
 import TrackTitleInput, { TrackWarningsManager } from '@/components/TrackTitleInput'
 import { ValidationProvider, useValidationContext } from '@/contexts/ValidationContext'
@@ -333,7 +333,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   const { hasErrors, getSummary, getAllWarnings } = useValidationContext()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const coverArtInputRef = useRef<HTMLInputElement>(null)
-  const { validateAlbumTitle, validateTrackTitle } = useRealtimeValidation()
+  // Using validation functions directly from utils
   
   // Check for edit or resubmit mode
   const editId = searchParams.get('edit')
