@@ -14,27 +14,18 @@ export default defineConfig({
         chunkFileNames: `assets/[name]-[hash]-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.js`,
         assetFileNames: `assets/[name]-[hash]-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.[ext]`,
         manualChunks: (id) => {
-          // Vendor chunks for better caching and React compatibility
+          // CRITICAL FIX: Single React chunk to prevent createContext undefined errors
           if (id.includes('node_modules')) {
-            // Highest priority: Keep React and React-DOM together to prevent dual instances
-            if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-core'
+            // ALL React-related code in ONE chunk to ensure single React instance
+            if (id.includes('react') || id.includes('react-dom') ||
+                id.includes('react-router') || id.includes('react-hot-toast') || 
+                id.includes('@tanstack/react-query') || id.includes('react-hook-form') ||
+                id.includes('@formkit') || id.includes('@dnd-kit') || 
+                id.includes('framer-motion') || id.includes('lucide-react') ||
+                id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
+              return 'react-all'
             }
-            // React-related libraries that depend on React context
-            if (id.includes('react-router') || id.includes('react-hot-toast') || 
-                id.includes('@tanstack/react-query') || id.includes('react-hook-form')) {
-              return 'react-ecosystem'
-            }
-            // State management
-            if (id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
-              return 'state-vendor'
-            }
-            // UI libraries that might have React 19 compatibility issues - merge with react-ecosystem
-            if (id.includes('@formkit') || id.includes('@dnd-kit') || 
-                id.includes('framer-motion') || id.includes('lucide-react')) {
-              return 'react-ecosystem'
-            }
-            // Utilities and other libraries
+            // Non-React utilities and other libraries
             return 'vendor'
           }
         }
@@ -47,6 +38,11 @@ export default defineConfig({
   define: {
     // Ensure React is available globally during development
     global: 'globalThis',
+  },
+  optimizeDeps: {
+    // Ensure React is treated as singleton to prevent multiple instances
+    include: ['react', 'react-dom'],
+    dedupe: ['react', 'react-dom']
   },
   resolve: {
     alias: {
