@@ -175,8 +175,12 @@ export function getQCRules(): QCValidationRules {
   return config.rules
 }
 
-export function getQCHelp(): QCHelpContent {
+export function getQCHelp(language: 'ko' | 'en' = 'ko'): QCHelpContent {
   const config = loadQCConfig()
+  // Check if help content has language structure
+  if (config.help && typeof config.help === 'object' && ('ko' in config.help || 'en' in config.help)) {
+    return (config.help as any)[language] || (config.help as any)['ko'] || config.help
+  }
   return config.help
 }
 

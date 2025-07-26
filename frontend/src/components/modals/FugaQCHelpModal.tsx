@@ -1,8 +1,7 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { X, ChevronRight, CheckCircle, AlertCircle, Info, Clock, FileText, Music, HelpCircle } from 'lucide-react'
-import { fugaQCHelp, qcFAQ } from '@/constants/fugaQCHelp'
-// import { useLanguageStore } from '@/store/language.store' // Reserved for future use
-// import useSafeStore from '@/hooks/useSafeStore' // Reserved for future use
+import { getQCHelp } from '@/utils/fugaQCLoader'
+import { useLanguageStore } from '@/store/language.store'
 
 interface FugaQCHelpModalProps {
   isOpen: boolean
@@ -12,14 +11,24 @@ interface FugaQCHelpModalProps {
 export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'process' | 'errors' | 'specs' | 'faq'>('overview')
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
+  const language = useLanguageStore(state => state.language)
+  
+  // Load help content based on current language
+  const { fugaQCHelp, qcFAQ } = useMemo(() => {
+    const helpContent = getQCHelp(language)
+    return {
+      fugaQCHelp: helpContent,
+      qcFAQ: helpContent.faq || []
+    }
+  }, [language])
 
   if (!isOpen) return null
 
   const tabs = [
-    { id: 'overview', label: '개요', icon: FileText },
-    { id: 'process', label: '프로세스', icon: Clock },
-    { id: 'errors', label: '일반 오류', icon: AlertCircle },
-    { id: 'specs', label: '파일 규격', icon: Music },
+    { id: 'overview', label: language === 'ko' ? '개요' : 'Overview', icon: FileText },
+    { id: 'process', label: language === 'ko' ? '프로세스' : 'Process', icon: Clock },
+    { id: 'errors', label: language === 'ko' ? '일반 오류' : 'Common Errors', icon: AlertCircle },
+    { id: 'specs', label: language === 'ko' ? '파일 규격' : 'File Specs', icon: Music },
     { id: 'faq', label: 'FAQ', icon: HelpCircle }
   ]
 
@@ -31,7 +40,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
       </div>
       
       <div>
-        <h4 className="font-medium mb-2">중요성</h4>
+        <h4 className="font-medium mb-2">{language === 'ko' ? '중요성' : 'Importance'}</h4>
         <ul className="space-y-2">
           {fugaQCHelp.overview.importance.map((item: any, index: number) => (
             <li key={index} className="flex items-start gap-2">
@@ -107,7 +116,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
       ))}
 
       <div className="mt-8">
-        <h4 className="font-medium mb-4">언어별 표기 규칙</h4>
+        <h4 className="font-medium mb-4">{fugaQCHelp.languageRules.title}</h4>
         <div className="space-y-4">
           <div>
             <h5 className="font-medium text-sm mb-2">{fugaQCHelp.languageRules.english.title}</h5>
@@ -145,22 +154,22 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
       <div>
         <h3 className="text-lg font-semibold mb-4">{fugaQCHelp.audioSpecs.title}</h3>
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
-          <h4 className="font-medium mb-3">필수 사양</h4>
+          <h4 className="font-medium mb-3">{language === 'ko' ? '필수 사양' : 'Required Specifications'}</h4>
           <dl className="space-y-2">
             <div className="flex justify-between">
-              <dt className="text-sm text-gray-600 dark:text-gray-400">포맷:</dt>
+              <dt className="text-sm text-gray-600 dark:text-gray-400">{language === 'ko' ? '포맷:' : 'Format:'}</dt>
               <dd className="text-sm font-medium">{fugaQCHelp.audioSpecs.required.format}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-sm text-gray-600 dark:text-gray-400">비트 뎁스:</dt>
+              <dt className="text-sm text-gray-600 dark:text-gray-400">{language === 'ko' ? '비트 뎁스:' : 'Bit Depth:'}</dt>
               <dd className="text-sm font-medium">{fugaQCHelp.audioSpecs.required.bitDepth}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-sm text-gray-600 dark:text-gray-400">샘플레이트:</dt>
+              <dt className="text-sm text-gray-600 dark:text-gray-400">{language === 'ko' ? '샘플레이트:' : 'Sample Rate:'}</dt>
               <dd className="text-sm font-medium">{fugaQCHelp.audioSpecs.required.sampleRate}</dd>
             </div>
             <div className="flex justify-between">
-              <dt className="text-sm text-gray-600 dark:text-gray-400">채널:</dt>
+              <dt className="text-sm text-gray-600 dark:text-gray-400">{language === 'ko' ? '채널:' : 'Channels:'}</dt>
               <dd className="text-sm font-medium">{fugaQCHelp.audioSpecs.required.channels}</dd>
             </div>
           </dl>
@@ -185,7 +194,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
         <h3 className="text-lg font-semibold mb-4">{fugaQCHelp.albumArt.title}</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
-            <h4 className="font-medium mb-3 text-green-700 dark:text-green-400">필수 규격</h4>
+            <h4 className="font-medium mb-3 text-green-700 dark:text-green-400">{language === 'ko' ? '필수 규격' : 'Required Specifications'}</h4>
             <ul className="space-y-1">
               {fugaQCHelp.albumArt.requirements.map((req: any, index: number) => (
                 <li key={index} className="text-sm text-gray-600 dark:text-gray-400">• {req}</li>
@@ -194,7 +203,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
           </div>
           
           <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
-            <h4 className="font-medium mb-3 text-red-700 dark:text-red-400">금지 사항</h4>
+            <h4 className="font-medium mb-3 text-red-700 dark:text-red-400">{language === 'ko' ? '금지 사항' : 'Forbidden'}</h4>
             <ul className="space-y-1">
               {fugaQCHelp.albumArt.forbidden.map((item: any, index: number) => (
                 <li key={index} className="text-sm text-gray-600 dark:text-gray-400">• {item}</li>
@@ -208,7 +217,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
 
   const renderFAQ = () => (
     <div className="space-y-4">
-      <h3 className="text-lg font-semibold mb-4">자주 묻는 질문</h3>
+      <h3 className="text-lg font-semibold mb-4">{language === 'ko' ? '자주 묻는 질문' : 'Frequently Asked Questions'}</h3>
       
       {qcFAQ.map((faq, index) => (
         <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
@@ -255,7 +264,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
       <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold">FUGA QC 가이드</h2>
+          <h2 className="text-xl font-semibold">{language === 'ko' ? 'FUGA QC 가이드' : 'FUGA QC Guide'}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"

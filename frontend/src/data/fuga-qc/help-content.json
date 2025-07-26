@@ -1,291 +1,585 @@
 {
-  "overview": {
-    "title": "FUGA QC (Quality Control) 프로세스란?",
-    "description": "FUGA는 전 세계 주요 음원 유통 플랫폼에서 요구하는 품질 기준입니다. 이 기준을 충족해야 Spotify, Apple Music 등에 음원이 정상적으로 등록됩니다.",
-    "importance": [
-      "음원 거절 방지",
-      "빠른 심사 통과",
-      "글로벌 플랫폼 호환성",
-      "전문적인 메타데이터 품질"
-    ]
-  },
-  
-  "process": {
-    "title": "QC 검증 프로세스",
-    "steps": [
-      {
-        "step": 1,
-        "title": "자동 검증",
-        "description": "입력하신 정보가 실시간으로 검증됩니다",
-        "items": [
-          "특수문자 및 이모지 검사",
-          "언어별 대소문자 규칙",
-          "공백 및 띄어쓰기 검사",
-          "금지된 홍보 문구 검사"
-        ]
-      },
-      {
-        "step": 2,
-        "title": "수동 검토",
-        "description": "N3RVE 팀이 추가로 검토합니다",
-        "items": [
-          "저작권 정보 확인",
-          "아티스트 정보 정확성",
-          "음원 품질 검사",
-          "앨범아트 품질 확인"
-        ]
-      },
-      {
-        "step": 3,
-        "title": "DSP 제출",
-        "description": "검증 완료 후 각 플랫폼에 제출됩니다",
-        "items": [
-          "Spotify 제출 (1-2일)",
-          "Apple Music 제출 (2-3일)",
-          "YouTube Music 제출 (1일)",
-          "기타 플랫폼 (3-5일)"
-        ]
-      }
-    ]
-  },
-  
-  "commonErrors": {
-    "title": "자주 발생하는 QC 오류",
-    "errors": [
-      {
-        "type": "제목 오류",
-        "examples": [
-          "❌ 「사랑해」 → ✅ 사랑해 (특수 괄호 제거)",
-          "❌ L O V E → ✅ LOVE (불필요한 공백 제거)",
-          "❌ ❤️사랑해❤️ → ✅ 사랑해 (이모지 제거)",
-          "❌ **HOT** 신곡 → ✅ 신곡 (홍보 문구 제거)"
-        ]
-      },
-      {
-        "type": "아티스트명 오류",
-        "examples": [
-          "❌ feat. 아이유 → ✅ 피처링 아티스트로 별도 등록",
-          "❌ Various Artists → ✅ 실제 아티스트명 입력",
-          "❌ 미정 → ✅ 정확한 아티스트명 필요",
-          "❌ BTS (방탄소년단) → ✅ BTS 또는 방탄소년단 중 하나만"
-        ]
-      },
-      {
-        "type": "버전 표기 오류",
-        "examples": [
-          "❌ Original Version → ✅ 표기하지 않음",
-          "❌ Remix Ver. → ✅ (Remix)",
-          "❌ [Acoustic] → ✅ (Acoustic)",
-          "❌ Inst → ✅ (Instrumental)"
-        ]
-      },
-      {
-        "type": "저작권 오류",
-        "examples": [
-          "❌ ℗ 2024 YG → ✅ 2024 YG (기호 제거)",
-          "❌ (C) YG → ✅ YG (기호 제거)",
-          "❌ 2025 → ✅ 2024 (미래 연도 불가)",
-          "❌ 빈 칸 → ✅ 반드시 입력 필요"
-        ]
-      }
-    ]
-  },
-  
-  "languageRules": {
-    "title": "언어별 표기 규칙",
-    "korean": {
-      "title": "한국어",
-      "rules": [
-        "불필요한 영어 병기 피하기",
-        "맞춤법 준수",
-        "띄어쓰기 정확히",
-        "특수문자 최소화"
+  "ko": {
+    "overview": {
+      "title": "FUGA QC (Quality Control) 프로세스란?",
+      "description": "FUGA는 전 세계 주요 음원 유통 플랫폼에서 요구하는 품질 기준입니다. 이 기준을 충족해야 Spotify, Apple Music 등에 음원이 정상적으로 등록됩니다.",
+      "importance": [
+        "음원 거절 방지",
+        "빠른 심사 통과",
+        "글로벌 플랫폼 호환성",
+        "전문적인 메타데이터 품질"
       ]
     },
-    "english": {
-      "title": "영어",
-      "rules": [
-        "Title Case 사용 (주요 단어 대문자)",
-        "관사(a, an, the)는 소문자",
-        "전치사(of, in, on)는 소문자",
-        "첫 단어와 마지막 단어는 항상 대문자"
+    
+    "process": {
+      "title": "QC 검증 프로세스",
+      "steps": [
+        {
+          "step": 1,
+          "title": "자동 검증",
+          "description": "입력하신 정보가 실시간으로 검증됩니다",
+          "items": [
+            "특수문자 및 이모지 검사",
+            "언어별 대소문자 규칙",
+            "공백 및 띄어쓰기 검사",
+            "금지된 홍보 문구 검사"
+          ]
+        },
+        {
+          "step": 2,
+          "title": "수동 검토",
+          "description": "N3RVE 팀이 추가로 검토합니다",
+          "items": [
+            "저작권 정보 확인",
+            "아티스트 정보 정확성",
+            "음원 품질 검사",
+            "앨범아트 품질 확인"
+          ]
+        },
+        {
+          "step": 3,
+          "title": "DSP 제출",
+          "description": "검증 완료 후 각 플랫폼에 제출됩니다",
+          "items": [
+            "Spotify 제출 (1-2일)",
+            "Apple Music 제출 (2-3일)",
+            "YouTube Music 제출 (1일)",
+            "기타 플랫폼 (3-5일)"
+          ]
+        }
+      ]
+    },
+    
+    "commonErrors": {
+      "title": "자주 발생하는 QC 오류",
+      "errors": [
+        {
+          "type": "제목 오류",
+          "examples": [
+            "❌ 「사랑해」 → ✅ 사랑해 (특수 괄호 제거)",
+            "❌ L O V E → ✅ LOVE (불필요한 공백 제거)",
+            "❌ ❤️사랑해❤️ → ✅ 사랑해 (이모지 제거)",
+            "❌ **HOT** 신곡 → ✅ 신곡 (홍보 문구 제거)"
+          ]
+        },
+        {
+          "type": "아티스트명 오류",
+          "examples": [
+            "❌ feat. 아이유 → ✅ 피처링 아티스트로 별도 등록",
+            "❌ Various Artists → ✅ 실제 아티스트명 입력",
+            "❌ 미정 → ✅ 정확한 아티스트명 필요",
+            "❌ BTS (방탄소년단) → ✅ BTS 또는 방탄소년단 중 하나만"
+          ]
+        },
+        {
+          "type": "버전 표기 오류",
+          "examples": [
+            "❌ Original Version → ✅ 표기하지 않음",
+            "❌ Remix Ver. → ✅ (Remix)",
+            "❌ [Acoustic] → ✅ (Acoustic)",
+            "❌ Inst → ✅ (Instrumental)"
+          ]
+        },
+        {
+          "type": "저작권 오류",
+          "examples": [
+            "❌ ℗ 2024 YG → ✅ 2024 YG (기호 제거)",
+            "❌ (C) YG → ✅ YG (기호 제거)",
+            "❌ 2025 → ✅ 2024 (미래 연도 불가)",
+            "❌ 빈 칸 → ✅ 반드시 입력 필요"
+          ]
+        }
+      ]
+    },
+    
+    "languageRules": {
+      "title": "언어별 표기 규칙",
+      "korean": {
+        "title": "한국어",
+        "rules": [
+          "불필요한 영어 병기 피하기",
+          "맞춤법 준수",
+          "띄어쓰기 정확히",
+          "특수문자 최소화"
+        ]
+      },
+      "english": {
+        "title": "영어",
+        "rules": [
+          "Title Case 사용 (주요 단어 대문자)",
+          "관사(a, an, the)는 소문자",
+          "전치사(of, in, on)는 소문자",
+          "첫 단어와 마지막 단어는 항상 대문자"
+        ],
+        "examples": [
+          "✅ Love in the Time of Chaos",
+          "✅ The Last of Us",
+          "❌ love in the time of chaos",
+          "❌ The last Of us"
+        ]
+      },
+      "japanese": {
+        "title": "일본어",
+        "rules": [
+          "히라가나, 가타카나, 한자 정확히",
+          "장음 부호 사용 주의",
+          "반각/전각 문자 구분",
+          "로마자 표기 시 헵번식 사용"
+        ]
+      }
+    },
+    
+    "genres": {
+      "title": "장르 가이드라인",
+      "tips": [
+        "메인 장르는 가장 대표적인 것 하나만",
+        "서브장르로 세부 스타일 표현",
+        "K-Pop은 메인 장르로 선택 가능",
+        "클래식은 세부 장르 필수 (Orchestra, Chamber, Solo 등)"
       ],
-      "examples": [
-        "✅ Love in the Time of Chaos",
-        "✅ The Last of Us",
-        "❌ love in the time of chaos",
-        "❌ The last Of us"
-      ]
+      "mapping": {
+        "K-Pop": ["Dance", "Ballad", "Hip Hop", "R&B"],
+        "Rock": ["Alternative", "Indie", "Metal", "Punk"],
+        "Electronic": ["House", "Techno", "Dubstep", "Ambient"],
+        "Jazz": ["Smooth Jazz", "Bebop", "Fusion", "Vocal Jazz"]
+      }
     },
-    "japanese": {
-      "title": "일본어",
-      "rules": [
-        "히라가나, 가타카나, 한자 정확히",
-        "장음 부호 사용 주의",
-        "반각/전각 문자 구분",
-        "로마자 표기 시 헵번식 사용"
-      ]
-    }
-  },
-  
-  "genres": {
-    "title": "장르 가이드라인",
-    "tips": [
-      "메인 장르는 가장 대표적인 것 하나만",
-      "서브장르로 세부 스타일 표현",
-      "K-Pop은 메인 장르로 선택 가능",
-      "클래식은 세부 장르 필수 (Orchestra, Chamber, Solo 등)"
-    ],
-    "mapping": {
-      "K-Pop": ["Dance", "Ballad", "Hip Hop", "R&B"],
-      "Rock": ["Alternative", "Indie", "Metal", "Punk"],
-      "Electronic": ["House", "Techno", "Dubstep", "Ambient"],
-      "Jazz": ["Smooth Jazz", "Bebop", "Fusion", "Vocal Jazz"]
-    }
-  },
-  
-  "metadata": {
-    "title": "메타데이터 작성 가이드",
-    "required": {
-      "title": "필수 정보",
-      "fields": [
-        "아티스트명 (한글/영문)",
-        "앨범명 (한글/영문)",
-        "트랙명 (한글/영문)",
-        "발매일",
-        "저작권 정보",
-        "장르"
-      ]
+    
+    "metadata": {
+      "title": "메타데이터 작성 가이드",
+      "required": {
+        "title": "필수 정보",
+        "fields": [
+          "아티스트명 (한글/영문)",
+          "앨범명 (한글/영문)",
+          "트랙명 (한글/영문)",
+          "발매일",
+          "저작권 정보",
+          "장르"
+        ]
+      },
+      "optional": {
+        "title": "선택 정보 (입력 권장)",
+        "fields": [
+          "ISRC (없으면 자동 생성)",
+          "UPC/EAN (없으면 자동 생성)",
+          "작곡가/작사가 정보",
+          "참여 아티스트 정보",
+          "녹음 장소/날짜"
+        ]
+      }
     },
-    "optional": {
-      "title": "선택 정보 (입력 권장)",
-      "fields": [
-        "ISRC (없으면 자동 생성)",
-        "UPC/EAN (없으면 자동 생성)",
-        "작곡가/작사가 정보",
-        "참여 아티스트 정보",
-        "녹음 장소/날짜"
-      ]
-    }
-  },
-  
-  "audioSpecs": {
-    "title": "음원 파일 규격",
-    "required": {
-      "format": "WAV 또는 FLAC",
-      "bitDepth": "16bit 이상 (24bit 권장)",
-      "sampleRate": "44.1kHz 이상 (48kHz 권장)",
-      "channels": "스테레오 (2채널)"
+    
+    "audioSpecs": {
+      "title": "음원 파일 규격",
+      "required": {
+        "format": "WAV 또는 FLAC",
+        "bitDepth": "16bit 이상 (24bit 권장)",
+        "sampleRate": "44.1kHz 이상 (48kHz 권장)",
+        "channels": "스테레오 (2채널)"
+      },
+      "dolbyAtmos": {
+        "title": "Dolby Atmos (선택)",
+        "requirements": [
+          "ADM BWF 파일 형식",
+          "48kHz/24bit 필수",
+          "별도 스테레오 마스터 필요",
+          "Apple Digital Masters 인증 권장"
+        ]
+      }
     },
-    "dolbyAtmos": {
-      "title": "Dolby Atmos (선택)",
+    
+    "albumArt": {
+      "title": "앨범아트 규격",
       "requirements": [
-        "ADM BWF 파일 형식",
-        "48kHz/24bit 필수",
-        "별도 스테레오 마스터 필요",
-        "Apple Digital Masters 인증 권장"
+        "최소 3000x3000 픽셀",
+        "JPG 또는 PNG 형식",
+        "RGB 색상 모드",
+        "해상도 300dpi 이상",
+        "파일 크기 10MB 이하"
+      ],
+      "forbidden": [
+        "저작권 침해 이미지",
+        "워터마크나 로고",
+        "URL이나 소셜미디어 정보",
+        "선정적이거나 폭력적인 내용",
+        "흐리거나 픽셀이 깨진 이미지"
       ]
-    }
-  },
-  
-  "albumArt": {
-    "title": "앨범아트 규격",
-    "requirements": [
-      "최소 3000x3000 픽셀",
-      "JPG 또는 PNG 형식",
-      "RGB 색상 모드",
-      "해상도 300dpi 이상",
-      "파일 크기 10MB 이하"
-    ],
-    "forbidden": [
-      "저작권 침해 이미지",
-      "워터마크나 로고",
-      "URL이나 소셜미디어 정보",
-      "선정적이거나 폭력적인 내용",
-      "흐리거나 픽셀이 깨진 이미지"
-    ]
-  },
-  
-  "timeline": {
-    "title": "일반적인 처리 시간",
-    "stages": [
+    },
+    
+    "timeline": {
+      "title": "일반적인 처리 시간",
+      "stages": [
+        {
+          "stage": "QC 검증",
+          "time": "1-2 영업일",
+          "description": "메타데이터 및 음원 검증"
+        },
+        {
+          "stage": "DSP 제출",
+          "time": "1일",
+          "description": "각 플랫폼에 전송"
+        },
+        {
+          "stage": "플랫폼 심사",
+          "time": "2-5 영업일",
+          "description": "Spotify, Apple Music 등 자체 심사"
+        },
+        {
+          "stage": "라이브",
+          "time": "총 5-10 영업일",
+          "description": "전 세계 스트리밍 시작"
+        }
+      ]
+    },
+    
+    "tips": {
+      "title": "Pro Tips",
+      "items": [
+        "발매일은 최소 2-3주 후로 설정하세요",
+        "금요일 발매가 차트 집계에 유리합니다",
+        "사전 예약(Pre-save) 캠페인을 고려하세요",
+        "크레딧 정보는 최대한 상세히 입력하세요",
+        "시리즈 앨범은 일관된 네이밍을 사용하세요"
+      ]
+    },
+    
+    "resultGuide": {
+      "error": {
+        "title": "반드시 수정이 필요한 오류",
+        "action": "제출 전 모든 오류를 수정해주세요",
+        "icon": "🚫"
+      },
+      "warning": {
+        "title": "권장 수정 사항",
+        "action": "가능하면 수정하는 것이 좋습니다",
+        "icon": "⚠️"
+      },
+      "info": {
+        "title": "참고 사항",
+        "action": "검토 후 필요시 수정하세요",
+        "icon": "ℹ️"
+      },
+      "success": {
+        "title": "QC 검증 통과",
+        "action": "제출 준비가 완료되었습니다",
+        "icon": "✅"
+      }
+    },
+    
+    "faq": [
       {
-        "stage": "QC 검증",
-        "time": "1-2 영업일",
-        "description": "메타데이터 및 음원 검증"
+        "question": "QC 검증에 실패하면 어떻게 되나요?",
+        "answer": "실패한 항목을 수정하고 다시 제출하시면 됩니다. 추가 비용은 없습니다."
       },
       {
-        "stage": "DSP 제출",
-        "time": "1일",
-        "description": "각 플랫폼에 전송"
+        "question": "특수문자를 꼭 사용하고 싶어요",
+        "answer": "일부 특수문자(!?.,- 등)는 허용됩니다. 하지만 이모지나 특수 괄호는 사용할 수 없습니다."
       },
       {
-        "stage": "플랫폼 심사",
-        "time": "2-5 영업일",
-        "description": "Spotify, Apple Music 등 자체 심사"
+        "question": "Feat. 아티스트는 어떻게 표기하나요?",
+        "answer": "트랙 정보에서 \"피처링 아티스트\"로 별도 등록하세요. 제목에는 표기하지 않습니다."
       },
       {
-        "stage": "라이브",
-        "time": "총 5-10 영업일",
-        "description": "전 세계 스트리밍 시작"
+        "question": "여러 버전을 한 번에 등록할 수 있나요?",
+        "answer": "네, 가능합니다. 각 버전을 별도 트랙으로 등록하고 버전 정보를 명확히 표기하세요."
+      },
+      {
+        "question": "ISRC가 뭔가요? 꼭 필요한가요?",
+        "answer": "International Standard Recording Code로, 음원의 고유 식별 코드입니다. 없으면 자동 생성되므로 걱정하지 마세요."
       }
     ]
   },
   
-  "tips": {
-    "title": "Pro Tips",
-    "items": [
-      "발매일은 최소 2-3주 후로 설정하세요",
-      "금요일 발매가 차트 집계에 유리합니다",
-      "사전 예약(Pre-save) 캠페인을 고려하세요",
-      "크레딧 정보는 최대한 상세히 입력하세요",
-      "시리즈 앨범은 일관된 네이밍을 사용하세요"
+  "en": {
+    "overview": {
+      "title": "What is FUGA QC (Quality Control) Process?",
+      "description": "FUGA is a quality standard required by major global music distribution platforms. Your music must meet these standards to be successfully registered on Spotify, Apple Music, and other platforms.",
+      "importance": [
+        "Prevent music rejection",
+        "Fast review approval",
+        "Global platform compatibility",
+        "Professional metadata quality"
+      ]
+    },
+    
+    "process": {
+      "title": "QC Verification Process",
+      "steps": [
+        {
+          "step": 1,
+          "title": "Automated Verification",
+          "description": "Your input is verified in real-time",
+          "items": [
+            "Special characters and emoji check",
+            "Language-specific capitalization rules",
+            "Spacing and whitespace check",
+            "Prohibited promotional text check"
+          ]
+        },
+        {
+          "step": 2,
+          "title": "Manual Review",
+          "description": "N3RVE team conducts additional review",
+          "items": [
+            "Copyright information verification",
+            "Artist information accuracy",
+            "Audio quality inspection",
+            "Album art quality check"
+          ]
+        },
+        {
+          "step": 3,
+          "title": "DSP Submission",
+          "description": "Submitted to platforms after verification",
+          "items": [
+            "Spotify submission (1-2 days)",
+            "Apple Music submission (2-3 days)",
+            "YouTube Music submission (1 day)",
+            "Other platforms (3-5 days)"
+          ]
+        }
+      ]
+    },
+    
+    "commonErrors": {
+      "title": "Common QC Errors",
+      "errors": [
+        {
+          "type": "Title Errors",
+          "examples": [
+            "❌ 「Love」 → ✅ Love (Remove special brackets)",
+            "❌ L O V E → ✅ LOVE (Remove unnecessary spaces)",
+            "❌ ❤️Love❤️ → ✅ Love (Remove emojis)",
+            "❌ **HOT** New Track → ✅ New Track (Remove promotional text)"
+          ]
+        },
+        {
+          "type": "Artist Name Errors",
+          "examples": [
+            "❌ feat. IU → ✅ Register as featuring artist separately",
+            "❌ Various Artists → ✅ Enter actual artist name",
+            "❌ TBD → ✅ Exact artist name required",
+            "❌ BTS (Bangtan Boys) → ✅ Use either BTS or Bangtan Boys"
+          ]
+        },
+        {
+          "type": "Version Notation Errors",
+          "examples": [
+            "❌ Original Version → ✅ Do not indicate",
+            "❌ Remix Ver. → ✅ (Remix)",
+            "❌ [Acoustic] → ✅ (Acoustic)",
+            "❌ Inst → ✅ (Instrumental)"
+          ]
+        },
+        {
+          "type": "Copyright Errors",
+          "examples": [
+            "❌ ℗ 2024 YG → ✅ 2024 YG (Remove symbol)",
+            "❌ (C) YG → ✅ YG (Remove symbol)",
+            "❌ 2025 → ✅ 2024 (Future years not allowed)",
+            "❌ Empty field → ✅ Must be filled"
+          ]
+        }
+      ]
+    },
+    
+    "languageRules": {
+      "title": "Language-Specific Writing Rules",
+      "korean": {
+        "title": "Korean",
+        "rules": [
+          "Avoid unnecessary English annotations",
+          "Follow proper spelling",
+          "Use correct spacing",
+          "Minimize special characters"
+        ]
+      },
+      "english": {
+        "title": "English",
+        "rules": [
+          "Use Title Case (capitalize major words)",
+          "Articles (a, an, the) in lowercase",
+          "Prepositions (of, in, on) in lowercase",
+          "First and last words always capitalized"
+        ],
+        "examples": [
+          "✅ Love in the Time of Chaos",
+          "✅ The Last of Us",
+          "❌ love in the time of chaos",
+          "❌ The last Of us"
+        ]
+      },
+      "japanese": {
+        "title": "Japanese",
+        "rules": [
+          "Use hiragana, katakana, kanji correctly",
+          "Be careful with long vowel marks",
+          "Distinguish half-width/full-width characters",
+          "Use Hepburn romanization"
+        ]
+      }
+    },
+    
+    "genres": {
+      "title": "Genre Guidelines",
+      "tips": [
+        "Select only one most representative main genre",
+        "Express detailed style with sub-genres",
+        "K-Pop can be selected as main genre",
+        "Classical requires sub-genre (Orchestra, Chamber, Solo, etc.)"
+      ],
+      "mapping": {
+        "K-Pop": ["Dance", "Ballad", "Hip Hop", "R&B"],
+        "Rock": ["Alternative", "Indie", "Metal", "Punk"],
+        "Electronic": ["House", "Techno", "Dubstep", "Ambient"],
+        "Jazz": ["Smooth Jazz", "Bebop", "Fusion", "Vocal Jazz"]
+      }
+    },
+    
+    "metadata": {
+      "title": "Metadata Writing Guide",
+      "required": {
+        "title": "Required Information",
+        "fields": [
+          "Artist name (Korean/English)",
+          "Album name (Korean/English)",
+          "Track name (Korean/English)",
+          "Release date",
+          "Copyright information",
+          "Genre"
+        ]
+      },
+      "optional": {
+        "title": "Optional Information (Recommended)",
+        "fields": [
+          "ISRC (auto-generated if empty)",
+          "UPC/EAN (auto-generated if empty)",
+          "Composer/Lyricist information",
+          "Contributing artist information",
+          "Recording location/date"
+        ]
+      }
+    },
+    
+    "audioSpecs": {
+      "title": "Audio File Specifications",
+      "required": {
+        "format": "WAV or FLAC",
+        "bitDepth": "16bit or higher (24bit recommended)",
+        "sampleRate": "44.1kHz or higher (48kHz recommended)",
+        "channels": "Stereo (2 channels)"
+      },
+      "dolbyAtmos": {
+        "title": "Dolby Atmos (Optional)",
+        "requirements": [
+          "ADM BWF file format",
+          "48kHz/24bit required",
+          "Separate stereo master needed",
+          "Apple Digital Masters certification recommended"
+        ]
+      }
+    },
+    
+    "albumArt": {
+      "title": "Album Art Specifications",
+      "requirements": [
+        "Minimum 3000x3000 pixels",
+        "JPG or PNG format",
+        "RGB color mode",
+        "300dpi or higher resolution",
+        "File size under 10MB"
+      ],
+      "forbidden": [
+        "Copyright infringing images",
+        "Watermarks or logos",
+        "URLs or social media information",
+        "Explicit or violent content",
+        "Blurry or pixelated images"
+      ]
+    },
+    
+    "timeline": {
+      "title": "Typical Processing Time",
+      "stages": [
+        {
+          "stage": "QC Verification",
+          "time": "1-2 business days",
+          "description": "Metadata and audio verification"
+        },
+        {
+          "stage": "DSP Submission",
+          "time": "1 day",
+          "description": "Transmission to each platform"
+        },
+        {
+          "stage": "Platform Review",
+          "time": "2-5 business days",
+          "description": "Spotify, Apple Music internal review"
+        },
+        {
+          "stage": "Live",
+          "time": "Total 5-10 business days",
+          "description": "Global streaming begins"
+        }
+      ]
+    },
+    
+    "tips": {
+      "title": "Pro Tips",
+      "items": [
+        "Set release date at least 2-3 weeks ahead",
+        "Friday releases are favorable for chart counting",
+        "Consider pre-save campaigns",
+        "Enter credit information as detailed as possible",
+        "Use consistent naming for series albums"
+      ]
+    },
+    
+    "resultGuide": {
+      "error": {
+        "title": "Errors requiring correction",
+        "action": "Fix all errors before submission",
+        "icon": "🚫"
+      },
+      "warning": {
+        "title": "Recommended corrections",
+        "action": "It's better to fix if possible",
+        "icon": "⚠️"
+      },
+      "info": {
+        "title": "Reference information",
+        "action": "Review and modify if necessary",
+        "icon": "ℹ️"
+      },
+      "success": {
+        "title": "QC Verification Passed",
+        "action": "Ready for submission",
+        "icon": "✅"
+      }
+    },
+    
+    "faq": [
+      {
+        "question": "What happens if QC verification fails?",
+        "answer": "Simply fix the failed items and resubmit. There are no additional fees."
+      },
+      {
+        "question": "I really want to use special characters",
+        "answer": "Some special characters (!?.,- etc.) are allowed. However, emojis and special brackets cannot be used."
+      },
+      {
+        "question": "How do I indicate featuring artists?",
+        "answer": "Register them separately as \"featuring artists\" in track information. Do not include in the title."
+      },
+      {
+        "question": "Can I register multiple versions at once?",
+        "answer": "Yes, you can. Register each version as a separate track and clearly indicate version information."
+      },
+      {
+        "question": "What is ISRC? Is it necessary?",
+        "answer": "It's the International Standard Recording Code, a unique identifier for recordings. It will be auto-generated if you don't have one, so don't worry."
+      }
     ]
-  },
-  
-  "resultGuide": {
-    "error": {
-      "title": "반드시 수정이 필요한 오류",
-      "action": "제출 전 모든 오류를 수정해주세요",
-      "icon": "🚫"
-    },
-    "warning": {
-      "title": "권장 수정 사항",
-      "action": "가능하면 수정하는 것이 좋습니다",
-      "icon": "⚠️"
-    },
-    "info": {
-      "title": "참고 사항",
-      "action": "검토 후 필요시 수정하세요",
-      "icon": "ℹ️"
-    },
-    "success": {
-      "title": "QC 검증 통과",
-      "action": "제출 준비가 완료되었습니다",
-      "icon": "✅"
-    }
-  },
-  
-  "faq": [
-    {
-      "question": "QC 검증에 실패하면 어떻게 되나요?",
-      "answer": "실패한 항목을 수정하고 다시 제출하시면 됩니다. 추가 비용은 없습니다."
-    },
-    {
-      "question": "특수문자를 꼭 사용하고 싶어요",
-      "answer": "일부 특수문자(!?.,- 등)는 허용됩니다. 하지만 이모지나 특수 괄호는 사용할 수 없습니다."
-    },
-    {
-      "question": "Feat. 아티스트는 어떻게 표기하나요?",
-      "answer": "트랙 정보에서 \"피처링 아티스트\"로 별도 등록하세요. 제목에는 표기하지 않습니다."
-    },
-    {
-      "question": "여러 버전을 한 번에 등록할 수 있나요?",
-      "answer": "네, 가능합니다. 각 버전을 별도 트랙으로 등록하고 버전 정보를 명확히 표기하세요."
-    },
-    {
-      "question": "ISRC가 뭔가요? 꼭 필요한가요?",
-      "answer": "International Standard Recording Code로, 음원의 고유 식별 코드입니다. 없으면 자동 생성되므로 걱정하지 마세요."
-    }
-  ]
+  }
 }
