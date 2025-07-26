@@ -3,27 +3,55 @@ import { useLanguageStore } from '@/store/language.store'
 import useSafeStore from '@/hooks/useSafeStore'
 import { ValidationProvider } from '@/contexts/ValidationContext'
 import ValidatedInput from '@/components/ValidatedInput'
-import { CheckCircle, AlertCircle } from 'lucide-react'
+import FugaQCHelpModal from '@/components/modals/FugaQCHelpModal'
+import { CheckCircle, AlertCircle, HelpCircle, Globe } from 'lucide-react'
 
 function RealtimeQCTestContent() {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const setLanguage = useLanguageStore((state) => state.setLanguage)
   const [albumTitle, setAlbumTitle] = useState('')
   const [trackTitle, setTrackTitle] = useState('')
   const [artistName, setArtistName] = useState('')
+  const [showQCHelp, setShowQCHelp] = useState(false)
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
       <div className="max-w-3xl mx-auto">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {language === 'ko' ? '실시간 QC 검증 테스트' : 'Real-time QC Validation Test'}
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 mb-8">
-            {language === 'ko' 
-              ? '입력하면서 실시간으로 QC 검증이 작동하는지 확인하세요' 
-              : 'Check if QC validation works in real-time as you type'
-            }
-          </p>
+          {/* Header with Language Toggle and Help Button */}
+          <div className="flex items-start justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                {language === 'ko' ? '실시간 QC 검증 테스트' : 'Real-time QC Validation Test'}
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400">
+                {language === 'ko' 
+                  ? '입력하면서 실시간으로 QC 검증이 작동하는지 확인하세요' 
+                  : 'Check if QC validation works in real-time as you type'
+                }
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {/* Language Toggle */}
+              <button
+                onClick={() => setLanguage(language === 'ko' ? 'en' : 'ko')}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                title={language === 'ko' ? '언어 전환' : 'Switch Language'}
+              >
+                <Globe className="w-4 h-4" />
+                <span className="text-sm font-medium">{language === 'ko' ? 'EN' : '한국어'}</span>
+              </button>
+              {/* QC Help Button */}
+              <button
+                onClick={() => setShowQCHelp(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-n3rve-500 hover:bg-n3rve-600 text-white rounded-lg transition-colors"
+                title={language === 'ko' ? 'QC 도움말' : 'QC Help'}
+              >
+                <HelpCircle className="w-4 h-4" />
+                <span className="text-sm font-medium">{language === 'ko' ? 'QC 도움말' : 'QC Help'}</span>
+              </button>
+            </div>
+          </div>
 
           <div className="space-y-8">
             {/* Album Title Test */}
@@ -124,6 +152,12 @@ function RealtimeQCTestContent() {
           </div>
         </div>
       </div>
+      
+      {/* QC Help Modal */}
+      <FugaQCHelpModal 
+        isOpen={showQCHelp} 
+        onClose={() => setShowQCHelp(false)} 
+      />
     </div>
   )
 }
