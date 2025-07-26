@@ -2,8 +2,15 @@
 // This file now loads content from JSON configuration
 
 import { getQCHelp } from '../utils/fugaQCLoader'
+import { useLanguageStore } from '../store/language.store'
 
-export const fugaQCHelp = getQCHelp()
+// Get the current language from the store
+const getCurrentLanguage = (): 'ko' | 'en' => {
+  const language = useLanguageStore.getState().language
+  return language || 'ko'
+}
+
+export const fugaQCHelp = getQCHelp(getCurrentLanguage())
 
 // Re-export specific sections for backward compatibility
 export const qcResultGuide = fugaQCHelp.resultGuide
