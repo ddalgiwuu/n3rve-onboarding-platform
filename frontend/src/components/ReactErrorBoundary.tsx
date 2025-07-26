@@ -29,13 +29,11 @@ export default class ReactErrorBoundary extends Component<Props, State> {
       
       console.error('React Context Error:', error)
       console.error('Error Info:', errorInfo)
+      console.error('This may be due to cached vendor files. Please clear browser cache and reload.')
       
-      // Try to reinitialize React if possible
-      if (typeof window !== 'undefined') {
-        import('../utils/reactPolyfill').then(module => {
-          module.ensureReactCompatibility()
-        })
-      }
+      // Log additional context for debugging
+      console.error('Error Stack:', error.stack)
+      console.error('Component Stack:', errorInfo.componentStack)
     }
   }
 
@@ -56,8 +54,13 @@ export default class ReactErrorBoundary extends Component<Props, State> {
                 <h2 className="text-lg font-semibold text-gray-900">Application Loading Error</h2>
               </div>
               <p className="text-gray-600 mb-4">
-                There was an issue initializing the application. This is likely a temporary compatibility issue.
+                There was an issue initializing the application. This is likely due to cached vendor files. Please try:
               </p>
+              <div className="text-sm text-gray-600 mb-4 space-y-1">
+                <p>1. Clear your browser cache (Ctrl+F5 / Cmd+Shift+R)</p>
+                <p>2. Try incognito/private browsing mode</p>
+                <p>3. Wait a few minutes for CDN cache to update</p>
+              </div>
               <button 
                 onClick={() => window.location.reload()}
                 className="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"

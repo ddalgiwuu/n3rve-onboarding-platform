@@ -3,14 +3,22 @@
 
 import React from 'react'
 
-// Force React to be available immediately in the global scope
+// Enhanced React 19 initialization with robust error handling
 if (typeof window !== 'undefined') {
-  // Set React globally as early as possible
+  // Set React globally as early as possible with validation
   (window as any).React = React
   
-  // Ensure createContext is immediately available
+  // Critical: Ensure createContext is immediately available
   if (React.createContext) {
     (window as any).createContext = React.createContext
+  } else {
+    console.error('CRITICAL: React.createContext is not available')
+  }
+  
+  // Validate React initialization
+  if (!(window as any).React || !(window as any).createContext) {
+    console.error('CRITICAL: React initialization failed')
+    throw new Error('React initialization failed - createContext not available')
   }
   
   // Create a synthetic React object for libraries expecting specific structure
