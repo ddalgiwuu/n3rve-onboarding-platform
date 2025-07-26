@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Plus, X, Languages, ChevronDown, Sparkles, Check } from 'lucide-react'
+import { useRealtimeValidation } from '@/utils/inputValidation'
 
 interface Translation {
   id: string
@@ -60,6 +61,7 @@ export default function TrackTranslationUI({
   const [titleValue, setTitleValue] = useState('')
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const { validateTrackTitle } = useRealtimeValidation()
 
   const addTranslation = () => {
     if (selectedLanguage && titleValue.trim()) {
@@ -263,6 +265,12 @@ export default function TrackTranslationUI({
                 type="text"
                 value={titleValue}
                 onChange={(e) => setTitleValue(e.target.value)}
+                onBlur={(e) => {
+                  const result = validateTrackTitle(e.target.value)
+                  if (result.formattedValue && result.formattedValue !== e.target.value) {
+                    setTitleValue(result.formattedValue)
+                  }
+                }}
                 onKeyPress={(e) => e.key === 'Enter' && addTranslation()}
                 placeholder={language === 'ko' ? '번역 입력...' : 'Enter translation...'}
                 disabled={!selectedLanguage}
@@ -321,6 +329,12 @@ export default function TrackTranslationUI({
                     type="text"
                     value={translation.title}
                     onChange={(e) => updateTranslation(translation.id, e.target.value)}
+                    onBlur={(e) => {
+                      const result = validateTrackTitle(e.target.value)
+                      if (result.formattedValue && result.formattedValue !== e.target.value) {
+                        updateTranslation(translation.id, result.formattedValue)
+                      }
+                    }}
                     className="w-full px-2 py-1 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-purple-500"
                   />
                 </div>

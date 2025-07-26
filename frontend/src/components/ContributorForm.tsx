@@ -10,6 +10,11 @@ import contributorRolesData from '@/data/contributorRoles.json'
 import contributorRolesKoData from '@/data/contributorRolesKo.json'
 import instrumentsData from '@/data/instruments.json'
 import instrumentsKoData from '@/data/instrumentsKo.json'
+import { validateArtistName } from '@/utils/inputValidation'
+import { toast } from 'react-hot-toast'
+import ValidatedInput from './ValidatedInput'
+import { ValidationProvider, useValidationContext } from '@/contexts/ValidationContext'
+// EnhancedValidationWarning is handled through ValidatedInput component
 
 const contributorRolesKo = contributorRolesKoData as { translations: Record<string, string> }
 const instrumentsKo = instrumentsKoData as { translations: Record<string, string> }
@@ -69,7 +74,7 @@ const identifierTypes = {
   }
 }
 
-export default function ContributorForm({ contributor, onSave, onCancel }: ContributorFormProps) {
+function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFormProps) {
   const language = useSafeStore(useLanguageStore, (state) => state.language)
   const t = (ko: string, en: string, ja?: string) => {
     switch (language) {
@@ -94,9 +99,18 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
 
   const [searchQuery, setSearchQuery] = useState({ roles: '', instruments: '' })
   const [showDropdown, setShowDropdown] = useState({ roles: false, instruments: false })
+  const [nameError, setNameError] = useState<string | null>(null)
+  const { hasErrors, getFieldWarnings } = useValidationContext()
   
   const rolesRef = useRef<HTMLDivElement>(null)
   const instrumentsRef = useRef<HTMLDivElement>(null)
+  
+  // Check if contributor is a composer/lyricist
+  const isComposerOrLyricist = () => {
+    return formData.roles.some(role => 
+      ['composer', 'lyricist', 'songwriter', 'writer'].includes(role)
+    )
+  }
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -206,12 +220,39 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
 
   // Toggle role/instrument selection with auto-clear
   const toggleRole = (roleId: string) => {
+    const newRoles = formData.roles.includes(roleId)
+      ? formData.roles.filter(r => r !== roleId)
+      : [...formData.roles, roleId]
+    
     setFormData(prev => ({
       ...prev,
-      roles: prev.roles.includes(roleId)
-        ? prev.roles.filter(r => r !== roleId)
-        : [...prev.roles, roleId]
+      roles: newRoles
     }))
+    
+    // Check if composer/lyricist role is being added/removed
+    const wasComposerLyricist = isComposerOrLyricist()
+    const willBeComposerLyricist = newRoles.some(role => 
+      ['composer', 'lyricist', 'songwriter', 'writer'].includes(role)
+    )
+    
+    // If changing to/from composer/lyricist, revalidate the name
+    if (wasComposerLyricist !== willBeComposerLyricist && formData.name) {
+      const result = validateArtistName(formData.name, willBeComposerLyricist)
+      if (!result.isValid) {
+        const errorWarning = result.warnings.find(w => w.type === 'error')
+        setNameError(errorWarning?.message || null)
+        if (willBeComposerLyricist) {
+          toast.error(t(
+            '작곡가/작사가는 풀네임을 사용해야 합니다',
+            'Composers/lyricists must use their full name',
+            '作曲家/作詞家はフルネームを使用する必要があります'
+          ))
+        }
+      } else {
+        setNameError(null)
+      }
+    }
+    
     // Clear search input after selection
     setSearchQuery(prev => ({ ...prev, roles: '' }))
     setShowDropdown(prev => ({ ...prev, roles: false }))
@@ -257,12 +298,27 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
   // Save handler
   const handleSave = () => {
     if (!formData.name.trim()) {
-      alert(t('기여자 이름을 입력해주세요', 'Please enter the contributor name', 'コントリビューター名を入力してください'))
+      toast.error(t('기여자 이름을 입력해주세요', 'Please enter the contributor name', 'コントリビューター名を入력してください'))
       return
     }
 
+    // Check for validation errors
+    const fieldId = `contributor-name-${formData.id}`
+    if (hasErrors(fieldId)) {
+      toast.error(t('입력 오류를 수정해주세요', 'Please fix the input errors', '入力エラーを修正してください'))
+      return
+    }
+
+    // Get any active warnings and apply suggestions if accepted
+    const warnings = getFieldWarnings(fieldId)
+    const suggestionWarning = warnings.find(w => w.suggestedValue && w.type === 'suggestion')
+    if (suggestionWarning && suggestionWarning.suggestedValue) {
+      // Apply the suggested value
+      formData.name = suggestionWarning.suggestedValue
+    }
+
     if (formData.roles.length === 0) {
-      alert(t('최소 하나의 역할을 선택해주세요', 'Please select at least one role', '少なくとも1つの役割を選択してください'))
+      toast.error(t('최소 하나의 역할을 선택해주세요', 'Please select at least one role', '少なくとも1つの役割を選択してください'))
       return
     }
 
@@ -272,8 +328,17 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
     )
 
     if (invalidIdentifiers.length > 0) {
-      alert(t('올바르지 않은 식별자가 있습니다', 'There are invalid identifiers', '無効な識別子があります'))
+      toast.error(t('올바르지 않은 식별자가 있습니다', 'There are invalid identifiers', '無効な識別子があります'))
       return
+    }
+
+    // Show guidance for Spotify/Apple Music registration
+    if (!formData.isNewArtist) {
+      toast(t(
+        '💡 아티스트 이름이 Spotify/Apple Music에 등록된 이름과 동일한지 확인하세요',
+        '💡 Make sure the artist name matches the one registered on Spotify/Apple Music',
+        '💡 アーティスト名がSpotify/Apple Musicに登録されている名前と一致することを確認してください'
+      ), { icon: '💡', duration: 4000 })
     }
 
     onSave(formData)
@@ -310,26 +375,38 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    {t('이름', 'Name', '名前')} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
+                  <ValidatedInput
+                    fieldId={`contributor-name-${formData.id}`}
+                    validationType="artist"
+                    validationOptions={{ isComposer: isComposerOrLyricist() }}
+                    label={<>{t('이름', 'Name', '名前')} <span className="text-red-500">*</span></>}
                     value={formData.name}
-                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
+                    onValueChange={(value) => {
+                      setFormData(prev => ({ ...prev, name: value }))
+                    }}
                     placeholder={t('아티스트/기여자 이름', 'Artist/Contributor Name', 'アーティスト/コントリビューター名')}
+                    language={language === 'ja' ? 'en' : language}
+                    showInlineWarnings={true}
                   />
                   
-                  {/* Spotify Full Name Policy Alert */}
-                  {(formData.roles.includes('composer') || 
-                    formData.roles.includes('lyricist') || 
-                    formData.roles.includes('songwriter') ||
-                    formData.roles.includes('writer')) && (
-                    <div className="mt-2 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                  {/* Spotify Full Name Policy Alert - Enhanced with validation */}
+                  {isComposerOrLyricist() && (
+                    <div className={`mt-2 p-3 rounded-lg ${
+                      nameError && isComposerOrLyricist() 
+                        ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' 
+                        : 'bg-yellow-50 dark:bg-yellow-900/20'
+                    }`}>
                       <div className="flex items-start gap-2">
-                        <AlertCircle className="w-4 h-4 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
-                        <div className="text-xs text-yellow-800 dark:text-yellow-200">
+                        <AlertCircle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
+                          nameError && isComposerOrLyricist()
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-yellow-600 dark:text-yellow-400'
+                        }`} />
+                        <div className={`text-xs ${
+                          nameError && isComposerOrLyricist()
+                            ? 'text-red-800 dark:text-red-200'
+                            : 'text-yellow-800 dark:text-yellow-200'
+                        }`}>
                           <p className="font-medium mb-1">
                             {t('Spotify 정책 안내', 'Spotify Policy Notice', 'Spotifyポリシー通知')}
                           </p>
@@ -340,7 +417,11 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                               '作曲家、作詞家の場合、必ずフルネームを入力する必要があります。芸名や略称は使用できません。'
                             )}
                           </p>
-                          <p className="mt-1 text-yellow-700 dark:text-yellow-300">
+                          <p className={`mt-1 ${
+                            nameError && isComposerOrLyricist()
+                              ? 'text-red-700 dark:text-red-300'
+                              : 'text-yellow-700 dark:text-yellow-300'
+                          }`}>
                             {t('예: ❌ JD, DJ Kim → ✅ John Doe, Kim Minsu', 'Example: ❌ JD, DJ Kim → ✅ John Doe, Kim Minsu', '例：❌ JD, DJ Kim → ✅ John Doe, Kim Minsu')}
                           </p>
                         </div>
@@ -444,6 +525,10 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
                               type="text"
                               value={translation.name}
                               onChange={(e) => updateTranslation(translation.id, 'name', e.target.value)}
+                              onBlur={() => {
+                                // Validation is now handled through the ValidatedInput component
+                                // No need for manual formatting here
+                              }}
                               className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500"
                               placeholder={translation.language === 'ja' ? 'カタカナまたはひらがな' : t('번역된 이름', 'Translated Name', '翻訳された名前')}
                             />
@@ -786,5 +871,14 @@ export default function ContributorForm({ contributor, onSave, onCancel }: Contr
         </div>
       </div>
     </div>
+  )
+}
+
+// Export the wrapped component
+export default function ContributorForm(props: ContributorFormProps) {
+  return (
+    <ValidationProvider>
+      <ContributorFormContent {...props} />
+    </ValidationProvider>
   )
 }

@@ -8,6 +8,12 @@ import ReleaseDateSettings from './ReleaseDateSettings'
 import CopyrightInfo from './CopyrightInfo'
 import MobileFormNav from './MobileFormNav'
 import TrackList from './TrackList'
+import ValidationWarning, { ValidationWarning as ValidationWarningType } from './ValidationWarning'
+import { 
+  validateAlbumTitle, 
+  validateArtistName, 
+  createValidationState 
+} from '@/utils/inputValidation'
 // import { v4 as uuidv4 } from 'uuid' // Reserved for future use
 
 // Form sections - reorganized from 12-13 steps to 7 logical groups
@@ -136,7 +142,11 @@ export default function ReleaseFormV2() {
   const [showContributorForm, setShowContributorForm] = useState(false)
   const [editingContributor, setEditingContributor] = useState<any>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
+  const [validationWarnings, setValidationWarnings] = useState<Record<string, ValidationWarningType[]>>({})
   const [completedSections, setCompletedSections] = useState<number[]>([])
+  
+  // Validation state management
+  const validationState = createValidationState()
 
   // Auto-save draft
   useEffect(() => {
@@ -203,6 +213,69 @@ export default function ReleaseFormV2() {
 
   // Progress indicator
   const progress = ((currentSection + 1) / formSections.length) * 100
+
+  // Validation handlers
+  const handleFieldValidation = (field: string, value: string, validationType: 'album' | 'artist' | 'track' = 'album') => {
+    let result;
+    switch (validationType) {
+      case 'album':
+        result = validateAlbumTitle(value);
+        break;
+      case 'artist':
+        result = validateArtistName(value);
+        break;
+      default:
+        result = validateAlbumTitle(value);
+    }
+
+    const activeWarnings = validationState.filterActiveWarnings(result.warnings);
+    setValidationWarnings(prev => ({
+      ...prev,
+      [field]: activeWarnings
+    }));
+
+    // Check for errors
+    const hasError = activeWarnings.some(w => w.type === 'error');
+    if (hasError) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [field]: activeWarnings.find(w => w.type === 'error')?.message || ''
+      }));
+    } else {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[field];
+        return newErrors;
+      });
+    }
+
+    return result;
+  };
+
+  const handleAcceptSuggestion = (warning: ValidationWarningType) => {
+    if (warning.suggestedValue) {
+      switch (warning.field) {
+        case 'albumTitle':
+          setFormData(prev => ({ ...prev, albumTitle: warning.suggestedValue! }));
+          handleFieldValidation('albumTitle', warning.suggestedValue, 'album');
+          break;
+        case 'artistName':
+        case 'primaryArtist':
+          setFormData(prev => ({ ...prev, primaryArtist: warning.suggestedValue! }));
+          handleFieldValidation('primaryArtist', warning.suggestedValue, 'artist');
+          break;
+      }
+    }
+    validationState.dismissWarning(warning.id);
+  };
+
+  const handleDismissWarning = (warning: ValidationWarningType) => {
+    validationState.dismissWarning(warning.id);
+    setValidationWarnings(prev => ({
+      ...prev,
+      [warning.field]: prev[warning.field]?.filter(w => w.id !== warning.id) || []
+    }));
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-4">
@@ -323,13 +396,19 @@ export default function ReleaseFormV2() {
                 type="text"
                 value={formData.primaryArtist}
                 onChange={(e) => setFormData(prev => ({ ...prev, primaryArtist: e.target.value }))}
+                onBlur={(e) => handleFieldValidation('primaryArtist', e.target.value, 'artist')}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 ${
                   validationErrors.primaryArtist ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
                 placeholder={t('아티스트명을 입력하세요', 'Enter artist name')}
               />
-              {validationErrors.primaryArtist && (
-                <p className="mt-1 text-sm text-red-500">{validationErrors.primaryArtist}</p>
+              {validationWarnings.primaryArtist && validationWarnings.primaryArtist.length > 0 && (
+                <ValidationWarning
+                  warnings={validationWarnings.primaryArtist}
+                  onAcceptSuggestion={handleAcceptSuggestion}
+                  onDismissWarning={handleDismissWarning}
+                  language={language as 'ko' | 'en'}
+                />
               )}
             </div>
 
@@ -342,13 +421,19 @@ export default function ReleaseFormV2() {
                 type="text"
                 value={formData.albumTitle}
                 onChange={(e) => setFormData(prev => ({ ...prev, albumTitle: e.target.value }))}
+                onBlur={(e) => handleFieldValidation('albumTitle', e.target.value, 'album')}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 ${
                   validationErrors.albumTitle ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                 }`}
                 placeholder={t('앨범 타이틀을 입력하세요', 'Enter album title')}
               />
-              {validationErrors.albumTitle && (
-                <p className="mt-1 text-sm text-red-500">{validationErrors.albumTitle}</p>
+              {validationWarnings.albumTitle && validationWarnings.albumTitle.length > 0 && (
+                <ValidationWarning
+                  warnings={validationWarnings.albumTitle}
+                  onAcceptSuggestion={handleAcceptSuggestion}
+                  onDismissWarning={handleDismissWarning}
+                  language={language as 'ko' | 'en'}
+                />
               )}
             </div>
 
