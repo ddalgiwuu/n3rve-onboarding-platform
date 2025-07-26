@@ -9,23 +9,32 @@ export default defineConfig({
     sourcemap: process.env.NODE_ENV === 'development',
     rollupOptions: {
       output: {
+        // Force complete cache invalidation with timestamp + random
+        entryFileNames: `assets/[name]-[hash]-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.js`,
+        chunkFileNames: `assets/[name]-[hash]-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.js`,
+        assetFileNames: `assets/[name]-[hash]-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.[ext]`,
         manualChunks: (id) => {
-          // Vendor chunks for better caching
+          // Vendor chunks for better caching and React compatibility
           if (id.includes('node_modules')) {
-            // Keep React and React-DOM together to prevent dual instances
+            // Highest priority: Keep React and React-DOM together to prevent dual instances
             if (id.includes('react') || id.includes('react-dom')) {
-              return 'react-vendor'
+              return 'react-core'
             }
+            // React-related libraries that depend on React context
+            if (id.includes('react-router') || id.includes('react-hot-toast') || 
+                id.includes('@tanstack/react-query') || id.includes('react-hook-form')) {
+              return 'react-ecosystem'
+            }
+            // State management
             if (id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
               return 'state-vendor'
             }
-            if (id.includes('lucide-react')) {
-              return 'icons'
-            }
-            // Group potentially problematic libraries together
-            if (id.includes('@formkit') || id.includes('@dnd-kit')) {
+            // UI libraries that might have React 19 compatibility issues
+            if (id.includes('@formkit') || id.includes('@dnd-kit') || 
+                id.includes('framer-motion') || id.includes('lucide-react')) {
               return 'ui-vendor'
             }
+            // Utilities and other libraries
             return 'vendor'
           }
         }
