@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import LoadingSpinner from '@/components/common/LoadingSpinner'
 import ReleaseSubmissionNew from '@/pages/ImprovedReleaseSubmissionWithDnD'
+import { ValidationProvider } from '@/contexts/ValidationContext'
 
 /**
  * Wrapper component that ensures hydration is complete before rendering ReleaseSubmissionNew
@@ -24,5 +25,10 @@ export default function HydratedReleaseSubmission() {
   }
 
   // Only render the actual component after hydration delay
-  return <ReleaseSubmissionNew />
+  // Wrap with ValidationProvider for real-time QC validation
+  return (
+    <ValidationProvider>
+      <ReleaseSubmissionNew />
+    </ValidationProvider>
+  )
 }

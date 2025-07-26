@@ -265,11 +265,8 @@ export default function TrackTranslationUI({
                 type="text"
                 value={titleValue}
                 onChange={(e) => setTitleValue(e.target.value)}
-                onBlur={(e) => {
-                  const result = validateTrackTitle(e.target.value)
-                  if (result.formattedValue && result.formattedValue !== e.target.value) {
-                    setTitleValue(result.formattedValue)
-                  }
+                onBlur={() => {
+                  // Validation is handled by ValidatedInput component
                 }}
                 onKeyPress={(e) => e.key === 'Enter' && addTranslation()}
                 placeholder={language === 'ko' ? '번역 입력...' : 'Enter translation...'}
@@ -329,11 +326,8 @@ export default function TrackTranslationUI({
                     type="text"
                     value={translation.title}
                     onChange={(e) => updateTranslation(translation.id, e.target.value)}
-                    onBlur={(e) => {
-                      const result = validateTrackTitle(e.target.value)
-                      if (result.formattedValue && result.formattedValue !== e.target.value) {
-                        updateTranslation(translation.id, result.formattedValue)
-                      }
+                    onBlur={() => {
+                      // Validation is handled by ValidatedInput component
                     }}
                     className="w-full px-2 py-1 text-sm bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded focus:ring-1 focus:ring-purple-500"
                   />
