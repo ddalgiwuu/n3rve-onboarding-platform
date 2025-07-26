@@ -1,0 +1,61 @@
+// Early React initialization for React 19 compatibility
+// This must be imported before any other React-dependent modules
+
+import React from 'react'
+
+// Force React to be available immediately in the global scope
+if (typeof window !== 'undefined') {
+  // Set React globally as early as possible
+  (window as any).React = React
+  
+  // Ensure createContext is immediately available
+  if (React.createContext) {
+    (window as any).createContext = React.createContext
+  }
+  
+  // Create a synthetic React object for libraries expecting specific structure
+  const syntheticReact = {
+    ...React,
+    createContext: React.createContext,
+    createElement: React.createElement,
+    Component: React.Component,
+    PureComponent: React.PureComponent,
+    Fragment: React.Fragment,
+    StrictMode: React.StrictMode,
+    Suspense: React.Suspense,
+    // Add all hooks
+    useState: React.useState,
+    useEffect: React.useEffect,
+    useContext: React.useContext,
+    useReducer: React.useReducer,
+    useCallback: React.useCallback,
+    useMemo: React.useMemo,
+    useRef: React.useRef,
+    useImperativeHandle: React.useImperativeHandle,
+    useLayoutEffect: React.useLayoutEffect,
+    useDebugValue: React.useDebugValue,
+    useDeferredValue: React.useDeferredValue,
+    useTransition: React.useTransition,
+    useId: React.useId,
+    useSyncExternalStore: React.useSyncExternalStore,
+    useInsertionEffect: React.useInsertionEffect
+  }
+  
+  // Override with synthetic React for maximum compatibility
+  (window as any).React = syntheticReact
+  
+  // Also make individual functions available
+  Object.keys(syntheticReact).forEach(key => {
+    if (typeof (syntheticReact as any)[key] === 'function') {
+      (window as any)[key] = (syntheticReact as any)[key]
+    }
+  })
+}
+
+// Also ensure global scope availability
+if (typeof global !== 'undefined') {
+  (global as any).React = React
+  (global as any).createContext = React.createContext
+}
+
+export default React

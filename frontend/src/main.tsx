@@ -1,3 +1,4 @@
+import './utils/reactInit' // Early React initialization
 import './utils/reactPolyfill' // Apply React 19 compatibility polyfill first
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
@@ -7,6 +8,7 @@ import { AuthProvider } from './contexts/AuthContext'
 import { LanguageProvider } from './contexts/LanguageContext'
 import { SubmissionProvider } from './contexts/SubmissionContext'
 import { SavedArtistsProvider } from './contexts/SavedArtistsContext'
+import ReactErrorBoundary from './components/ReactErrorBoundary'
 import App from './App'
 import './styles/globals.css'
 
@@ -20,27 +22,29 @@ const queryClient = new QueryClient({
 })
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <AuthProvider>
-    <LanguageProvider>
-      <SubmissionProvider>
-        <SavedArtistsProvider>
-          <QueryClientProvider client={queryClient}>
-            <BrowserRouter>
-              <App />
-              <Toaster 
-                position="top-right"
-                toastOptions={{
-                  duration: 4000,
-                  style: {
-                    background: '#363636',
-                    color: '#fff',
-                  },
-                }}
-              />
-            </BrowserRouter>
-          </QueryClientProvider>
-        </SavedArtistsProvider>
-      </SubmissionProvider>
-    </LanguageProvider>
-  </AuthProvider>
+  <ReactErrorBoundary>
+    <AuthProvider>
+      <LanguageProvider>
+        <SubmissionProvider>
+          <SavedArtistsProvider>
+            <QueryClientProvider client={queryClient}>
+              <BrowserRouter>
+                <App />
+                <Toaster 
+                  position="top-right"
+                  toastOptions={{
+                    duration: 4000,
+                    style: {
+                      background: '#363636',
+                      color: '#fff',
+                    },
+                  }}
+                />
+              </BrowserRouter>
+            </QueryClientProvider>
+          </SavedArtistsProvider>
+        </SubmissionProvider>
+      </LanguageProvider>
+    </AuthProvider>
+  </ReactErrorBoundary>
 )

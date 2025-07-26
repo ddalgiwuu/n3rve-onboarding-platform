@@ -12,7 +12,8 @@ export default defineConfig({
         manualChunks: (id) => {
           // Vendor chunks for better caching
           if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react/')) {
+            // Keep React and React-DOM together to prevent dual instances
+            if (id.includes('react') || id.includes('react-dom')) {
               return 'react-vendor'
             }
             if (id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
@@ -20,6 +21,10 @@ export default defineConfig({
             }
             if (id.includes('lucide-react')) {
               return 'icons'
+            }
+            // Group potentially problematic libraries together
+            if (id.includes('@formkit') || id.includes('@dnd-kit')) {
+              return 'ui-vendor'
             }
             return 'vendor'
           }
@@ -29,6 +34,10 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
     minify: 'esbuild',
     target: 'esnext'
+  },
+  define: {
+    // Ensure React is available globally during development
+    global: 'globalThis',
   },
   resolve: {
     alias: {
