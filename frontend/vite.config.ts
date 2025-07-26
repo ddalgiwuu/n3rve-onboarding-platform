@@ -4,19 +4,31 @@ import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({
+    // React 19 compatibility settings
+    jsxRuntime: 'automatic',
+    babel: {
+      // Better React 19 support
+      parserOpts: {
+        plugins: ['jsx', 'typescript']
+      },
+      // Add babel configuration for better compatibility
+      plugins: [
+        ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
+      ]
+    }
+  })],
   build: {
     sourcemap: process.env.NODE_ENV === 'development',
     rollupOptions: {
       output: {
-        // Force complete cache invalidation with timestamp + random
-        entryFileNames: `assets/[name]-[hash]-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.js`,
-        chunkFileNames: `assets/[name]-[hash]-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.js`,
-        assetFileNames: `assets/[name]-[hash]-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.[ext]`,
+        // Simplified file naming with hash only
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: (id) => {
-          // SIMPLIFIED FIX: Go back to working unified approach with better patterns
           if (id.includes('node_modules')) {
-            // ALL React-related code in ONE chunk - this worked before
+            // Keep React ecosystem unified
             if (id.includes('react') || id.includes('react-dom') ||
                 id.includes('react-router') || id.includes('react-hot-toast') || 
                 id.includes('@tanstack/react-query') || id.includes('react-hook-form') ||
@@ -25,26 +37,52 @@ export default defineConfig({
                 id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
               return 'react-all'
             }
-            // Non-React utilities and other libraries
             return 'vendor'
           }
         }
       }
     },
     chunkSizeWarningLimit: 1000,
-    minify: 'esbuild',
-    target: 'esnext'
+    // Change minification to terser for better React 19 compatibility
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        // Preserve console logs for debugging
+        drop_console: false,
+        drop_debugger: false,
+        // Avoid breaking React 19 internals
+        keep_infinity: true,
+        passes: 1
+      },
+      mangle: {
+        // Don't mangle React internals
+        reserved: ['React', 'createContext', 'useState', 'useEffect', 'useContext']
+      },
+      format: {
+        // Better compatibility with React 19
+        comments: false,
+        // Prevent IIFE wrapping issues
+        wrap_iife: false
+      }
+    },
+    // Target ES2020 for better compatibility
+    target: 'es2020'
   },
   define: {
-    // Ensure React is available globally during development
+    // Ensure React is available globally
     global: 'globalThis',
   },
   optimizeDeps: {
-    // Ensure React is treated as singleton to prevent multiple instances
-    include: ['react', 'react-dom'],
-    dedupe: ['react', 'react-dom']
+    // Pre-bundle React dependencies
+    include: ['react', 'react-dom', 'react-router-dom'],
+    // Force ESM for all dependencies
+    esbuildOptions: {
+      target: 'es2020'
+    }
   },
   resolve: {
+    // Move dedupe here (correct location)
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(__dirname, './src'),
       '@components': path.resolve(__dirname, './src/components'),
