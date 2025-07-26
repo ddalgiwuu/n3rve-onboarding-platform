@@ -172,7 +172,7 @@ export function useValidationProgress() {
   }, [progress])
 
   // Get time-based insights
-  const getTimeInsights = useCallback() => {
+  const getTimeInsights = useCallback(() => {
     const analytics = getAnalytics()
     const insights = []
 
