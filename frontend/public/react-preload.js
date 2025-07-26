@@ -4,7 +4,7 @@
 (function() {
   'use strict';
   
-  console.log('React preload starting...');
+  // Remove console logs in production
   
   // Just reserve the namespace - let the real React load
   if (!window.React) {
@@ -13,5 +13,5 @@
   
   window.__REACT_PRELOAD__ = true;
   
-  console.log('React namespace reserved');
+  // React namespace reserved
 })();
