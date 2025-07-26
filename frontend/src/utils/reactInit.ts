@@ -22,8 +22,8 @@ if (typeof window !== 'undefined') {
   }
   
   // Create a synthetic React object for libraries expecting specific structure
-  const syntheticReact = {
-    ...React,
+  // Use Object.assign to avoid spread operator issues
+  const syntheticReact = Object.assign({}, React, {
     createContext: React.createContext,
     createElement: React.createElement,
     Component: React.Component,
@@ -47,7 +47,7 @@ if (typeof window !== 'undefined') {
     useId: React.useId,
     useSyncExternalStore: React.useSyncExternalStore,
     useInsertionEffect: React.useInsertionEffect
-  }
+  })
   
   // Override with synthetic React for maximum compatibility
   (window as any).React = syntheticReact
