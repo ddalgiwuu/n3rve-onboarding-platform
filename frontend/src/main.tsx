@@ -1,3 +1,10 @@
+// CRITICAL: Check emergency React preload first
+if (typeof window !== 'undefined' && !window.__REACT_EMERGENCY_LOADED__) {
+  console.error('❌ Emergency React preload failed - this may cause createContext errors')
+  console.error('❌ Current window.React:', !!window.React)
+  console.error('❌ Current createContext:', !!(window.React && window.React.createContext))
+}
+
 import './utils/reactInit' // Early React initialization
 import './utils/reactPolyfill' // Apply React 19 compatibility polyfill first
 import ReactDOM from 'react-dom/client'
