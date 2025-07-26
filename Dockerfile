@@ -27,8 +27,12 @@ ENV VITE_DROPBOX_CLIENT_ID=slffi4mfztfohqd
 ENV VITE_DROPBOX_APP_KEY=slffi4mfztfohqd
 ENV VITE_DROPBOX_REDIRECT_URI=https://n3rve-onboarding.com/dropbox-callback
 
-# Build with increased Node.js memory allocation
-RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
+# Build with increased Node.js memory allocation and error handling
+RUN NODE_OPTIONS="--max-old-space-size=6144" npm run build || \
+    (echo "Build failed, retrying with even more memory..." && \
+     NODE_OPTIONS="--max-old-space-size=8192" npm run build) || \
+    (echo "Build failed again, trying with legacy OpenSSL..." && \
+     NODE_OPTIONS="--max-old-space-size=6144 --openssl-legacy-provider" npm run build)
 
 # Stage 2: Build Backend
 FROM node:20-alpine AS backend-builder
