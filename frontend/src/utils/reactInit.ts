@@ -13,8 +13,7 @@ if (typeof window !== 'undefined') {
   window.useEffect = React.useEffect
   window.useContext = React.useContext
   
-  // Simple logging without object creation
-  console.log('React initialized:', React.version)
+  // React initialized
 }
 
 export default React
