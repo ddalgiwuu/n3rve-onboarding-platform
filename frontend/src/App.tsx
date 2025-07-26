@@ -11,7 +11,7 @@ import { initializeSecurity } from './utils/security'
 const HomePage = lazy(() => import('./pages/Home'))
 const LoginPage = lazy(() => import('./pages/Login'))
 const DashboardPage = lazy(() => import('./pages/Dashboard'))
-const ImprovedReleaseSubmissionPage = lazy(() => import('./pages/ImprovedReleaseSubmissionWithDnD'))
+const ImprovedReleaseSubmissionPage = lazy(() => import('./components/HydratedReleaseSubmission'))
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboard'))
 const AdminSubmissionsPage = lazy(() => import('./pages/admin/AdminSubmissions'))
 const SubmissionManagementPage = lazy(() => import('./pages/admin/SubmissionManagement'))
@@ -33,6 +33,7 @@ const RoleSelectPage = lazy(() => import('./pages/RoleSelect'))
 // const DebugAuthPage = lazy(() => import('./pages/DebugAuth'))
 const AccountSettingsPage = lazy(() => import('./pages/AccountSettings'))
 const RegisterPage = lazy(() => import('./pages/Register'))
+const RealtimeQCTestPage = lazy(() => import('./pages/RealtimeQCTest'))
 
 function App() {
   const authStore = useAuthStore()
@@ -103,6 +104,7 @@ function App() {
         } />
         <Route path="/" element={<HomePage />} />
         <Route path="/technical-guide" element={<TechnicalGuidePage />} />
+        <Route path="/qc-test" element={<RealtimeQCTestPage />} />
         <Route path="/dropbox-callback" element={<DropboxCallbackPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/profile-setup" element={

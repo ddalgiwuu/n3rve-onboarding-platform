@@ -9,6 +9,7 @@ import EnhancedArtistModal from '@/components/submission/EnhancedArtistModal'
 import { DatePicker } from '@/components/DatePicker'
 import TranslationInput from '@/components/TranslationInput'
 import { instrumentList, searchInstruments, getInstrumentsByCategory, getInstrumentLabel } from '@/constants/instruments'
+import ValidatedInput from '@/components/ValidatedInput'
 
 interface ArtistIdentifier {
   type: string
@@ -3099,27 +3100,35 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'ko' ? '트랙 제목 (한글)' : 'Track Title (Korean)'} <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
+                      <ValidatedInput
+                        fieldId={`track-${selectedTrack.id}-title-ko`}
+                        validationType="track"
+                        validationOptions={{ trackNumber: tracks.findIndex(t => t.id === selectedTrack.id) + 1 }}
                         value={selectedTrack.titleKo}
-                        onChange={(e) => updateTrack(selectedTrack.id, { titleKo: e.target.value })}
+                        onValueChange={(value) => updateTrack(selectedTrack.id, { titleKo: value })}
                         className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                         placeholder={language === 'ko' ? '한글 제목을 입력하세요' : 'Enter Korean title'}
+                        showInlineWarnings={true}
+                        language={language}
+                        label={
+                          <span>
+                            {language === 'ko' ? '트랙 제목 (한글)' : 'Track Title (Korean)'} <span className="text-red-500">*</span>
+                          </span>
+                        }
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'ko' ? '트랙 제목 (영문)' : 'Track Title (English)'}
-                      </label>
-                      <input
-                        type="text"
+                      <ValidatedInput
+                        fieldId={`track-${selectedTrack.id}-title-en`}
+                        validationType="track"
+                        validationOptions={{ trackNumber: tracks.findIndex(t => t.id === selectedTrack.id) + 1 }}
                         value={selectedTrack.titleEn}
-                        onChange={(e) => updateTrack(selectedTrack.id, { titleEn: e.target.value })}
+                        onValueChange={(value) => updateTrack(selectedTrack.id, { titleEn: value })}
                         className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                         placeholder={language === 'ko' ? '영문 제목을 입력하세요' : 'Enter English title'}
+                        showInlineWarnings={true}
+                        language={language}
+                        label={language === 'ko' ? '트랙 제목 (영문)' : 'Track Title (English)'}
                       />
                     </div>
                   </div>

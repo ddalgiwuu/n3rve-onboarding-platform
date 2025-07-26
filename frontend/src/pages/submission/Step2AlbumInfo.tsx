@@ -7,6 +7,7 @@ import { Disc, FileText, Info, Languages, AlertCircle, ChevronDown, Globe } from
 import { validateField } from '@/utils/fugaQCValidation'
 import QCWarnings from '@/components/submission/QCWarnings'
 import { useMemo, useState } from 'react'
+import ValidatedFormInput from '@/components/ValidatedFormInput'
 
 const createAlbumSchema = (t: (ko: string, en: string) => string) => z.object({
   primaryTitle: z.string().min(1, t('앨범 제목을 입력해주세요', 'Please enter the album title')),
@@ -140,9 +141,13 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                   {t('앨범 제목', 'Album Title')} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
-                  <input
-                    {...register('primaryTitle')}
-                    type="text"
+                  <ValidatedFormInput
+                    fieldId="album-primary-title"
+                    validationType="album"
+                    register={register('primaryTitle')}
+                    error={errors.primaryTitle}
+                    showInlineWarnings={true}
+                    language={language}
                     className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-500 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
                     placeholder={language === 'ko' ? '예: 나의 첫 번째 앨범' : 'e.g., My First Album'}
                   />
@@ -292,9 +297,14 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                       <div className="relative group">
                         <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-300" />
                         <div className="relative">
-                          <input
-                            {...register('translatedTitle')}
-                            type="text"
+                          <ValidatedFormInput
+                            fieldId="album-translated-title"
+                            validationType="album"
+                            validationOptions={{ isComposer: false }}
+                            register={register('translatedTitle')}
+                            error={errors.translatedTitle}
+                            showInlineWarnings={true}
+                            language={language}
                             className="w-full px-6 py-4 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all text-lg font-medium shadow-sm focus:shadow-lg"
                             placeholder={
                               translationLanguage === 'en' ? 'e.g., My First Album' :
