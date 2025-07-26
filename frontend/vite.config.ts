@@ -29,10 +29,10 @@ export default defineConfig({
             if (id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
               return 'state-vendor'
             }
-            // UI libraries that might have React 19 compatibility issues
+            // UI libraries that might have React 19 compatibility issues - merge with react-ecosystem
             if (id.includes('@formkit') || id.includes('@dnd-kit') || 
                 id.includes('framer-motion') || id.includes('lucide-react')) {
-              return 'ui-vendor'
+              return 'react-ecosystem'
             }
             // Utilities and other libraries
             return 'vendor'
