@@ -1,20 +1,21 @@
-// Emergency React preload to fix createContext errors
-// This script runs before any vendor chunks to ensure React is available
+// Simplified React preload - backup safety only since unified chunks should fix the issue
+// This script provides minimal fallback if React instance issues persist
 
 (function() {
   'use strict';
   
-  console.log('🔧 Emergency React preload starting...');
+  console.log('🛡️ React safety preload starting...');
   
   // Check if React is already loaded
   if (window.React && window.React.createContext) {
     console.log('✅ React already loaded, createContext available');
+    window.__REACT_SAFETY_OK__ = true;
     return;
   }
   
-  // Create a minimal React context implementation for emergency fallback
+  // Minimal fallback only if React is missing (should not happen with unified chunks)
   if (!window.React) {
-    console.log('⚠️ React not found, creating emergency fallback...');
+    console.log('🚨 React missing - creating minimal fallback (unified chunks should prevent this)...');
     
     window.React = {
       createContext: function(defaultValue) {
@@ -76,7 +77,7 @@
   }
   
   // Global protection for vendor chunks
-  window.__REACT_EMERGENCY_LOADED__ = true;
+  window.__REACT_SAFETY_OK__ = true;
   
-  console.log('✅ Emergency React preload complete - createContext available:', !!window.React.createContext);
+  console.log('✅ React safety preload complete - createContext available:', !!window.React.createContext);
 })();

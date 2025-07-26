@@ -1,8 +1,8 @@
-// CRITICAL: Check emergency React preload first
-if (typeof window !== 'undefined' && !window.__REACT_EMERGENCY_LOADED__) {
-  console.error('❌ Emergency React preload failed - this may cause createContext errors')
-  console.error('❌ Current window.React:', !!window.React)
-  console.error('❌ Current createContext:', !!(window.React && window.React.createContext))
+// Check React safety preload (should not be needed with unified chunks)
+if (typeof window !== 'undefined' && !window.__REACT_SAFETY_OK__) {
+  console.warn('⚠️ React safety preload not detected - unified chunks should handle this')
+  console.log('🔍 Current window.React:', !!window.React)
+  console.log('🔍 Current createContext:', !!(window.React && window.React.createContext))
 }
 
 import './utils/reactInit' // Early React initialization
