@@ -14,18 +14,24 @@ export default defineConfig({
         chunkFileNames: `assets/[name]-[hash]-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.js`,
         assetFileNames: `assets/[name]-[hash]-${Date.now()}-${Math.random().toString(36).substr(2, 9)}.[ext]`,
         manualChunks: (id) => {
-          // CRITICAL FIX: Single React chunk to prevent createContext undefined errors
+          // BALANCED FIX: Separate React core from libraries to prevent conflicts
           if (id.includes('node_modules')) {
-            // ALL React-related code in ONE chunk to ensure single React instance
-            if (id.includes('react') || id.includes('react-dom') ||
-                id.includes('react-router') || id.includes('react-hot-toast') || 
-                id.includes('@tanstack/react-query') || id.includes('react-hook-form') ||
-                id.includes('@formkit') || id.includes('@dnd-kit') || 
-                id.includes('framer-motion') || id.includes('lucide-react') ||
-                id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
-              return 'react-all'
+            // React core - must be loaded first
+            if (id.includes('react/') || id.includes('react-dom/')) {
+              return 'react-core'
             }
-            // Non-React utilities and other libraries
+            // React ecosystem - depends on react-core but separate to prevent conflicts
+            if (id.includes('react-router') || id.includes('react-hot-toast') || 
+                id.includes('@tanstack/react-query') || id.includes('react-hook-form') ||
+                id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
+              return 'react-libs'
+            }
+            // UI libraries that use React context
+            if (id.includes('@formkit') || id.includes('@dnd-kit') || 
+                id.includes('framer-motion') || id.includes('lucide-react')) {
+              return 'ui-libs'
+            }
+            // Non-React utilities
             return 'vendor'
           }
         }
@@ -53,7 +59,10 @@ export default defineConfig({
       '@services': path.resolve(__dirname, './src/services'),
       '@store': path.resolve(__dirname, './src/store'),
       '@types': path.resolve(__dirname, './src/types'),
-      '@utils': path.resolve(__dirname, './src/utils')
+      '@utils': path.resolve(__dirname, './src/utils'),
+      // Ensure all React imports point to the same instance
+      'react': path.resolve(__dirname, './node_modules/react'),
+      'react-dom': path.resolve(__dirname, './node_modules/react-dom')
     }
   },
   server: {
