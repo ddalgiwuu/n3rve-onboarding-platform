@@ -19,27 +19,32 @@ export default defineConfig({
     }
   })],
   build: {
-    sourcemap: true, // Always enable sourcemaps for debugging
+    sourcemap: true,
     rollupOptions: {
       output: {
         // Add timestamp to force cache invalidation
         entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
         chunkFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
         assetFileNames: `assets/[name]-[hash]-${Date.now()}.[ext]`,
-        // Disable all code splitting for debugging
-        manualChunks: undefined,
-        // Use IIFE format for better compatibility
-        format: 'es'
-      }
+        // Simple chunking strategy
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          utils: ['axios', 'date-fns', 'clsx', 'tailwind-merge']
+        }
+      },
+      // Preserve module structure
+      preserveEntrySignatures: 'strict'
     },
     chunkSizeWarningLimit: 2000,
     // DISABLE MINIFICATION COMPLETELY
     minify: false,
-    // Target modern browsers
+    // Target modern browsers but ensure compatibility
     target: 'es2015',
-    // Ensure proper module format
-    modulePreload: {
-      polyfill: true
+    // CommonJS compatibility
+    commonjsOptions: {
+      transformMixedEsModules: true,
+      // Include all necessary helpers
+      include: [/node_modules/]
     }
   },
   define: {
