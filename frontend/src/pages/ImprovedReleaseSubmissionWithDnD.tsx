@@ -34,6 +34,10 @@ import TerritorySelector from '@/components/TerritorySelector'
 import Step11MarketingDetails from '@/components/steps/Step11MarketingDetails'
 import Step12GoalsExpectations from '@/components/steps/Step12GoalsExpectations'
 import SearchableMultiSelect from '@/components/ui/SearchableMultiSelect'
+import { useRealtimeValidation } from '@/utils/inputValidation'
+import ValidatedInput from '@/components/ValidatedInput'
+import TrackTitleInput, { TrackWarningsManager } from '@/components/TrackTitleInput'
+import { ValidationProvider, useValidationContext } from '@/contexts/ValidationContext'
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -321,13 +325,15 @@ const translationLanguages = [
   { code: 'ru', name: 'Русский (Russian)' }
 ]
 
-const ImprovedReleaseSubmission: React.FC = () => {
+const ImprovedReleaseSubmissionContent: React.FC = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { language } = useLanguageStore()
   const user = useSafeStore(useAuthStore, state => state.user)
+  const { hasErrors, getSummary, getAllWarnings } = useValidationContext()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const coverArtInputRef = useRef<HTMLInputElement>(null)
+  const { validateAlbumTitle, validateTrackTitle } = useRealtimeValidation()
   
   // Check for edit or resubmit mode
   const editId = searchParams.get('edit')
@@ -663,11 +669,31 @@ const ImprovedReleaseSubmission: React.FC = () => {
           highlightField('album-title-input')
           return false
         }
+        
+        // Check for validation errors on album title
+        const albumTitleErrors = getAllWarnings().filter(w => w.field === 'album-title' && w.type === 'error')
+        if (albumTitleErrors.length > 0) {
+          toast.error(t('앨범 제목에 오류가 있습니다. 수정해주세요.', 'There are errors in the album title. Please fix them.', 'アルバムタイトルにエラーがあります。修正してください。'))
+          highlightField('album-title-input')
+          return false
+        }
+        
         if (formData.albumArtists.length === 0) {
           toast.error(t('아티스트명을 입력해주세요', 'Please enter artist name', 'アーティスト名を入力してください'))
           highlightField('album-artist-section')
           return false
         }
+        
+        // Check for validation errors on contributor names
+        const contributorErrors = getAllWarnings().filter(w => 
+          w.field.startsWith('contributor-name-') && w.type === 'error'
+        )
+        if (contributorErrors.length > 0) {
+          toast.error(t('아티스트명에 오류가 있습니다. 수정해주세요.', 'There are errors in artist names. Please fix them.', 'アーティスト名にエラーがあります。修正してください。'))
+          highlightField('album-artist-section')
+          return false
+        }
+        
         if (!formData.primaryGenre) {
           toast.error(t('장르를 선택해주세요', 'Please select genre', 'ジャンルを選択してください'))
           highlightField('genre-section')
@@ -708,6 +734,17 @@ const ImprovedReleaseSubmission: React.FC = () => {
             return false
           }
         }
+        
+        // Check for validation errors on track titles
+        const trackErrors = getAllWarnings().filter(w => 
+          w.field.startsWith('track-title-') && w.type === 'error'
+        )
+        if (trackErrors.length > 0) {
+          toast.error(t('트랙 제목에 오류가 있습니다. 수정해주세요.', 'There are errors in track titles. Please fix them.', 'トラックタイトルにエラーがあります。修正してください。'))
+          highlightField('tracks-section')
+          return false
+        }
+        
         return true
         
       case 3: // Files
@@ -1037,7 +1074,15 @@ const ImprovedReleaseSubmission: React.FC = () => {
     }, [initialValue])
     
     const handleBlur = () => {
-      updateTrack(trackId, { title: localValue })
+      const trackIndex = formData.tracks.findIndex(t => t.id === trackId)
+      const trackNumber = trackIndex >= 0 ? trackIndex + 1 : undefined
+      const result = validateTrackTitle(localValue, trackNumber)
+      if (result.formattedValue && result.formattedValue !== localValue) {
+        setLocalValue(result.formattedValue)
+        updateTrack(trackId, { title: result.formattedValue })
+      } else {
+        updateTrack(trackId, { title: localValue })
+      }
     }
     
     return (
@@ -1116,7 +1161,13 @@ const ImprovedReleaseSubmission: React.FC = () => {
                   <span>{t('번역 추가', 'Add Translation', '翻訳を追加')}</span>
                 </button>
               </div>
-              <TrackTitleInput trackId={track.id} initialValue={track.title || ''} />
+              <TrackTitleInput 
+                trackId={track.id} 
+                trackNumber={track.trackNumber}
+                initialValue={track.title || ''} 
+                onChange={(value) => updateTrack(track.id, { title: value })}
+                placeholder={t('트랙 제목을 입력하세요', 'Enter track title')}
+              />
             </div>
 
             {/* Track Title Translations - Enhanced UI */}
@@ -1444,13 +1495,14 @@ const ImprovedReleaseSubmission: React.FC = () => {
                     <span>{t('번역 추가', 'Add Translation', '翻訳を追加')}</span>
                   </button>
                 </div>
-                <input
-                  id="album-title-input"
-                  type="text"
+                <ValidatedInput
+                  fieldId="album-title"
+                  validationType="album"
                   value={formData.albumTitle}
-                  onChange={(e) => setFormData(prev => ({ ...prev, albumTitle: e.target.value }))}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  placeholder={t('앨범 제목을 입력하세요', 'Enter album title', 'アルバムタイトルを入力')}
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, albumTitle: value }))}
+                  placeholder={t('앨범 제목을 입력하세요', 'Enter album title', 'アルバムタイトルを入력')}
+                  language={language}
+                  showInlineWarnings={true}
                 />
                 
                 {/* Album Title Translations - Modern Design */}
@@ -1520,6 +1572,18 @@ const ImprovedReleaseSubmission: React.FC = () => {
                                             [langCode]: e.target.value
                                           }
                                         }))}
+                                        onBlur={(e) => {
+                                          const result = validateAlbumTitle(e.target.value)
+                                          if (result.formattedValue && result.formattedValue !== e.target.value) {
+                                            setFormData(prev => ({
+                                              ...prev,
+                                              albumTitleTranslations: {
+                                                ...prev.albumTitleTranslations,
+                                                [langCode]: result.formattedValue
+                                              }
+                                            }))
+                                          }
+                                        }}
                                         className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border-0 rounded-lg 
                                                  focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white dark:focus:bg-gray-800
                                                  transition-all duration-200 text-sm text-gray-900 dark:text-gray-100 
@@ -2189,6 +2253,19 @@ const ImprovedReleaseSubmission: React.FC = () => {
                 </>
               )}
             </div>
+            
+            {/* Track Warnings Manager for bulk operations */}
+            <TrackWarningsManager
+              trackIds={formData.tracks.map(t => t.id)}
+              language={language}
+              onAcceptAll={(group) => {
+                console.log(`Accepted all warnings in group: ${group}`)
+                // Track changes are already handled by the hook
+              }}
+              onDismissAll={(group) => {
+                console.log(`Dismissed all warnings in group: ${group}`)
+              }}
+            />
             
             {/* Volume Setup Guide */}
             {formData.totalVolumes > 1 && (
@@ -3257,6 +3334,15 @@ const ImprovedReleaseSubmission: React.FC = () => {
       )}
     </div>
     </SavedArtistsProvider>
+  )
+}
+
+// Main component wrapped with ValidationProvider
+const ImprovedReleaseSubmission: React.FC = () => {
+  return (
+    <ValidationProvider>
+      <ImprovedReleaseSubmissionContent />
+    </ValidationProvider>
   )
 }
 
