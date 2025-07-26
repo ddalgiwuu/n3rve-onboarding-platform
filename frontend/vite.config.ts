@@ -19,54 +19,28 @@ export default defineConfig({
     }
   })],
   build: {
-    sourcemap: process.env.NODE_ENV === 'development',
+    sourcemap: true, // Always enable sourcemaps for debugging
     rollupOptions: {
       output: {
-        // Simplified file naming with hash only
-        entryFileNames: 'assets/[name]-[hash].js',
-        chunkFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]',
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            // Keep React ecosystem unified
-            if (id.includes('react') || id.includes('react-dom') ||
-                id.includes('react-router') || id.includes('react-hot-toast') || 
-                id.includes('@tanstack/react-query') || id.includes('react-hook-form') ||
-                id.includes('@formkit') || id.includes('@dnd-kit') || 
-                id.includes('framer-motion') || id.includes('lucide-react') ||
-                id.includes('@reduxjs/toolkit') || id.includes('react-redux')) {
-              return 'react-all'
-            }
-            return 'vendor'
-          }
-        }
+        // Add timestamp to force cache invalidation
+        entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
+        chunkFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
+        assetFileNames: `assets/[name]-[hash]-${Date.now()}.[ext]`,
+        // Disable all code splitting for debugging
+        manualChunks: undefined,
+        // Use IIFE format for better compatibility
+        format: 'es'
       }
     },
-    chunkSizeWarningLimit: 1000,
-    // Change minification to terser for better React 19 compatibility
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        // Preserve console logs for debugging
-        drop_console: false,
-        drop_debugger: false,
-        // Avoid breaking React 19 internals
-        keep_infinity: true,
-        passes: 1
-      },
-      mangle: {
-        // Don't mangle React internals
-        reserved: ['React', 'createContext', 'useState', 'useEffect', 'useContext']
-      },
-      format: {
-        // Better compatibility with React 19
-        comments: false,
-        // Prevent IIFE wrapping issues
-        wrap_iife: false
-      }
-    },
-    // Target ES2020 for better compatibility
-    target: 'es2020'
+    chunkSizeWarningLimit: 2000,
+    // DISABLE MINIFICATION COMPLETELY
+    minify: false,
+    // Target modern browsers
+    target: 'es2015',
+    // Ensure proper module format
+    modulePreload: {
+      polyfill: true
+    }
   },
   define: {
     // Ensure React is available globally
