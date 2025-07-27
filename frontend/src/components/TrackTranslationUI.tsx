@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Plus, X, Languages, ChevronDown, Sparkles, Check } from 'lucide-react';
-import { validateTrackTitle } from '@/utils/inputValidation';
 
 interface Translation {
   id: string
@@ -61,7 +60,6 @@ export default function TrackTranslationUI({
   const [titleValue, setTitleValue] = useState('');
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  // Using validateTrackTitle directly from utils
 
   const addTranslation = () => {
     if (selectedLanguage && titleValue.trim()) {

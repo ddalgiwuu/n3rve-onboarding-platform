@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Search, Eye, Check, X, Download, ChevronLeft, ChevronRight,
   FileSpreadsheet, Calendar, Clock, CheckSquare, XSquare,
@@ -221,15 +221,20 @@ const SubmissionManagement: React.FC = () => {
     }
   };
 
-  const handleExportSelected = () => {
+  const handleExportSelected = async () => {
     if (selectedSubmissions.size === 0) {
       toast.error(t('선택된 제출이 없습니다', 'No submissions selected'));
       return;
     }
 
     const selected = submissions.filter(s => selectedSubmissions.has(s.id));
-    exportSubmissionsToExcel({ submissions: selected });
-    toast.success(t('선택된 제출이 내보내기되었습니다', 'Selected submissions exported'));
+    try {
+      await exportSubmissionsToExcel({ submissions: selected });
+      toast.success(t('선택된 제출이 내보내기되었습니다', 'Selected submissions exported'));
+    } catch (error) {
+      console.error('Export error:', error);
+      toast.error(t('내보내기 중 오류가 발생했습니다', 'Error during export'));
+    }
   };
 
   const handleSelectAll = () => {

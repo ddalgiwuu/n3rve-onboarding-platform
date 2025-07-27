@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Image, Link, Music, CheckCircle, AlertCircle, Star, ExternalLink, Spotify, Apple } from 'lucide-react';
+import { ArrowLeft, User, Image, Link, Music, CheckCircle, AlertCircle, Star, ExternalLink, Apple } from 'lucide-react';
 import { useLanguageStore } from '@/store/language.store';
 
 const ArtistProfileGuide = () => {
   const navigate = useNavigate();
-  const language = useLanguageStore(state => state.language);
+  const { language } = useLanguageStore();
   const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const verificationSteps = {

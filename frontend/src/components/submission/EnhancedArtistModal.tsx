@@ -186,7 +186,7 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
     setShowSavedArtists(false);
 
     // Update usage count
-    savedArtistsStore.useArtist(savedArtist.id);
+    savedArtistsStore.recordArtistUsage(savedArtist.id);
     toast.success(t('저장된 아티스트가 선택되었습니다', 'Saved artist selected'));
   };
 

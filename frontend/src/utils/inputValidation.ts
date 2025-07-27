@@ -1,4 +1,3 @@
-import { toast } from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
 
 // Export the ValidationWarning interface here so it can be used by other files
@@ -312,7 +311,7 @@ export function validateTrackTitle(title: string, trackNumber?: number, language
   }
 
   // 트랙 번호 체크 (경고)
-  const trackNumberPattern = /^\d+[\.\-\s]+/;
+  const trackNumberPattern = /^\d+[.\-\s]+/;
   if (trackNumberPattern.test(title)) {
     const cleanTitle = title.replace(trackNumberPattern, '');
     warnings.push({

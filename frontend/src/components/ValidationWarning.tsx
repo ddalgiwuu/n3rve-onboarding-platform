@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export interface ValidationWarning {
+export interface ValidationWarningData {
   id: string
   type: 'error' | 'warning' | 'suggestion'
   field: string
@@ -21,13 +21,13 @@ export interface ValidationWarning {
 }
 
 interface ValidationWarningProps {
-  warnings: ValidationWarning[]
-  onAcceptSuggestion?: (warning: ValidationWarning) => void
-  onDismissWarning?: (warning: ValidationWarning) => void
+  warnings: ValidationWarningData[]
+  onAcceptSuggestion?: (warning: ValidationWarningData) => void
+  onDismissWarning?: (warning: ValidationWarningData) => void
   language?: 'ko' | 'en'
 }
 
-export default function ValidationWarning({
+export function ValidationWarning({
   warnings,
   onAcceptSuggestion,
   onDismissWarning,
@@ -50,12 +50,12 @@ export default function ValidationWarning({
     });
   };
 
-  const handleDismiss = (warning: ValidationWarning) => {
+  const handleDismiss = (warning: ValidationWarningData) => {
     setDismissedWarnings(prev => new Set(prev).add(warning.id));
     onDismissWarning?.(warning);
   };
 
-  const getWarningConfig = (type: ValidationWarning['type']) => {
+  const getWarningConfig = (type: ValidationWarningData['type']) => {
     switch (type) {
       case 'error':
         return {
@@ -280,3 +280,5 @@ export default function ValidationWarning({
     </AnimatePresence>
   );
 }
+
+export default ValidationWarning;

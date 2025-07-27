@@ -4,13 +4,8 @@
 import { getQCHelp } from '../utils/fugaQCLoader';
 import { useLanguageStore } from '../store/language.store';
 
-// Get the current language from the store
-const getCurrentLanguage = (): 'ko' | 'en' => {
-  const language = useLanguageStore.getState().language;
-  return language || 'ko';
-};
-
-export const fugaQCHelp = getQCHelp(getCurrentLanguage());
+// Default language - will be dynamically loaded when used
+export const fugaQCHelp = getQCHelp('ko');
 
 // Re-export specific sections for backward compatibility
 export const qcResultGuide = fugaQCHelp.resultGuide;

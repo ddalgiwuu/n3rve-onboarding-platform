@@ -55,7 +55,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         }, 2000);
       }
       toast.success(t('복사되었습니다', 'Copied'));
-    } catch (err) {
+    } catch (_err) {
       toast.error(t('복사 실패', 'Copy failed'));
     }
   };
