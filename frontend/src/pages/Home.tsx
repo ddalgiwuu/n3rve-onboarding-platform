@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Music, Shield, Globe, CheckCircle, Sparkles } from 'lucide-react';
+import { ArrowRight, Music, Shield, Globe, CheckCircle, Sparkles, Star } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAuthStore } from '@/store/auth.store';
 import useSafeStore from '@/hooks/useSafeStore';
