@@ -37,14 +37,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="min-h-[64px] sm:h-16 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 sticky top-0 z-20 flex-shrink-0 animate-slide-in-down">
+    <header className="min-h-[64px] sm:h-16 glass-nav sticky top-0 z-20 flex-shrink-0 animate-slide-in-down">
       <div className="h-full px-4 sm:px-6 flex items-center justify-between py-2 sm:py-0">
         <div className="flex items-center gap-4">
           {/* Hamburger Menu Button */}
           <button
             onClick={onMenuClick}
             data-menu-button
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 glass-effect-light hover:glass-effect rounded-lg transition-all duration-300"
           >
             <Menu className="w-6 h-6 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
           </button>
@@ -79,7 +79,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
           {/* Dark Mode Toggle - Force visibility */}
           <DarkModeToggle />
 
-          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors hidden sm:block">
+          <button className="p-2 glass-effect-light hover:glass-effect rounded-lg transition-all duration-300 hidden sm:block">
             <Bell className="w-6 h-6 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-400" />
           </button>
 
@@ -95,7 +95,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
             <div className="relative group">
               <button
-                className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                className="p-1.5 sm:p-2 glass-effect-light hover:glass-effect rounded-lg transition-all duration-300"
                 onClick={() => {
                   // On mobile, directly trigger logout
                   if (window.innerWidth < 640) {
@@ -115,10 +115,10 @@ export default function Header({ onMenuClick }: HeaderProps) {
               </button>
 
               {/* Desktop dropdown */}
-              <div className="hidden sm:block absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-1">
+              <div className="hidden sm:block absolute right-0 mt-2 w-48 glass-dropdown opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:translate-y-1">
                 <button
                   onClick={handleLogout}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 transition-colors"
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-white/10 dark:hover:bg-white/5 flex items-center gap-2 transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
                   {t('로그아웃', 'Logout', 'ログアウト')}

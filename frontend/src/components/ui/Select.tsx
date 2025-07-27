@@ -41,6 +41,26 @@ export default function Select({
   const searchInputRef = useRef<HTMLInputElement>(null);
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setSearchTerm('');
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Focus search input when dropdown opens
+  useEffect(() => {
+    if (isOpen && searchable && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isOpen, searchable]);
+
   // Use native select on mobile if specified
   if (nativeOnMobile && isMobile) {
     return (
@@ -89,26 +109,6 @@ export default function Select({
     );
   }
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        setSearchTerm('');
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Focus search input when dropdown opens
-  useEffect(() => {
-    if (isOpen && searchable && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isOpen, searchable]);
-
   const selectedOption = options.find(opt => opt.value === value);
 
   const filteredOptions = searchTerm
@@ -140,12 +140,11 @@ export default function Select({
           disabled={disabled}
           className={cn(
             'w-full flex items-center justify-between gap-2 px-4 py-3.5 min-h-[48px]',
-            'bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm border-2 rounded-xl',
-            'transition-all duration-200 text-left group',
-            disabled ? 'cursor-not-allowed opacity-50 bg-gray-100 dark:bg-gray-800' : 'cursor-pointer',
-            isOpen ? 'border-transparent ring-4 ring-n3rve-500/20 bg-white dark:bg-gray-900 shadow-lg shadow-n3rve-500/10' : 'border-gray-200 dark:border-gray-700',
-            !disabled && !isOpen && 'hover:border-gray-300 dark:hover:border-gray-600 hover:bg-white dark:hover:bg-gray-900/70',
-            error && 'border-red-500 dark:border-red-500 hover:border-red-600 dark:hover:border-red-400 ring-red-500/20 bg-red-50 dark:bg-red-900/10',
+            'glass-input font-medium text-left group',
+            disabled ? 'cursor-not-allowed opacity-50 bg-gray-100/50 dark:bg-gray-800/50' : 'cursor-pointer',
+            isOpen ? 'glass-effect shadow-lg shadow-n3rve-500/10' : '',
+            !disabled && !isOpen && 'hover:border-gray-300 dark:hover:border-gray-600',
+            error && 'border-red-500 dark:border-red-500 hover:border-red-600 dark:hover:border-red-400 ring-red-500/20 bg-red-50/50 dark:bg-red-900/10',
             className
           )}
         >
@@ -171,7 +170,7 @@ export default function Select({
 
         {/* Dropdown */}
         {isOpen && !disabled && (
-          <div className="absolute z-50 w-full mt-2 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden animate-in fade-in slide-in-from-top-1">
+          <div className="absolute z-50 w-full mt-2 glass-dropdown overflow-hidden animate-in fade-in slide-in-from-top-1">
             {/* Search Input */}
             {searchable && (
               <div className="p-3 border-b border-gray-200 dark:border-gray-700">

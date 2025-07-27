@@ -1,3 +1,4 @@
+import React from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useHydration } from '@/hooks/useHydration';

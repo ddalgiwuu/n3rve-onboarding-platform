@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { User, Bell, Shield, Globe, CreditCard, Key, Save, ChevronRight, ToggleLeft, ToggleRight, CheckCircle } from 'lucide-react';
-import { useLanguageStore, useTranslation } from '@/store/language.store';
+import { User, Bell, Shield, Globe, CreditCard, Key, Save, ToggleLeft, ToggleRight, CheckCircle } from 'lucide-react';
+import { useTranslation } from '@/store/language.store';
 import { useAuthStore } from '@/store/auth.store';
 import useSafeStore from '@/hooks/useSafeStore';
 

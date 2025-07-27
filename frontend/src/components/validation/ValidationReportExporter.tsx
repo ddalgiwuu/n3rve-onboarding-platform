@@ -1,9 +1,6 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import {
-  Download, FileText, CheckSquare, AlertTriangle, AlertCircle,
-  Star, Calendar, Clock, BarChart3, Target, Award, Mail
-} from 'lucide-react';
+import { Download, FileText, CheckSquare, AlertTriangle, AlertCircle, Target, Mail } from 'lucide-react';
 import { DSPReadinessReport, ValidationSummary } from '@/types/validationAdvanced';
 import { ValidationWarningData } from '@/components/ValidationWarning';
 
