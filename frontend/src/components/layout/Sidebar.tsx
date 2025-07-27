@@ -144,21 +144,25 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         className={cn(
           'w-64 sm:w-72 h-screen',
           'fixed top-0 left-0 z-50',
-          'glass-effect-strong backdrop-blur-xl',
-          'border-r border-gray-200/50 dark:border-gray-700/50',
-          'shadow-2xl',
+          'glass-effect-ultra backdrop-blur-2xl',
+          'border-r border-white/30 dark:border-white/20',
+          'shadow-2xl shadow-black/10 dark:shadow-black/30',
           isOpen ? 'translate-x-0' : '-translate-x-full',
-          'transition-all duration-300 ease-in-out',
-          'will-change-transform'
+          'transition-all duration-500 ease-in-out',
+          'will-change-transform',
+          // Add subtle gradient overlay
+          'before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:via-transparent before:to-white/5',
+          'dark:before:from-white/5 dark:before:via-transparent dark:before:to-white/2',
+          'before:pointer-events-none before:z-0'
         )}
       >
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col relative z-10">
           {/* Header */}
-          <div className="p-6 border-b border-gray-200/30 dark:border-gray-700/30">
+          <div className="p-6 border-b border-white/20 dark:border-white/10 bg-white/5 dark:bg-white/5 backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {/* Logo with light/dark mode support */}
-                <div className="h-10 flex items-center">
+                {/* Logo with light/dark mode support and glass container */}
+                <div className="h-10 flex items-center p-2 rounded-xl glass-effect-light hover:glass-effect transition-all duration-300">
                   <img
                     src="/assets/logos/n3rve-logo.svg"
                     alt="N3RVE"
@@ -175,20 +179,24 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               {/* Close button for mobile */}
               <button
                 onClick={onClose}
-                className="lg:hidden p-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="lg:hidden p-2.5 glass-effect-light hover:glass-effect-strong rounded-xl transition-all duration-300 hover:scale-105 active:scale-95"
               >
-                <X className="w-6 h-6 text-gray-500" />
+                <X className="w-6 h-6 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200" />
               </button>
             </div>
           </div>
 
           {/* User Profile Section */}
-          <div className="px-6 py-4 border-b border-gray-200/30 dark:border-gray-700/30">
+          <div className="mx-4 my-4 p-4 glass-effect-light rounded-2xl border border-white/30 dark:border-white/20 hover:glass-effect transition-all duration-300 hover:shadow-lg">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-gray-200 to-gray-300 dark:from-gray-700 dark:to-gray-600 rounded-full flex items-center justify-center">
-                <span className="text-gray-600 dark:text-gray-300 font-semibold">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </span>
+              <div className="relative">
+                <div className="w-10 h-10 bg-gradient-to-br from-n3rve-400 to-n3rve-600 rounded-full flex items-center justify-center ring-2 ring-white/20 dark:ring-white/10 shadow-lg">
+                  <span className="text-white font-semibold text-sm">
+                    {user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </div>
+                {/* Online indicator */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-gray-800 animate-pulse"></div>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
@@ -218,36 +226,44 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   }}
                   className={({ isActive }) =>
                     cn(
-                      'group flex items-center gap-3 px-4 py-4 rounded-xl transition-all duration-200',
-                      'hover:bg-gray-100/50 dark:hover:bg-gray-800/50 hover:shadow-lg',
-                      isActive && 'bg-blue-50/70 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 shadow-lg'
+                      'group flex items-center gap-3 px-4 py-4 rounded-2xl transition-all duration-300',
+                      'glass-effect-light hover:glass-effect-strong hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]',
+                      'border border-transparent hover:border-white/40 dark:hover:border-white/20',
+                      'hover:-translate-y-0.5 transform-gpu',
+                      'backdrop-blur-md',
+                      isActive && 'glass-purple border-n3rve-500/30 dark:border-n3rve-400/30 shadow-lg shadow-n3rve-500/20 dark:shadow-n3rve-400/20 scale-[1.02]'
                     )
                   }
                 >
                   {({ isActive }) => (
                     <>
                       <div className={cn(
-                        'p-2.5 rounded-lg transition-all duration-200',
+                        'p-3 rounded-xl transition-all duration-300 glass-effect-light',
+                        'group-hover:glass-effect-strong group-hover:scale-110 group-hover:shadow-lg',
+                        'group-hover:backdrop-blur-lg',
                         isActive
-                          ? 'bg-blue-100/70 dark:bg-blue-800/50 shadow-inner'
-                          : 'group-hover:bg-gray-200/50 dark:group-hover:bg-gray-700/50'
+                          ? 'bg-n3rve-500/20 dark:bg-n3rve-400/20 shadow-inner shadow-n3rve-500/30 dark:shadow-n3rve-400/30 scale-110'
+                          : 'group-hover:bg-white/30 dark:group-hover:bg-white/10'
                       )}>
                         <item.icon className={cn(
-                          'w-5 h-5 transition-colors duration-150',
-                          getIconColorClasses(item.color, isActive)
+                          'w-5 h-5 transition-all duration-300 transform-gpu',
+                          'group-hover:scale-110 group-hover:rotate-3',
+                          isActive && 'scale-110 text-n3rve-600 dark:text-n3rve-400',
+                          !isActive && getIconColorClasses(item.color, isActive)
                         )} />
                       </div>
                       <span className={cn(
-                        'font-medium flex-1',
+                        'font-medium flex-1 transition-all duration-300',
+                        'group-hover:font-semibold',
                         isActive
-                          ? 'text-gray-900 dark:text-white'
+                          ? 'text-gray-900 dark:text-white font-semibold'
                           : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
                       )}>
                         {item.label}
                       </span>
                       {'badge' in item && item.badge && (
-                        <span className="inline-flex items-center gap-1 text-xs bg-n3rve-main/10 text-n3rve-main px-2 py-0.5 rounded-full font-semibold animate-pulse">
-                          <Sparkles className="w-3 h-3" />
+                        <span className="inline-flex items-center gap-1 text-xs glass-effect-light bg-n3rve-main/20 text-n3rve-main px-3 py-1 rounded-full font-semibold animate-pulse border border-n3rve-main/30 shadow-lg shadow-n3rve-main/20">
+                          <Sparkles className="w-3 h-3 animate-bounce" />
                           {item.badge}
                         </span>
                       )}
@@ -259,7 +275,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
             {/* Admin Toggle */}
             {isAdmin && (
-              <div className="mt-6 pt-6 border-t border-gray-200/30 dark:border-gray-700/30">
+              <div className="mt-6 pt-6 border-t border-white/20 dark:border-white/10">
                 <NavLink
                   to={isInAdminConsole ? '/dashboard' : '/admin'}
                   onClick={() => {
@@ -270,12 +286,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       }, 150);
                     }
                   }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/50 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-all duration-200 hover:shadow-lg"
+                  className="flex items-center gap-3 px-4 py-3 rounded-2xl glass-effect-strong hover:glass-effect-ultra transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] border border-red-500/20 hover:border-red-500/40 hover:-translate-y-0.5 transform-gpu"
                 >
-                  <div className="p-2 bg-red-100/70 dark:bg-red-900/40 rounded-lg">
-                    <Shield className="w-5 h-5 text-red-600" />
+                  <div className="p-3 bg-red-500/20 dark:bg-red-400/20 rounded-xl glass-effect-light hover:scale-110 transition-all duration-300 shadow-lg shadow-red-500/20">
+                    <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
+                  <span className="font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-all duration-300">
                     {isInAdminConsole
                       ? (language === 'ko' ? '고객 콘솔로' : 'To Customer Console')
                       : (language === 'ko' ? '관리자 콘솔로' : 'To Admin Console')
@@ -287,15 +303,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-gray-200/30 dark:border-gray-700/30">
+          <div className="p-4 border-t border-white/20 dark:border-white/10 bg-white/5 dark:bg-white/5 backdrop-blur-sm">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100/50 dark:hover:bg-gray-800/50 transition-all duration-200 group hover:shadow-lg"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl glass-effect-light hover:glass-effect-strong transition-all duration-300 group hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] border border-transparent hover:border-red-500/30 hover:-translate-y-0.5 transform-gpu"
             >
-              <div className="p-2 rounded-lg group-hover:bg-gray-200/50 dark:group-hover:bg-gray-700/50 transition-all duration-200">
-                <LogOut className="w-5 h-5 text-gray-500 group-hover:text-red-600" />
+              <div className="p-3 rounded-xl glass-effect-light group-hover:bg-red-500/20 dark:group-hover:bg-red-400/20 group-hover:scale-110 transition-all duration-300 shadow-lg group-hover:shadow-red-500/20">
+                <LogOut className="w-5 h-5 text-gray-500 group-hover:text-red-600 dark:group-hover:text-red-400 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-12" />
               </div>
-              <span className="font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white">
+              <span className="font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-all duration-300 group-hover:font-semibold">
                 {language === 'ko' ? '로그아웃' : 'Logout'}
               </span>
             </button>
@@ -303,10 +319,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         </div>
       </aside>
 
-      {/* Backdrop */}
+      {/* Enhanced Backdrop */}
       <div
         className={cn(
-          'fixed inset-0 bg-black/30 z-40 lg:hidden transition-opacity duration-300',
+          'fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden transition-all duration-500',
           isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         )}
         onClick={onClose}

@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Plus, Search, Clock, CheckCircle, XCircle, AlertCircle,
-  Music, Calendar, Eye, Edit, Trash2, RefreshCw, MoreVertical,
-  Filter, Download, Upload, ChevronRight, Info
+  Plus, Search, Clock, CheckCircle, XCircle,
+  Music, Calendar, Eye, Edit, Trash2, RefreshCw, Info
 } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { format } from 'date-fns';
@@ -29,7 +28,6 @@ const Submissions = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [loading, setLoading] = useState(true);
-  const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
@@ -136,20 +134,29 @@ const Submissions = () => {
     : [];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 md:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-white to-pink-50/50 dark:from-gray-900 dark:via-purple-900/10 dark:to-gray-900 p-4 md:p-6">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 md:p-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="glass-premium rounded-3xl p-6 md:p-8 animate-fade-in relative overflow-hidden group">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/8 via-pink-500/8 to-blue-500/8 opacity-60" />
+          
+          {/* Floating particles */}
+          <div className="absolute top-4 right-4 opacity-15">
+            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
+            <div className="w-1 h-1 bg-pink-400 rounded-full animate-bounce ml-6 -mt-1" style={{ animationDelay: '0.3s' }} />
+            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce ml-3 -mt-2" style={{ animationDelay: '0.6s' }} />
+          </div>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 relative z-10">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold gradient-text mb-2">
                 {t('내 제출 내역', 'My Submissions', '提出履歴')}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">{t('제출한 릴리즈를 확인하고 관리하세요', 'View and manage your submitted releases', '提出したリリースを確認・管理します')}</p>
             </div>
             <button
               onClick={() => navigate('/release-submission-modern')}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium shadow-sm"
+              className="glass-btn-primary text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-6 py-3 rounded-xl font-medium flex items-center gap-2 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               <Plus className="w-5 h-5" />
               {t('새 릴리즈 등록', 'New Release', '新規リリース登録')}
@@ -158,78 +165,98 @@ const Submissions = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-purple-100 dark:bg-purple-900/20 rounded-lg">
-                <Music className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">{submissions.length}</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="glass-enhanced rounded-2xl p-6 hover-glass-lift animate-fade-in group relative overflow-hidden" style={{ animationDelay: '0ms' }}>
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
             </div>
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
+                <Music className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-3xl font-bold text-gray-900 dark:text-white group-hover:scale-110 transition-transform duration-300">{submissions.length}</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300 relative z-10">
               {t('전체 제출', 'Total Submissions', '総提出数')}
             </h3>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
-                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+          <div className="glass-enhanced rounded-2xl p-6 hover-glass-lift animate-fade-in group relative overflow-hidden" style={{ animationDelay: '100ms' }}>
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+            </div>
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
+                <CheckCircle className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              <span className="text-3xl font-bold text-gray-900 dark:text-white group-hover:scale-110 transition-transform duration-300">
                 {submissions.filter(s => s.status === 'APPROVED').length}
               </span>
             </div>
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300 relative z-10">
               {t('승인됨', 'Approved', '承認済み')}
             </h3>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
-                <Clock className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+          <div className="glass-enhanced rounded-2xl p-6 hover-glass-lift animate-fade-in group relative overflow-hidden" style={{ animationDelay: '200ms' }}>
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+            </div>
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
+                <Clock className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              <span className="text-3xl font-bold text-gray-900 dark:text-white group-hover:scale-110 transition-transform duration-300">
                 {submissions.filter(s => s.status === 'PENDING').length}
               </span>
             </div>
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-yellow-600 dark:group-hover:text-yellow-400 transition-colors duration-300 relative z-10">
               {t('검토 중', 'Under Review', '審査中')}
             </h3>
           </div>
 
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                <XCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+          <div className="glass-enhanced rounded-2xl p-6 hover-glass-lift animate-fade-in group relative overflow-hidden" style={{ animationDelay: '300ms' }}>
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+            </div>
+            
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <div className="p-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
+                <XCircle className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900 dark:text-white">
+              <span className="text-3xl font-bold text-gray-900 dark:text-white group-hover:scale-110 transition-transform duration-300">
                 {submissions.filter(s => s.status === 'REJECTED').length}
               </span>
             </div>
-            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors duration-300 relative z-10">
               {t('반려됨', 'Rejected', '却下')}
             </h3>
           </div>
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 md:p-6">
+        <div className="glass-enhanced rounded-2xl p-4 md:p-6 animate-fade-in-delay hover:shadow-xl transition-all duration-300">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
                 placeholder={t('앨범명 또는 아티스트명으로 검색', 'Search by album or artist name', 'アルバム名またはアーティスト名で検索')}
-                className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                className="w-full pl-10 pr-4 py-3 glass-form border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 hover:shadow-lg transition-all duration-300"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <div className="flex gap-2">
               <select
-                className="px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                className="px-4 py-3 glass-form border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 hover:shadow-lg transition-all duration-300"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -240,7 +267,7 @@ const Submissions = () => {
               </select>
               <button
                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                className="px-3 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                className="px-4 py-3 glass-button-secondary rounded-xl hover:scale-105 active:scale-95 transition-all duration-300"
               >
                 {viewMode === 'grid' ? '📋' : '📱'}
               </button>
@@ -251,17 +278,17 @@ const Submissions = () => {
         {/* Submissions List */}
         <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}>
           {loading ? (
-            <div className="col-span-full bg-white dark:bg-gray-800 rounded-xl p-12 text-center shadow-sm">
+            <div className="col-span-full glass-enhanced rounded-2xl p-12 text-center animate-fade-in">
               <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-500"></div>
               <p className="mt-4 text-gray-600 dark:text-gray-400">{t('불러오는 중...', 'Loading...', '読み込み中...')}</p>
             </div>
           ) : filteredSubmissions.length === 0 ? (
-            <div className="col-span-full bg-white dark:bg-gray-800 rounded-xl p-12 text-center shadow-sm">
+            <div className="col-span-full glass-enhanced rounded-2xl p-12 text-center animate-fade-in">
               <Music className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
               <p className="text-gray-500 dark:text-gray-400 mb-6">{t('제출된 릴리즈가 없습니다', 'No submissions found', '提出されたリリースがありません')}</p>
               <button
                 onClick={() => navigate('/release-submission-modern')}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors font-medium"
+                className="glass-btn-primary text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-6 py-3 rounded-xl font-medium flex items-center gap-2 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg hover:shadow-xl mx-auto"
               >
                 <Plus className="w-5 h-5" />
                 {t('첫 번째 릴리즈 등록하기', 'Create your first release', '最初のリリースを登録')}
@@ -271,9 +298,10 @@ const Submissions = () => {
             filteredSubmissions.map((submission) => (
               <div
                 key={submission.id}
-                className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden group ${
+                className={`glass-enhanced rounded-2xl hover-glass-lift transition-all duration-300 overflow-hidden group animate-fade-in ${
                   viewMode === 'list' ? 'p-6' : 'flex flex-col'
                 }`}
+                style={{ animationDelay: `${filteredSubmissions.indexOf(submission) * 100}ms` }}
               >
                 {viewMode === 'grid' && (
                   <div className="aspect-square bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">

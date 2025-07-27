@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 import { logger } from '@/utils/logger';
 
 interface User {
@@ -120,14 +120,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthState(prev => ({ ...prev, _hasHydrated: state }));
   };
 
-  const value: AuthContextType = {
+  const value: AuthContextType = useMemo(() => ({
     ...authState,
     setAuth,
     clearAuth,
     logout: clearAuth,
     updateTokens,
     setHasHydrated
-  };
+  }), [authState]);
 
   return (
     <AuthContext.Provider value={value}>
