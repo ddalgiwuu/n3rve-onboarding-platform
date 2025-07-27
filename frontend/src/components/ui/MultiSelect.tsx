@@ -10,11 +10,11 @@ interface MultiSelectProps {
   max?: number;
 }
 
-export default function MultiSelect({ 
-  options, 
-  value = [], 
-  onChange, 
-  placeholder = 'Select options...', 
+export default function MultiSelect({
+  options,
+  value = [],
+  onChange,
+  placeholder = 'Select options...',
   className = '',
   max
 }: MultiSelectProps) {
@@ -60,7 +60,7 @@ export default function MultiSelect({
 
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
-      <div 
+      <div
         className="min-h-[42px] px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg cursor-text flex flex-wrap gap-2 items-center"
         onClick={handleInputClick}
       >

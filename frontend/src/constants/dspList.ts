@@ -79,7 +79,7 @@ export const dspList: DSP[] = [
     supportsInstrumental: true,
     profileUrlPattern: 'https://tidal.com/browse/artist/{artistId}'
   },
-  
+
   // Korean Platforms
   {
     id: 'melon',
@@ -136,7 +136,7 @@ export const dspList: DSP[] = [
     supportsExplicit: true,
     supportsInstrumental: true
   },
-  
+
   // Japanese Platforms
   {
     id: 'line_music',
@@ -160,7 +160,7 @@ export const dspList: DSP[] = [
     supportsExplicit: true,
     supportsInstrumental: true
   },
-  
+
   // Chinese Platforms
   {
     id: 'qq_music',
@@ -195,7 +195,7 @@ export const dspList: DSP[] = [
     supportsExplicit: false,
     supportsInstrumental: true
   },
-  
+
   // Download Stores
   {
     id: 'itunes',
@@ -227,7 +227,7 @@ export const dspList: DSP[] = [
     supportsExplicit: true,
     supportsInstrumental: true
   },
-  
+
   // Social Media Platforms
   {
     id: 'tiktok',
@@ -259,7 +259,7 @@ export const dspList: DSP[] = [
     supportsExplicit: true,
     supportsInstrumental: true
   },
-  
+
   // Fitness Platforms
   {
     id: 'peloton',
@@ -271,7 +271,7 @@ export const dspList: DSP[] = [
     supportsExplicit: false,
     supportsInstrumental: true
   },
-  
+
   // Other Platforms
   {
     id: 'soundcloud',
@@ -317,7 +317,7 @@ export const dspList: DSP[] = [
     supportsExplicit: true,
     supportsInstrumental: true
   }
-]
+];
 
 // DSP categories for better organization
 export const dspCategories = {
@@ -327,19 +327,19 @@ export const dspCategories = {
   'Download Stores': ['itunes', 'amazon_mp3', 'beatport'],
   'Social Media': ['tiktok', 'instagram', 'snapchat'],
   'Other': ['soundcloud', 'pandora', 'anghami', 'peloton']
-}
+};
 
 // Helper function to get DSP by ID
 export function getDSPById(id: string): DSP | undefined {
-  return dspList.find(dsp => dsp.id === id)
+  return dspList.find(dsp => dsp.id === id);
 }
 
 // Helper function to get DSPs by category
 export function getDSPsByCategory(category: DSP['category']): DSP[] {
-  return dspList.filter(dsp => dsp.category === category)
+  return dspList.filter(dsp => dsp.category === category);
 }
 
 // Helper function to get DSPs by region
 export function getDSPsByRegion(region: string): DSP[] {
-  return dspList.filter(dsp => !dsp.regions || dsp.regions.includes(region))
+  return dspList.filter(dsp => !dsp.regions || dsp.regions.includes(region));
 }

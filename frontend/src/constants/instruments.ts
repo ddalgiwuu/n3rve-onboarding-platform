@@ -108,7 +108,7 @@ export const instrumentList: Instrument[] = [
   { value: 'tenor-violin', label: '테너 바이올린', labelEn: 'Tenor Violin', category: '현악기' },
   { value: 'concert-harp', label: '콘서트 하프', labelEn: 'Concert Harp', category: '현악기' },
   { value: 'hammered-dulcimer', label: '해머드 덜시머', labelEn: 'Hammered Dulcimer', category: '현악기' },
-  
+
   // Keyboard Instruments
   { value: 'accordion', label: '아코디언', labelEn: 'Accordion', category: '건반악기' },
   { value: 'barrel-organ', label: '배럴 오르간', labelEn: 'Barrel Organ', category: '건반악기' },
@@ -146,7 +146,7 @@ export const instrumentList: Instrument[] = [
   { value: 'toy-piano', label: '토이 피아노', labelEn: 'Toy Piano', category: '건반악기' },
   { value: 'upright-piano', label: '업라이트 피아노', labelEn: 'Upright Piano', category: '건반악기' },
   { value: 'wurlitzer', label: '월리처', labelEn: 'Wurlitzer', category: '건반악기' },
-  
+
   // Wind Instruments
   { value: 'alto-clarinet', label: '알토 클라리넷', labelEn: 'Alto Clarinet', category: '관악기' },
   { value: 'alto-flute', label: '알토 플루트', labelEn: 'Alto Flute', category: '관악기' },
@@ -257,7 +257,7 @@ export const instrumentList: Instrument[] = [
   { value: 'cusneophone', label: '커스네오폰', labelEn: 'Cusneophone', category: '관악기' },
   { value: 'electronic-valve-instrument', label: '일렉트로닉 밸브 악기', labelEn: 'Electronic Valve Instrument', category: '관악기' },
   { value: 'electronic-wind-instrument', label: '일렉트로닉 윈드 악기', labelEn: 'Electronic Wind Instrument', category: '관악기' },
-  
+
   // Percussion
   { value: 'bass-drum', label: '베이스 드럼', labelEn: 'Bass Drum', category: '타악기' },
   { value: 'bata-drums', label: '바타 드럼', labelEn: 'Bata Drums', category: '타악기' },
@@ -330,14 +330,14 @@ export const instrumentList: Instrument[] = [
   { value: 'xyloimba', label: '실로임바', labelEn: 'Xyloimba', category: '타악기' },
   { value: 'zarb', label: '자르브', labelEn: 'Zarb', category: '타악기' },
   { value: 'balafon', label: '발라폰', labelEn: 'Balafon', category: '타악기' },
-  
+
   // Electronic
   { value: 'drum-machine', label: '드럼 머신', labelEn: 'Drum Machine', category: '전자악기' },
   { value: 'sampler', label: '샘플러', labelEn: 'Sampler', category: '전자악기' },
   { value: 'turntable', label: '턴테이블', labelEn: 'Turntable', category: '전자악기' },
   { value: 'modular-synth', label: '모듈러 신스', labelEn: 'Modular Synth', category: '전자악기' },
   { value: 'theremin', label: '테레민', labelEn: 'Theremin', category: '전자악기' },
-  
+
   // Voice
   { value: 'vocals', label: '보컬', labelEn: 'Vocals', category: '보컬' },
   { value: 'alto-vocals', label: '알토 보컬', labelEn: 'Alto Vocals', category: '보컬' },
@@ -355,33 +355,33 @@ export const instrumentList: Instrument[] = [
   { value: 'noises', label: '노이즈', labelEn: 'Noises', category: '보컬' },
   { value: 'talkbox', label: '토크박스', labelEn: 'Talkbox', category: '보컬' },
   { value: 'vocoder', label: '보코더', labelEn: 'Vocoder', category: '보컬' },
-  
+
   // Other
   { value: 'bandoneon', label: '반도네온', labelEn: 'Bandoneon', category: '기타' },
   { value: 'baglama', label: '바글라마', labelEn: 'Baglama', category: '기타' },
   { value: 'haaghouge', label: '하그호게', labelEn: "Hag'houge", category: '기타' },
   { value: 'hurdy-gurdy', label: '허디거디', labelEn: 'Hurdy Gurdy', category: '기타' }
-]
+];
 
 export function getInstrumentsByCategory(category: string): Instrument[] {
-  return instrumentList.filter(instrument => instrument.category === category)
+  return instrumentList.filter(instrument => instrument.category === category);
 }
 
 export function searchInstruments(query: string): Instrument[] {
-  const lowercaseQuery = query.toLowerCase()
-  return instrumentList.filter(instrument => 
+  const lowercaseQuery = query.toLowerCase();
+  return instrumentList.filter(instrument =>
     instrument.label.toLowerCase().includes(lowercaseQuery) ||
     instrument.labelEn.toLowerCase().includes(lowercaseQuery) ||
     instrument.value.toLowerCase().includes(lowercaseQuery)
-  )
+  );
 }
 
 export function getInstrumentLabel(value: string, language: 'ko' | 'en' = 'ko'): string {
-  const instrument = instrumentList.find(i => i.value === value)
-  return instrument ? (language === 'ko' ? instrument.label : instrument.labelEn) : value
+  const instrument = instrumentList.find(i => i.value === value);
+  return instrument ? (language === 'ko' ? instrument.label : instrument.labelEn) : value;
 }
 
 export function getInstrumentCategory(value: string): string {
-  const instrument = instrumentList.find(i => i.value === value)
-  return instrument?.category || ''
+  const instrument = instrumentList.find(i => i.value === value);
+  return instrument?.category || '';
 }

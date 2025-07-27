@@ -1,8 +1,8 @@
-import { createContext, useContext, ReactNode, useState, useEffect } from 'react'
-import { savedArtistsService, SavedArtist, SavedContributor } from '@/services/savedArtists.service'
-import { authService } from '@/services/auth.service'
-import { useAuthStore } from '@/contexts/AuthContext'
-import { logger } from '@/utils/logger'
+import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
+import { savedArtistsService, SavedArtist, SavedContributor } from '@/services/savedArtists.service';
+import { authService } from '@/services/auth.service';
+import { useAuthStore } from '@/contexts/AuthContext';
+import { logger } from '@/utils/logger';
 
 interface SavedArtistsState {
   artists: SavedArtist[]
@@ -26,118 +26,118 @@ interface SavedArtistsContextType extends SavedArtistsState {
   searchContributors: (query: string) => SavedContributor[]
 }
 
-const SavedArtistsContext = createContext<SavedArtistsContextType | undefined>(undefined)
+const SavedArtistsContext = createContext<SavedArtistsContextType | undefined>(undefined);
 
 const initialState: SavedArtistsState = {
   artists: [],
   contributors: [],
   loading: false,
   error: null
-}
+};
 
-const LOCAL_STORAGE_ARTISTS_KEY = 'n3rve_saved_artists'
-const LOCAL_STORAGE_CONTRIBUTORS_KEY = 'n3rve_saved_contributors'
+const LOCAL_STORAGE_ARTISTS_KEY = 'n3rve_saved_artists';
+const LOCAL_STORAGE_CONTRIBUTORS_KEY = 'n3rve_saved_contributors';
 
 // Helper functions for localStorage with user-specific keys
 const getLocalStorageKey = (baseKey: string, userId?: string) => {
-  const id = userId || 'anonymous'
-  return `${baseKey}_${id}`
-}
+  const id = userId || 'anonymous';
+  return `${baseKey}_${id}`;
+};
 
 const loadFromLocalStorage = <T,>(baseKey: string, userId?: string, defaultValue: T[] = []): T[] => {
   try {
-    const key = getLocalStorageKey(baseKey, userId)
-    const stored = localStorage.getItem(key)
-    logger.debug(`SavedArtistsContext: Loading from localStorage key: ${key}, found:`, !!stored)
-    return stored ? JSON.parse(stored) : defaultValue
+    const key = getLocalStorageKey(baseKey, userId);
+    const stored = localStorage.getItem(key);
+    logger.debug(`SavedArtistsContext: Loading from localStorage key: ${key}, found:`, !!stored);
+    return stored ? JSON.parse(stored) : defaultValue;
   } catch (error) {
-    logger.error(`Error loading ${baseKey} from localStorage:`, error)
-    return defaultValue
+    logger.error(`Error loading ${baseKey} from localStorage:`, error);
+    return defaultValue;
   }
-}
+};
 
 const saveToLocalStorage = <T,>(baseKey: string, data: T[], userId?: string): void => {
   try {
-    const key = getLocalStorageKey(baseKey, userId)
-    localStorage.setItem(key, JSON.stringify(data))
-    logger.debug(`SavedArtistsContext: Saved ${data.length} items to localStorage key: ${key}`)
+    const key = getLocalStorageKey(baseKey, userId);
+    localStorage.setItem(key, JSON.stringify(data));
+    logger.debug(`SavedArtistsContext: Saved ${data.length} items to localStorage key: ${key}`);
   } catch (error) {
-    logger.error(`Error saving ${baseKey} to localStorage:`, error)
+    logger.error(`Error saving ${baseKey} to localStorage:`, error);
   }
-}
+};
 
 export function SavedArtistsProvider({ children }: { children: ReactNode }) {
-  const auth = useAuthStore()
-  const userId = auth.user?.id
-  
+  const auth = useAuthStore();
+  const userId = auth.user?.id;
+
   // Initialize state with localStorage data for the current user
   const [state, setState] = useState<SavedArtistsState>(() => ({
     ...initialState,
     artists: loadFromLocalStorage<SavedArtist>(LOCAL_STORAGE_ARTISTS_KEY, userId),
     contributors: loadFromLocalStorage<SavedContributor>(LOCAL_STORAGE_CONTRIBUTORS_KEY, userId)
-  }))
+  }));
 
   const fetchArtists = async () => {
     try {
-      const isAuth = await authService.isAuthenticated()
-      logger.debug('SavedArtistsContext: fetchArtists called, isAuthenticated:', isAuth, 'userId:', userId)
-      setState(prev => ({ ...prev, loading: true, error: null }))
-      
+      const isAuth = await authService.isAuthenticated();
+      logger.debug('SavedArtistsContext: fetchArtists called, isAuthenticated:', isAuth, 'userId:', userId);
+      setState(prev => ({ ...prev, loading: true, error: null }));
+
       // If authenticated, fetch from server and sync with localStorage
       if (isAuth) {
-        const artists = await savedArtistsService.getArtists()
-        logger.debug('SavedArtistsContext: Fetched', artists.length, 'artists from server')
-        setState(prev => ({ ...prev, artists, loading: false }))
-        saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, artists, userId)
+        const artists = await savedArtistsService.getArtists();
+        logger.debug('SavedArtistsContext: Fetched', artists.length, 'artists from server');
+        setState(prev => ({ ...prev, artists, loading: false }));
+        saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, artists, userId);
       } else {
         // Not authenticated, use localStorage data
-        const localArtists = loadFromLocalStorage<SavedArtist>(LOCAL_STORAGE_ARTISTS_KEY, userId)
-        logger.debug('SavedArtistsContext: Loaded', localArtists.length, 'artists from localStorage')
-        setState(prev => ({ ...prev, artists: localArtists, loading: false }))
+        const localArtists = loadFromLocalStorage<SavedArtist>(LOCAL_STORAGE_ARTISTS_KEY, userId);
+        logger.debug('SavedArtistsContext: Loaded', localArtists.length, 'artists from localStorage');
+        setState(prev => ({ ...prev, artists: localArtists, loading: false }));
       }
     } catch (error) {
-      logger.error('SavedArtistsContext: Error fetching artists:', error)
+      logger.error('SavedArtistsContext: Error fetching artists:', error);
       // On error, fallback to localStorage
-      const localArtists = loadFromLocalStorage<SavedArtist>(LOCAL_STORAGE_ARTISTS_KEY, userId)
-      setState(prev => ({ ...prev, artists: localArtists, error, loading: false }))
+      const localArtists = loadFromLocalStorage<SavedArtist>(LOCAL_STORAGE_ARTISTS_KEY, userId);
+      setState(prev => ({ ...prev, artists: localArtists, error, loading: false }));
     }
-  }
+  };
 
   const fetchContributors = async () => {
     try {
-      setState(prev => ({ ...prev, loading: true, error: null }))
-      
+      setState(prev => ({ ...prev, loading: true, error: null }));
+
       // If authenticated, fetch from server and sync with localStorage
-      const isAuth = await authService.isAuthenticated()
+      const isAuth = await authService.isAuthenticated();
       if (isAuth) {
-        const contributors = await savedArtistsService.getContributors()
-        setState(prev => ({ ...prev, contributors, loading: false }))
-        saveToLocalStorage(LOCAL_STORAGE_CONTRIBUTORS_KEY, contributors, userId)
+        const contributors = await savedArtistsService.getContributors();
+        setState(prev => ({ ...prev, contributors, loading: false }));
+        saveToLocalStorage(LOCAL_STORAGE_CONTRIBUTORS_KEY, contributors, userId);
       } else {
         // Not authenticated, use localStorage data
-        const localContributors = loadFromLocalStorage<SavedContributor>(LOCAL_STORAGE_CONTRIBUTORS_KEY, userId)
-        setState(prev => ({ ...prev, contributors: localContributors, loading: false }))
+        const localContributors = loadFromLocalStorage<SavedContributor>(LOCAL_STORAGE_CONTRIBUTORS_KEY, userId);
+        setState(prev => ({ ...prev, contributors: localContributors, loading: false }));
       }
     } catch (error) {
-      logger.error('Error fetching contributors:', error)
+      logger.error('Error fetching contributors:', error);
       // On error, fallback to localStorage
-      const localContributors = loadFromLocalStorage<SavedContributor>(LOCAL_STORAGE_CONTRIBUTORS_KEY, userId)
-      setState(prev => ({ ...prev, contributors: localContributors, error, loading: false }))
+      const localContributors = loadFromLocalStorage<SavedContributor>(LOCAL_STORAGE_CONTRIBUTORS_KEY, userId);
+      setState(prev => ({ ...prev, contributors: localContributors, error, loading: false }));
     }
-  }
+  };
 
   const addArtist = async (artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
     try {
-      logger.debug('SavedArtistsContext: addArtist called with:', artist)
-      let newArtist: SavedArtist
-      
-      const isAuth = await authService.isAuthenticated()
+      logger.debug('SavedArtistsContext: addArtist called with:', artist);
+      let newArtist: SavedArtist;
+
+      const isAuth = await authService.isAuthenticated();
       if (isAuth) {
         // If authenticated, save to server
-        newArtist = await savedArtistsService.addArtist(artist)
-        logger.debug('SavedArtistsContext: Artist added to server:', newArtist)
+        newArtist = await savedArtistsService.addArtist(artist);
+        logger.debug('SavedArtistsContext: Artist added to server:', newArtist);
         // Refetch to sync
-        await fetchArtists()
+        await fetchArtists();
       } else {
         // If not authenticated, save to localStorage only
         newArtist = {
@@ -146,121 +146,121 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
           createdAt: new Date().toISOString(),
           lastUsed: new Date().toISOString(),
           usageCount: 0
-        }
-        
-        const currentArtists = [...state.artists, newArtist]
-        setState(prev => ({ ...prev, artists: currentArtists }))
-        saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, currentArtists, userId)
+        };
+
+        const currentArtists = [...state.artists, newArtist];
+        setState(prev => ({ ...prev, artists: currentArtists }));
+        saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, currentArtists, userId);
       }
-      
-      return newArtist
+
+      return newArtist;
     } catch (error) {
-      logger.error('SavedArtistsContext: Error adding artist:', error)
-      setState(prev => ({ ...prev, error }))
-      throw error
+      logger.error('SavedArtistsContext: Error adding artist:', error);
+      setState(prev => ({ ...prev, error }));
+      throw error;
     }
-  }
+  };
 
   const updateArtist = async (id: string, updates: Partial<SavedArtist>) => {
     try {
-      const isAuth = await authService.isAuthenticated()
+      const isAuth = await authService.isAuthenticated();
       if (isAuth && !id.startsWith('local_')) {
         // If authenticated and it's a server artist, update on server
-        const updatedArtist = await savedArtistsService.updateArtist(id, updates)
+        const updatedArtist = await savedArtistsService.updateArtist(id, updates);
         setState(prev => ({
           ...prev,
           artists: prev.artists.map(a => a.id === id ? updatedArtist : a)
-        }))
+        }));
         // Sync to localStorage
-        saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, state.artists.map(a => a.id === id ? updatedArtist : a), userId)
+        saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, state.artists.map(a => a.id === id ? updatedArtist : a), userId);
       } else {
         // If not authenticated or it's a local artist, update in localStorage only
-        const updatedArtists = state.artists.map(a => 
+        const updatedArtists = state.artists.map(a =>
           a.id === id ? { ...a, ...updates } : a
-        )
-        setState(prev => ({ ...prev, artists: updatedArtists }))
-        saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, updatedArtists, userId)
+        );
+        setState(prev => ({ ...prev, artists: updatedArtists }));
+        saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, updatedArtists, userId);
       }
     } catch (error) {
-      setState(prev => ({ ...prev, error }))
-      throw error
+      setState(prev => ({ ...prev, error }));
+      throw error;
     }
-  }
+  };
 
   const deleteArtist = async (id: string) => {
     try {
-      const isAuth = await authService.isAuthenticated()
+      const isAuth = await authService.isAuthenticated();
       if (isAuth && !id.startsWith('local_')) {
         // If authenticated and it's a server artist, delete from server
-        await savedArtistsService.deleteArtist(id)
+        await savedArtistsService.deleteArtist(id);
       }
-      
+
       // Always update local state and localStorage
-      const filteredArtists = state.artists.filter(a => a.id !== id)
+      const filteredArtists = state.artists.filter(a => a.id !== id);
       setState(prev => ({
         ...prev,
         artists: filteredArtists
-      }))
-      saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, filteredArtists, userId)
+      }));
+      saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, filteredArtists, userId);
     } catch (error) {
-      setState(prev => ({ ...prev, error }))
-      throw error
+      setState(prev => ({ ...prev, error }));
+      throw error;
     }
-  }
+  };
 
   const useArtist = async (id: string) => {
     try {
-      let updatedArtist: SavedArtist
-      
-      const isAuth = await authService.isAuthenticated()
+      let updatedArtist: SavedArtist;
+
+      const isAuth = await authService.isAuthenticated();
       if (isAuth && !id.startsWith('local_')) {
         // If authenticated and it's a server artist, update on server
-        updatedArtist = await savedArtistsService.useArtist(id)
+        updatedArtist = await savedArtistsService.useArtist(id);
       } else {
         // If not authenticated or it's a local artist, update locally
-        const artist = state.artists.find(a => a.id === id)
-        if (!artist) throw new Error('Artist not found')
-        
+        const artist = state.artists.find(a => a.id === id);
+        if (!artist) throw new Error('Artist not found');
+
         updatedArtist = {
           ...artist,
           usageCount: artist.usageCount + 1,
           lastUsed: new Date().toISOString()
-        }
+        };
       }
-      
-      const updatedArtists = state.artists.map(a => a.id === id ? updatedArtist : a)
+
+      const updatedArtists = state.artists.map(a => a.id === id ? updatedArtist : a);
       setState(prev => ({
         ...prev,
         artists: updatedArtists
-      }))
-      saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, updatedArtists, userId)
-      
-      return updatedArtist
+      }));
+      saveToLocalStorage(LOCAL_STORAGE_ARTISTS_KEY, updatedArtists, userId);
+
+      return updatedArtist;
     } catch (error) {
-      setState(prev => ({ ...prev, error }))
-      throw error
+      setState(prev => ({ ...prev, error }));
+      throw error;
     }
-  }
+  };
 
   const searchArtists = (query: string) => {
-    if (!query.trim()) return state.artists
-    
-    return state.artists.filter(artist => 
+    if (!query.trim()) return state.artists;
+
+    return state.artists.filter(artist =>
       artist.name.toLowerCase().includes(query.toLowerCase()) ||
       artist.translations.some(t => t.name.toLowerCase().includes(query.toLowerCase()))
-    )
-  }
+    );
+  };
 
   const addContributor = async (contributor: Omit<SavedContributor, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => {
     try {
-      let newContributor: SavedContributor
-      
-      const isAuth = await authService.isAuthenticated()
+      let newContributor: SavedContributor;
+
+      const isAuth = await authService.isAuthenticated();
       if (isAuth) {
         // If authenticated, save to server
-        newContributor = await savedArtistsService.addContributor(contributor)
+        newContributor = await savedArtistsService.addContributor(contributor);
         // Refetch to sync
-        await fetchContributors()
+        await fetchContributors();
       } else {
         // If not authenticated, save to localStorage only
         newContributor = {
@@ -269,104 +269,104 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
           createdAt: new Date().toISOString(),
           lastUsed: new Date().toISOString(),
           usageCount: 0
-        }
-        
-        const currentContributors = [...state.contributors, newContributor]
-        setState(prev => ({ ...prev, contributors: currentContributors }))
-        saveToLocalStorage(LOCAL_STORAGE_CONTRIBUTORS_KEY, currentContributors, userId)
+        };
+
+        const currentContributors = [...state.contributors, newContributor];
+        setState(prev => ({ ...prev, contributors: currentContributors }));
+        saveToLocalStorage(LOCAL_STORAGE_CONTRIBUTORS_KEY, currentContributors, userId);
       }
-      
-      return newContributor
+
+      return newContributor;
     } catch (error) {
-      logger.error('Error adding contributor:', error)
-      setState(prev => ({ ...prev, error }))
-      throw error
+      logger.error('Error adding contributor:', error);
+      setState(prev => ({ ...prev, error }));
+      throw error;
     }
-  }
+  };
 
   const updateContributor = async (id: string, updates: Partial<SavedContributor>) => {
     try {
-      const updatedContributor = await savedArtistsService.updateContributor(id, updates)
+      const updatedContributor = await savedArtistsService.updateContributor(id, updates);
       setState(prev => ({
         ...prev,
         contributors: prev.contributors.map(c => c.id === id ? updatedContributor : c)
-      }))
+      }));
     } catch (error) {
-      setState(prev => ({ ...prev, error }))
-      throw error
+      setState(prev => ({ ...prev, error }));
+      throw error;
     }
-  }
+  };
 
   const deleteContributor = async (id: string) => {
     try {
-      await savedArtistsService.deleteContributor(id)
+      await savedArtistsService.deleteContributor(id);
       setState(prev => ({
         ...prev,
         contributors: prev.contributors.filter(c => c.id !== id)
-      }))
+      }));
     } catch (error) {
-      setState(prev => ({ ...prev, error }))
-      throw error
+      setState(prev => ({ ...prev, error }));
+      throw error;
     }
-  }
+  };
 
   const useContributor = async (id: string) => {
     try {
-      const contributor = await savedArtistsService.useContributor(id)
+      const contributor = await savedArtistsService.useContributor(id);
       setState(prev => ({
         ...prev,
         contributors: prev.contributors.map(c => c.id === id ? contributor : c)
-      }))
-      return contributor
+      }));
+      return contributor;
     } catch (error) {
-      setState(prev => ({ ...prev, error }))
-      throw error
+      setState(prev => ({ ...prev, error }));
+      throw error;
     }
-  }
+  };
 
   const searchContributors = (query: string) => {
-    if (!query.trim()) return state.contributors
-    
-    return state.contributors.filter(contributor => 
+    if (!query.trim()) return state.contributors;
+
+    return state.contributors.filter(contributor =>
       contributor.name.toLowerCase().includes(query.toLowerCase()) ||
       contributor.translations.some(t => t.name.toLowerCase().includes(query.toLowerCase())) ||
       contributor.roles.some(r => r.toLowerCase().includes(query.toLowerCase())) ||
       contributor.instruments.some(i => i.toLowerCase().includes(query.toLowerCase()))
-    )
-  }
+    );
+  };
 
   // Load data on mount and when user changes
   useEffect(() => {
-    logger.debug('SavedArtistsContext: useEffect triggered, userId:', userId, 'hasToken:', authService.hasToken())
-    fetchArtists()
-    fetchContributors()
-  }, [userId])
-  
+    logger.debug('SavedArtistsContext: useEffect triggered, userId:', userId, 'hasToken:', authService.hasToken());
+    fetchArtists();
+    fetchContributors();
+  }, [userId]);
+
   // Sync localStorage data with server when user logs in
   useEffect(() => {
     if (authService.hasToken() && userId) {
-      logger.debug('SavedArtistsContext: User logged in, syncing localStorage data for user:', userId)
+      logger.debug('SavedArtistsContext: User logged in, syncing localStorage data for user:', userId);
       // Get local artists (those with IDs starting with 'local_')
-      const localArtists = state.artists.filter(a => a.id.startsWith('local_'))
-      
+      const localArtists = state.artists.filter(a => a.id.startsWith('local_'));
+
       // Sync each local artist to server
       localArtists.forEach(async (localArtist) => {
         try {
-          const { id, createdAt, lastUsed, usageCount, ...artistData } = localArtist
-          await savedArtistsService.addArtist(artistData)
+          const { id, createdAt, lastUsed, usageCount, ...artistData } = localArtist;
+          await savedArtistsService.addArtist(artistData);
         } catch (error) {
-          logger.error('Failed to sync local artist:', error)
+          logger.error('Failed to sync local artist:', error);
         }
-      })
-      
+      });
+
       // After syncing, refetch from server to get updated data
       if (localArtists.length > 0) {
         setTimeout(() => {
-          fetchArtists()
-        }, 1000)
+          fetchArtists();
+        }, 1000);
       }
     }
-  }, [userId])
+  }, [userId]);
 
   const value: SavedArtistsContextType = {
     ...state,
@@ -382,19 +382,19 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
     deleteContributor,
     useContributor,
     searchContributors
-  }
+  };
 
   return (
     <SavedArtistsContext.Provider value={value}>
       {children}
     </SavedArtistsContext.Provider>
-  )
+  );
 }
 
 export function useSavedArtistsStore() {
-  const context = useContext(SavedArtistsContext)
+  const context = useContext(SavedArtistsContext);
   if (context === undefined) {
-    throw new Error('useSavedArtistsStore must be used within a SavedArtistsProvider')
+    throw new Error('useSavedArtistsStore must be used within a SavedArtistsProvider');
   }
-  return context
+  return context;
 }

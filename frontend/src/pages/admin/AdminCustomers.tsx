@@ -85,14 +85,14 @@ const AdminCustomers = () => {
     try {
       setLoading(true);
       const response = await adminService.getUsers();
-      
+
       // Add defensive programming - check if response and users exist
       if (!response || !response.users || !Array.isArray(response.users)) {
         console.error('Invalid response format:', response);
         setCustomers([]);
         return;
       }
-      
+
       // Transform users to customer format
       const customerData: Customer[] = response.users.map((user: any) => ({
         id: user.id || '',
@@ -112,7 +112,7 @@ const AdminCustomers = () => {
         subAccounts: user.subAccounts,
         subAccountsCount: user.subAccountsCount || 0
       }));
-      
+
       setCustomers(customerData);
     } catch (error) {
       console.error('Error fetching customers:', error);
@@ -163,8 +163,8 @@ const AdminCustomers = () => {
   };
 
   const getRoleColor = (role: string) => {
-    return role === 'admin' 
-      ? 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30' 
+    return role === 'admin'
+      ? 'text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30'
       : 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30';
   };
 
@@ -202,7 +202,7 @@ const AdminCustomers = () => {
               </h1>
               <p className="text-gray-700 dark:text-gray-300">{t('고객 정보를 관리하고 분석합니다', 'Manage and analyze customer information', '顧客情報を管理・分析します')}</p>
             </div>
-            <button 
+            <button
               onClick={() => setShowAddModal(true)}
               className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all hover-lift flex items-center gap-2"
             >
@@ -221,7 +221,7 @@ const AdminCustomers = () => {
             </div>
             <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('전체 고객', 'Total Customers', '全顧客数')}</p>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-slide-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center justify-between mb-4">
               <TrendingUp className="w-8 h-8 text-green-500 dark:text-green-400" />
@@ -229,7 +229,7 @@ const AdminCustomers = () => {
             </div>
             <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('활성 고객', 'Active Customers', 'アクティブ顧客')}</p>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-slide-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center justify-between mb-4">
               <Music className="w-8 h-8 text-blue-500 dark:text-blue-400" />
@@ -237,7 +237,7 @@ const AdminCustomers = () => {
             </div>
             <p className="text-gray-700 dark:text-gray-400 text-sm font-medium">{t('전체 제출', 'Total Submissions', '総提出数')}</p>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 animate-slide-in shadow-sm dark:shadow-none border border-gray-200 dark:border-gray-700/50" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center justify-between mb-4">
               <Calendar className="w-8 h-8 text-yellow-500 dark:text-yellow-400" />
@@ -363,7 +363,7 @@ const AdminCustomers = () => {
                               </button>
                             </div>
                           ) : null}
-                          
+
                           <button
                             className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${getRoleColor(customer.role)} hover:shadow-md`}
                             onClick={() => setEditingRole(editingRole === customer.id ? null : customer.id)}
@@ -373,8 +373,8 @@ const AdminCustomers = () => {
                               return <Icon className="w-4 h-4" />;
                             })()}
                             <span>
-                              {customer.role === 'admin' 
-                                ? t('관리자', 'Admin', '管理者') 
+                              {customer.role === 'admin'
+                                ? t('관리자', 'Admin', '管理者')
                                 : t('사용자', 'User', 'ユーザー')}
                             </span>
                             <ChevronDown className={`w-4 h-4 transition-transform ${editingRole === customer.id ? 'rotate-180' : ''}`} />

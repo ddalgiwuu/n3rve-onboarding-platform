@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
-import { X, Check, ChevronDown } from 'lucide-react'
-import { useTranslation } from '@/hooks/useTranslation'
+import { useState, useRef, useEffect } from 'react';
+import { X, Check, ChevronDown } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Option {
   value: string
@@ -29,50 +29,50 @@ export default function SearchableMultiSelect({
   required = false,
   className = ''
 }: SearchableMultiSelectProps) {
-  const { t } = useTranslation()
-  const [isOpen, setIsOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  const { t } = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Filter options based on search term
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  );
 
   // Group options by category
   const groupedOptions = filteredOptions.reduce((acc, option) => {
-    const category = option.category || 'Other'
-    if (!acc[category]) acc[category] = []
-    acc[category].push(option)
-    return acc
-  }, {} as Record<string, Option[]>)
+    const category = option.category || 'Other';
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(option);
+    return acc;
+  }, {} as Record<string, Option[]>);
 
   // Handle click outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+        setIsOpen(false);
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSelect = (optionValue: string) => {
     if (value.includes(optionValue)) {
-      onChange(value.filter(v => v !== optionValue))
+      onChange(value.filter(v => v !== optionValue));
     } else if (!maxItems || value.length < maxItems) {
-      onChange([...value, optionValue])
+      onChange([...value, optionValue]);
     }
-  }
+  };
 
   const handleRemove = (optionValue: string) => {
-    onChange(value.filter(v => v !== optionValue))
-  }
+    onChange(value.filter(v => v !== optionValue));
+  };
 
-  const selectedOptions = options.filter(opt => value.includes(opt.value))
+  const selectedOptions = options.filter(opt => value.includes(opt.value));
 
   return (
     <div className={`relative ${className}`}>
@@ -82,7 +82,7 @@ export default function SearchableMultiSelect({
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
-      
+
       <div ref={dropdownRef} className="relative">
         {/* Selected items */}
         <div className="min-h-[48px] border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 p-2 flex flex-wrap gap-2">
@@ -101,25 +101,25 @@ export default function SearchableMultiSelect({
               </button>
             </span>
           ))}
-          
+
           {/* Search input */}
           <input
             ref={inputRef}
             type="text"
             value={searchTerm}
             onChange={(e) => {
-              setSearchTerm(e.target.value)
-              setIsOpen(true)
+              setSearchTerm(e.target.value);
+              setIsOpen(true);
             }}
             onFocus={() => setIsOpen(true)}
             placeholder={
-              selectedOptions.length === 0 
+              selectedOptions.length === 0
                 ? placeholder || t('검색하여 선택', 'Search to select', '検索して選択')
                 : ''
             }
             className="flex-1 min-w-[120px] bg-transparent outline-none text-sm"
           />
-          
+
           <button
             type="button"
             onClick={() => setIsOpen(!isOpen)}
@@ -138,7 +138,7 @@ export default function SearchableMultiSelect({
                 {filteredOptions.length} {t('개 결과', 'results', '件の結果')}
               </div>
             )}
-            
+
             {filteredOptions.length === 0 ? (
               <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
                 {t('검색 결과가 없습니다', 'No results found', '検索結果がありません')}
@@ -152,9 +152,9 @@ export default function SearchableMultiSelect({
                     </div>
                   )}
                   {categoryOptions.map(option => {
-                    const isSelected = value.includes(option.value)
-                    const isDisabled = !isSelected && maxItems !== undefined && value.length >= maxItems
-                    
+                    const isSelected = value.includes(option.value);
+                    const isDisabled = !isSelected && maxItems !== undefined && value.length >= maxItems;
+
                     return (
                       <button
                         key={option.value}
@@ -163,18 +163,18 @@ export default function SearchableMultiSelect({
                         disabled={isDisabled}
                         className={`
                           w-full px-3 py-2 text-left text-sm flex items-center justify-between
-                          ${isSelected 
-                            ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300' 
-                            : isDisabled
-                            ? 'bg-gray-50 dark:bg-gray-700/50 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                            : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                          }
+                          ${isSelected
+                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                        : isDisabled
+                          ? 'bg-gray-50 dark:bg-gray-700/50 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      }
                         `}
                       >
                         <span>{option.label}</span>
                         {isSelected && <Check className="w-4 h-4" />}
                       </button>
-                    )
+                    );
                   })}
                 </div>
               ))
@@ -182,7 +182,7 @@ export default function SearchableMultiSelect({
           </div>
         )}
       </div>
-      
+
       {maxItems && (
         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
           {t(
@@ -193,5 +193,5 @@ export default function SearchableMultiSelect({
         </p>
       )}
     </div>
-  )
+  );
 }

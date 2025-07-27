@@ -1,15 +1,15 @@
-import React, { useState } from 'react'
-import { 
-  Copy, ChevronDown, ChevronRight, Music, Album, FileText, Globe, 
+import React, { useState } from 'react';
+import {
+  Copy, ChevronDown, ChevronRight, Music, Album, FileText, Globe,
   Info, Users,
   CheckCircle, XCircle, AlertCircle,
   Package, Download, Eye, Play
-} from 'lucide-react'
-import { cn } from '@/utils/cn'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import toast from 'react-hot-toast'
-import { dropboxService } from '@/services/dropbox.service'
+} from 'lucide-react';
+import { cn } from '@/utils/cn';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import toast from 'react-hot-toast';
+import { dropboxService } from '@/services/dropbox.service';
 
 interface Props {
   submission: any // MongoDB에서 가져온 전체 submission 데이터
@@ -23,73 +23,73 @@ interface Section {
 }
 
 const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
   // Note: t function is not available from useLanguageStore, need to create local t function
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
   const [expandedSections, setExpandedSections] = useState<string[]>([
     'product', 'artist', 'tracks', 'distribution', 'files'
-  ])
-  const [copiedSections, setCopiedSections] = useState<Set<string>>(new Set())
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
-  const [playingAudio, setPlayingAudio] = useState<string | null>(null)
+  ]);
+  const [copiedSections, setCopiedSections] = useState<Set<string>>(new Set());
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
 
   const toggleSection = (sectionId: string) => {
-    setExpandedSections(prev => 
-      prev.includes(sectionId) 
+    setExpandedSections(prev =>
+      prev.includes(sectionId)
         ? prev.filter(id => id !== sectionId)
         : [...prev, sectionId]
-    )
-  }
+    );
+  };
 
   const copyToClipboard = async (text: string, sectionId?: string) => {
     try {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(text);
       if (sectionId) {
-        setCopiedSections(new Set([...copiedSections, sectionId]))
+        setCopiedSections(new Set([...copiedSections, sectionId]));
         setTimeout(() => {
           setCopiedSections(prev => {
-            const newSet = new Set(prev)
-            newSet.delete(sectionId)
-            return newSet
-          })
-        }, 2000)
+            const newSet = new Set(prev);
+            newSet.delete(sectionId);
+            return newSet;
+          });
+        }, 2000);
       }
-      toast.success(t('복사되었습니다', 'Copied'))
+      toast.success(t('복사되었습니다', 'Copied'));
     } catch (err) {
-      toast.error(t('복사 실패', 'Copy failed'))
+      toast.error(t('복사 실패', 'Copy failed'));
     }
-  }
+  };
 
   const formatValue = (value: any): string => {
-    if (value === null || value === undefined || value === '') return '-'
-    if (typeof value === 'boolean') return value ? t('예', 'Yes') : t('아니오', 'No')
-    if (Array.isArray(value)) return value.join(', ')
-    if (typeof value === 'object') return JSON.stringify(value, null, 2)
-    return String(value)
-  }
+    if (value === null || value === undefined || value === '') return '-';
+    if (typeof value === 'boolean') return value ? t('예', 'Yes') : t('아니오', 'No');
+    if (Array.isArray(value)) return value.join(', ');
+    if (typeof value === 'object') return JSON.stringify(value, null, 2);
+    return String(value);
+  };
 
   const formatSectionForCopy = (section: Section): string => {
-    const lines = [`=== ${section.title} ===`]
+    const lines = [`=== ${section.title} ===`];
     Object.entries(section.data).forEach(([key, value]) => {
       if (value !== null && value !== undefined && value !== '') {
-        lines.push(`${key}: ${formatValue(value)}`)
+        lines.push(`${key}: ${formatValue(value)}`);
       }
-    })
-    return lines.join('\n')
-  }
+    });
+    return lines.join('\n');
+  };
 
   const formatAllForCopy = (): string => {
-    const allSections = getSections()
-    return allSections.map(section => formatSectionForCopy(section)).join('\n\n')
-  }
+    const allSections = getSections();
+    return allSections.map(section => formatSectionForCopy(section)).join('\n\n');
+  };
 
   const getDirectUrl = (url: string) => {
-    if (!url) return ''
-    return dropboxService.getDirectUrl(url)
-  }
+    if (!url) return '';
+    return dropboxService.getDirectUrl(url);
+  };
 
   const getSections = (): Section[] => {
-    const sections: Section[] = []
+    const sections: Section[] = [];
 
     // Product Level Fields
     sections.push({
@@ -111,7 +111,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         'EAN': submission.album?.ean,
         'JAN': submission.album?.jan
       }
-    })
+    });
 
     // Artist Information
     sections.push({
@@ -128,7 +128,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         'YouTube Channel ID': submission.artist?.youtubeChannelId,
         [t('장르', 'Genre')]: submission.artist?.genre?.join(', ')
       }
-    })
+    });
 
     // Tracks
     sections.push({
@@ -137,12 +137,12 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
       icon: <Music className="w-5 h-5" />,
       data: {
         [t('총 트랙 수', 'Total Tracks')]: submission.tracks?.length || 0,
-        [t('트랙 리스트', 'Track List')]: submission.tracks?.map((track: any, index: number) => 
+        [t('트랙 리스트', 'Track List')]: submission.tracks?.map((track: any, index: number) =>
           `${index + 1}. ${track.title} ${track.featuring ? `(feat. ${track.featuring})` : ''}`
         ).join('\n'),
         [t('Dolby Atmos 트랙', 'Dolby Atmos Tracks')]: submission.tracks?.filter((t: any) => t.dolbyAtmos).length || 0
       }
-    })
+    });
 
     // Distribution
     sections.push({
@@ -154,7 +154,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         [t('독점 권리', 'Exclusive Rights')]: submission.release?.exclusiveRights || t('없음', 'None'),
         [t('피처드 플랫폼', 'Featured Platforms')]: submission.release?.featuredPlatforms?.join(', ') || '-'
       }
-    })
+    });
 
     // Files
     sections.push({
@@ -169,7 +169,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         [t('뮤직 비디오', 'Music Video')]: submission.files?.musicVideoUrl,
         [t('추가 파일', 'Additional Files')]: submission.files?.additionalFiles
       }
-    })
+    });
 
     // Marketing Fields (31 fields)
     sections.push({
@@ -183,7 +183,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         [t('마케팅 키워드', 'Marketing Keywords')]: submission.release?.marketingKeywords,
         [t('타겟 대상', 'Target Audience')]: submission.release?.targetAudience,
         [t('프로모션 계획', 'Promotion Plans')]: submission.release?.promotionPlans,
-        
+
         // Artist Profile
         [t('아티스트 이름', 'Artist Name')]: submission.release?.artistName,
         [t('아티스트 성별', 'Artist Gender')]: submission.release?.artistGender,
@@ -191,13 +191,13 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         [t('현재 거주 도시', 'Artist Current City')]: submission.release?.artistCurrentCity,
         [t('고향', 'Artist Hometown')]: submission.release?.artistHometown,
         [t('아티스트 바이오', 'Artist Bio')]: submission.release?.artistBio,
-        
+
         // Social & Platform
         [t('Toundates URL', 'Toundates URL')]: submission.release?.toundatesUrl,
         [t('Spotify 아티스트 ID', 'Spotify Artist ID')]: submission.release?.spotifyArtistId,
         [t('Apple Music 아티스트 ID', 'Apple Music Artist ID')]: submission.release?.appleMusicArtistId,
         [t('SoundCloud 아티스트 ID', 'SoundCloud Artist ID')]: submission.release?.soundcloudArtistId,
-        
+
         // Social Media URLs
         [t('YouTube URL', 'YouTube URL')]: submission.release?.youtubeUrl,
         [t('TikTok URL', 'TikTok URL')]: submission.release?.tiktokUrl,
@@ -206,37 +206,37 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         [t('X (Twitter) URL', 'X URL')]: submission.release?.xUrl,
         [t('Twitch URL', 'Twitch URL')]: submission.release?.twitchUrl,
         [t('Threads URL', 'Threads URL')]: submission.release?.threadsUrl,
-        
+
         // Marketing Details
         [t('사회 운동', 'Social Movements')]: submission.release?.socialMovements,
         [t('유사 아티스트', 'Similar Artists')]: submission.release?.similarArtists,
         [t('싱크 이력 여부', 'Has Sync History')]: submission.release?.hasSyncHistory,
         [t('싱크 이력', 'Sync History')]: submission.release?.syncHistory,
         [t('아티스트 UGC 우선순위', 'Artist UGC Priorities')]: submission.release?.artistUgcPriorities,
-        
+
         // Music Characteristics
         [t('무드', 'Moods')]: submission.release?.moods?.join(', '),
         [t('악기', 'Instruments')]: submission.release?.instruments?.join(', '),
         [t('훅', 'Hook')]: submission.release?.hook,
         [t('메인 피치', 'Main Pitch')]: submission.release?.mainPitch,
-        
+
         // Marketing Strategy
         [t('마케팅 동력', 'Marketing Drivers')]: submission.release?.marketingDrivers,
         [t('소셜 미디어 계획', 'Social Media Plan')]: submission.release?.socialMediaPlan,
-        
+
         // Visual Assets
         [t('아티스트 아바타', 'Artist Avatar')]: submission.release?.artistAvatar,
         [t('아티스트 로고', 'Artist Logo')]: submission.release?.artistLogo,
         [t('프레스 샷 URL', 'Press Shot URL')]: submission.release?.pressShotUrl,
-        [t('프레스 샷 크레딧', 'Press Shot Credits')]: submission.release?.pressShotCredits,
+        [t('프레스 샷 크레딧', 'Press Shot Credits')]: submission.release?.pressShotCredits
       }
-    })
+    });
 
-    return sections
-  }
+    return sections;
+  };
 
   const renderFileSection = () => {
-    const { files } = submission
+    const { files } = submission;
 
     return (
       <div className="space-y-4">
@@ -269,13 +269,13 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
           </div>
           {previewImage === getDirectUrl(files?.coverImageUrl) && files?.coverImageUrl && (
             <div className="mt-2">
-              <img 
-                src={getDirectUrl(files.coverImageUrl)} 
-                alt="Cover Art" 
+              <img
+                src={getDirectUrl(files.coverImageUrl)}
+                alt="Cover Art"
                 className="max-w-xs rounded-lg shadow-lg"
                 onError={() => {
-                  setPreviewImage(null)
-                  toast.error(t('이미지를 불러올 수 없습니다', 'Cannot load image'))
+                  setPreviewImage(null);
+                  toast.error(t('이미지를 불러올 수 없습니다', 'Cannot load image'));
                 }}
               />
             </div>
@@ -311,13 +311,13 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
           </div>
           {previewImage === getDirectUrl(files?.artistPhotoUrl) && files?.artistPhotoUrl && (
             <div className="mt-2">
-              <img 
-                src={getDirectUrl(files.artistPhotoUrl)} 
-                alt="Artist Photo" 
+              <img
+                src={getDirectUrl(files.artistPhotoUrl)}
+                alt="Artist Photo"
                 className="max-w-xs rounded-lg shadow-lg"
                 onError={() => {
-                  setPreviewImage(null)
-                  toast.error(t('이미지를 불러올 수 없습니다', 'Cannot load image'))
+                  setPreviewImage(null);
+                  toast.error(t('이미지를 불러올 수 없습니다', 'Cannot load image'));
                 }}
               />
             </div>
@@ -357,8 +357,8 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
                     </div>
                   </div>
                   {playingAudio === file.dropboxUrl && (
-                    <audio 
-                      controls 
+                    <audio
+                      controls
                       autoPlay
                       className="w-full mt-2"
                       src={getDirectUrl(file.dropboxUrl)}
@@ -442,10 +442,10 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
           </div>
         )}
       </div>
-    )
-  }
+    );
+  };
 
-  const sections = getSections()
+  const sections = getSections();
 
   return (
     <div className="space-y-6">
@@ -471,10 +471,10 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
               {t('제출 상태', 'Submission Status')}:
             </span>
             <span className={cn(
-              "px-3 py-1 rounded-full text-sm font-medium",
-              submission.status === 'approved' && "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-              submission.status === 'pending' && "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-              submission.status === 'rejected' && "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+              'px-3 py-1 rounded-full text-sm font-medium',
+              submission.status === 'approved' && 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
+              submission.status === 'pending' && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
+              submission.status === 'rejected' && 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
             )}>
               {submission.status === 'approved' && t('승인됨', 'Approved')}
               {submission.status === 'pending' && t('검토 중', 'Under Review')}
@@ -497,8 +497,8 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
 
       {/* Sections */}
       {sections.map((section) => {
-        const isExpanded = expandedSections.includes(section.id)
-        const isCopied = copiedSections.has(section.id)
+        const isExpanded = expandedSections.includes(section.id);
+        const isCopied = copiedSections.has(section.id);
 
         return (
           <div
@@ -526,10 +526,10 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
               <button
                 onClick={() => copyToClipboard(formatSectionForCopy(section), section.id)}
                 className={cn(
-                  "flex items-center gap-2 px-3 py-1 rounded text-sm transition-colors",
-                  isCopied 
-                    ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500"
+                  'flex items-center gap-2 px-3 py-1 rounded text-sm transition-colors',
+                  isCopied
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500'
                 )}
               >
                 {isCopied ? (
@@ -555,8 +555,8 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
                   // Regular section content
                   <dl className="grid grid-cols-1 gap-3">
                     {Object.entries(section.data).map(([key, value]) => {
-                      if (value === null || value === undefined || value === '') return null
-                      
+                      if (value === null || value === undefined || value === '') return null;
+
                       return (
                         <div key={key} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">
@@ -566,14 +566,14 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
                             {formatValue(value)}
                           </dd>
                         </div>
-                      )
+                      );
                     })}
                   </dl>
                 )}
               </div>
             )}
           </div>
-        )
+        );
       })}
 
       {/* Validation Status */}
@@ -618,7 +618,7 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SubmissionDetailView
+export default SubmissionDetailView;

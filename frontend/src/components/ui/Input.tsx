@@ -1,6 +1,6 @@
-import React from 'react'
-import { cn } from '@/lib/utils'
-import { AlertCircle } from 'lucide-react'
+import React from 'react';
+import { cn } from '@/lib/utils';
+import { AlertCircle } from 'lucide-react';
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string
@@ -9,13 +9,13 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   hint?: string
 }
 
-export default function Input({ 
-  label, 
-  error, 
+export default function Input({
+  label,
+  error,
   icon,
   hint,
-  className = '', 
-  ...props 
+  className = '',
+  ...props
 }: InputProps) {
   return (
     <div className="w-full">
@@ -66,5 +66,5 @@ export default function Input({
         </p>
       )}
     </div>
-  )
+  );
 }

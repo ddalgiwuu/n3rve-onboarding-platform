@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
-import { Plus, Search, Edit2, Trash2, Users, Building2, UserPlus, ChevronDown, ChevronRight, Mail, Shield } from 'lucide-react'
-import { useTranslation } from '@/hooks/useTranslation'
-import api from '@/lib/api'
-import toast from 'react-hot-toast'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { useState, useEffect } from 'react';
+import { Plus, Search, Edit2, Trash2, Users, Building2, UserPlus, ChevronDown, ChevronRight, Mail, Shield } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
+import api from '@/lib/api';
+import toast from 'react-hot-toast';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 interface Account {
   id: string
@@ -34,12 +34,12 @@ interface CreateAccountForm {
 }
 
 export default function AdminAccounts() {
-  const { t } = useTranslation()
-  const [accounts, setAccounts] = useState<Account[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [showCreateModal, setShowCreateModal] = useState(false)
-  const [expandedCompanies, setExpandedCompanies] = useState<Set<string>>(new Set())
+  const { t } = useTranslation();
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [expandedCompanies, setExpandedCompanies] = useState<Set<string>>(new Set());
   const [formData, setFormData] = useState<CreateAccountForm>({
     email: '',
     name: '',
@@ -47,42 +47,42 @@ export default function AdminAccounts() {
     companyName: '',
     password: '',
     accountType: 'individual'
-  })
-  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null)
-  const [showEditModal, setShowEditModal] = useState(false)
+  });
+  const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useEffect(() => {
-    fetchAccounts()
-  }, [])
+    fetchAccounts();
+  }, []);
 
   const fetchAccounts = async () => {
     try {
-      setLoading(true)
-      const response = await api.get('/admin/accounts')
-      setAccounts(response.data)
+      setLoading(true);
+      const response = await api.get('/admin/accounts');
+      setAccounts(response.data);
     } catch (error) {
-      console.error('Error fetching accounts:', error)
-      toast.error(t('admin.accounts.fetchError', '계정 목록을 불러오는데 실패했습니다', 'Failed to fetch accounts', 'アカウントリストの読み込みに失敗しました'))
+      console.error('Error fetching accounts:', error);
+      toast.error(t('admin.accounts.fetchError', '계정 목록을 불러오는데 실패했습니다', 'Failed to fetch accounts', 'アカウントリストの読み込みに失敗しました'));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleCreateAccount = async () => {
     try {
       if (!formData.email || !formData.name || !formData.password) {
-        toast.error(t('common.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべてのフィールドに入力してください'))
-        return
+        toast.error(t('common.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべてのフィールドに入力してください'));
+        return;
       }
 
       const payload = {
         ...formData,
         isCompanyAccount: formData.accountType === 'company'
-      }
+      };
 
-      await api.post('/admin/accounts', payload)
-      toast.success(t('admin.accounts.createSuccess', '계정이 생성되었습니다', 'Account created successfully', 'アカウントが作成されました'))
-      setShowCreateModal(false)
+      await api.post('/admin/accounts', payload);
+      toast.success(t('admin.accounts.createSuccess', '계정이 생성되었습니다', 'Account created successfully', 'アカウントが作成されました'));
+      setShowCreateModal(false);
       setFormData({
         email: '',
         name: '',
@@ -90,38 +90,38 @@ export default function AdminAccounts() {
         companyName: '',
         password: '',
         accountType: 'individual'
-      })
-      fetchAccounts()
+      });
+      fetchAccounts();
     } catch (error: any) {
-      console.error('Error creating account:', error)
+      console.error('Error creating account:', error);
       if (error.response?.data?.message) {
-        toast.error(error.response.data.message)
+        toast.error(error.response.data.message);
       } else {
-        toast.error(t('admin.accounts.createError', '계정 생성에 실패했습니다', 'Failed to create account', 'アカウント作成に失敗しました'))
+        toast.error(t('admin.accounts.createError', '계정 생성에 실패했습니다', 'Failed to create account', 'アカウント作成に失敗しました'));
       }
     }
-  }
+  };
 
   const handleDeleteAccount = async (accountId: string) => {
     if (!confirm(t('admin.accounts.deleteConfirm', '정말로 이 계정을 삭제하시겠습니까?', 'Are you sure you want to delete this account?', '本当にこのアカウントを削除しますか？'))) {
-      return
+      return;
     }
 
     try {
-      await api.delete(`/admin/accounts/${accountId}`)
-      toast.success(t('admin.accounts.deleteSuccess', '계정이 삭제되었습니다', 'Account deleted successfully', 'アカウントが削除されました'))
-      fetchAccounts()
+      await api.delete(`/admin/accounts/${accountId}`);
+      toast.success(t('admin.accounts.deleteSuccess', '계정이 삭제되었습니다', 'Account deleted successfully', 'アカウントが削除されました'));
+      fetchAccounts();
     } catch (error) {
-      console.error('Error deleting account:', error)
-      toast.error(t('admin.accounts.deleteError', '계정 삭제에 실패했습니다', 'Failed to delete account', 'アカウント削除に失敗しました'))
+      console.error('Error deleting account:', error);
+      toast.error(t('admin.accounts.deleteError', '계정 삭제에 실패했습니다', 'Failed to delete account', 'アカウント削除に失敗しました'));
     }
-  }
+  };
 
   const handleCreateSubAccount = async () => {
     try {
       if (!formData.email || !formData.name || !formData.password || !formData.parentAccountId) {
-        toast.error(t('common.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべてのフィールドに入力してください'))
-        return
+        toast.error(t('common.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべてのフィールドに入力してください'));
+        return;
       }
 
       await api.post('/admin/accounts/sub-account', {
@@ -129,10 +129,10 @@ export default function AdminAccounts() {
         name: formData.name,
         password: formData.password,
         parentAccountId: formData.parentAccountId
-      })
+      });
 
-      toast.success(t('admin.accounts.subAccountCreated', '하위 계정이 생성되었습니다', 'Sub-account created successfully', 'サブアカウントが作成されました'))
-      setShowCreateModal(false)
+      toast.success(t('admin.accounts.subAccountCreated', '하위 계정이 생성되었습니다', 'Sub-account created successfully', 'サブアカウントが作成されました'));
+      setShowCreateModal(false);
       setFormData({
         email: '',
         name: '',
@@ -140,40 +140,40 @@ export default function AdminAccounts() {
         companyName: '',
         password: '',
         accountType: 'individual'
-      })
-      fetchAccounts()
+      });
+      fetchAccounts();
     } catch (error: any) {
-      console.error('Error creating sub-account:', error)
-      toast.error(error.response?.data?.message || t('admin.accounts.subAccountError', '하위 계정 생성에 실패했습니다', 'Failed to create sub-account', 'サブアカウント作成に失敗しました'))
+      console.error('Error creating sub-account:', error);
+      toast.error(error.response?.data?.message || t('admin.accounts.subAccountError', '하위 계정 생성에 실패했습니다', 'Failed to create sub-account', 'サブアカウント作成に失敗しました'));
     }
-  }
+  };
 
   const toggleCompanyExpand = (companyId: string) => {
-    const newExpanded = new Set(expandedCompanies)
+    const newExpanded = new Set(expandedCompanies);
     if (newExpanded.has(companyId)) {
-      newExpanded.delete(companyId)
+      newExpanded.delete(companyId);
     } else {
-      newExpanded.add(companyId)
+      newExpanded.add(companyId);
     }
-    setExpandedCompanies(newExpanded)
-  }
+    setExpandedCompanies(newExpanded);
+  };
 
-  const filteredAccounts = accounts.filter(account => 
+  const filteredAccounts = accounts.filter(account =>
     account.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
     account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     account.companyName?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  );
 
   // Separate company accounts and individual accounts
-  const companyAccounts = filteredAccounts.filter(acc => acc.subAccounts && acc.subAccounts.length > 0)
-  const individualAccounts = filteredAccounts.filter(acc => !acc.parentAccountId && (!acc.subAccounts || acc.subAccounts.length === 0))
+  const companyAccounts = filteredAccounts.filter(acc => acc.subAccounts && acc.subAccounts.length > 0);
+  const individualAccounts = filteredAccounts.filter(acc => !acc.parentAccountId && (!acc.subAccounts || acc.subAccounts.length === 0));
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <LoadingSpinner />
       </div>
-    )
+    );
   }
 
   return (
@@ -249,8 +249,8 @@ export default function AdminAccounts() {
                           ...formData,
                           parentAccountId: company.id,
                           accountType: 'individual'
-                        })
-                        setShowCreateModal(true)
+                        });
+                        setShowCreateModal(true);
                       }}
                       className="p-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                       title={t('admin.accounts.addSubAccount', '하위 계정 추가', 'Add sub-account', 'サブアカウント追加')}
@@ -345,7 +345,7 @@ export default function AdminAccounts() {
                   </td>
                   <td className="px-4 py-3">
                     <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                      account.role === 'ADMIN' 
+                      account.role === 'ADMIN'
                         ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300'
                         : 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
                     }`}>
@@ -363,8 +363,8 @@ export default function AdminAccounts() {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => {
-                          setSelectedAccount(account)
-                          setShowEditModal(true)
+                          setSelectedAccount(account);
+                          setShowEditModal(true);
                         }}
                         className="p-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
                       >
@@ -396,7 +396,7 @@ export default function AdminAccounts() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-              {formData.parentAccountId 
+              {formData.parentAccountId
                 ? t('admin.accounts.createSubAccount', '하위 계정 생성', 'Create Sub-Account', 'サブアカウント作成')
                 : t('admin.accounts.createAccount', '계정 생성', 'Create Account')
               }
@@ -507,7 +507,7 @@ export default function AdminAccounts() {
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => {
-                  setShowCreateModal(false)
+                  setShowCreateModal(false);
                   setFormData({
                     email: '',
                     name: '',
@@ -515,7 +515,7 @@ export default function AdminAccounts() {
                     companyName: '',
                     password: '',
                     accountType: 'individual'
-                  })
+                  });
                 }}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
               >
@@ -532,5 +532,5 @@ export default function AdminAccounts() {
         </div>
       )}
     </div>
-  )
+  );
 }

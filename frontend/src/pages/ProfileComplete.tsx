@@ -95,7 +95,7 @@ const ProfileComplete = () => {
           <div className="absolute inset-0 blur-3xl opacity-30">
             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 rounded-3xl" />
           </div>
-          
+
           <div className="relative bg-black/40 backdrop-blur-xl rounded-3xl p-12 text-center mb-12 border border-white/10 shadow-2xl">
             <div className="w-32 h-32 mx-auto mb-8 relative">
               <div className="absolute inset-0 bg-gradient-to-br from-green-400 to-emerald-600 rounded-full blur-2xl opacity-60 animate-pulse" />
@@ -103,16 +103,16 @@ const ProfileComplete = () => {
                 <CheckCircle className="w-16 h-16 text-white" strokeWidth={1.5} />
               </div>
             </div>
-            
+
             <h1 className="text-5xl font-bold text-white mb-6 tracking-tight">
               {t('프로필 설정 완료!', 'Profile Complete!')}
             </h1>
-            
+
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-              {t('축하합니다! 이제 N3RVE 플랫폼의 모든 기능을 사용할 수 있습니다', 
-                 'Congratulations! You can now access all features of the N3RVE platform')}
+              {t('축하합니다! 이제 N3RVE 플랫폼의 모든 기능을 사용할 수 있습니다',
+                'Congratulations! You can now access all features of the N3RVE platform')}
             </p>
-            
+
             <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-full border border-yellow-500/30 backdrop-blur-sm">
               <Star className="w-6 h-6 text-yellow-400 animate-spin-slow" />
               <span className="text-yellow-200 font-semibold text-lg">
@@ -127,7 +127,7 @@ const ProfileComplete = () => {
           <h2 className="text-3xl font-bold text-white text-center mb-12">
             {t('달성한 목표', 'Your Achievements')}
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {achievements.map((achievement, index) => {
               const Icon = achievement.icon;
@@ -138,7 +138,7 @@ const ProfileComplete = () => {
                 >
                   {/* Card glow */}
                   <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                  
+
                   <div className="relative bg-white/5 backdrop-blur-md rounded-2xl p-8 text-center border border-white/10 hover:border-white/20 transition-all duration-500 hover:transform hover:scale-105">
                     <div className={`w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br ${achievement.color} flex items-center justify-center shadow-2xl`}>
                       <Icon className="w-10 h-10 text-white" strokeWidth={1.5} />
@@ -157,7 +157,7 @@ const ProfileComplete = () => {
           <h2 className="text-3xl font-bold text-white text-center mb-12">
             {t('다음 단계', "What's Next?")}
           </h2>
-          
+
           {nextSteps.map((step, index) => {
             const Icon = step.icon;
             return (
@@ -167,7 +167,7 @@ const ProfileComplete = () => {
               >
                 {/* Card glow */}
                 <div className={`absolute inset-0 bg-gradient-to-r ${step.gradient} opacity-5 group-hover:opacity-10 transition-opacity duration-500`} />
-                
+
                 <div className="relative bg-white/5 backdrop-blur-md rounded-2xl p-10 border border-white/10 hover:border-white/20 transition-all duration-500">
                   <div className="flex items-center justify-between gap-8">
                     <div className="flex-1">

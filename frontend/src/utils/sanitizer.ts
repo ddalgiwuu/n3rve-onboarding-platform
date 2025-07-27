@@ -9,7 +9,7 @@ const config = {
   ALLOWED_TAGS: ['b', 'i', 'em', 'strong', 'a', 'p', 'br'],
   ALLOWED_ATTR: ['href', 'target', 'rel'],
   ALLOW_DATA_ATTR: false,
-  ALLOW_UNKNOWN_PROTOCOLS: false,
+  ALLOW_UNKNOWN_PROTOCOLS: false
 };
 
 // Sanitize HTML content
@@ -44,10 +44,10 @@ export function sanitizeAttribute(value: string): string {
 // Sanitize object keys and values
 export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
   const sanitized: any = {};
-  
+
   for (const [key, value] of Object.entries(obj)) {
     const sanitizedKey = sanitizeAttribute(key);
-    
+
     if (typeof value === 'string') {
       sanitized[sanitizedKey] = sanitizeText(value);
     } else if (typeof value === 'object' && value !== null) {
@@ -56,6 +56,6 @@ export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
       sanitized[sanitizedKey] = value;
     }
   }
-  
+
   return sanitized;
 }

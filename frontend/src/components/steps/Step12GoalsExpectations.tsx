@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { useTranslation } from '@/hooks/useTranslation'
-import { CAMPAIGN_GOALS } from '@/constants/marketingData'
-import { Target, Plus, X, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react'
+import { useState } from 'react';
+import { useTranslation } from '@/hooks/useTranslation';
+import { CAMPAIGN_GOALS } from '@/constants/marketingData';
+import { Target, Plus, X, ChevronDown, ChevronUp, AlertCircle } from 'lucide-react';
 
 interface CampaignGoal {
   goalType: string
@@ -15,90 +15,95 @@ interface Step12GoalsExpectationsProps {
 }
 
 export default function Step12GoalsExpectations({ formData, onChange }: Step12GoalsExpectationsProps) {
-  const { t } = useTranslation()
-  const [expandedGoals, setExpandedGoals] = useState<Set<number>>(new Set())
-  
-  const campaignGoals = formData.marketingInfo?.campaignGoals || []
+  const { t } = useTranslation();
+  const [expandedGoals, setExpandedGoals] = useState<Set<number>>(new Set());
+
+  const campaignGoals = formData.marketingInfo?.campaignGoals || [];
 
   const addGoal = () => {
-    if (campaignGoals.length >= 3) return
-    
+    if (campaignGoals.length >= 3) return;
+
     const newGoal: CampaignGoal = {
       goalType: '',
       responses: ['', '', '', ''],
       confidence: 50
-    }
-    
+    };
+
     onChange({
       marketingInfo: {
         ...formData.marketingInfo,
         campaignGoals: [...campaignGoals, newGoal]
       }
-    })
-    
+    });
+
     // Expand the new goal
-    setExpandedGoals(prev => new Set(prev).add(campaignGoals.length))
-  }
+    setExpandedGoals(prev => new Set(prev).add(campaignGoals.length));
+  };
 
   const removeGoal = (index: number) => {
-    const newGoals = campaignGoals.filter((_: any, i: number) => i !== index)
+    const newGoals = campaignGoals.filter((_: any, i: number) => i !== index);
     onChange({
       marketingInfo: {
         ...formData.marketingInfo,
         campaignGoals: newGoals
       }
-    })
-    
+    });
+
     // Update expanded goals
     setExpandedGoals(prev => {
-      const newSet = new Set(prev)
-      newSet.delete(index)
-      return newSet
-    })
-  }
+      const newSet = new Set(prev);
+      newSet.delete(index);
+      return newSet;
+    });
+  };
 
   const updateGoal = (index: number, field: keyof CampaignGoal, value: any) => {
-    const newGoals = [...campaignGoals]
+    const newGoals = [...campaignGoals];
     newGoals[index] = {
       ...newGoals[index],
       [field]: value
-    }
-    
+    };
+
     onChange({
       marketingInfo: {
         ...formData.marketingInfo,
         campaignGoals: newGoals
       }
-    })
-  }
+    });
+
+    // Auto-expand when goal type is selected
+    if (field === 'goalType' && value) {
+      setExpandedGoals(prev => new Set(prev).add(index));
+    }
+  };
 
   const updateResponse = (goalIndex: number, responseIndex: number, value: string) => {
-    const newGoals = [...campaignGoals]
-    newGoals[goalIndex].responses[responseIndex] = value
-    
+    const newGoals = [...campaignGoals];
+    newGoals[goalIndex].responses[responseIndex] = value;
+
     onChange({
       marketingInfo: {
         ...formData.marketingInfo,
         campaignGoals: newGoals
       }
-    })
-  }
+    });
+  };
 
   const toggleExpanded = (index: number) => {
     setExpandedGoals(prev => {
-      const newSet = new Set(prev)
+      const newSet = new Set(prev);
       if (newSet.has(index)) {
-        newSet.delete(index)
+        newSet.delete(index);
       } else {
-        newSet.add(index)
+        newSet.add(index);
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
   const getGoalLabel = (goalType: string) => {
-    return CAMPAIGN_GOALS.find(g => g.value === goalType)?.label || goalType
-  }
+    return CAMPAIGN_GOALS.find(g => g.value === goalType)?.label || goalType;
+  };
 
   return (
     <div className="space-y-8">
@@ -134,9 +139,9 @@ export default function Step12GoalsExpectations({ formData, onChange }: Step12Go
       {/* Goals List */}
       <div className="space-y-4">
         {campaignGoals.map((goal: CampaignGoal, index: number) => {
-          const goalDefinition = CAMPAIGN_GOALS.find(g => g.value === goal.goalType)
-          const isExpanded = expandedGoals.has(index)
-          
+          const goalDefinition = CAMPAIGN_GOALS.find(g => g.value === goal.goalType);
+          const isExpanded = expandedGoals.has(index);
+
           return (
             <div
               key={index}
@@ -149,7 +154,7 @@ export default function Step12GoalsExpectations({ formData, onChange }: Step12Go
                     <span className="text-lg font-semibold text-gray-700 dark:text-gray-300">
                       {t(`목표 ${index + 1}`, `Goal ${index + 1}`, `目標 ${index + 1}`)}
                     </span>
-                    
+
                     <select
                       value={goal.goalType}
                       onChange={(e) => updateGoal(index, 'goalType', e.target.value)}
@@ -170,7 +175,7 @@ export default function Step12GoalsExpectations({ formData, onChange }: Step12Go
                       ))}
                     </select>
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -179,7 +184,7 @@ export default function Step12GoalsExpectations({ formData, onChange }: Step12Go
                     >
                       {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
                     </button>
-                    
+
                     <button
                       type="button"
                       onClick={() => removeGoal(index)}
@@ -190,7 +195,7 @@ export default function Step12GoalsExpectations({ formData, onChange }: Step12Go
                   </div>
                 </div>
               </div>
-              
+
               {/* Goal Details */}
               {goal.goalType && isExpanded && (
                 <div className="p-6 space-y-6">
@@ -211,7 +216,7 @@ export default function Step12GoalsExpectations({ formData, onChange }: Step12Go
                       </div>
                     ))}
                   </div>
-                  
+
                   {/* Confidence Slider */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -238,9 +243,9 @@ export default function Step12GoalsExpectations({ formData, onChange }: Step12Go
                 </div>
               )}
             </div>
-          )
+          );
         })}
-        
+
         {/* Add Goal Button */}
         {campaignGoals.length < 3 && (
           <button
@@ -253,7 +258,7 @@ export default function Step12GoalsExpectations({ formData, onChange }: Step12Go
           </button>
         )}
       </div>
-      
+
       {/* Summary */}
       {campaignGoals.length > 0 && (
         <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-6">
@@ -278,5 +283,5 @@ export default function Step12GoalsExpectations({ formData, onChange }: Step12Go
         </div>
       )}
     </div>
-  )
+  );
 }

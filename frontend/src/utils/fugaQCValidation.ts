@@ -17,29 +17,29 @@ export interface QCValidationResults {
 }
 
 // Common patterns and constants
-const DOUBLE_SPACE_REGEX = /  +/g
-const LEADING_TRAILING_SPACE_REGEX = /^\s+|\s+$/g
+const DOUBLE_SPACE_REGEX = /  +/g;
+const LEADING_TRAILING_SPACE_REGEX = /^\s+|\s+$/g;
 // const SPECIAL_CHARS_REGEX = /[^\p{L}\p{N}\s\-.,!?&()'+/]/gu // Reserved for future use
-const PROMOTIONAL_TERMS_REGEX = /\b(NEW|HOT|EXCLUSIVE|FRESH|LATEST|BEST|TOP|SALE|FREE|DOWNLOAD|CLICK|STREAM NOW|OUT NOW|AVAILABLE NOW|LIMITED EDITION|SPECIAL EDITION|DELUXE|BONUS|PRE-ORDER|DIGITAL DOWNLOAD|STREAMING|MUST HAVE|HIT|CHART)\b/i
-const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu
-const ISRC_REGEX = /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/
-const COPYRIGHT_YEAR_REGEX = /^(19|20)\d{2}$/
-const VERSION_KEYWORDS = ['Remix', 'Acoustic', 'Live', 'Instrumental', 'Demo', 'Radio Edit', 'Extended', 'Clean', 'Explicit', 'Remastered', 'Unplugged', 'Mix', 'Version', 'Special Edition', 'Deluxe Edition', 'Anniversary Edition']
+const PROMOTIONAL_TERMS_REGEX = /\b(NEW|HOT|EXCLUSIVE|FRESH|LATEST|BEST|TOP|SALE|FREE|DOWNLOAD|CLICK|STREAM NOW|OUT NOW|AVAILABLE NOW|LIMITED EDITION|SPECIAL EDITION|DELUXE|BONUS|PRE-ORDER|DIGITAL DOWNLOAD|STREAMING|MUST HAVE|HIT|CHART)\b/i;
+const EMOJI_REGEX = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu;
+const ISRC_REGEX = /^[A-Z]{2}[A-Z0-9]{3}\d{7}$/;
+const COPYRIGHT_YEAR_REGEX = /^(19|20)\d{2}$/;
+const VERSION_KEYWORDS = ['Remix', 'Acoustic', 'Live', 'Instrumental', 'Demo', 'Radio Edit', 'Extended', 'Clean', 'Explicit', 'Remastered', 'Unplugged', 'Mix', 'Version', 'Special Edition', 'Deluxe Edition', 'Anniversary Edition'];
 
 // FUGA specific validations
-const GENERIC_ARTIST_NAMES = ['Various Artists', 'Various', 'Unknown Artist', 'Unknown', 'Artist', 'TBD', 'TBA', 'N/A', 'None', 'Untitled']
-const MISLEADING_ARTIST_TERMS = ['feat.', 'featuring', 'with', 'vs', 'versus', 'presents', 'pres.', '&', 'and']
-const FORBIDDEN_VERSION_TERMS = ['Original', 'Original Mix', 'Original Version', 'Studio Version', 'Album Version']
+const GENERIC_ARTIST_NAMES = ['Various Artists', 'Various', 'Unknown Artist', 'Unknown', 'Artist', 'TBD', 'TBA', 'N/A', 'None', 'Untitled'];
+const MISLEADING_ARTIST_TERMS = ['feat.', 'featuring', 'with', 'vs', 'versus', 'presents', 'pres.', '&', 'and'];
+const FORBIDDEN_VERSION_TERMS = ['Original', 'Original Mix', 'Original Version', 'Studio Version', 'Album Version'];
 const LANGUAGE_SPECIFIC_ARTICLES: Record<string, string[]> = {
   french: ['le', 'la', 'les', 'un', 'une', 'des', 'du', 'de'],
   italian: ['il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'uno', 'una', 'del', 'dello', 'della', 'dei', 'degli', 'delle'],
   spanish: ['el', 'la', 'los', 'las', 'un', 'una', 'unos', 'unas', 'del', 'al'],
   german: ['der', 'die', 'das', 'den', 'dem', 'des', 'ein', 'eine', 'einer', 'einem', 'eines']
-}
+};
 
 // Artist name validation
 export function validateArtistName(nameKo: string, nameEn: string): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   // Check Korean name
   if (nameKo) {
@@ -51,7 +51,7 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
         message: 'qc.error.doubleSpaces',
         field: 'artist.nameKo',
         suggestion: nameKo.replace(DOUBLE_SPACE_REGEX, ' ')
-      })
+      });
     }
 
     // Leading/trailing spaces
@@ -62,7 +62,7 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
         message: 'qc.error.leadingTrailingSpaces',
         field: 'artist.nameKo',
         suggestion: nameKo.trim()
-      })
+      });
     }
 
     // Promotional text
@@ -72,7 +72,7 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
         severity: 'error',
         message: 'qc.error.promotionalText',
         field: 'artist.nameKo'
-      })
+      });
     }
   }
 
@@ -86,7 +86,7 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
         message: 'qc.error.doubleSpaces',
         field: 'artist.nameEn',
         suggestion: nameEn.replace(DOUBLE_SPACE_REGEX, ' ')
-      })
+      });
     }
 
     // Leading/trailing spaces
@@ -97,11 +97,11 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
         message: 'qc.error.leadingTrailingSpaces',
         field: 'artist.nameEn',
         suggestion: nameEn.trim()
-      })
+      });
     }
 
     // Special characters (allow more for artist names)
-    const invalidChars = nameEn.match(/[<>{}[\]\\|^`~]/g)
+    const invalidChars = nameEn.match(/[<>{}[\]\\|^`~]/g);
     if (invalidChars) {
       results.push({
         isValid: false,
@@ -109,7 +109,7 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
         message: 'qc.error.invalidCharacters',
         field: 'artist.nameEn',
         suggestion: nameEn.replace(/[<>{}[\]\\|^`~]/g, '')
-      })
+      });
     }
 
     // Promotional text
@@ -119,7 +119,7 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
         severity: 'error',
         message: 'qc.error.promotionalText',
         field: 'artist.nameEn'
-      })
+      });
     }
 
     // Generic artist names check
@@ -129,22 +129,22 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
         severity: 'error',
         message: 'qc.error.genericArtistName',
         field: 'artist.nameEn'
-      })
+      });
     }
 
     // Misleading artist terms check
-    const hasMisleadingTerms = MISLEADING_ARTIST_TERMS.some(term => 
-      nameEn.toLowerCase().includes(term.toLowerCase()) && 
+    const hasMisleadingTerms = MISLEADING_ARTIST_TERMS.some(term =>
+      nameEn.toLowerCase().includes(term.toLowerCase()) &&
       !nameEn.match(/^[A-Za-z0-9\s]+\s(&|and)\s[A-Za-z0-9\s]+$/) // Allow legitimate "X & Y" or "X and Y" collaborations
-    )
-    
+    );
+
     if (hasMisleadingTerms) {
       results.push({
         isValid: false,
         severity: 'error',
         message: 'qc.error.misleadingArtistName',
         field: 'artist.nameEn'
-      })
+      });
     }
 
     // Check for aka/AKA unless it's part of the official artist name
@@ -154,7 +154,7 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
         severity: 'warning',
         message: 'qc.warning.akaInArtistName',
         field: 'artist.nameEn'
-      })
+      });
     }
 
     // Check for abbreviations that should be full words
@@ -163,8 +163,8 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
       'feat.': 'featuring',
       'vs.': 'versus',
       'pres.': 'presents'
-    }
-    
+    };
+
     Object.entries(abbreviations).forEach(([abbr, full]) => {
       if (nameEn.toLowerCase().includes(abbr)) {
         results.push({
@@ -173,18 +173,18 @@ export function validateArtistName(nameKo: string, nameEn: string): QCValidation
           message: 'qc.error.abbreviationInArtistName',
           field: 'artist.nameEn',
           suggestion: nameEn.replace(new RegExp(abbr, 'gi'), full)
-        })
+        });
       }
-    })
+    });
   }
 
-  return results
+  return results;
 }
 
 // Album/Track title validation
 export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: boolean = false): QCValidationResult[] {
-  const results: QCValidationResult[] = []
-  const fieldPrefix = isAlbum ? 'album' : 'track'
+  const results: QCValidationResult[] = [];
+  const fieldPrefix = isAlbum ? 'album' : 'track';
 
   // Korean title validation
   if (titleKo) {
@@ -196,7 +196,7 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
         message: 'qc.error.doubleSpaces',
         field: `${fieldPrefix}.titleKo`,
         suggestion: titleKo.replace(DOUBLE_SPACE_REGEX, ' ')
-      })
+      });
     }
 
     // Leading/trailing spaces
@@ -207,7 +207,7 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
         message: 'qc.error.leadingTrailingSpaces',
         field: `${fieldPrefix}.titleKo`,
         suggestion: titleKo.trim()
-      })
+      });
     }
 
     // Emojis in titles
@@ -217,7 +217,7 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
         severity: 'error',
         message: 'qc.error.emojisInTitle',
         field: `${fieldPrefix}.titleKo`
-      })
+      });
     }
 
     // Promotional text
@@ -227,7 +227,7 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
         severity: 'error',
         message: 'qc.error.promotionalText',
         field: `${fieldPrefix}.titleKo`
-      })
+      });
     }
   }
 
@@ -241,7 +241,7 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
         message: 'qc.error.doubleSpaces',
         field: `${fieldPrefix}.titleEn`,
         suggestion: titleEn.replace(DOUBLE_SPACE_REGEX, ' ')
-      })
+      });
     }
 
     // Leading/trailing spaces
@@ -252,19 +252,19 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
         message: 'qc.error.leadingTrailingSpaces',
         field: `${fieldPrefix}.titleEn`,
         suggestion: titleEn.trim()
-      })
+      });
     }
 
     // Title case validation
-    const words = titleEn.split(' ')
+    const words = titleEn.split(' ');
     const titleCaseIssues = words.filter((word, index) => {
       // Skip articles, prepositions, conjunctions unless first word
-      const skipWords = ['a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with']
-      if (index > 0 && skipWords.includes(word.toLowerCase())) return false
-      
+      const skipWords = ['a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with'];
+      if (index > 0 && skipWords.includes(word.toLowerCase())) return false;
+
       // Check if first letter is lowercase (when it should be uppercase)
-      return word.length > 0 && word[0] === word[0].toLowerCase() && /[a-zA-Z]/.test(word[0])
-    })
+      return word.length > 0 && word[0] === word[0].toLowerCase() && /[a-zA-Z]/.test(word[0]);
+    });
 
     if (titleCaseIssues.length > 0) {
       results.push({
@@ -273,11 +273,11 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
         message: 'qc.warning.titleCase',
         field: `${fieldPrefix}.titleEn`,
         suggestion: titleEn.split(' ').map((word, index) => {
-          const skipWords = ['a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with']
-          if (index > 0 && skipWords.includes(word.toLowerCase())) return word.toLowerCase()
-          return word.charAt(0).toUpperCase() + word.slice(1)
+          const skipWords = ['a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with'];
+          if (index > 0 && skipWords.includes(word.toLowerCase())) return word.toLowerCase();
+          return word.charAt(0).toUpperCase() + word.slice(1);
         }).join(' ')
-      })
+      });
     }
 
     // Brackets and parentheses validation
@@ -285,21 +285,21 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
       { open: '(', close: ')' },
       { open: '[', close: ']' },
       { open: '{', close: '}' }
-    ]
+    ];
 
     bracketPairs.forEach(pair => {
-      const openCount = (titleEn.match(new RegExp(`\\${pair.open}`, 'g')) || []).length
-      const closeCount = (titleEn.match(new RegExp(`\\${pair.close}`, 'g')) || []).length
-      
+      const openCount = (titleEn.match(new RegExp(`\\${pair.open}`, 'g')) || []).length;
+      const closeCount = (titleEn.match(new RegExp(`\\${pair.close}`, 'g')) || []).length;
+
       if (openCount !== closeCount) {
         results.push({
           isValid: false,
           severity: 'error',
           message: 'qc.error.unmatchedBrackets',
           field: `${fieldPrefix}.titleEn`
-        })
+        });
       }
-    })
+    });
 
     // Promotional text
     if (PROMOTIONAL_TERMS_REGEX.test(titleEn)) {
@@ -308,16 +308,16 @@ export function validateTrackTitle(titleKo: string, titleEn: string, isAlbum: bo
         severity: 'error',
         message: 'qc.error.promotionalText',
         field: `${fieldPrefix}.titleEn`
-      })
+      });
     }
   }
 
-  return results
+  return results;
 }
 
 // Version naming validation
 export function validateVersionNaming(title: string, version: string): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   if (version) {
     // Check for forbidden version terms
@@ -328,13 +328,13 @@ export function validateVersionNaming(title: string, version: string): QCValidat
         message: 'qc.error.forbiddenVersionTerm',
         field: 'track.version',
         suggestion: 'Remove version designation for standard/original versions'
-      })
+      });
     }
 
     // Check if version is already in the title
-    const versionInTitle = VERSION_KEYWORDS.some(keyword => 
+    const versionInTitle = VERSION_KEYWORDS.some(keyword =>
       title.toLowerCase().includes(keyword.toLowerCase())
-    )
+    );
 
     if (versionInTitle && version !== 'original') {
       results.push({
@@ -342,7 +342,7 @@ export function validateVersionNaming(title: string, version: string): QCValidat
         severity: 'warning',
         message: 'qc.warning.versionDuplicate',
         field: 'track.version'
-      })
+      });
     }
 
     // Version format validation
@@ -361,9 +361,9 @@ export function validateVersionNaming(title: string, version: string): QCValidat
         'explicit': 'Explicit',
         'remastered': 'Remastered',
         'unplugged': 'Unplugged'
-      }
+      };
 
-      const lowerVersion = version.toLowerCase()
+      const lowerVersion = version.toLowerCase();
       if (properVersions[lowerVersion] && version !== properVersions[lowerVersion]) {
         results.push({
           isValid: false,
@@ -371,11 +371,11 @@ export function validateVersionNaming(title: string, version: string): QCValidat
           message: 'qc.warning.versionCapitalization',
           field: 'track.version',
           suggestion: properVersions[lowerVersion]
-        })
+        });
       }
 
       // Version should be in parentheses at the end of title
-      const versionPattern = /\s*\([^)]+\)\s*$/
+      const versionPattern = /\s*\([^)]+\)\s*$/;
       if (!versionPattern.test(title)) {
         results.push({
           isValid: false,
@@ -383,22 +383,22 @@ export function validateVersionNaming(title: string, version: string): QCValidat
           message: 'qc.info.versionFormat',
           field: 'track.version',
           suggestion: `${title.trim()} (${version})`
-        })
+        });
       }
     }
   }
 
-  return results
+  return results;
 }
 
 // Featuring artist format validation
 export function validateFeaturingFormat(featuring: string): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   if (featuring) {
     // Check for correct format
-    const validFormats = ['feat.', 'Feat.', 'ft.', 'Ft.', 'featuring', 'Featuring']
-    const hasValidFormat = validFormats.some(format => featuring.includes(format))
+    const validFormats = ['feat.', 'Feat.', 'ft.', 'Ft.', 'featuring', 'Featuring'];
+    const hasValidFormat = validFormats.some(format => featuring.includes(format));
 
     if (!hasValidFormat) {
       // Check if it's just the artist name without prefix
@@ -409,12 +409,12 @@ export function validateFeaturingFormat(featuring: string): QCValidationResult[]
           message: 'qc.warning.featuringFormat',
           field: 'track.featuring',
           suggestion: `feat. ${featuring}`
-        })
+        });
       }
     }
 
     // Check for inconsistent formatting
-    const incorrectFormats = ['Feat', 'feat', 'FT', 'ft', 'Featuring.', 'featuring.']
+    const incorrectFormats = ['Feat', 'feat', 'FT', 'ft', 'Featuring.', 'featuring.'];
     incorrectFormats.forEach(format => {
       if (featuring.includes(format)) {
         results.push({
@@ -423,17 +423,17 @@ export function validateFeaturingFormat(featuring: string): QCValidationResult[]
           message: 'qc.warning.featuringInconsistent',
           field: 'track.featuring',
           suggestion: featuring.replace(format, 'feat.')
-        })
+        });
       }
-    })
+    });
   }
 
-  return results
+  return results;
 }
 
 // ISRC format validation
 export function validateISRC(isrc: string): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   if (isrc) {
     if (!ISRC_REGEX.test(isrc)) {
@@ -443,16 +443,16 @@ export function validateISRC(isrc: string): QCValidationResult[] {
         message: 'qc.error.invalidISRC',
         field: 'track.isrc',
         suggestion: 'Format: CCXXXYYNNNNNNN (e.g., USKRE2400001)'
-      })
+      });
     }
   }
 
-  return results
+  return results;
 }
 
 // Copyright validation
 export function validateCopyright(year: string, cRights: string, pRights: string): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   // Validate year
   if (year) {
@@ -462,19 +462,19 @@ export function validateCopyright(year: string, cRights: string, pRights: string
         severity: 'error',
         message: 'qc.error.invalidCopyrightYear',
         field: 'release.copyrightYear'
-      })
+      });
     }
 
-    const currentYear = new Date().getFullYear()
-    const yearNum = parseInt(year)
-    
+    const currentYear = new Date().getFullYear();
+    const yearNum = parseInt(year);
+
     if (yearNum > currentYear) {
       results.push({
         isValid: false,
         severity: 'error',
         message: 'qc.error.futureCopyrightYear',
         field: 'release.copyrightYear'
-      })
+      });
     }
   }
 
@@ -487,7 +487,7 @@ export function validateCopyright(year: string, cRights: string, pRights: string
         message: 'qc.warning.copyrightSymbolIncluded',
         field: 'release.cRights',
         suggestion: cRights.replace(/©|\(C\)|\(c\)/g, '').trim()
-      })
+      });
     }
   }
 
@@ -500,29 +500,29 @@ export function validateCopyright(year: string, cRights: string, pRights: string
         message: 'qc.warning.copyrightSymbolIncluded',
         field: 'release.pRights',
         suggestion: pRights.replace(/℗|\(P\)|\(p\)/g, '').trim()
-      })
+      });
     }
   }
 
-  return results
+  return results;
 }
 
 // Format classification validation
 export function validateFormatClassification(format: string, trackCount: number): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   // FUGA format rules:
   // Single: 1-3 tracks (same title)
-  // EP: 4-6 tracks  
+  // EP: 4-6 tracks
   // Album: 7+ tracks
-  let expectedFormat = ''
-  
+  let expectedFormat = '';
+
   if (trackCount >= 1 && trackCount <= 3) {
-    expectedFormat = 'Single'
+    expectedFormat = 'Single';
   } else if (trackCount >= 4 && trackCount <= 6) {
-    expectedFormat = 'EP'
+    expectedFormat = 'EP';
   } else if (trackCount >= 7) {
-    expectedFormat = 'Album'
+    expectedFormat = 'Album';
   }
 
   if (format && expectedFormat && format !== expectedFormat) {
@@ -532,37 +532,37 @@ export function validateFormatClassification(format: string, trackCount: number)
       message: 'qc.error.incorrectFormat',
       field: 'album.format',
       suggestion: `Based on ${trackCount} tracks, format should be "${expectedFormat}"`
-    })
+    });
   }
 
-  return results
+  return results;
 }
 
 // Language-specific casing validation
 export function validateLanguageCasing(title: string, language: string): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
-  if (!title || !language) return results
+  if (!title || !language) return results;
 
-  const sentenceCaseLanguages = ['french', 'italian', 'spanish', 'swedish', 'norwegian', 'danish']
-  
+  const sentenceCaseLanguages = ['french', 'italian', 'spanish', 'swedish', 'norwegian', 'danish'];
+
   if (sentenceCaseLanguages.includes(language.toLowerCase())) {
     // Check if title uses sentence case (only first word and proper nouns capitalized)
-    const words = title.split(' ')
-    const incorrectWords: string[] = []
-    
+    const words = title.split(' ');
+    const incorrectWords: string[] = [];
+
     words.forEach((word, index) => {
       // Skip first word, proper nouns, and language-specific articles
-      if (index === 0) return
-      
-      const articles = LANGUAGE_SPECIFIC_ARTICLES[language.toLowerCase()] || []
-      if (articles.includes(word.toLowerCase())) return
-      
+      if (index === 0) return;
+
+      const articles = LANGUAGE_SPECIFIC_ARTICLES[language.toLowerCase()] || [];
+      if (articles.includes(word.toLowerCase())) return;
+
       // Check if word is improperly capitalized (excluding all-caps abbreviations)
       if (word.length > 1 && word[0] === word[0].toUpperCase() && word !== word.toUpperCase()) {
-        incorrectWords.push(word)
+        incorrectWords.push(word);
       }
-    })
+    });
 
     if (incorrectWords.length > 0) {
       results.push({
@@ -571,18 +571,18 @@ export function validateLanguageCasing(title: string, language: string): QCValid
         message: 'qc.warning.sentenceCaseRequired',
         field: 'title',
         suggestion: `${language} titles should use sentence case. Check: ${incorrectWords.join(', ')}`
-      })
+      });
     }
   }
 
-  return results
+  return results;
 }
 
 // German orthography validation
 export function validateGermanOrthography(text: string): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
-  if (!text) return results
+  if (!text) return results;
 
   // Check for incorrect German character replacements
   // Note: These replacements are context-dependent and should be manually verified
@@ -602,7 +602,7 @@ export function validateGermanOrthography(text: string): QCValidationResult[] {
     'waehrend': 'während',
     'grosse': 'große',
     'strasse': 'straße'
-  }
+  };
 
   Object.entries(germanWords).forEach(([incorrect, correct]) => {
     if (text.toLowerCase().includes(incorrect)) {
@@ -612,29 +612,29 @@ export function validateGermanOrthography(text: string): QCValidationResult[] {
         message: 'qc.warning.germanOrthography',
         field: 'text',
         suggestion: text.replace(new RegExp(incorrect, 'gi'), correct)
-      })
+      });
     }
-  })
+  });
 
-  return results
+  return results;
 }
 
 // Parental Advisory validation
 export function validateParentalAdvisory(tracks: any[], hasExplicitContent: boolean): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   // Check if any track has explicit lyrics
-  const hasExplicitTracks = tracks.some(track => 
-    track.lyricsExplicit === true || 
+  const hasExplicitTracks = tracks.some(track =>
+    track.lyricsExplicit === true ||
     track.titleEn?.toLowerCase().includes('explicit') ||
     track.trackVersion?.toLowerCase() === 'explicit'
-  )
+  );
 
   // Check if any track has clean version
-  const hasCleanVersions = tracks.some(track => 
+  const hasCleanVersions = tracks.some(track =>
     track.trackVersion?.toLowerCase() === 'clean' ||
     track.titleEn?.toLowerCase().includes('clean')
-  )
+  );
 
   if (hasExplicitTracks && !hasExplicitContent) {
     results.push({
@@ -642,7 +642,7 @@ export function validateParentalAdvisory(tracks: any[], hasExplicitContent: bool
       severity: 'error',
       message: 'qc.error.parentalAdvisoryMissing',
       field: 'album.parentalAdvisory'
-    })
+    });
   }
 
   if (!hasExplicitTracks && hasExplicitContent) {
@@ -651,7 +651,7 @@ export function validateParentalAdvisory(tracks: any[], hasExplicitContent: bool
       severity: 'warning',
       message: 'qc.warning.parentalAdvisoryUnnecessary',
       field: 'album.parentalAdvisory'
-    })
+    });
   }
 
   if (hasCleanVersions && !hasExplicitTracks) {
@@ -660,19 +660,19 @@ export function validateParentalAdvisory(tracks: any[], hasExplicitContent: bool
       severity: 'warning',
       message: 'qc.warning.cleanVersionWithoutExplicit',
       field: 'tracks'
-    })
+    });
   }
 
-  return results
+  return results;
 }
 
 // Language consistency validation
 export function validateLanguageConsistency(tracks: any[]): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   // Check if all tracks have consistent language settings
-  const languages = tracks.map(t => t.lyricsLanguage).filter(Boolean)
-  const uniqueLanguages = [...new Set(languages)]
+  const languages = tracks.map(t => t.lyricsLanguage).filter(Boolean);
+  const uniqueLanguages = [...new Set(languages)];
 
   if (uniqueLanguages.length > 2) {
     results.push({
@@ -680,20 +680,20 @@ export function validateLanguageConsistency(tracks: any[]): QCValidationResult[]
       severity: 'warning',
       message: 'qc.warning.mixedLanguages',
       field: 'tracks'
-    })
+    });
   }
 
-  return results
+  return results;
 }
 
 // Release date validation
 export function validateReleaseDate(releaseDate: string): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   if (releaseDate) {
-    const today = new Date()
-    const release = new Date(releaseDate)
-    const daysDiff = Math.ceil((release.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
+    const today = new Date();
+    const release = new Date(releaseDate);
+    const daysDiff = Math.ceil((release.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
     if (daysDiff < 0) {
       results.push({
@@ -701,23 +701,23 @@ export function validateReleaseDate(releaseDate: string): QCValidationResult[] {
         severity: 'error',
         message: 'qc.error.pastReleaseDate',
         field: 'release.consumerReleaseDate'
-      })
+      });
     } else if (daysDiff < 14) {
       results.push({
         isValid: false,
         severity: 'warning',
         message: 'qc.warning.shortReleaseNotice',
         field: 'release.consumerReleaseDate'
-      })
+      });
     }
   }
 
-  return results
+  return results;
 }
 
 // Genre validation
 export function validateGenre(genres: string[]): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   if (genres.length === 0) {
     results.push({
@@ -725,7 +725,7 @@ export function validateGenre(genres: string[]): QCValidationResult[] {
       severity: 'error',
       message: 'qc.error.noGenre',
       field: 'artist.genre'
-    })
+    });
   }
 
   if (genres.length > 3) {
@@ -734,26 +734,26 @@ export function validateGenre(genres: string[]): QCValidationResult[] {
       severity: 'warning',
       message: 'qc.warning.tooManyGenres',
       field: 'artist.genre'
-    })
+    });
   }
 
-  return results
+  return results;
 }
 
 // Single title consistency validation
 export function validateSingleTitleConsistency(albumTitle: string, tracks: any[]): QCValidationResult[] {
-  const results: QCValidationResult[] = []
+  const results: QCValidationResult[] = [];
 
   // For singles (1-3 tracks), all tracks should have the same base title as the album
   if (tracks.length >= 1 && tracks.length <= 3) {
-    const albumTitleBase = albumTitle.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase()
-    
+    const albumTitleBase = albumTitle.replace(/\s*\([^)]*\)\s*$/, '').trim().toLowerCase();
+
     tracks.forEach((track, index) => {
       const trackTitleBase = (track.titleEn || track.titleKo || '')
         .replace(/\s*\([^)]*\)\s*$/, '')
         .trim()
-        .toLowerCase()
-      
+        .toLowerCase();
+
       if (trackTitleBase && trackTitleBase !== albumTitleBase) {
         results.push({
           isValid: false,
@@ -761,123 +761,282 @@ export function validateSingleTitleConsistency(albumTitle: string, tracks: any[]
           message: 'qc.error.singleTitleMismatch',
           field: `track[${index}].title`,
           suggestion: 'Single format requires all tracks to have the same title as the album'
-        })
+        });
       }
-    })
+    });
   }
 
-  return results
+  return results;
+}
+
+// Contributor validation
+export function validateContributorRequirements(contributors: any[]): QCValidationResult[] {
+  const results: QCValidationResult[] = [];
+
+  if (!contributors || contributors.length === 0) {
+    results.push({
+      isValid: false,
+      severity: 'error',
+      message: 'qc.error.noContributors',
+      field: 'contributors'
+    });
+    return results;
+  }
+
+  // Check for required roles
+  const hasLyricist = contributors.some(c => c.role === 'lyricist');
+  const hasComposer = contributors.some(c => c.role === 'composer');
+  const hasPerformingArtist = contributors.some(c =>
+    ['featured-artist', 'featuring', 'vocalist', 'lead-vocalist', 'performer',
+      'instrumentalist', 'band', 'orchestra', 'soloist', 'mc', 'rap'].includes(c.role)
+  );
+
+  if (!hasLyricist) {
+    results.push({
+      isValid: false,
+      severity: 'error',
+      message: 'qc.error.missingLyricist',
+      field: 'contributors'
+    });
+  }
+
+  if (!hasComposer) {
+    results.push({
+      isValid: false,
+      severity: 'error',
+      message: 'qc.error.missingComposer',
+      field: 'contributors'
+    });
+  }
+
+  if (!hasPerformingArtist) {
+    results.push({
+      isValid: false,
+      severity: 'error',
+      message: 'qc.error.missingPerformingArtist',
+      field: 'contributors'
+    });
+  }
+
+  // Validate individual contributor names
+  contributors.forEach((contributor, index) => {
+    if (contributor.name) {
+      const nameResults = validateArtistName(contributor.name, contributor.nameEn || '');
+      nameResults.forEach(result => {
+        result.field = `contributor[${index}].name`;
+      });
+      results.push(...nameResults);
+    }
+  });
+
+  return results;
+}
+
+// Label translation validation
+export function validateLabelTranslation(labelKo: string, labelEn: string, labelJa?: string): QCValidationResult[] {
+  const results: QCValidationResult[] = [];
+
+  // Korean label validation
+  if (labelKo) {
+    if (DOUBLE_SPACE_REGEX.test(labelKo)) {
+      results.push({
+        isValid: false,
+        severity: 'error',
+        message: 'qc.error.doubleSpaces',
+        field: 'label.nameKo',
+        suggestion: labelKo.replace(DOUBLE_SPACE_REGEX, ' ')
+      });
+    }
+
+    if (LEADING_TRAILING_SPACE_REGEX.test(labelKo)) {
+      results.push({
+        isValid: false,
+        severity: 'error',
+        message: 'qc.error.leadingTrailingSpaces',
+        field: 'label.nameKo',
+        suggestion: labelKo.trim()
+      });
+    }
+  }
+
+  // English label validation
+  if (labelEn) {
+    if (DOUBLE_SPACE_REGEX.test(labelEn)) {
+      results.push({
+        isValid: false,
+        severity: 'error',
+        message: 'qc.error.doubleSpaces',
+        field: 'label.nameEn',
+        suggestion: labelEn.replace(DOUBLE_SPACE_REGEX, ' ')
+      });
+    }
+
+    if (LEADING_TRAILING_SPACE_REGEX.test(labelEn)) {
+      results.push({
+        isValid: false,
+        severity: 'error',
+        message: 'qc.error.leadingTrailingSpaces',
+        field: 'label.nameEn',
+        suggestion: labelEn.trim()
+      });
+    }
+
+    // Check for consistent formatting
+    if (/\b(inc\.|Inc\.|INC\.|incorporated|Incorporated|INCORPORATED)\b/.test(labelEn)) {
+      results.push({
+        isValid: false,
+        severity: 'warning',
+        message: 'qc.warning.labelFormatting',
+        field: 'label.nameEn',
+        suggestion: 'Use consistent formatting for company suffixes (e.g., Inc., Records, Entertainment)'
+      });
+    }
+  }
+
+  // Japanese label validation
+  if (labelJa) {
+    if (DOUBLE_SPACE_REGEX.test(labelJa)) {
+      results.push({
+        isValid: false,
+        severity: 'warning',
+        message: 'qc.error.doubleSpaces',
+        field: 'label.nameJa',
+        suggestion: labelJa.replace(DOUBLE_SPACE_REGEX, ' ')
+      });
+    }
+  }
+
+  return results;
 }
 
 // Comprehensive validation function
 export function validateSubmission(data: any): QCValidationResults {
-  const allResults: QCValidationResult[] = []
+  const allResults: QCValidationResult[] = [];
 
   // Artist validation
   if (data.artist) {
-    allResults.push(...validateArtistName(data.artist.nameKo, data.artist.nameEn))
-    allResults.push(...validateGenre(data.artist.genre || []))
+    allResults.push(...validateArtistName(data.artist.nameKo, data.artist.nameEn));
+    allResults.push(...validateGenre(data.artist.genre || []));
   }
 
   // Album validation
   if (data.album) {
-    allResults.push(...validateTrackTitle(data.album.titleKo, data.album.titleEn, true))
-    
+    allResults.push(...validateTrackTitle(data.album.titleKo, data.album.titleEn, true));
+
     // Format classification validation
     if (data.tracks) {
-      allResults.push(...validateFormatClassification(data.album.format, data.tracks.length))
-      
+      allResults.push(...validateFormatClassification(data.album.format, data.tracks.length));
+
       // Single title consistency check
-      const albumTitle = data.album.titleEn || data.album.titleKo
+      const albumTitle = data.album.titleEn || data.album.titleKo;
       if (albumTitle) {
-        allResults.push(...validateSingleTitleConsistency(albumTitle, data.tracks))
+        allResults.push(...validateSingleTitleConsistency(albumTitle, data.tracks));
       }
     }
 
     // Parental advisory validation
     if (data.tracks) {
-      allResults.push(...validateParentalAdvisory(data.tracks, data.album.parentalAdvisory))
+      allResults.push(...validateParentalAdvisory(data.tracks, data.album.parentalAdvisory));
     }
+  }
+
+  // Contributor validation
+  if (data.contributors) {
+    allResults.push(...validateContributorRequirements(data.contributors));
+  }
+
+  // Label validation
+  if (data.label) {
+    allResults.push(...validateLabelTranslation(data.label.nameKo || '', data.label.nameEn || '', data.label.nameJa));
   }
 
   // Track validation
   if (data.tracks) {
     data.tracks.forEach((track: any, index: number) => {
-      const trackResults = validateTrackTitle(track.titleKo, track.titleEn)
+      const trackResults = validateTrackTitle(track.titleKo, track.titleEn);
       trackResults.forEach(result => {
-        result.field = `track[${index}].${result.field?.split('.')[1]}`
-      })
-      allResults.push(...trackResults)
+        result.field = `track[${index}].${result.field?.split('.')[1]}`;
+      });
+      allResults.push(...trackResults);
+
+      // Track-level contributor validation
+      if (track.contributors) {
+        const trackContributorResults = validateContributorRequirements(track.contributors);
+        trackContributorResults.forEach(result => {
+          result.field = `track[${index}].${result.field}`;
+        });
+        allResults.push(...trackContributorResults);
+      }
 
       // Language-specific casing validation
       if (track.lyricsLanguage && track.titleEn) {
-        const casingResults = validateLanguageCasing(track.titleEn, track.lyricsLanguage)
+        const casingResults = validateLanguageCasing(track.titleEn, track.lyricsLanguage);
         casingResults.forEach(result => {
-          result.field = `track[${index}].titleEn`
-        })
-        allResults.push(...casingResults)
+          result.field = `track[${index}].titleEn`;
+        });
+        allResults.push(...casingResults);
       }
 
       // German orthography check
       if (track.lyricsLanguage?.toLowerCase() === 'german') {
         if (track.titleEn) {
-          const germanResults = validateGermanOrthography(track.titleEn)
+          const germanResults = validateGermanOrthography(track.titleEn);
           germanResults.forEach(result => {
-            result.field = `track[${index}].titleEn`
-          })
-          allResults.push(...germanResults)
+            result.field = `track[${index}].titleEn`;
+          });
+          allResults.push(...germanResults);
         }
       }
 
       if (track.featuring) {
-        const featResults = validateFeaturingFormat(track.featuring)
+        const featResults = validateFeaturingFormat(track.featuring);
         featResults.forEach(result => {
-          result.field = `track[${index}].featuring`
-        })
-        allResults.push(...featResults)
+          result.field = `track[${index}].featuring`;
+        });
+        allResults.push(...featResults);
       }
 
       if (track.isrc) {
-        const isrcResults = validateISRC(track.isrc)
+        const isrcResults = validateISRC(track.isrc);
         isrcResults.forEach(result => {
-          result.field = `track[${index}].isrc`
-        })
-        allResults.push(...isrcResults)
+          result.field = `track[${index}].isrc`;
+        });
+        allResults.push(...isrcResults);
       }
 
       if (track.trackVersion && track.trackVersion !== 'original') {
-        const versionResults = validateVersionNaming(track.titleEn || track.titleKo, track.trackVersion)
+        const versionResults = validateVersionNaming(track.titleEn || track.titleKo, track.trackVersion);
         versionResults.forEach(result => {
-          result.field = `track[${index}].version`
-        })
-        allResults.push(...versionResults)
+          result.field = `track[${index}].version`;
+        });
+        allResults.push(...versionResults);
       }
-    })
+    });
 
-    allResults.push(...validateLanguageConsistency(data.tracks))
+    allResults.push(...validateLanguageConsistency(data.tracks));
   }
 
   // Release validation
   if (data.release) {
-    allResults.push(...validateReleaseDate(data.release.consumerReleaseDate))
+    allResults.push(...validateReleaseDate(data.release.consumerReleaseDate));
     allResults.push(...validateCopyright(
       data.release.copyrightYear,
       data.release.cRights,
       data.release.pRights
-    ))
+    ));
   }
 
   // Categorize results
-  const errors = allResults.filter(r => r.severity === 'error')
-  const warnings = allResults.filter(r => r.severity === 'warning')
-  const info = allResults.filter(r => r.severity === 'info')
+  const errors = allResults.filter(r => r.severity === 'error');
+  const warnings = allResults.filter(r => r.severity === 'warning');
+  const info = allResults.filter(r => r.severity === 'info');
 
   return {
     errors,
     warnings,
     info,
     isValid: errors.length === 0
-  }
+  };
 }
 
 // Real-time validation helper
@@ -888,41 +1047,41 @@ export function validateField(fieldType: string, value: string, additionalData?:
       return validateArtistName(
         fieldType === 'artistNameKo' ? value : '',
         fieldType === 'artistNameEn' ? value : ''
-      ).filter(r => r.field?.includes(fieldType.replace('artistName', 'artist.name')))
-    
+      ).filter(r => r.field?.includes(fieldType.replace('artistName', 'artist.name')));
+
     case 'albumTitleKo':
     case 'albumTitleEn':
     case 'trackTitleKo':
     case 'trackTitleEn':
-      const isAlbum = fieldType.includes('album')
+      const isAlbum = fieldType.includes('album');
       return validateTrackTitle(
         fieldType.includes('Ko') ? value : '',
         fieldType.includes('En') ? value : '',
         isAlbum
-      ).filter(r => r.field?.includes(fieldType.includes('Ko') ? 'Ko' : 'En'))
-    
+      ).filter(r => r.field?.includes(fieldType.includes('Ko') ? 'Ko' : 'En'));
+
     case 'featuring':
-      return validateFeaturingFormat(value)
-    
+      return validateFeaturingFormat(value);
+
     case 'isrc':
-      return validateISRC(value)
-    
+      return validateISRC(value);
+
     case 'copyrightYear':
-      return validateCopyright(value, additionalData?.cRights || '', additionalData?.pRights || '')
-    
+      return validateCopyright(value, additionalData?.cRights || '', additionalData?.pRights || '');
+
     case 'releaseDate':
-      return validateReleaseDate(value)
-    
+      return validateReleaseDate(value);
+
     case 'genre':
-      return validateGenre(additionalData || [])
-    
+      return validateGenre(additionalData || []);
+
     case 'format':
-      return validateFormatClassification(value, additionalData || 0)
-    
+      return validateFormatClassification(value, additionalData || 0);
+
     case 'parentalAdvisory':
-      return validateParentalAdvisory(additionalData?.tracks || [], additionalData?.hasExplicit || false)
-    
+      return validateParentalAdvisory(additionalData?.tracks || [], additionalData?.hasExplicit || false);
+
     default:
-      return []
+      return [];
   }
 }

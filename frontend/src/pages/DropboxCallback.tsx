@@ -39,9 +39,9 @@ const DropboxCallback = () => {
       const response = await fetch('/api/dropbox/token', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ code, state }),
+        body: JSON.stringify({ code, state })
       });
 
       if (!response.ok) {
@@ -49,12 +49,12 @@ const DropboxCallback = () => {
       }
 
       await response.json();
-      
+
       // Store the access token securely
       localStorage.setItem('dropbox_connected', 'true');
-      
+
       setStatus('success');
-      
+
       // Redirect back to submission page after a short delay
       setTimeout(() => {
         const returnPath = localStorage.getItem('dropbox_return_path') || '/submit';

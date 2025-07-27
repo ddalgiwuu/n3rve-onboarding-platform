@@ -1,19 +1,19 @@
-import { useState, useEffect } from 'react'
-import { ChevronRight, ChevronLeft, Save, Upload, Check, Info } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import FileSpecsGuide from './FileSpecsGuide'
-import ContributorForm from './ContributorForm'
-import ReleaseDateSettings from './ReleaseDateSettings'
-import CopyrightInfo from './CopyrightInfo'
-import MobileFormNav from './MobileFormNav'
-import TrackList from './TrackList'
-import ValidationWarning, { ValidationWarning as ValidationWarningType } from './ValidationWarning'
-import { 
-  validateAlbumTitle, 
-  validateArtistName, 
-  createValidationState 
-} from '@/utils/inputValidation'
+import { useState, useEffect } from 'react';
+import { ChevronRight, ChevronLeft, Save, Upload, Check, Info } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import FileSpecsGuide from './FileSpecsGuide';
+import ContributorForm from './ContributorForm';
+import ReleaseDateSettings from './ReleaseDateSettings';
+import CopyrightInfo from './CopyrightInfo';
+import MobileFormNav from './MobileFormNav';
+import TrackList from './TrackList';
+import ValidationWarning, { ValidationWarning as ValidationWarningType } from './ValidationWarning';
+import {
+  validateAlbumTitle,
+  validateArtistName,
+  createValidationState
+} from '@/utils/inputValidation';
 // import { v4 as uuidv4 } from 'uuid' // Reserved for future use
 
 // Form sections - reorganized from 12-13 steps to 7 logical groups
@@ -60,7 +60,7 @@ const formSections = [
     description: { ko: '음원, 아트워크, 모션아트 등', en: 'Audio files, artwork, motion art, etc.' },
     icon: '📁'
   }
-]
+];
 
 interface FormData {
   releaseType: string
@@ -99,10 +99,10 @@ interface FormData {
 }
 
 export default function ReleaseFormV2() {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [currentSection, setCurrentSection] = useState(0)
+  const [currentSection, setCurrentSection] = useState(0);
   const [formData, setFormData] = useState<FormData>({
     releaseType: '',
     primaryArtist: '',
@@ -137,82 +137,82 @@ export default function ReleaseFormV2() {
       motionArt: [],
       dolbyAtmos: []
     }
-  })
+  });
 
-  const [showContributorForm, setShowContributorForm] = useState(false)
-  const [editingContributor, setEditingContributor] = useState<any>(null)
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
-  const [validationWarnings, setValidationWarnings] = useState<Record<string, ValidationWarningType[]>>({})
-  const [completedSections, setCompletedSections] = useState<number[]>([])
-  
+  const [showContributorForm, setShowContributorForm] = useState(false);
+  const [editingContributor, setEditingContributor] = useState<any>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [validationWarnings, setValidationWarnings] = useState<Record<string, ValidationWarningType[]>>({});
+  const [completedSections, setCompletedSections] = useState<number[]>([]);
+
   // Validation state management
-  const validationState = createValidationState()
+  const validationState = createValidationState();
 
   // Auto-save draft
   useEffect(() => {
-    const savedDraft = localStorage.getItem('n3rve-release-draft')
+    const savedDraft = localStorage.getItem('n3rve-release-draft');
     if (savedDraft) {
       try {
-        const parsed = JSON.parse(savedDraft)
-        setFormData(parsed)
+        const parsed = JSON.parse(savedDraft);
+        setFormData(parsed);
       } catch (e) {
-        console.error('Failed to load draft:', e)
+        console.error('Failed to load draft:', e);
       }
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     const saveTimer = setTimeout(() => {
-      localStorage.setItem('n3rve-release-draft', JSON.stringify(formData))
-    }, 2000)
-    return () => clearTimeout(saveTimer)
-  }, [formData])
+      localStorage.setItem('n3rve-release-draft', JSON.stringify(formData));
+    }, 2000);
+    return () => clearTimeout(saveTimer);
+  }, [formData]);
 
   // Section navigation
   const nextSection = () => {
     if (validateCurrentSection()) {
-      setCompletedSections(prev => [...new Set([...prev, currentSection])])
-      setCurrentSection(prev => Math.min(prev + 1, formSections.length - 1))
+      setCompletedSections(prev => [...new Set([...prev, currentSection])]);
+      setCurrentSection(prev => Math.min(prev + 1, formSections.length - 1));
     }
-  }
+  };
 
   const prevSection = () => {
-    setCurrentSection(prev => Math.max(prev - 1, 0))
-  }
+    setCurrentSection(prev => Math.max(prev - 1, 0));
+  };
 
   const handleSectionChange = (index: number) => {
     if (index < currentSection || completedSections.includes(index - 1) || index === 0) {
-      setCurrentSection(index)
+      setCurrentSection(index);
     }
-  }
+  };
 
   const validateCurrentSection = () => {
-    const errors: Record<string, string> = {}
-    
+    const errors: Record<string, string> = {};
+
     switch (currentSection) {
       case 0: // Basic
-        if (!formData.releaseType) errors.releaseType = t('필수 항목입니다', 'Required field')
-        if (!formData.primaryArtist) errors.primaryArtist = t('필수 항목입니다', 'Required field')
-        if (!formData.albumTitle) errors.albumTitle = t('필수 항목입니다', 'Required field')
-        break
+        if (!formData.releaseType) errors.releaseType = t('필수 항목입니다', 'Required field');
+        if (!formData.primaryArtist) errors.primaryArtist = t('필수 항목입니다', 'Required field');
+        if (!formData.albumTitle) errors.albumTitle = t('필수 항목입니다', 'Required field');
+        break;
       case 1: // Tracks
-        if (formData.tracks.length === 0) errors.tracks = t('최소 1개의 트랙이 필요합니다', 'At least 1 track is required')
-        break
+        if (formData.tracks.length === 0) errors.tracks = t('최소 1개의 트랙이 필요합니다', 'At least 1 track is required');
+        break;
       case 3: // Dates
-        if (!formData.consumerDate.date) errors.consumerDate = t('필수 항목입니다', 'Required field')
-        break
+        if (!formData.consumerDate.date) errors.consumerDate = t('필수 항목입니다', 'Required field');
+        break;
       case 4: // Copyright
-        if (!formData.copyright.copyrightHolder) errors.copyrightHolder = t('필수 항목입니다', 'Required field')
-        if (!formData.copyright.productionHolder) errors.productionHolder = t('필수 항목입니다', 'Required field')
-        break
+        if (!formData.copyright.copyrightHolder) errors.copyrightHolder = t('필수 항목입니다', 'Required field');
+        if (!formData.copyright.productionHolder) errors.productionHolder = t('필수 항목입니다', 'Required field');
+        break;
     }
 
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
-  }
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   // Progress indicator
-  const progress = ((currentSection + 1) / formSections.length) * 100
+  const progress = ((currentSection + 1) / formSections.length) * 100;
 
   // Validation handlers
   const handleFieldValidation = (field: string, value: string, validationType: 'album' | 'artist' | 'track' = 'album') => {
@@ -280,7 +280,7 @@ export default function ReleaseFormV2() {
   return (
     <div className="max-w-6xl mx-auto p-4">
       {/* Mobile Navigation */}
-      <MobileFormNav 
+      <MobileFormNav
         sections={formSections}
         currentSection={currentSection}
         completedSections={completedSections}
@@ -298,24 +298,24 @@ export default function ReleaseFormV2() {
             {t('임시 저장됨', 'Auto-saved')}
           </button>
         </div>
-        
+
         <div className="relative">
           <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
+            <div
               className="h-full bg-purple-600 transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
-          
+
           {/* Section indicators - Hidden on mobile */}
           <div className="absolute top-0 left-0 w-full h-full hidden md:flex justify-between">
             {formSections.map((section, idx) => (
               <div
                 key={section.id}
                 className={`w-8 h-8 -mt-3 rounded-full flex items-center justify-center text-sm font-medium transition-all cursor-pointer
-                  ${idx < currentSection ? 'bg-purple-600 text-white' : 
-                    idx === currentSection ? 'bg-purple-600 text-white ring-4 ring-purple-200' : 
-                    'bg-gray-300 text-gray-600'}`}
+                  ${idx < currentSection ? 'bg-purple-600 text-white' :
+                idx === currentSection ? 'bg-purple-600 text-white ring-4 ring-purple-200' :
+                  'bg-gray-300 text-gray-600'}`}
                 onClick={() => handleSectionChange(idx)}
               >
                 {idx < currentSection ? <Check className="w-4 h-4" /> : section.icon}
@@ -327,7 +327,7 @@ export default function ReleaseFormV2() {
         {/* Section labels - Hidden on mobile */}
         <div className="hidden md:flex justify-between mt-6">
           {formSections.map((section, idx) => (
-            <div 
+            <div
               key={section.id}
               className={`text-xs ${idx === currentSection ? 'text-purple-600 font-medium' : 'text-gray-500'}`}
             >
@@ -608,8 +608,8 @@ export default function ReleaseFormV2() {
                       </div>
                       <button
                         onClick={() => {
-                          setEditingContributor(contributor)
-                          setShowContributorForm(true)
+                          setEditingContributor(contributor);
+                          setShowContributorForm(true);
                         }}
                         className="text-gray-400 hover:text-gray-600"
                       >
@@ -629,22 +629,22 @@ export default function ReleaseFormV2() {
                   if (editingContributor) {
                     setFormData(prev => ({
                       ...prev,
-                      contributors: prev.contributors.map(c => 
+                      contributors: prev.contributors.map(c =>
                         c.id === contributor.id ? contributor : c
                       )
-                    }))
+                    }));
                   } else {
                     setFormData(prev => ({
                       ...prev,
                       contributors: [...prev.contributors, contributor]
-                    }))
+                    }));
                   }
-                  setShowContributorForm(false)
-                  setEditingContributor(null)
+                  setShowContributorForm(false);
+                  setEditingContributor(null);
                 }}
                 onCancel={() => {
-                  setShowContributorForm(false)
-                  setEditingContributor(null)
+                  setShowContributorForm(false);
+                  setEditingContributor(null);
                 }}
               />
             )}
@@ -657,7 +657,7 @@ export default function ReleaseFormV2() {
             <FileSpecsGuide type="artwork" />
             <FileSpecsGuide type="motionart" />
             <FileSpecsGuide type="dolbyatmos" />
-            
+
             {/* File upload sections would go here */}
             <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-900/50 rounded-lg text-center">
               <Upload className="w-12 h-12 mx-auto mb-4 text-gray-400" />
@@ -702,5 +702,5 @@ export default function ReleaseFormV2() {
         </button>
       </div>
     </div>
-  )
+  );
 }

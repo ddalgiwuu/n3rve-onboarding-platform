@@ -29,7 +29,7 @@ export const genreList = [
   { value: 'Spoken Word', label: 'Spoken Word' },
   { value: 'Audiobook', label: 'Audiobook' },
   { value: 'Podcast', label: 'Podcast' }
-]
+];
 
 // Subgenre list by genre
 export const subgenreList: Record<string, { value: string; label: string }[]> = {
@@ -176,4 +176,4 @@ export const subgenreList: Record<string, { value: string; label: string }[]> = 
     { value: 'Denpa', label: 'Denpa' },
     { value: 'Enka', label: 'Enka' }
   ]
-}
+};

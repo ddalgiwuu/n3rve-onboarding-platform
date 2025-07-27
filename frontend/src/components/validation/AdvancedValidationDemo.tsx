@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { Eye, EyeOff, Settings, RefreshCw, Download } from 'lucide-react'
-import ValidationSummaryPanel from './ValidationSummaryPanel'
-import IntelligentSuggestionsEngine from './IntelligentSuggestionsEngine'
-import CollaborationFeatures from './CollaborationFeatures'
-import ValidationReportExporter from './ValidationReportExporter'
-import { EnhancedVisualEffects, SectionHeaderEffects, AnimatedProgressBar } from './EnhancedVisualEffects'
-import { useValidationPatterns } from '@/hooks/useValidationPatterns'
-import { useValidationProgress } from '@/hooks/useValidationProgress'
-import { EnhancedValidationWarning } from '@/types/validationAdvanced'
+import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Eye, EyeOff, Settings, RefreshCw, Download } from 'lucide-react';
+import ValidationSummaryPanel from './ValidationSummaryPanel';
+import IntelligentSuggestionsEngine from './IntelligentSuggestionsEngine';
+import CollaborationFeatures from './CollaborationFeatures';
+import ValidationReportExporter from './ValidationReportExporter';
+import { EnhancedVisualEffects, SectionHeaderEffects, AnimatedProgressBar } from './EnhancedVisualEffects';
+import { useValidationPatterns } from '@/hooks/useValidationPatterns';
+import { useValidationProgress } from '@/hooks/useValidationProgress';
+import { EnhancedValidationWarning } from '@/types/validationAdvanced';
 
 interface AdvancedValidationDemoProps {
   language?: 'ko' | 'en'
@@ -96,15 +96,15 @@ const mockWarnings: EnhancedValidationWarning[] = [
     fixComplexity: 'medium',
     categoryTags: ['length', 'display']
   }
-]
+];
 
 export default function AdvancedValidationDemo({
   language = 'en'
 }: AdvancedValidationDemoProps) {
-  const [summaryVisible, setSummaryVisible] = useState(true)
-  const [warnings, setWarnings] = useState<EnhancedValidationWarning[]>(mockWarnings)
-  const [currentField, setCurrentField] = useState<string>('albumTitle')
-  const [showExporter, setShowExporter] = useState(false)
+  const [summaryVisible, setSummaryVisible] = useState(true);
+  const [warnings, setWarnings] = useState<EnhancedValidationWarning[]>(mockWarnings);
+  const [currentField, setCurrentField] = useState<string>('albumTitle');
+  const [showExporter, setShowExporter] = useState(false);
 
   const {
     recordAcceptance,
@@ -112,7 +112,7 @@ export default function AdvancedValidationDemo({
     getSuggestionPriority,
     predictUserDecision,
     analyzePatterns
-  } = useValidationPatterns()
+  } = useValidationPatterns();
 
   const {
     progress,
@@ -121,76 +121,76 @@ export default function AdvancedValidationDemo({
     recordMilestone,
     getProgressPercentage,
     getAnalytics
-  } = useValidationProgress()
+  } = useValidationProgress();
 
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   // Initialize progress tracking
   useEffect(() => {
-    startTracking(warnings.length)
-  }, [startTracking])
+    startTracking(warnings.length);
+  }, [startTracking]);
 
   // Update progress when warnings change
   useEffect(() => {
-    updateIssueCount(warnings.length)
-  }, [warnings.length, updateIssueCount])
+    updateIssueCount(warnings.length);
+  }, [warnings.length, updateIssueCount]);
 
   const handleAcceptSuggestion = (warning: EnhancedValidationWarning) => {
     // Record the acceptance with timing
-    recordAcceptance(warning, Math.random() * 15 + 5) // Simulate 5-20 second decision
-    recordMilestone('suggestion_accepted', `Accepted: ${warning.message}`)
-    
+    recordAcceptance(warning, Math.random() * 15 + 5); // Simulate 5-20 second decision
+    recordMilestone('suggestion_accepted', `Accepted: ${warning.message}`);
+
     // Remove the warning
-    setWarnings(prev => prev.filter(w => w.id !== warning.id))
-  }
+    setWarnings(prev => prev.filter(w => w.id !== warning.id));
+  };
 
   const handleDismissSuggestion = (warning: EnhancedValidationWarning) => {
     // Record the dismissal with timing
-    recordDismissal(warning, Math.random() * 10 + 2) // Simulate 2-12 second decision
-    recordMilestone('suggestion_dismissed', `Dismissed: ${warning.message}`)
-    
+    recordDismissal(warning, Math.random() * 10 + 2); // Simulate 2-12 second decision
+    recordMilestone('suggestion_dismissed', `Dismissed: ${warning.message}`);
+
     // Remove the warning
-    setWarnings(prev => prev.filter(w => w.id !== warning.id))
-  }
+    setWarnings(prev => prev.filter(w => w.id !== warning.id));
+  };
 
   const handleNavigateToField = (fieldId: string) => {
-    setCurrentField(fieldId)
-    recordMilestone('field_navigation', `Navigated to: ${fieldId}`)
-    
+    setCurrentField(fieldId);
+    recordMilestone('field_navigation', `Navigated to: ${fieldId}`);
+
     // Simulate scrolling to field
-    console.log(`Navigating to field: ${fieldId}`)
-  }
+    console.log(`Navigating to field: ${fieldId}`);
+  };
 
   const handleExportReport = (format: 'pdf' | 'email') => {
-    recordMilestone('report_export', `Exported as: ${format}`)
-    console.log(`Exporting report as: ${format}`)
-  }
+    recordMilestone('report_export', `Exported as: ${format}`);
+    console.log(`Exporting report as: ${format}`);
+  };
 
   const resetDemo = () => {
-    setWarnings(mockWarnings)
-    startTracking(mockWarnings.length)
-    recordMilestone('demo_reset', 'Demo reset')
-  }
+    setWarnings(mockWarnings);
+    startTracking(mockWarnings.length);
+    recordMilestone('demo_reset', 'Demo reset');
+  };
 
   const summary = {
     total: warnings.length,
     errors: warnings.filter(w => w.type === 'error').length,
     warnings: warnings.filter(w => w.type === 'warning').length,
     suggestions: warnings.filter(w => w.type === 'suggestion').length,
-    avgRejectionProbability: warnings.length > 0 
+    avgRejectionProbability: warnings.length > 0
       ? Math.round(warnings.reduce((sum, w) => sum + (w.rejectionProbability || 0), 0) / warnings.length)
       : 0
-  }
+  };
 
   const submissionData = {
     albumTitle: 'My Amazing Album',
     artistName: 'The Amazing Artist',
     releaseDate: '2024-12-25',
     trackCount: 12
-  }
+  };
 
-  const analytics = getAnalytics()
-  const progressPercentage = getProgressPercentage()
+  const analytics = getAnalytics();
+  const progressPercentage = getProgressPercentage();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
@@ -207,7 +207,7 @@ export default function AdvancedValidationDemo({
           <p className="text-lg text-gray-600 dark:text-gray-400 mb-6">
             {t('AI 기반 제안, 실시간 협업, 스마트 분석을 제공하는 차세대 검증 시스템', 'Next-generation validation with AI suggestions, real-time collaboration, and smart analytics')}
           </p>
-          
+
           {/* Demo Controls */}
           <div className="flex items-center justify-center gap-4 mb-8">
             <button
@@ -215,8 +215,8 @@ export default function AdvancedValidationDemo({
               className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               {summaryVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              {summaryVisible 
-                ? t('요약 패널 숨기기', 'Hide Summary') 
+              {summaryVisible
+                ? t('요약 패널 숨기기', 'Hide Summary')
                 : t('요약 패널 보기', 'Show Summary')
               }
             </button>
@@ -286,8 +286,8 @@ export default function AdvancedValidationDemo({
             {/* Section Header with Visual Effects */}
             <SectionHeaderEffects
               title={t('앨범 정보', 'Album Information')}
-              validationStatus={warnings.some(w => w.type === 'error') ? 'has_errors' : 
-                              warnings.some(w => w.type === 'warning') ? 'has_warnings' : 'clean'}
+              validationStatus={warnings.some(w => w.type === 'error') ? 'has_errors' :
+                warnings.some(w => w.type === 'warning') ? 'has_warnings' : 'clean'}
               issueCount={warnings.length}
               onNavigateToFirstIssue={() => handleNavigateToField(warnings[0]?.field || '')}
               language={language}
@@ -296,12 +296,12 @@ export default function AdvancedValidationDemo({
             {/* Form Fields with Enhanced Visual Effects */}
             <div className="space-y-6">
               {['albumTitle', 'trackTitle', 'artistName'].map((fieldId) => {
-                const fieldWarnings = warnings.filter(w => w.field === fieldId)
-                const validationState = 
+                const fieldWarnings = warnings.filter(w => w.field === fieldId);
+                const validationState =
                   fieldWarnings.some(w => w.type === 'error') ? 'error' :
-                  fieldWarnings.some(w => w.type === 'warning') ? 'warning' :
-                  fieldWarnings.some(w => w.type === 'suggestion') ? 'suggestion' :
-                  fieldWarnings.length === 0 ? 'success' : 'none'
+                    fieldWarnings.some(w => w.type === 'warning') ? 'warning' :
+                      fieldWarnings.some(w => w.type === 'suggestion') ? 'suggestion' :
+                        fieldWarnings.length === 0 ? 'success' : 'none';
 
                 return (
                   <EnhancedVisualEffects
@@ -315,8 +315,8 @@ export default function AdvancedValidationDemo({
                     <div className="p-4 border rounded-lg bg-white dark:bg-gray-800">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {fieldId === 'albumTitle' ? t('앨범 제목', 'Album Title') :
-                         fieldId === 'trackTitle' ? t('트랙 제목', 'Track Title') :
-                         t('아티스트명', 'Artist Name')}
+                          fieldId === 'trackTitle' ? t('트랙 제목', 'Track Title') :
+                            t('아티스트명', 'Artist Name')}
                       </label>
                       <input
                         type="text"
@@ -324,13 +324,13 @@ export default function AdvancedValidationDemo({
                         className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         defaultValue={
                           fieldId === 'albumTitle' ? 'My "Amazing" Album' :
-                          fieldId === 'trackTitle' ? 'Song Title featuring Artist Name' :
-                          'the amazing artist'
+                            fieldId === 'trackTitle' ? 'Song Title featuring Artist Name' :
+                              'the amazing artist'
                         }
                       />
                     </div>
                   </EnhancedVisualEffects>
-                )
+                );
               })}
             </div>
 
@@ -385,12 +385,12 @@ export default function AdvancedValidationDemo({
                   </span>
                   <span className={`font-medium ${
                     analytics.improvementTrend === 'accelerating' ? 'text-green-600 dark:text-green-400' :
-                    analytics.improvementTrend === 'slowing' ? 'text-red-600 dark:text-red-400' :
-                    'text-yellow-600 dark:text-yellow-400'
+                      analytics.improvementTrend === 'slowing' ? 'text-red-600 dark:text-red-400' :
+                        'text-yellow-600 dark:text-yellow-400'
                   }`}>
                     {analytics.improvementTrend === 'accelerating' ? t('가속화', 'Accelerating') :
-                     analytics.improvementTrend === 'slowing' ? t('둔화', 'Slowing') :
-                     t('안정적', 'Steady')}
+                      analytics.improvementTrend === 'slowing' ? t('둔화', 'Slowing') :
+                        t('안정적', 'Steady')}
                   </span>
                 </div>
               </div>
@@ -453,5 +453,5 @@ export default function AdvancedValidationDemo({
         )}
       </div>
     </div>
-  )
+  );
 }

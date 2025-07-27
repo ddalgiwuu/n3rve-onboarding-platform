@@ -1,7 +1,7 @@
-import { useTranslation } from '@/hooks/useTranslation'
-import SearchableMultiSelect from '@/components/ui/SearchableMultiSelect'
-import { MOODS, INSTRUMENTS, PROJECT_TYPES, PRIORITY_LEVELS } from '@/constants/marketingData'
-import { Info, Target, Music, Hash, Users, Megaphone, Globe } from 'lucide-react'
+import { useTranslation } from '@/hooks/useTranslation';
+import SearchableMultiSelect from '@/components/ui/SearchableMultiSelect';
+import { MOODS, INSTRUMENTS, PROJECT_TYPES, PRIORITY_LEVELS } from '@/constants/marketingData';
+import { Info, Target, Music, Hash, Users, Megaphone, Globe } from 'lucide-react';
 
 interface Step11MarketingDetailsProps {
   formData: any
@@ -9,7 +9,7 @@ interface Step11MarketingDetailsProps {
 }
 
 export default function Step11MarketingDetails({ formData, onChange }: Step11MarketingDetailsProps) {
-  const { t } = useTranslation()
+  const { t } = useTranslation();
 
   const updateMarketingInfo = (field: string, value: any) => {
     onChange({
@@ -17,8 +17,8 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
         ...formData.marketingInfo,
         [field]: value
       }
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-8">
@@ -41,7 +41,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
           <Target className="w-5 h-5 text-purple-600" />
           {t('프로젝트 컨텍스트', 'Project Context', 'プロジェクトコンテキスト')}
         </h3>
-        
+
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -62,7 +62,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               ))}
             </select>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('우선순위 레벨', 'Priority Level', '優先度レベル')}
@@ -89,7 +89,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
           <Music className="w-5 h-5 text-blue-600" />
           {t('음악 특성', 'Music Characteristics', '音楽特性')}
         </h3>
-        
+
         <div className="space-y-6">
           <SearchableMultiSelect
             label={t('무드', 'Moods', 'ムード')}
@@ -100,7 +100,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
             maxItems={3}
             required
           />
-          
+
           <SearchableMultiSelect
             label={t('악기', 'Instruments', '楽器')}
             options={INSTRUMENTS}
@@ -118,12 +118,12 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
           <Megaphone className="w-5 h-5 text-green-600" />
           {t('엘리베이터 피치', 'Elevator Pitch', 'エレベーターピッチ')}
         </h3>
-        
+
         <div className="space-y-6">
           {/* Hook */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              {t("What's Your Hook?", "What's Your Hook?", "フックは何ですか？")}
+              {t("What's Your Hook?", "What's Your Hook?", 'フックは何ですか？')}
               <span className="text-red-500 ml-1">*</span>
             </label>
             <div className="relative">
@@ -152,7 +152,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               )}
             </p>
           </div>
-          
+
           {/* Main Pitch */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -187,7 +187,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
           <Target className="w-5 h-5 text-orange-600" />
           {t('마케팅 드라이버', 'Marketing Drivers', 'マーケティングドライバー')}
         </h3>
-        
+
         <div className="space-y-4">
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
             <div className="flex gap-2">
@@ -206,7 +206,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               </div>
             </div>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('마케팅 드라이버', 'Marketing Drivers', 'マーケティングドライバー')}
@@ -234,7 +234,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
           <Globe className="w-5 h-5 text-pink-600" />
           {t('소셜 미디어 계획', 'Social Media Rollout Plan', 'ソーシャルメディア計画')}
         </h3>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {t('소셜 미디어 롤아웃 계획', 'Your Social Media Rollout Plan', 'ソーシャルメディア展開計画')}
@@ -261,7 +261,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
           <Users className="w-5 h-5 text-indigo-600" />
           {t('추가 정보', 'Additional Information', '追加情報')}
         </h3>
-        
+
         <div className="grid md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -275,7 +275,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('마케팅 키워드', 'Marketing Keywords', 'マーケティングキーワード')}
@@ -288,7 +288,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('유사 아티스트', 'Similar Artists', '類似アーティスト')}
@@ -301,7 +301,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('아티스트 성별', 'Artist Gender', 'アーティストの性別')}
@@ -319,7 +319,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
             </select>
           </div>
         </div>
-        
+
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {t('아티스트 소개', 'Artist Bio', 'アーティスト紹介')}
@@ -344,7 +344,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
           <Hash className="w-5 h-5 text-blue-600" />
           {t('소셜 미디어 링크', 'Social Media Links', 'ソーシャルメディアリンク')}
         </h3>
-        
+
         <div className="grid md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -358,7 +358,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               TikTok
@@ -371,7 +371,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               X (Twitter)
@@ -384,7 +384,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Twitch
@@ -397,7 +397,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Threads
@@ -410,7 +410,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
               className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               SoundCloud Artist ID
@@ -426,5 +426,5 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
         </div>
       </div>
     </div>
-  )
+  );
 }

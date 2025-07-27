@@ -20,7 +20,7 @@ export const SUPPORTED_LANGUAGES: Language[] = [
   { code: 'ru', name: 'Russian', nativeName: 'Русский' },
   { code: 'ar', name: 'Arabic', nativeName: 'العربية' },
   { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी' },
-  
+
   // Asian Languages
   { code: 'th', name: 'Thai', nativeName: 'ไทย' },
   { code: 'vi', name: 'Vietnamese', nativeName: 'Tiếng Việt' },
@@ -32,7 +32,7 @@ export const SUPPORTED_LANGUAGES: Language[] = [
   { code: 'fa', name: 'Persian', nativeName: 'فارسی' },
   { code: 'tr', name: 'Turkish', nativeName: 'Türkçe' },
   { code: 'he', name: 'Hebrew', nativeName: 'עברית' },
-  
+
   // European Languages
   { code: 'nl', name: 'Dutch', nativeName: 'Nederlands' },
   { code: 'sv', name: 'Swedish', nativeName: 'Svenska' },
@@ -54,7 +54,7 @@ export const SUPPORTED_LANGUAGES: Language[] = [
   { code: 'el', name: 'Greek', nativeName: 'Ελληνικά' },
   { code: 'uk', name: 'Ukrainian', nativeName: 'Українська' },
   { code: 'be', name: 'Belarusian', nativeName: 'Беларуская' },
-  
+
   // Other Languages
   { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili' },
   { code: 'am', name: 'Amharic', nativeName: 'አማርኛ' },

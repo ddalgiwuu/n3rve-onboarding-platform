@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { 
-  Plus, Search, Clock, CheckCircle, XCircle, AlertCircle, 
+import {
+  Plus, Search, Clock, CheckCircle, XCircle, AlertCircle,
   Music, Calendar, Eye, Edit, Trash2, RefreshCw, MoreVertical,
   Filter, Download, Upload, ChevronRight, Info
 } from 'lucide-react';
@@ -71,7 +71,7 @@ const Submissions = () => {
 
   const handleDelete = async () => {
     if (!deletingId) return;
-    
+
     try {
       // TODO: Implement delete API call
       // await submissionService.deleteSubmission(deletingId);
@@ -126,13 +126,13 @@ const Submissions = () => {
     }
   };
 
-  const filteredSubmissions = Array.isArray(submissions) 
+  const filteredSubmissions = Array.isArray(submissions)
     ? submissions.filter(submission => {
-        const matchesSearch = submission.albumTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      const matchesSearch = submission.albumTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
                              submission.artistName.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'all' || submission.status === statusFilter.toUpperCase();
-        return matchesSearch && matchesStatus;
-      })
+      const matchesStatus = statusFilter === 'all' || submission.status === statusFilter.toUpperCase();
+      return matchesSearch && matchesStatus;
+    })
     : [];
 
   return (
@@ -170,7 +170,7 @@ const Submissions = () => {
               {t('전체 제출', 'Total Submissions', '総提出数')}
             </h3>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg">
@@ -184,7 +184,7 @@ const Submissions = () => {
               {t('승인됨', 'Approved', '承認済み')}
             </h3>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
@@ -198,7 +198,7 @@ const Submissions = () => {
               {t('검토 중', 'Under Review', '審査中')}
             </h3>
           </div>
-          
+
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
@@ -280,7 +280,7 @@ const Submissions = () => {
                     <Music className="w-16 h-16 text-white opacity-50" />
                   </div>
                 )}
-                
+
                 <div className={viewMode === 'grid' ? 'p-6 flex-1 flex flex-col' : ''}>
                   <div className={viewMode === 'list' ? 'flex items-start justify-between' : ''}>
                     <div className={viewMode === 'list' ? 'flex-1' : 'flex-1'}>
@@ -295,7 +295,7 @@ const Submissions = () => {
                             {submission.albumTitle}
                           </h3>
                           <p className="text-gray-600 dark:text-gray-400 mb-3">{submission.artistName}</p>
-                          
+
                           <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
                             <span className="flex items-center gap-1">
                               <Music className="w-4 h-4" />
@@ -350,7 +350,7 @@ const Submissions = () => {
                       >
                         <Eye className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-purple-600 dark:group-hover:text-purple-400" />
                       </button>
-                      
+
                       {submission.status === 'PENDING' && (
                         <button
                           onClick={(e) => handleEdit(submission.id, e)}
@@ -360,7 +360,7 @@ const Submissions = () => {
                           <Edit className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400" />
                         </button>
                       )}
-                      
+
                       {submission.status === 'REJECTED' && (
                         <button
                           onClick={(e) => handleResubmit(submission.id, e)}
@@ -370,7 +370,7 @@ const Submissions = () => {
                           <RefreshCw className="w-5 h-5 text-gray-600 dark:text-gray-400 group-hover:text-green-600 dark:group-hover:text-green-400" />
                         </button>
                       )}
-                      
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -399,7 +399,7 @@ const Submissions = () => {
               {t('제출 삭제', 'Delete Submission', '提出削除')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {t('이 제출을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.', 
+              {t('이 제출을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.',
                 'Are you sure you want to delete this submission? This action cannot be undone.',
                 'この提出を削除してもよろしいですか？この操作は元に戻せません。')}
             </p>

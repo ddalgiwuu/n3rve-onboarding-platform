@@ -1,8 +1,8 @@
-import { AlertTriangle, AlertCircle, Info, CheckCircle, X } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import type { QCValidationResult } from '@/utils/fugaQCValidation'
-import { useState } from 'react'
+import { AlertTriangle, AlertCircle, Info, CheckCircle, X } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import type { QCValidationResult } from '@/utils/fugaQCValidation';
+import { useState } from 'react';
 
 interface Props {
   results: QCValidationResult[]
@@ -11,52 +11,52 @@ interface Props {
 }
 
 export default function QCWarnings({ results, onDismiss, compact = false }: Props) {
-  const [dismissed, setDismissed] = useState<number[]>([])
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const [dismissed, setDismissed] = useState<number[]>([]);
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  if (results.length === 0) return null
+  if (results.length === 0) return null;
 
-  const visibleResults = results.filter((_, index) => !dismissed.includes(index))
-  if (visibleResults.length === 0) return null
+  const visibleResults = results.filter((_, index) => !dismissed.includes(index));
+  if (visibleResults.length === 0) return null;
 
   const handleDismiss = (index: number) => {
-    setDismissed([...dismissed, index])
-    onDismiss?.(index)
-  }
+    setDismissed([...dismissed, index]);
+    onDismiss?.(index);
+  };
 
   const getIcon = (severity: QCValidationResult['severity']) => {
     switch (severity) {
       case 'error':
-        return <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+        return <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />;
       case 'warning':
-        return <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />
+        return <AlertCircle className="w-4 h-4 text-amber-500 flex-shrink-0" />;
       case 'info':
-        return <Info className="w-4 h-4 text-blue-500 flex-shrink-0" />
+        return <Info className="w-4 h-4 text-blue-500 flex-shrink-0" />;
     }
-  }
+  };
 
   const getBackgroundClass = (severity: QCValidationResult['severity']) => {
     switch (severity) {
       case 'error':
-        return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700 shadow-sm'
+        return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-700 shadow-sm';
       case 'warning':
-        return 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700 shadow-sm'
+        return 'bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-700 shadow-sm';
       case 'info':
-        return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 shadow-sm'
+        return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-700 shadow-sm';
     }
-  }
+  };
 
   const getTextClass = (severity: QCValidationResult['severity']) => {
     switch (severity) {
       case 'error':
-        return 'text-red-800 dark:text-red-200'
+        return 'text-red-800 dark:text-red-200';
       case 'warning':
-        return 'text-amber-800 dark:text-amber-200'
+        return 'text-amber-800 dark:text-amber-200';
       case 'info':
-        return 'text-blue-800 dark:text-blue-200'
+        return 'text-blue-800 dark:text-blue-200';
     }
-  }
+  };
 
   if (compact) {
     // Compact mode for inline validation
@@ -71,14 +71,14 @@ export default function QCWarnings({ results, onDismiss, compact = false }: Prop
           </div>
         ))}
       </div>
-    )
+    );
   }
 
   // Full mode for section validation
   return (
     <div className="space-y-2">
       {results.map((result, originalIndex) => {
-        if (dismissed.includes(originalIndex)) return null
+        if (dismissed.includes(originalIndex)) return null;
 
         return (
           <div
@@ -88,8 +88,8 @@ export default function QCWarnings({ results, onDismiss, compact = false }: Prop
             <div className="flex items-start gap-3">
               <div className={`p-1.5 rounded-md ${
                 result.severity === 'error' ? 'bg-red-100 dark:bg-red-800/30' :
-                result.severity === 'warning' ? 'bg-amber-100 dark:bg-amber-800/30' :
-                'bg-blue-100 dark:bg-blue-800/30'
+                  result.severity === 'warning' ? 'bg-amber-100 dark:bg-amber-800/30' :
+                    'bg-blue-100 dark:bg-blue-800/30'
               }`}>
                 {getIcon(result.severity)}
               </div>
@@ -125,16 +125,16 @@ export default function QCWarnings({ results, onDismiss, compact = false }: Prop
               )}
             </div>
           </div>
-        )
+        );
       })}
     </div>
-  )
+  );
 }
 
 // QC Status Badge Component
 export function QCStatusBadge({ errors, warnings }: { errors: number; warnings: number }) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   if (errors === 0 && warnings === 0) {
     return (
@@ -142,7 +142,7 @@ export function QCStatusBadge({ errors, warnings }: { errors: number; warnings: 
         <CheckCircle className="w-3.5 h-3.5" />
         {t('QC 통과', 'QC Passed')}
       </div>
-    )
+    );
   }
 
   if (errors > 0) {
@@ -151,7 +151,7 @@ export function QCStatusBadge({ errors, warnings }: { errors: number; warnings: 
         <AlertTriangle className="w-3.5 h-3.5" />
         {t('QC 실패', 'QC Failed')} ({errors})
       </div>
-    )
+    );
   }
 
   return (
@@ -159,5 +159,5 @@ export function QCStatusBadge({ errors, warnings }: { errors: number; warnings: 
       <AlertCircle className="w-3.5 h-3.5" />
       {t('경고 있음', 'Has Warnings')} ({warnings})
     </div>
-  )
+  );
 }

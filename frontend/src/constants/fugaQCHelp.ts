@@ -1,20 +1,20 @@
 // FUGA QC Help Content
 // This file now loads content from JSON configuration
 
-import { getQCHelp } from '../utils/fugaQCLoader'
-import { useLanguageStore } from '../store/language.store'
+import { getQCHelp } from '../utils/fugaQCLoader';
+import { useLanguageStore } from '../store/language.store';
 
 // Get the current language from the store
 const getCurrentLanguage = (): 'ko' | 'en' => {
-  const language = useLanguageStore.getState().language
-  return language || 'ko'
-}
+  const language = useLanguageStore.getState().language;
+  return language || 'ko';
+};
 
-export const fugaQCHelp = getQCHelp(getCurrentLanguage())
+export const fugaQCHelp = getQCHelp(getCurrentLanguage());
 
 // Re-export specific sections for backward compatibility
-export const qcResultGuide = fugaQCHelp.resultGuide
-export const qcFAQ = fugaQCHelp.faq
+export const qcResultGuide = fugaQCHelp.resultGuide;
+export const qcFAQ = fugaQCHelp.faq;
 
 // Legacy structure for backward compatibility
 const legacyFugaQCHelp = {
@@ -37,7 +37,7 @@ const legacyFugaQCHelp = {
   timeline: fugaQCHelp.timeline,
 
   tips: fugaQCHelp.tips
-}
+};
 
 // Export the legacy structure for backward compatibility
-export default legacyFugaQCHelp
+export default legacyFugaQCHelp;

@@ -1,50 +1,51 @@
-import { useState, useEffect, useMemo } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { Calendar, Globe, Music, Shield, Clock, FileText, Info, ChevronDown, ChevronRight, AlertCircle, Tag, AlertTriangle, ExternalLink, Camera, Link, Headphones, Film, Disc } from 'lucide-react'
-import { continents, allCountries, getExcludedCountriesForDSPs, getCountryByCode, dspExclusions } from '@/data/territories'
-import { validateField } from '@/utils/fugaQCValidation'
-import QCWarnings from '@/components/submission/QCWarnings'
-import { useSubmissionStore } from '@/store/submission.store'
+import { useState, useEffect, useMemo } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { Calendar, Globe, Music, Shield, Clock, FileText, Info, ChevronDown, ChevronRight, AlertCircle, Tag, AlertTriangle, ExternalLink, Camera, Link, Headphones, Film, Disc } from 'lucide-react';
+import { continents, allCountries, getExcludedCountriesForDSPs, getCountryByCode, dspExclusions } from '@/data/territories';
+import { validateField } from '@/utils/fugaQCValidation';
+import QCWarnings from '@/components/submission/QCWarnings';
+import { useSubmissionStore } from '@/store/submission.store';
+import ValidatedFormInput from '@/components/ValidatedFormInput';
 
 const releaseSchema = (language: 'ko' | 'en') => z.object({
   // 기본 정보
   upc: z.string().optional(),
   catalogNumber: z.string().optional(),
   distributors: z.array(z.string()).min(1, language === 'ko' ? '최소 1개의 유통사를 선택해주세요' : 'Please select at least one distributor'),
-  
+
   // 발매일 정보
   consumerReleaseDate: z.string().min(1, language === 'ko' ? 'Consumer Release Date는 필수입니다' : 'Consumer Release Date is required'),
   originalReleaseDate: z.string().min(1, language === 'ko' ? 'Original Release Date는 필수입니다' : 'Original Release Date is required'),
   releaseTime: z.string().optional(),
   selectedTimezone: z.string().optional(),
-  
+
   // 저작권 정보
   cRights: z.string().min(1, language === 'ko' ? 'C Rights는 필수입니다' : 'C Rights is required'),
   pRights: z.string().min(1, language === 'ko' ? 'P Rights는 필수입니다' : 'P Rights is required'),
   copyrightYear: z.string().min(4, language === 'ko' ? '저작권 연도는 필수입니다' : 'Copyright year is required'),
-  
+
   // 프리뷰 설정
   previewStart: z.number().min(0).max(300).optional(),
-  
+
   // 가격 설정
   priceType: z.enum(['free', 'paid']),
   price: z.number().optional(),
-  
+
   // 배포 지역
   territoryType: z.enum(['worldwide', 'select', 'exclude']),
   territories: z.array(z.string()).optional(),
-  
+
   // 녹음 정보
   recordingCountry: z.string().min(1, language === 'ko' ? '녹음 국가는 필수입니다' : 'Recording country is required'),
   recordingLanguage: z.string().min(1, language === 'ko' ? '녹음 언어는 필수입니다' : 'Recording language is required'),
-  
+
   // 앨범 노트
   albumNotes: z.string().optional(),
-  
+
   // 추가 메타데이터
   parentalAdvisory: z.enum(['none', 'explicit', 'clean']).optional(),
   preOrderEnabled: z.boolean().default(false),
@@ -56,7 +57,7 @@ const releaseSchema = (language: 'ko' | 'en') => z.object({
   previousReleaseDate: z.string().optional(),
   previousReleaseInfo: z.string().optional(),
   trackGenres: z.record(z.string(), z.array(z.string())).optional(), // trackId -> genres
-  
+
   // Advanced Format Options
   dolbyAtmos: z.boolean().default(false),
   hasMotionArt: z.boolean().default(false),
@@ -65,16 +66,16 @@ const releaseSchema = (language: 'ko' | 'en') => z.object({
     loop: z.boolean().default(true),
     showControls: z.boolean().default(false)
   }).optional(),
-  
+
   // DSP Profile Update
   dspProfileUpdate: z.object({
     updateProfile: z.boolean().default(false),
     internationalFormCompleted: z.boolean().default(false)
   }).optional(),
-  
+
   // Album Introduction
   albumIntroduction: z.string().optional(),
-  
+
   // 한국 DSP 정보
   koreanDSP: z.object({
     lyricsAttached: z.boolean(),
@@ -95,10 +96,10 @@ const releaseSchema = (language: 'ko' | 'en') => z.object({
     newArtist: z.boolean().default(false),
     albumCredits: z.string().optional()
   }).optional(),
-  
+
   // 추가 요청사항
   notes: z.string().optional()
-})
+});
 
 type ReleaseForm = z.infer<ReturnType<typeof releaseSchema>>
 
@@ -113,7 +114,7 @@ const distributors = [
   { id: 'vibe', name: 'VIBE', icon: '🎧' },
   { id: 'tiktok', name: 'TikTok', icon: '🎤' },
   { id: 'instagram', name: 'Instagram', icon: '📷' }
-]
+];
 
 // Using countries from territories.ts now
 
@@ -124,14 +125,14 @@ const languages = [
   { code: 'zh', name: '중국어' },
   { code: 'instrumental', name: 'Instrumental' },
   { code: 'other', name: '기타' }
-]
+];
 
 // Common timezones for music release - organized by region
 const timezones = [
   // Most common/recommended
   { value: 'Asia/Seoul', label: '🇰🇷 Seoul (UTC+9) - Recommended', offset: 9 },
   { value: 'UTC', label: '🌍 UTC (Universal Time)', offset: 0 },
-  
+
   // Asia-Pacific
   { value: 'Pacific/Auckland', label: '🇳🇿 Auckland (UTC+12/+13)', offset: 12 },
   { value: 'Australia/Sydney', label: '🇦🇺 Sydney (UTC+10/+11)', offset: 10 },
@@ -139,16 +140,16 @@ const timezones = [
   { value: 'Asia/Shanghai', label: '🇨🇳 Beijing/Shanghai (UTC+8)', offset: 8 },
   { value: 'Asia/Singapore', label: '🇸🇬 Singapore (UTC+8)', offset: 8 },
   { value: 'Asia/Dubai', label: '🇦🇪 Dubai (UTC+4)', offset: 4 },
-  
+
   // Europe
   { value: 'Europe/London', label: '🇬🇧 London (UTC+0/+1)', offset: 0 },
   { value: 'Europe/Paris', label: '🇫🇷 Paris/Berlin (UTC+1/+2)', offset: 1 },
-  
+
   // Americas
   { value: 'America/New_York', label: '🇺🇸 New York (UTC-5/-4)', offset: -5 },
   { value: 'America/Chicago', label: '🇺🇸 Chicago (UTC-6/-5)', offset: -6 },
   { value: 'America/Los_Angeles', label: '🇺🇸 Los Angeles (UTC-8/-7)', offset: -8 }
-]
+];
 
 interface Props {
   data: any
@@ -157,19 +158,19 @@ interface Props {
 }
 
 export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  const { formData, updateFormData, setCurrentStep } = useSubmissionStore()
-  const savedData = formData.release
-  
-  const [showKoreanDSP, setShowKoreanDSP] = useState(false)
-  const [hasTranslation, setHasTranslation] = useState(false)
-  const [expandedContinents, setExpandedContinents] = useState<string[]>([])
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([])
-  const [dspExcludedCountries, setDspExcludedCountries] = useState<string[]>([])
-  const [selectedTimezone, setSelectedTimezone] = useState(savedData?.selectedTimezone || 'Asia/Seoul') // Load saved timezone or default
-  const [isOriginalDateManuallySet, setIsOriginalDateManuallySet] = useState(false)
-  
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const { formData, updateFormData, setCurrentStep } = useSubmissionStore();
+  const savedData = formData.release;
+
+  const [showKoreanDSP, setShowKoreanDSP] = useState(false);
+  const [hasTranslation, setHasTranslation] = useState(false);
+  const [expandedContinents, setExpandedContinents] = useState<string[]>([]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [dspExcludedCountries, setDspExcludedCountries] = useState<string[]>([]);
+  const [selectedTimezone, setSelectedTimezone] = useState(savedData?.selectedTimezone || 'Asia/Seoul'); // Load saved timezone or default
+  const [isOriginalDateManuallySet, setIsOriginalDateManuallySet] = useState(false);
+
   const { register, handleSubmit, formState: { errors }, watch, setValue, getValues } = useForm<ReleaseForm>({
     resolver: zodResolver(releaseSchema(language)),
     defaultValues: savedData || data?.release || {
@@ -191,213 +192,213 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         internationalFormCompleted: false
       }
     }
-  })
-  
+  });
+
   // Auto-save form data every 5 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      const currentData = getValues()
-      updateFormData({ release: currentData })
-    }, 5000)
-    
-    return () => clearInterval(interval)
-  }, [getValues, updateFormData])
-  
+      const currentData = getValues();
+      updateFormData({ release: currentData });
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [getValues, updateFormData]);
+
   // Save data when component unmounts
   useEffect(() => {
     return () => {
-      const currentData = getValues()
-      updateFormData({ release: currentData })
-    }
-  }, [getValues, updateFormData])
-  
+      const currentData = getValues();
+      updateFormData({ release: currentData });
+    };
+  }, [getValues, updateFormData]);
+
   // Update current step
   useEffect(() => {
-    setCurrentStep(5)
-  }, [setCurrentStep])
-  
+    setCurrentStep(5);
+  }, [setCurrentStep]);
+
   // Check if original date was manually set on load
   useEffect(() => {
-    const consumerDate = watch('consumerReleaseDate')
-    const originalDate = watch('originalReleaseDate')
-    
+    const consumerDate = watch('consumerReleaseDate');
+    const originalDate = watch('originalReleaseDate');
+
     // If dates are different on load, it means original date was manually set
     if (consumerDate && originalDate && consumerDate !== originalDate) {
-      setIsOriginalDateManuallySet(true)
+      setIsOriginalDateManuallySet(true);
     }
-  }, [])
-  
+  }, []);
+
   // Consumer date is already watched above
   // Watch for consumer date changes and auto-fill original date
   useEffect(() => {
     if (consumerReleaseDate && !isOriginalDateManuallySet) {
-      setValue('originalReleaseDate', consumerReleaseDate)
+      setValue('originalReleaseDate', consumerReleaseDate);
     }
-  }, [consumerReleaseDate, isOriginalDateManuallySet, setValue])
-  
+  }, [consumerReleaseDate, isOriginalDateManuallySet, setValue]);
+
   // Custom submit handler to save timezone with form data
   const handleFormSubmit = (formData: ReleaseForm) => {
     // Save to store before submitting
     const dataWithTimezone = {
       ...formData,
       selectedTimezone // Save the selected timezone
-    }
-    updateFormData({ release: dataWithTimezone })
-    
-    onNext(dataWithTimezone)
-  }
+    };
+    updateFormData({ release: dataWithTimezone });
 
-  const selectedDistributors = watch('distributors') || []
-  const priceType = watch('priceType')
-  const territoryType = watch('territoryType')
-  const territories = watch('territories') || []
-  const copyrightYear = watch('copyrightYear')
-  const cRights = watch('cRights')
-  const pRights = watch('pRights')
-  const consumerReleaseDate = watch('consumerReleaseDate')
-  const releaseTime = watch('releaseTime')
+    onNext(dataWithTimezone);
+  };
+
+  const selectedDistributors = watch('distributors') || [];
+  const priceType = watch('priceType');
+  const territoryType = watch('territoryType');
+  const territories = watch('territories') || [];
+  const copyrightYear = watch('copyrightYear');
+  const cRights = watch('cRights');
+  const pRights = watch('pRights');
+  const consumerReleaseDate = watch('consumerReleaseDate');
+  const releaseTime = watch('releaseTime');
 
   // Time conversion helper functions
   const convertTimeToUTC = (time: string, fromTimezone: string) => {
-    const timezone = timezones.find(tz => tz.value === fromTimezone)
-    if (!timezone) return time
-    
-    const [hours, minutes] = time.split(':').map(Number)
-    let utcHours = hours - timezone.offset
-    
+    const timezone = timezones.find(tz => tz.value === fromTimezone);
+    if (!timezone) return time;
+
+    const [hours, minutes] = time.split(':').map(Number);
+    let utcHours = hours - timezone.offset;
+
     if (utcHours < 0) {
-      utcHours += 24
+      utcHours += 24;
     } else if (utcHours >= 24) {
-      utcHours -= 24
+      utcHours -= 24;
     }
-    
-    return `${utcHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-  }
-  
+
+    return `${utcHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
   const convertTimeFromUTC = (time: string, toTimezone: string) => {
-    const timezone = timezones.find(tz => tz.value === toTimezone)
-    if (!timezone) return time
-    
-    const [hours, minutes] = time.split(':').map(Number)
-    let localHours = hours + timezone.offset
-    
+    const timezone = timezones.find(tz => tz.value === toTimezone);
+    if (!timezone) return time;
+
+    const [hours, minutes] = time.split(':').map(Number);
+    let localHours = hours + timezone.offset;
+
     if (localHours < 0) {
-      localHours += 24
+      localHours += 24;
     } else if (localHours >= 24) {
-      localHours -= 24
+      localHours -= 24;
     }
-    
-    return `${localHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`
-  }
-  
+
+    return `${localHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+  };
+
   // Get display time for UTC conversion
   const getUTCTimeDisplay = () => {
-    if (!releaseTime || !consumerReleaseDate) return ''
-    
-    const utcTime = convertTimeToUTC(releaseTime, selectedTimezone)
-    const selectedTz = timezones.find(tz => tz.value === selectedTimezone)
-    
-    if (!selectedTz) return ''
-    
+    if (!releaseTime || !consumerReleaseDate) return '';
+
+    const utcTime = convertTimeToUTC(releaseTime, selectedTimezone);
+    const selectedTz = timezones.find(tz => tz.value === selectedTimezone);
+
+    if (!selectedTz) return '';
+
     // Calculate if date changes
-    const [hours] = releaseTime.split(':').map(Number)
-    const [utcHours] = utcTime.split(':').map(Number)
-    
-    let dateNote = ''
+    const [hours] = releaseTime.split(':').map(Number);
+    const [utcHours] = utcTime.split(':').map(Number);
+
+    let dateNote = '';
     if (selectedTz.offset > 0 && utcHours < hours) {
-      dateNote = ` ${t('release.previousDay', '(Previous Day)')}`
+      dateNote = ` ${t('release.previousDay', '(Previous Day)')}`;
     } else if (selectedTz.offset < 0 && utcHours > hours) {
-      dateNote = ` ${t('release.nextDay', '(Next Day)')}`
+      dateNote = ` ${t('release.nextDay', '(Next Day)')}`;
     }
-    
-    return `UTC ${utcTime}${dateNote}`
-  }
+
+    return `UTC ${utcTime}${dateNote}`;
+  };
 
   // Real-time QC validation
   const qcValidationResults = useMemo(() => {
-    const results = []
-    
+    const results = [];
+
     if (copyrightYear || cRights || pRights) {
-      results.push(...validateField('copyrightYear', copyrightYear || '', { cRights, pRights }))
+      results.push(...validateField('copyrightYear', copyrightYear || '', { cRights, pRights }));
     }
-    
+
     if (consumerReleaseDate) {
-      results.push(...validateField('releaseDate', consumerReleaseDate))
+      results.push(...validateField('releaseDate', consumerReleaseDate));
     }
-    
-    return results
-  }, [copyrightYear, cRights, pRights, consumerReleaseDate])
+
+    return results;
+  }, [copyrightYear, cRights, pRights, consumerReleaseDate]);
 
   // Update DSP exclusions when distributors change
   useEffect(() => {
-    const excluded = getExcludedCountriesForDSPs(selectedDistributors)
-    setDspExcludedCountries(excluded)
-  }, [selectedDistributors])
+    const excluded = getExcludedCountriesForDSPs(selectedDistributors);
+    setDspExcludedCountries(excluded);
+  }, [selectedDistributors]);
 
   // Update selected countries when territories change
   useEffect(() => {
-    setSelectedCountries(territories)
-  }, [territories])
+    setSelectedCountries(territories);
+  }, [territories]);
 
   const toggleDistributor = (distributorId: string) => {
-    const current = selectedDistributors
+    const current = selectedDistributors;
     if (current.includes(distributorId)) {
-      setValue('distributors', current.filter(d => d !== distributorId))
+      setValue('distributors', current.filter(d => d !== distributorId));
     } else {
-      setValue('distributors', [...current, distributorId])
+      setValue('distributors', [...current, distributorId]);
     }
-    
+
     // 한국 DSP가 선택되었는지 확인
-    const koreanDSPs = ['melon', 'genie', 'bugs', 'flo', 'vibe']
-    const hasKoreanDSP = [...current, distributorId].some(d => koreanDSPs.includes(d))
-    setShowKoreanDSP(hasKoreanDSP)
-  }
+    const koreanDSPs = ['melon', 'genie', 'bugs', 'flo', 'vibe'];
+    const hasKoreanDSP = [...current, distributorId].some(d => koreanDSPs.includes(d));
+    setShowKoreanDSP(hasKoreanDSP);
+  };
 
   // UPC 자동 생성 (실제로는 서버에서 생성)
   const generateUPC = () => {
-    const upc = '880' + Math.random().toString().substr(2, 9)
-    setValue('upc', upc)
-  }
+    const upc = '880' + Math.random().toString().substr(2, 9);
+    setValue('upc', upc);
+  };
 
   return (
     <form onSubmit={handleSubmit(
       handleFormSubmit,
       (errors) => {
         // Find first error and scroll to it
-        const firstErrorField = Object.keys(errors)[0]
-        let elementId = ''
-        
+        const firstErrorField = Object.keys(errors)[0];
+        let elementId = '';
+
         switch(firstErrorField) {
           case 'distributors':
-            elementId = 'distributors-section'
-            break
+            elementId = 'distributors-section';
+            break;
           case 'originalReleaseDate':
           case 'consumerReleaseDate':
           case 'releaseTime':
-            elementId = 'release-date-section'
-            break
+            elementId = 'release-date-section';
+            break;
           case 'cRights':
           case 'pRights':
           case 'copyrightYear':
-            elementId = 'copyright-section'
-            break
+            elementId = 'copyright-section';
+            break;
           case 'recordingCountry':
           case 'recordingLanguage':
-            elementId = 'recording-info-section'
-            break
+            elementId = 'recording-info-section';
+            break;
           default:
-            elementId = 'basic-info-section'
+            elementId = 'basic-info-section';
         }
-        
+
         if (elementId) {
-          const element = document.getElementById(elementId)
+          const element = document.getElementById(elementId);
           if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             // Add visual indicator
-            element.classList.add('ring-2', 'ring-red-500', 'ring-offset-2')
+            element.classList.add('ring-2', 'ring-red-500', 'ring-offset-2');
             setTimeout(() => {
-              element.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2')
-            }, 3000)
+              element.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2');
+            }, 3000);
           }
         }
       }
@@ -414,7 +415,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <Music className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.basicInfo', 'Basic Information')}</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
@@ -469,9 +470,9 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 className={`
                   p-2 rounded-lg border-2 transition-all text-center
                   ${selectedDistributors.includes(distributor.id)
-                    ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20'
-                    : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
-                  }
+                ? 'border-purple-600 bg-purple-50 dark:bg-purple-900/20'
+                : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
+              }
                 `}
               >
                 <div className="text-xl mb-0.5">{distributor.icon}</div>
@@ -490,7 +491,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <Calendar className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{language === 'ko' ? '발매일 및 시간 정보' : 'Release Date & Time Information'}</h3>
           </div>
-          
+
           <div className="bg-blue-50 dark:bg-blue-900/10 rounded-lg p-3 mb-4 border border-blue-200 dark:border-blue-800">
             <div className="flex items-start gap-2">
               <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
@@ -504,7 +505,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               </div>
             </div>
           </div>
-          
+
           {/* Date Fields */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <div>
@@ -532,8 +533,8 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 {...register('originalReleaseDate')}
                 type="date"
                 onChange={(e) => {
-                  setValue('originalReleaseDate', e.target.value)
-                  setIsOriginalDateManuallySet(true)
+                  setValue('originalReleaseDate', e.target.value);
+                  setIsOriginalDateManuallySet(true);
                 }}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
               />
@@ -557,7 +558,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 {language === 'ko' ? '선택사항: 특정 시간에 발매하려면 설정하세요. 비워두면 자정(00:00)에 발매됩니다.' : 'Optional: Set if you want to release at a specific time. Leave empty to release at midnight (00:00).'}
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -578,18 +579,18 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                   {language === 'ko' ? '발매 시간의 기준 타임존을 선택하세요. 한국 시간(KST)이 기본값입니다.' : 'Choose the timezone for your release time. Korea Time (KST) is the default.'}
                 </p>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {language === 'ko' ? '발매 시간' : 'Release Time'}
                   <span className="text-xs text-gray-500 ml-2">({language === 'ko' ? '선택사항' : 'Optional'})</span>
                 </label>
-                <div 
+                <div
                   className="relative group cursor-pointer"
                   onClick={() => {
-                    const input = document.getElementById('release-time-input') as HTMLInputElement
+                    const input = document.getElementById('release-time-input') as HTMLInputElement;
                     if (input) {
-                      input.showPicker()
+                      input.showPicker();
                     }
                   }}
                 >
@@ -610,7 +611,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 </p>
               </div>
             </div>
-            
+
             {/* UTC Conversion Display */}
             {releaseTime && consumerReleaseDate && (
               <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
@@ -686,7 +687,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <Shield className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.copyrightInfo', 'Copyright Information')}</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -741,7 +742,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <Clock className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.preview', 'Preview Settings')}</h3>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               {t('release.previewStart', 'Preview Start Time (seconds)')}
@@ -764,7 +765,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <Globe className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.territorySelection', 'Territory Selection')}</h3>
           </div>
-          
+
           <div className="space-y-4">
             <div>
               <label className="flex items-center gap-3">
@@ -777,7 +778,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 <span className="text-sm font-medium">{t('release.worldwide', 'Worldwide')}</span>
               </label>
             </div>
-            
+
             <div>
               <label className="flex items-center gap-3">
                 <input
@@ -816,15 +817,15 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                         </p>
                         <div className="flex flex-wrap gap-2">
                           {dspExcludedCountries.map(code => {
-                            const country = getCountryByCode(code)
-                            if (!country) return null
-                            
+                            const country = getCountryByCode(code);
+                            if (!country) return null;
+
                             // Find which DSPs exclude this country
                             const excludingDSPs = selectedDistributors.filter(dsp => {
-                              const exclusions = dspExclusions[dsp as keyof typeof dspExclusions]
-                              return exclusions && exclusions.includes(code)
-                            })
-                            
+                              const exclusions = dspExclusions[dsp as keyof typeof dspExclusions];
+                              return exclusions && exclusions.includes(code);
+                            });
+
                             return (
                               <div key={code} className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 dark:bg-amber-800/30 rounded text-xs">
                                 <span className="font-medium">
@@ -834,7 +835,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                                   ({excludingDSPs.map(dsp => distributors.find(d => d.id === dsp)?.name).join(', ')})
                                 </span>
                               </div>
-                            )
+                            );
                           })}
                         </div>
                       </div>
@@ -845,10 +846,10 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 {/* Continents with Countries */}
                 <div className="space-y-2">
                   {continents.map(continent => {
-                    const isExpanded = expandedContinents.includes(continent.id)
-                    const continentCountries = continent.countries
-                    const selectedInContinent = continentCountries.filter(c => selectedCountries.includes(c.code)).length
-                    
+                    const isExpanded = expandedContinents.includes(continent.id);
+                    const continentCountries = continent.countries;
+                    const selectedInContinent = continentCountries.filter(c => selectedCountries.includes(c.code)).length;
+
                     return (
                       <div key={continent.id} className="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
                         {/* Continent Header */}
@@ -857,11 +858,11 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                             <button
                               type="button"
                               onClick={() => {
-                                setExpandedContinents(prev => 
-                                  isExpanded 
+                                setExpandedContinents(prev =>
+                                  isExpanded
                                     ? prev.filter(id => id !== continent.id)
                                     : [...prev, continent.id]
-                                )
+                                );
                               }}
                               className="flex items-center gap-2 text-left flex-1"
                             >
@@ -873,15 +874,15 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                                 ({selectedInContinent}/{continentCountries.length})
                               </span>
                             </button>
-                            
+
                             <div className="flex items-center gap-2">
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const allCodes = continentCountries.map(c => c.code)
-                                  const newSelected = [...new Set([...selectedCountries, ...allCodes])]
-                                  setSelectedCountries(newSelected)
-                                  setValue('territories', newSelected)
+                                  const allCodes = continentCountries.map(c => c.code);
+                                  const newSelected = [...new Set([...selectedCountries, ...allCodes])];
+                                  setSelectedCountries(newSelected);
+                                  setValue('territories', newSelected);
                                 }}
                                 className="text-xs px-2 py-1 text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded"
                               >
@@ -890,10 +891,10 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const continentCodes = continentCountries.map(c => c.code)
-                                  const newSelected = selectedCountries.filter(code => !continentCodes.includes(code))
-                                  setSelectedCountries(newSelected)
-                                  setValue('territories', newSelected)
+                                  const continentCodes = continentCountries.map(c => c.code);
+                                  const newSelected = selectedCountries.filter(code => !continentCodes.includes(code));
+                                  setSelectedCountries(newSelected);
+                                  setValue('territories', newSelected);
                                 }}
                                 className="text-xs px-2 py-1 text-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 rounded"
                               >
@@ -902,17 +903,17 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Countries Grid */}
                         {isExpanded && (
                           <div className="p-4 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                             {continentCountries.map(country => {
-                              const isExcluded = dspExcludedCountries.includes(country.code)
-                              const isChecked = selectedCountries.includes(country.code)
-                              
+                              const isExcluded = dspExcludedCountries.includes(country.code);
+                              const isChecked = selectedCountries.includes(country.code);
+
                               return (
-                                <label 
-                                  key={country.code} 
+                                <label
+                                  key={country.code}
                                   className={`flex items-center gap-2 text-sm ${
                                     isExcluded ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                                   }`}
@@ -924,13 +925,13 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                                     disabled={isExcluded}
                                     onChange={(e) => {
                                       if (e.target.checked) {
-                                        const newSelected = [...selectedCountries, country.code]
-                                        setSelectedCountries(newSelected)
-                                        setValue('territories', newSelected)
+                                        const newSelected = [...selectedCountries, country.code];
+                                        setSelectedCountries(newSelected);
+                                        setValue('territories', newSelected);
                                       } else {
-                                        const newSelected = selectedCountries.filter(c => c !== country.code)
-                                        setSelectedCountries(newSelected)
-                                        setValue('territories', newSelected)
+                                        const newSelected = selectedCountries.filter(c => c !== country.code);
+                                        setSelectedCountries(newSelected);
+                                        setValue('territories', newSelected);
                                       }
                                     }}
                                     className="text-purple-600 disabled:opacity-50"
@@ -942,12 +943,12 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                                     <span className="text-xs text-amber-600 dark:text-amber-400">⚠️</span>
                                   )}
                                 </label>
-                              )
+                              );
                             })}
                           </div>
                         )}
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </div>
@@ -1033,7 +1034,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <Headphones className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('release.advancedFormats', 'Advanced Format Options')}</h3>
           </div>
-          
+
           <div className="space-y-4">
             {/* Dolby Atmos */}
             <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-800">
@@ -1069,7 +1070,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 </div>
               </label>
             </div>
-            
+
             {/* Motion Art */}
             <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-200 dark:border-indigo-800">
               <label className="flex items-start gap-3">
@@ -1086,7 +1087,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {t('Motion Art 파일을 업로드하려면 체크하세요', 'Check to upload Motion Art files')}
                   </p>
-                  
+
                   {watch('hasMotionArt') && (
                     <div className="mt-4 space-y-3 ml-6">
                       <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -1130,7 +1131,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <Tag className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('메타데이터', 'Metadata')}</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1146,7 +1147,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               </select>
               <p className="mt-1 text-xs text-gray-500">{t('앨범의 등급 표시를 선택하세요', 'Select parental advisory rating for the album')}</p>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('릴리즈 포맷', 'Release Format')}
@@ -1173,7 +1174,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               </p>
             </div>
           </div>
-          
+
           {/* Release Version Field */}
           {(watch('releaseFormat') === 'remix' || watch('releaseFormat') === 'remastered' || watch('releaseFormat') === 'special') && (
             <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
@@ -1192,7 +1193,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               </p>
             </div>
           )}
-          
+
           {/* Release Format Info Box */}
           <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
             <div className="flex items-start gap-3">
@@ -1211,7 +1212,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-6 space-y-4">
             <label className="flex items-center gap-3">
               <input
@@ -1226,17 +1227,17 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 <p className="text-xs text-gray-500">{t('다양한 아티스트의 곡이 포함된 앨범', 'Album containing tracks from various artists')}</p>
               </div>
             </label>
-            
+
             <label className="flex items-center gap-3">
               <input
                 {...register('preOrderEnabled')}
                 type="checkbox"
                 className="text-purple-600"
                 onChange={(e) => {
-                  const checked = e.target.checked
-                  setValue('preOrderEnabled', checked)
+                  const checked = e.target.checked;
+                  setValue('preOrderEnabled', checked);
                   if (!checked) {
-                    setValue('preOrderDate', '')
+                    setValue('preOrderDate', '');
                   }
                 }}
               />
@@ -1247,7 +1248,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 <p className="text-xs text-gray-500">{t('발매 전 사전 주문을 받습니다', 'Accept pre-orders before release')}</p>
               </div>
             </label>
-            
+
             {watch('preOrderEnabled') && (
               <div className="ml-7">
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1260,18 +1261,18 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 />
               </div>
             )}
-            
+
             <label className="flex items-center gap-3">
               <input
                 {...register('previouslyReleased')}
                 type="checkbox"
                 className="text-purple-600"
                 onChange={(e) => {
-                  const checked = e.target.checked
-                  setValue('previouslyReleased', checked)
+                  const checked = e.target.checked;
+                  setValue('previouslyReleased', checked);
                   if (!checked) {
-                    setValue('previousReleaseDate', '')
-                    setValue('previousReleaseInfo', '')
+                    setValue('previousReleaseDate', '');
+                    setValue('previousReleaseInfo', '');
                   }
                 }}
               />
@@ -1282,7 +1283,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 <p className="text-xs text-gray-500">{t('이전에 발매된 적이 있습니다', 'Has been previously released')}</p>
               </div>
             </label>
-            
+
             {watch('previouslyReleased') && (
               <div className="ml-7 space-y-4">
                 <div>
@@ -1317,7 +1318,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <Camera className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('DSP 프로필 업데이트', 'DSP Profile Update')}</h3>
           </div>
-          
+
           <div className="space-y-4">
             <label className="flex items-center gap-3">
               <input
@@ -1329,7 +1330,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 {t('DSP 프로필 업데이트 요청', 'Request DSP Profile Update')}
               </span>
             </label>
-            
+
             {watch('dspProfileUpdate.updateProfile') && (
               <div className="ml-7 space-y-4">
                 {/* International DSP Profile Update */}
@@ -1350,7 +1351,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                     <ExternalLink className="w-4 h-4" />
                   </a>
                 </div>
-                
+
                 {/* Korean DSP Profile Update Info */}
                 {showKoreanDSP && (
                   <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-200 dark:border-amber-800">
@@ -1373,11 +1374,11 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <FileText className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('앨범 소개', 'Album Introduction')}</h3>
           </div>
-          
+
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
             {t('앨범에 대한 소개를 작성하세요', 'Write an introduction for the album')}
           </p>
-          
+
           <textarea
             {...register('albumIntroduction')}
             rows={6}
@@ -1392,7 +1393,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <FileText className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('앨범 노트', 'Album Notes')}</h3>
           </div>
-          
+
           <textarea
             {...register('albumNotes')}
             rows={4}
@@ -1409,7 +1410,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
               <Info className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('한국 DSP 정보', 'Korean DSP Information')}</h3>
             </div>
-            
+
             <div className="space-y-6">
               {/* Basic Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1423,7 +1424,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                     <span className="text-sm font-medium">{t('가사 첨부', 'Lyrics Attached')}</span>
                   </label>
                 </div>
-                
+
                 <div>
                   <label className="flex items-center gap-3">
                     <input
@@ -1493,7 +1494,6 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 </div>
               </div>
 
-
               {/* Translation Section */}
               <div>
                 <label className="flex items-center gap-3 mb-3">
@@ -1501,8 +1501,8 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                     type="checkbox"
                     checked={hasTranslation}
                     onChange={(e) => {
-                      setHasTranslation(e.target.checked)
-                      setValue('koreanDSP.translation.hasTranslation', e.target.checked)
+                      setHasTranslation(e.target.checked);
+                      setValue('koreanDSP.translation.hasTranslation', e.target.checked);
                     }}
                     className="text-purple-600"
                   />
@@ -1517,7 +1517,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                         {t('한국 DSP용 번역 정보를 제공하세요', 'Provide translation information for Korean DSPs')}
                       </p>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1545,20 +1545,30 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {t('레이블명 번역', 'Label Name Translation')} (한글)
                         </label>
-                        <input
-                          {...register('koreanDSP.translation.labelNameKo')}
-                          type="text"
+                        <ValidatedFormInput
+                          fieldId="label-translation-ko"
+                          validationType="label"
+                          register={register('koreanDSP.translation.labelNameKo')}
+                          error={errors.koreanDSP?.translation?.labelNameKo}
+                          showInlineWarnings={true}
+                          language={language}
                           className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          placeholder={t('예: 엔쓰리브 엔터테인먼트', 'e.g., N3RVE Entertainment', '例: N3RVE Entertainment')}
                         />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           {t('레이블명 번역', 'Label Name Translation')} (English)
                         </label>
-                        <input
-                          {...register('koreanDSP.translation.labelNameEn')}
-                          type="text"
+                        <ValidatedFormInput
+                          fieldId="label-translation-en"
+                          validationType="label"
+                          register={register('koreanDSP.translation.labelNameEn')}
+                          error={errors.koreanDSP?.translation?.labelNameEn}
+                          showInlineWarnings={true}
+                          language="en"
                           className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                          placeholder="e.g., N3RVE Entertainment"
                         />
                       </div>
                     </div>
@@ -1608,7 +1618,7 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
             <FileText className="w-5 h-5 text-purple-600" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('추가 요청사항', 'Additional Notes')}</h3>
           </div>
-          
+
           <textarea
             {...register('notes')}
             rows={4}
@@ -1618,5 +1628,5 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
         </div>
       </div>
     </form>
-  )
+  );
 }

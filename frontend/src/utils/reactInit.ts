@@ -1,19 +1,19 @@
 // Early React initialization for React 19 compatibility
 // This must be imported before any other React-dependent modules
 
-import React from 'react'
+import React from 'react';
 
 // Ultra-simplified React 19 initialization - no object manipulation at all
 if (typeof window !== 'undefined') {
   // Direct assignment only
-  window.React = React
-  window.createContext = React.createContext
-  window.createElement = React.createElement
-  window.useState = React.useState
-  window.useEffect = React.useEffect
-  window.useContext = React.useContext
-  
+  window.React = React;
+  window.createContext = React.createContext;
+  window.createElement = React.createElement;
+  window.useState = React.useState;
+  window.useEffect = React.useEffect;
+  window.useContext = React.useContext;
+
   // React initialized
 }
 
-export default React
+export default React;

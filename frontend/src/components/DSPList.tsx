@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
-import { Search, Globe, Play, Download, Video, Radio, Users, Settings, BarChart3 } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import api from '@/lib/api'
+import { useState, useEffect } from 'react';
+import { Search, Globe, Play, Download, Video, Radio, Users, Settings, BarChart3 } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import api from '@/lib/api';
 
 interface DSP {
   id: string
@@ -38,7 +38,7 @@ const ServiceTypeIcons = {
   SOCIAL: Users,
   FINGERPRINTING: Settings,
   OTHER: Settings
-}
+};
 
 const ServiceTypeColors = {
   STREAMING: 'text-blue-600 bg-blue-100 dark:bg-blue-900/30',
@@ -48,62 +48,62 @@ const ServiceTypeColors = {
   SOCIAL: 'text-pink-600 bg-pink-100 dark:bg-pink-900/30',
   FINGERPRINTING: 'text-orange-600 bg-orange-100 dark:bg-orange-900/30',
   OTHER: 'text-gray-600 bg-gray-100 dark:bg-gray-900/30'
-}
+};
 
 export default function DSPList() {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [dsps, setDsps] = useState<DSP[]>([])
-  const [stats, setStats] = useState<DSPStats | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedServiceType, setSelectedServiceType] = useState<string>('')
-  const [showInactive, setShowInactive] = useState(false)
+  const [dsps, setDsps] = useState<DSP[]>([]);
+  const [stats, setStats] = useState<DSPStats | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedServiceType, setSelectedServiceType] = useState<string>('');
+  const [showInactive, setShowInactive] = useState(false);
 
   // Fetch DSPs
   const fetchDSPs = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const params = new URLSearchParams()
-      if (searchQuery) params.append('search', searchQuery)
-      if (selectedServiceType) params.append('serviceType', selectedServiceType)
-      if (showInactive !== undefined) params.append('isActive', (!showInactive).toString())
-      params.append('limit', '100')
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('search', searchQuery);
+      if (selectedServiceType) params.append('serviceType', selectedServiceType);
+      if (showInactive !== undefined) params.append('isActive', (!showInactive).toString());
+      params.append('limit', '100');
 
-      const response = await api.get(`/dsp?${params.toString()}`)
-      setDsps(response.data.dsps)
+      const response = await api.get(`/dsp?${params.toString()}`);
+      setDsps(response.data.dsps);
     } catch (error) {
-      console.error('Error fetching DSPs:', error)
+      console.error('Error fetching DSPs:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Fetch statistics
   const fetchStats = async () => {
     try {
-      const response = await api.get('/dsp/statistics')
-      setStats(response.data)
+      const response = await api.get('/dsp/statistics');
+      setStats(response.data);
     } catch (error) {
-      console.error('Error fetching DSP statistics:', error)
+      console.error('Error fetching DSP statistics:', error);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchDSPs()
-    fetchStats()
-  }, [searchQuery, selectedServiceType, showInactive])
+    fetchDSPs();
+    fetchStats();
+  }, [searchQuery, selectedServiceType, showInactive]);
 
   const getTerritoryText = (territories: string[]) => {
-    if (territories.includes('World')) return t('전세계', 'Worldwide')
-    return territories.join(', ')
-  }
+    if (territories.includes('World')) return t('전세계', 'Worldwide');
+    return territories.join(', ');
+  };
 
   const formatDescription = (description?: string) => {
-    if (!description) return null
-    return description.length > 150 ? description.substring(0, 150) + '...' : description
-  }
+    if (!description) return null;
+    return description.length > 150 ? description.substring(0, 150) + '...' : description;
+  };
 
   return (
     <div className="space-y-6">
@@ -121,7 +121,7 @@ export default function DSPList() {
           <button className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
             {t('DSP 추가', 'Add DSP')}
           </button>
-          <button 
+          <button
             onClick={() => fetchDSPs()}
             className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
@@ -237,9 +237,9 @@ export default function DSPList() {
         ) : (
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {dsps.map((dsp) => {
-              const IconComponent = ServiceTypeIcons[dsp.serviceType]
-              const colorClasses = ServiceTypeColors[dsp.serviceType]
-              
+              const IconComponent = ServiceTypeIcons[dsp.serviceType];
+              const colorClasses = ServiceTypeColors[dsp.serviceType];
+
               return (
                 <div key={dsp.id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                   <div className="flex items-start justify-between">
@@ -299,7 +299,7 @@ export default function DSPList() {
                     </div>
                   </div>
                 </div>
-              )
+              );
             })}
           </div>
         )}
@@ -315,5 +315,5 @@ export default function DSPList() {
         </div>
       )}
     </div>
-  )
+  );
 }

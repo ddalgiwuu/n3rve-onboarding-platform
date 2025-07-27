@@ -1,24 +1,24 @@
-import { useState, useEffect, useRef } from 'react'
-import { 
-  X, Plus, Trash2, Search, Music, User, Globe, 
+import { useState, useEffect, useRef } from 'react';
+import {
+  X, Plus, Trash2, Search, Music, User, Globe,
   Info, Link as LinkIcon, ChevronDown, ChevronUp,
   Check, AlertCircle, ExternalLink, Languages
-} from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import contributorRolesData from '@/data/contributorRoles.json'
-import contributorRolesKoData from '@/data/contributorRolesKo.json'
-import instrumentsData from '@/data/instruments.json'
-import instrumentsKoData from '@/data/instrumentsKo.json'
-import { validateArtistName } from '@/utils/inputValidation'
-import { toast } from 'react-hot-toast'
-import ValidatedInput from './ValidatedInput'
-import { ValidationProvider, useValidationContext } from '@/contexts/ValidationContext'
+} from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import contributorRolesData from '@/data/contributorRoles.json';
+import contributorRolesKoData from '@/data/contributorRolesKo.json';
+import instrumentsData from '@/data/instruments.json';
+import instrumentsKoData from '@/data/instrumentsKo.json';
+import { validateArtistName } from '@/utils/inputValidation';
+import { toast } from 'react-hot-toast';
+import ValidatedInput from './ValidatedInput';
+import { ValidationProvider, useValidationContext } from '@/contexts/ValidationContext';
 // EnhancedValidationWarning is handled through ValidatedInput component
 
-const contributorRolesKo = contributorRolesKoData as { translations: Record<string, string> }
-const instrumentsKo = instrumentsKoData as { translations: Record<string, string> }
-import { v4 as uuidv4 } from 'uuid'
+const contributorRolesKo = contributorRolesKoData as { translations: Record<string, string> };
+const instrumentsKo = instrumentsKoData as { translations: Record<string, string> };
+import { v4 as uuidv4 } from 'uuid';
 
 interface Translation {
   id: string
@@ -72,17 +72,17 @@ const identifierTypes = {
     pattern: /^[0-9]+$/,
     icon: '🎵'
   }
-}
+};
 
 function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFormProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string, ja?: string) => {
     switch (language) {
-      case 'ko': return ko
-      case 'ja': return ja || en
-      default: return en
+      case 'ko': return ko;
+      case 'ja': return ja || en;
+      default: return en;
     }
-  }
+  };
 
   const [formData, setFormData] = useState<Contributor>({
     id: contributor?.id || uuidv4(),
@@ -95,98 +95,98 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
       { type: 'apple', value: '' }
     ],
     isNewArtist: contributor?.isNewArtist || false
-  })
+  });
 
-  const [searchQuery, setSearchQuery] = useState({ roles: '', instruments: '' })
-  const [showDropdown, setShowDropdown] = useState({ roles: false, instruments: false })
-  const [nameError, setNameError] = useState<string | null>(null)
-  const { hasErrors, getFieldWarnings } = useValidationContext()
-  
-  const rolesRef = useRef<HTMLDivElement>(null)
-  const instrumentsRef = useRef<HTMLDivElement>(null)
-  
+  const [searchQuery, setSearchQuery] = useState({ roles: '', instruments: '' });
+  const [showDropdown, setShowDropdown] = useState({ roles: false, instruments: false });
+  const [nameError, setNameError] = useState<string | null>(null);
+  const { hasErrors, getFieldWarnings } = useValidationContext();
+
+  const rolesRef = useRef<HTMLDivElement>(null);
+  const instrumentsRef = useRef<HTMLDivElement>(null);
+
   // Check if contributor is a composer/lyricist
   const isComposerOrLyricist = () => {
-    return formData.roles.some(role => 
+    return formData.roles.some(role =>
       ['composer', 'lyricist', 'songwriter', 'writer'].includes(role)
-    )
-  }
+    );
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (rolesRef.current && !rolesRef.current.contains(event.target as Node)) {
-        setShowDropdown(prev => ({ ...prev, roles: false }))
+        setShowDropdown(prev => ({ ...prev, roles: false }));
       }
       if (instrumentsRef.current && !instrumentsRef.current.contains(event.target as Node)) {
-        setShowDropdown(prev => ({ ...prev, instruments: false }))
+        setShowDropdown(prev => ({ ...prev, instruments: false }));
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Enhanced search with partial matching
   const searchFilter = (text: string, searchTerm: string): boolean => {
-    const normalizedText = text.toLowerCase()
-    const normalizedSearch = searchTerm.toLowerCase()
-    
+    const normalizedText = text.toLowerCase();
+    const normalizedSearch = searchTerm.toLowerCase();
+
     // Check if search term matches start of any word in the text
-    const words = normalizedText.split(/[\s-]+/)
-    const startsWithMatch = words.some(word => word.startsWith(normalizedSearch))
-    
+    const words = normalizedText.split(/[\s-]+/);
+    const startsWithMatch = words.some(word => word.startsWith(normalizedSearch));
+
     // Also check for general inclusion
-    return startsWithMatch || normalizedText.includes(normalizedSearch)
-  }
+    return startsWithMatch || normalizedText.includes(normalizedSearch);
+  };
 
   // Filter roles and instruments based on search
   const filteredRoles = contributorRolesData.roles.filter(role => {
-    const searchTerm = (searchQuery.roles || '').toLowerCase()
-    if (!searchTerm) return true
-    
-    const roleName = (role.name || '').toLowerCase()
-    const roleCategory = (role.category || '').toLowerCase()
-    const roleKo = contributorRolesKo.translations[role.id as string] || ''
-    
-    return searchFilter(roleName, searchTerm) || 
+    const searchTerm = (searchQuery.roles || '').toLowerCase();
+    if (!searchTerm) return true;
+
+    const roleName = (role.name || '').toLowerCase();
+    const roleCategory = (role.category || '').toLowerCase();
+    const roleKo = contributorRolesKo.translations[role.id as string] || '';
+
+    return searchFilter(roleName, searchTerm) ||
            searchFilter(roleCategory, searchTerm) ||
-           searchFilter(roleKo, searchTerm)
-  })
+           searchFilter(roleKo, searchTerm);
+  });
 
   const filteredInstruments = instrumentsData.instruments.filter(instrument => {
-    const searchTerm = (searchQuery.instruments || '').toLowerCase()
-    if (!searchTerm) return true
-    
-    const instrumentName = (instrument.name || '').toLowerCase()
-    const instrumentCategory = (instrument.category || '').toLowerCase()
-    const instrumentKo = instrumentsKo.translations[instrument.id as string] || ''
-    
-    return searchFilter(instrumentName, searchTerm) || 
+    const searchTerm = (searchQuery.instruments || '').toLowerCase();
+    if (!searchTerm) return true;
+
+    const instrumentName = (instrument.name || '').toLowerCase();
+    const instrumentCategory = (instrument.category || '').toLowerCase();
+    const instrumentKo = instrumentsKo.translations[instrument.id as string] || '';
+
+    return searchFilter(instrumentName, searchTerm) ||
            searchFilter(instrumentCategory, searchTerm) ||
-           searchFilter(instrumentKo, searchTerm)
-  })
+           searchFilter(instrumentKo, searchTerm);
+  });
 
   // Group by category
   const groupedRoles = filteredRoles.reduce((acc, role) => {
-    if (!acc[role.category]) acc[role.category] = []
-    acc[role.category].push(role)
-    return acc
-  }, {} as Record<string, typeof contributorRolesData.roles>)
+    if (!acc[role.category]) acc[role.category] = [];
+    acc[role.category].push(role);
+    return acc;
+  }, {} as Record<string, typeof contributorRolesData.roles>);
 
   const groupedInstruments = filteredInstruments.reduce((acc, instrument) => {
-    if (!acc[instrument.category]) acc[instrument.category] = []
-    acc[instrument.category].push(instrument)
-    return acc
-  }, {} as Record<string, typeof instrumentsData.instruments>)
+    if (!acc[instrument.category]) acc[instrument.category] = [];
+    acc[instrument.category].push(instrument);
+    return acc;
+  }, {} as Record<string, typeof instrumentsData.instruments>);
 
   // Add/remove translations
   const addTranslation = () => {
     setFormData(prev => ({
       ...prev,
       translations: [...prev.translations, { id: uuidv4(), language: '', name: '' }]
-    }))
-  }
+    }));
+  };
 
   const updateTranslation = (id: string, field: 'language' | 'name', value: string) => {
     setFormData(prev => ({
@@ -194,69 +194,69 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
       translations: prev.translations.map(t =>
         t.id === id ? { ...t, [field]: value } : t
       )
-    }))
-  }
+    }));
+  };
 
   const removeTranslation = (id: string) => {
     setFormData(prev => ({
       ...prev,
       translations: prev.translations.filter(t => t.id !== id)
-    }))
-  }
+    }));
+  };
 
   // Update identifier value
   const updateIdentifier = (index: number, value: string) => {
     if (index === -1) {
       // If identifier doesn't exist yet, we need to handle it differently
-      return
+      return;
     }
     setFormData(prev => ({
       ...prev,
       identifiers: prev.identifiers.map((id, i) =>
         i === index ? { ...id, value } : id
       )
-    }))
-  }
+    }));
+  };
 
   // Toggle role/instrument selection with auto-clear
   const toggleRole = (roleId: string) => {
     const newRoles = formData.roles.includes(roleId)
       ? formData.roles.filter(r => r !== roleId)
-      : [...formData.roles, roleId]
-    
+      : [...formData.roles, roleId];
+
     setFormData(prev => ({
       ...prev,
       roles: newRoles
-    }))
-    
+    }));
+
     // Check if composer/lyricist role is being added/removed
-    const wasComposerLyricist = isComposerOrLyricist()
-    const willBeComposerLyricist = newRoles.some(role => 
+    const wasComposerLyricist = isComposerOrLyricist();
+    const willBeComposerLyricist = newRoles.some(role =>
       ['composer', 'lyricist', 'songwriter', 'writer'].includes(role)
-    )
-    
+    );
+
     // If changing to/from composer/lyricist, revalidate the name
     if (wasComposerLyricist !== willBeComposerLyricist && formData.name) {
-      const result = validateArtistName(formData.name, willBeComposerLyricist)
+      const result = validateArtistName(formData.name, willBeComposerLyricist);
       if (!result.isValid) {
-        const errorWarning = result.warnings.find(w => w.type === 'error')
-        setNameError(errorWarning?.message || null)
+        const errorWarning = result.warnings.find(w => w.type === 'error');
+        setNameError(errorWarning?.message || null);
         if (willBeComposerLyricist) {
           toast.error(t(
             '작곡가/작사가는 풀네임을 사용해야 합니다',
             'Composers/lyricists must use their full name',
             '作曲家/作詞家はフルネームを使用する必要があります'
-          ))
+          ));
         }
       } else {
-        setNameError(null)
+        setNameError(null);
       }
     }
-    
+
     // Clear search input after selection
-    setSearchQuery(prev => ({ ...prev, roles: '' }))
-    setShowDropdown(prev => ({ ...prev, roles: false }))
-  }
+    setSearchQuery(prev => ({ ...prev, roles: '' }));
+    setShowDropdown(prev => ({ ...prev, roles: false }));
+  };
 
   const toggleInstrument = (instrumentId: string) => {
     setFormData(prev => ({
@@ -264,72 +264,72 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
       instruments: prev.instruments.includes(instrumentId)
         ? prev.instruments.filter(i => i !== instrumentId)
         : [...prev.instruments, instrumentId]
-    }))
+    }));
     // Clear search input after selection
-    setSearchQuery(prev => ({ ...prev, instruments: '' }))
-    setShowDropdown(prev => ({ ...prev, instruments: false }))
-  }
+    setSearchQuery(prev => ({ ...prev, instruments: '' }));
+    setShowDropdown(prev => ({ ...prev, instruments: false }));
+  };
 
   // Validate identifiers
   const validateIdentifier = (type: keyof typeof identifierTypes, value: string): boolean => {
-    const config = identifierTypes[type]
-    return config.pattern.test(value)
-  }
+    const config = identifierTypes[type];
+    return config.pattern.test(value);
+  };
 
   // Platform URL helper
   const getPlatformUrl = (identifier: PlatformIdentifier): string | null => {
     switch (identifier.type) {
       case 'spotify':
         if (identifier.value) {
-          const spotifyId = identifier.value.replace('spotify:artist:', '')
-          return `https://open.spotify.com/artist/${spotifyId}`
+          const spotifyId = identifier.value.replace('spotify:artist:', '');
+          return `https://open.spotify.com/artist/${spotifyId}`;
         }
-        return 'https://open.spotify.com/search'
+        return 'https://open.spotify.com/search';
       case 'apple':
         if (identifier.value && /^[0-9]+$/.test(identifier.value)) {
-          return `https://music.apple.com/artist/${identifier.value}`
+          return `https://music.apple.com/artist/${identifier.value}`;
         }
-        return 'https://music.apple.com/search'
+        return 'https://music.apple.com/search';
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   // Save handler
   const handleSave = () => {
     if (!formData.name.trim()) {
-      toast.error(t('기여자 이름을 입력해주세요', 'Please enter the contributor name', 'コントリビューター名を入력してください'))
-      return
+      toast.error(t('기여자 이름을 입력해주세요', 'Please enter the contributor name', 'コントリビューター名を入력してください'));
+      return;
     }
 
     // Check for validation errors
-    const fieldId = `contributor-name-${formData.id}`
+    const fieldId = `contributor-name-${formData.id}`;
     if (hasErrors(fieldId)) {
-      toast.error(t('입력 오류를 수정해주세요', 'Please fix the input errors', '入力エラーを修正してください'))
-      return
+      toast.error(t('입력 오류를 수정해주세요', 'Please fix the input errors', '入力エラーを修正してください'));
+      return;
     }
 
     // Get any active warnings and apply suggestions if accepted
-    const warnings = getFieldWarnings(fieldId)
-    const suggestionWarning = warnings.find(w => w.suggestedValue && w.type === 'suggestion')
+    const warnings = getFieldWarnings(fieldId);
+    const suggestionWarning = warnings.find(w => w.suggestedValue && w.type === 'suggestion');
     if (suggestionWarning && suggestionWarning.suggestedValue) {
       // Apply the suggested value
-      formData.name = suggestionWarning.suggestedValue
+      formData.name = suggestionWarning.suggestedValue;
     }
 
     if (formData.roles.length === 0) {
-      toast.error(t('최소 하나의 역할을 선택해주세요', 'Please select at least one role', '少なくとも1つの役割を選択してください'))
-      return
+      toast.error(t('최소 하나의 역할을 선택해주세요', 'Please select at least one role', '少なくとも1つの役割を選択してください'));
+      return;
     }
 
     // Validate identifiers
-    const invalidIdentifiers = formData.identifiers.filter((id) => 
+    const invalidIdentifiers = formData.identifiers.filter((id) =>
       id.value && !validateIdentifier(id.type as keyof typeof identifierTypes, id.value)
-    )
+    );
 
     if (invalidIdentifiers.length > 0) {
-      toast.error(t('올바르지 않은 식별자가 있습니다', 'There are invalid identifiers', '無効な識別子があります'))
-      return
+      toast.error(t('올바르지 않은 식별자가 있습니다', 'There are invalid identifiers', '無効な識別子があります'));
+      return;
     }
 
     // Show guidance for Spotify/Apple Music registration
@@ -338,15 +338,15 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
         '💡 아티스트 이름이 Spotify/Apple Music에 등록된 이름과 동일한지 확인하세요',
         '💡 Make sure the artist name matches the one registered on Spotify/Apple Music',
         '💡 アーティスト名がSpotify/Apple Musicに登録されている名前と一致することを確認してください'
-      ), { icon: '💡', duration: 4000 })
+      ), { icon: '💡', duration: 4000 });
     }
 
-    onSave(formData)
-  }
+    onSave(formData);
+  };
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="border-b border-gray-200 dark:border-gray-700 p-6">
           <div className="flex items-center justify-between">
@@ -364,7 +364,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto max-h-[calc(90vh-140px)] p-6">
+        <div className="flex-1 overflow-y-auto p-6">
           <div className="space-y-6">
             {/* Basic Info */}
             <div>
@@ -372,7 +372,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                 <User className="w-4 h-4" />
                 {t('기본 정보', 'Basic Information', '基本情報')}
               </h4>
-              
+
               <div className="space-y-4">
                 <div>
                   <ValidatedInput
@@ -382,18 +382,27 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                     label={<>{t('이름', 'Name', '名前')} <span className="text-red-500">*</span></>}
                     value={formData.name}
                     onValueChange={(value) => {
-                      setFormData(prev => ({ ...prev, name: value }))
+                      setFormData(prev => ({ ...prev, name: value }));
                     }}
                     placeholder={t('아티스트/기여자 이름', 'Artist/Contributor Name', 'アーティスト/コントリビューター名')}
                     language={language === 'ja' ? 'en' : language}
-                    showInlineWarnings={true}
+                    showInlineWarnings={false}
                   />
-                  
+
+                  {/* QC Guidance Message - Always visible, non-flickering */}
+                  <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                    {t(
+                      '• 정확한 아티스트명을 입력하세요 (Spotify/Apple Music 등록명과 동일하게)',
+                      '• Enter exact artist name (as registered on Spotify/Apple Music)',
+                      '• 正確なアーティスト名を入力してください（Spotify/Apple Music登録名と同じ）'
+                    )}
+                  </div>
+
                   {/* Spotify Full Name Policy Alert - Enhanced with validation */}
                   {isComposerOrLyricist() && (
                     <div className={`mt-2 p-3 rounded-lg ${
-                      nameError && isComposerOrLyricist() 
-                        ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' 
+                      nameError && isComposerOrLyricist()
+                        ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
                         : 'bg-yellow-50 dark:bg-yellow-900/20'
                     }`}>
                       <div className="flex items-start gap-2">
@@ -485,7 +494,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                       {t('추가', 'Add', '追加')}
                     </button>
                   </div>
-                  
+
                   {formData.translations.length === 0 ? (
                     <div className="text-center py-8 bg-white/50 dark:bg-gray-800/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600">
                       <Globe className="w-8 h-8 text-gray-400 mx-auto mb-2" />
@@ -554,12 +563,12 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                 <User className="w-4 h-4" />
                 {t('역할', 'Role', '役割')} <span className="text-red-500">*</span>
               </h4>
-              
+
               {/* Selected Roles */}
               {formData.roles.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {formData.roles.map(roleId => {
-                    const role = contributorRolesData.roles.find(r => r.id === roleId)
+                    const role = contributorRolesData.roles.find(r => r.id === roleId);
                     return role ? (
                       <span
                         key={roleId}
@@ -573,7 +582,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                           <X className="w-3 h-3" />
                         </button>
                       </span>
-                    ) : null
+                    ) : null;
                   })}
                 </div>
               )}
@@ -586,10 +595,10 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                     type="text"
                     value={searchQuery.roles}
                     onChange={(e) => {
-                      setSearchQuery(prev => ({ ...prev, roles: e.target.value }))
+                      setSearchQuery(prev => ({ ...prev, roles: e.target.value }));
                       // Auto-open dropdown when typing
                       if (e.target.value.length > 0) {
-                        setShowDropdown(prev => ({ ...prev, roles: true }))
+                        setShowDropdown(prev => ({ ...prev, roles: true }));
                       }
                     }}
                     onFocus={() => setShowDropdown(prev => ({ ...prev, roles: true }))}
@@ -651,12 +660,12 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                 <Music className="w-4 h-4" />
                 {t('악기', 'Instruments', '楽器')}
               </h4>
-              
+
               {/* Selected Instruments */}
               {formData.instruments.length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {formData.instruments.map(instrumentId => {
-                    const instrument = instrumentsData.instruments.find(i => i.id === instrumentId)
+                    const instrument = instrumentsData.instruments.find(i => i.id === instrumentId);
                     return instrument ? (
                       <span
                         key={instrumentId}
@@ -670,7 +679,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                           <X className="w-3 h-3" />
                         </button>
                       </span>
-                    ) : null
+                    ) : null;
                   })}
                 </div>
               )}
@@ -683,10 +692,10 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                     type="text"
                     value={searchQuery.instruments}
                     onChange={(e) => {
-                      setSearchQuery(prev => ({ ...prev, instruments: e.target.value }))
+                      setSearchQuery(prev => ({ ...prev, instruments: e.target.value }));
                       // Auto-open dropdown when typing
                       if (e.target.value.length > 0) {
-                        setShowDropdown(prev => ({ ...prev, instruments: true }))
+                        setShowDropdown(prev => ({ ...prev, instruments: true }));
                       }
                     }}
                     onFocus={() => setShowDropdown(prev => ({ ...prev, instruments: true }))}
@@ -752,11 +761,11 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
               {/* Platform fields - Always show Spotify and Apple Music */}
               <div className="space-y-4">
                 {['spotify', 'apple'].map((platformType) => {
-                  const identifier = formData.identifiers.find(id => id.type === platformType) || { type: platformType, value: '' }
-                  const index = formData.identifiers.findIndex(id => id.type === platformType)
-                  const config = identifierTypes[platformType as keyof typeof identifierTypes]
-                  const isValid = identifier.value ? validateIdentifier(platformType as keyof typeof identifierTypes, identifier.value) : true
-                  const platformUrl = getPlatformUrl(identifier as PlatformIdentifier)
+                  const identifier = formData.identifiers.find(id => id.type === platformType) || { type: platformType, value: '' };
+                  const index = formData.identifiers.findIndex(id => id.type === platformType);
+                  const config = identifierTypes[platformType as keyof typeof identifierTypes];
+                  const isValid = identifier.value ? validateIdentifier(platformType as keyof typeof identifierTypes, identifier.value) : true;
+                  const platformUrl = getPlatformUrl(identifier as PlatformIdentifier);
 
                   return (
                     <div key={platformType} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-gray-50 dark:bg-gray-800/50">
@@ -812,8 +821,8 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                           rel="noopener noreferrer"
                           onClick={formData.isNewArtist ? (e) => e.preventDefault() : undefined}
                           className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                            formData.isNewArtist 
-                              ? 'bg-gray-400 cursor-not-allowed text-gray-200' 
+                            formData.isNewArtist
+                              ? 'bg-gray-400 cursor-not-allowed text-gray-200'
                               : 'bg-purple-600 hover:bg-purple-700 text-white'
                           }`}
                         >
@@ -827,7 +836,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                         </a>
                       </div>
                     </div>
-                  )
+                  );
                 })}
               </div>
 
@@ -852,7 +861,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-200 dark:border-gray-700 p-6">
+        <div className="border-t border-gray-200 dark:border-gray-700 p-6 bg-white dark:bg-gray-800 flex-shrink-0">
           <div className="flex items-center justify-end gap-3">
             <button
               onClick={onCancel}
@@ -871,7 +880,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Export the wrapped component
@@ -880,5 +889,5 @@ export default function ContributorForm(props: ContributorFormProps) {
     <ValidationProvider>
       <ContributorFormContent {...props} />
     </ValidationProvider>
-  )
+  );
 }
