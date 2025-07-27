@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
 
 type Language = 'ko' | 'en' | 'ja'
 
@@ -71,11 +71,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setLanguageState(prev => ({ ...prev, _hasHydrated: state }));
   };
 
-  const value: LanguageContextType = {
+  const value: LanguageContextType = useMemo(() => ({
     ...languageState,
     setLanguage,
     setHasHydrated
-  };
+  }), [languageState]);
 
   return (
     <LanguageContext.Provider value={value}>

@@ -43,15 +43,7 @@ function App() {
   const isAuthenticated = authStore.isAuthenticated;
   const userRole = authStore.user?.role;
 
-  // Mark stores as hydrated
-  useEffect(() => {
-    if (!hasAuthHydrated) {
-      authStore.setHasHydrated(true);
-    }
-    if (!hasLanguageHydrated) {
-      languageStore.setHasHydrated(true);
-    }
-  }, [hasAuthHydrated, hasLanguageHydrated, authStore, languageStore]);
+  // Note: Hydration is handled automatically by individual contexts
 
   // Initialize dark mode on app load
   useEffect(() => {
