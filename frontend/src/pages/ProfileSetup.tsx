@@ -12,7 +12,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 const profileSchema = z.object({
   company: z.string().min(2, '회사명은 2자 이상 입력해주세요'),
-  phone: z.string().min(10, '올바른 전화번호를 입력해주세요').max(20, '전화번호가 너무 깁니다'),
+  phone: z.string().min(10, '올바른 전화번호를 입력해주세요').max(20, '전화번호가 너무 깁니다')
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -28,10 +28,10 @@ const ProfileSetup = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors, isValid },
+    formState: { errors, isValid }
   } = useForm<ProfileFormData>({
     resolver: zodResolver(profileSchema),
-    mode: 'onChange',
+    mode: 'onChange'
   });
 
   const onSubmit = async (data: ProfileFormData) => {
@@ -47,9 +47,9 @@ const ProfileSetup = () => {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `Bearer ${accessToken}`
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data)
       });
 
       if (!response.ok) {
@@ -58,7 +58,7 @@ const ProfileSetup = () => {
 
       const updatedUser = await response.json();
       updateUser?.(updatedUser);
-      
+
       toast.success(t('profile.setupComplete', '프로필 설정이 완료되었습니다!'));
       navigate('/profile-complete');
     } catch (error) {

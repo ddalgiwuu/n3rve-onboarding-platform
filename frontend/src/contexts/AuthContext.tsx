@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
-import { logger } from '@/utils/logger'
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { logger } from '@/utils/logger';
 
 interface User {
   id: string
@@ -27,7 +27,7 @@ interface AuthContextType extends AuthState {
   setHasHydrated: (state: boolean) => void
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const initialState: AuthState = {
   user: null,
@@ -35,36 +35,36 @@ const initialState: AuthState = {
   refreshToken: null,
   isAuthenticated: false,
   _hasHydrated: false
-}
+};
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [authState, setAuthState] = useState<AuthState>(initialState)
+  const [authState, setAuthState] = useState<AuthState>(initialState);
 
   // Load from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        const storedValue = localStorage.getItem('auth-storage')
+        const storedValue = localStorage.getItem('auth-storage');
         if (storedValue) {
-          const parsed = JSON.parse(storedValue)
+          const parsed = JSON.parse(storedValue);
           // Handle legacy format from zustand/redux
           if (parsed.state) {
             setAuthState({
               ...parsed.state,
               _hasHydrated: true
-            })
+            });
           } else {
-            setAuthState({ ...parsed, _hasHydrated: true })
+            setAuthState({ ...parsed, _hasHydrated: true });
           }
         } else {
-          setAuthState(prev => ({ ...prev, _hasHydrated: true }))
+          setAuthState(prev => ({ ...prev, _hasHydrated: true }));
         }
       } catch (error) {
-        logger.warn('Failed to load auth from localStorage:', error)
-        setAuthState(prev => ({ ...prev, _hasHydrated: true }))
+        logger.warn('Failed to load auth from localStorage:', error);
+        setAuthState(prev => ({ ...prev, _hasHydrated: true }));
       }
     }
-  }, [])
+  }, []);
 
   // Save to localStorage when auth state changes
   useEffect(() => {
@@ -73,13 +73,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const dataToStore = {
           state: authState,
           version: 0
-        }
-        localStorage.setItem('auth-storage', JSON.stringify(dataToStore))
+        };
+        localStorage.setItem('auth-storage', JSON.stringify(dataToStore));
       } catch (error) {
-        logger.warn('Failed to save auth to localStorage:', error)
+        logger.warn('Failed to save auth to localStorage:', error);
       }
     }
-  }, [authState])
+  }, [authState]);
 
   const setAuth = (user: User, accessToken: string, refreshToken: string) => {
     setAuthState({
@@ -88,8 +88,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshToken,
       isAuthenticated: true,
       _hasHydrated: true
-    })
-  }
+    });
+  };
 
   const clearAuth = () => {
     setAuthState({
@@ -98,27 +98,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       refreshToken: null,
       isAuthenticated: false,
       _hasHydrated: true
-    })
+    });
     if (typeof window !== 'undefined') {
       try {
-        localStorage.removeItem('auth-storage')
+        localStorage.removeItem('auth-storage');
       } catch (error) {
-        logger.warn('Failed to remove auth from localStorage:', error)
+        logger.warn('Failed to remove auth from localStorage:', error);
       }
     }
-  }
+  };
 
   const updateTokens = (accessToken: string, refreshToken: string) => {
     setAuthState(prev => ({
       ...prev,
       accessToken,
       refreshToken
-    }))
-  }
+    }));
+  };
 
   const setHasHydrated = (state: boolean) => {
-    setAuthState(prev => ({ ...prev, _hasHydrated: state }))
-  }
+    setAuthState(prev => ({ ...prev, _hasHydrated: state }));
+  };
 
   const value: AuthContextType = {
     ...authState,
@@ -127,21 +127,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout: clearAuth,
     updateTokens,
     setHasHydrated
-  }
+  };
 
   return (
     <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
-  )
+  );
 }
 
 export function useAuthStore() {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuthStore must be used within an AuthProvider')
+    throw new Error('useAuthStore must be used within an AuthProvider');
   }
-  return context
+  return context;
 }
 
 // Mimic zustand persist API for compatibility
@@ -149,4 +149,4 @@ export const useAuthStorePersist = {
   rehydrate: async () => {
     // No-op as hydration happens automatically
   }
-}
+};

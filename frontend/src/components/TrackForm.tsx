@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react'
-import { 
-  Music, Users, Clock, ChevronDown, ChevronUp, 
+import { useState, useEffect } from 'react';
+import {
+  Music, Users, Clock, ChevronDown, ChevronUp,
   Trash2, Edit2, Check, X,
   Mic, Languages, Link as LinkIcon, Info, Video
-} from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import ContributorForm from './ContributorForm'
-import ArtistSelector from './ArtistSelector'
-import MusicVideoForm from './MusicVideoForm'
-import { v4 as uuidv4 } from 'uuid'
+} from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import ContributorForm from './ContributorForm';
+import ArtistSelector from './ArtistSelector';
+import MusicVideoForm from './MusicVideoForm';
+import { v4 as uuidv4 } from 'uuid';
 
 interface TrackArtist {
   id: string
@@ -63,20 +63,20 @@ interface TrackFormProps {
 }
 
 export default function TrackForm({ track, albumArtists, onUpdate, onDelete, totalTracks }: TrackFormProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
-  const [localTrack, setLocalTrack] = useState<Track>(track)
-  const [showContributorForm, setShowContributorForm] = useState(false)
-  const [showArtistForm, setShowArtistForm] = useState(false)
-  const [showArtistSelector, setShowArtistSelector] = useState(false)
-  const [showContributorSelector, setShowContributorSelector] = useState(false)
-  const [showMusicVideoForm, setShowMusicVideoForm] = useState(false)
-  const [editingContributor, setEditingContributor] = useState<any>(null)
-  const [editingArtistType, setEditingArtistType] = useState<'primary' | 'featuring'>('primary')
-  const [editingMusicVideo, setEditingMusicVideo] = useState<MusicVideo | null>(null)
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [localTrack, setLocalTrack] = useState<Track>(track);
+  const [showContributorForm, setShowContributorForm] = useState(false);
+  const [showArtistForm, setShowArtistForm] = useState(false);
+  const [showArtistSelector, setShowArtistSelector] = useState(false);
+  const [showContributorSelector, setShowContributorSelector] = useState(false);
+  const [showMusicVideoForm, setShowMusicVideoForm] = useState(false);
+  const [editingContributor, setEditingContributor] = useState<any>(null);
+  const [editingArtistType, setEditingArtistType] = useState<'primary' | 'featuring'>('primary');
+  const [editingMusicVideo, setEditingMusicVideo] = useState<MusicVideo | null>(null);
 
   // Sync album artists to track on mount and when albumArtists change
   useEffect(() => {
@@ -87,47 +87,47 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
           ...artist,
           type: 'primary' as const
         }))
-      }))
+      }));
     }
-  }, [albumArtists])
+  }, [albumArtists]);
 
   // Duration formatting
   const formatDuration = (seconds: string | number) => {
-    const sec = typeof seconds === 'string' ? parseInt(seconds) : seconds
-    const mins = Math.floor(sec / 60)
-    const secs = sec % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
+    const sec = typeof seconds === 'string' ? parseInt(seconds) : seconds;
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const parseDuration = (duration: string) => {
-    const [mins, secs] = duration.split(':').map(n => parseInt(n) || 0)
-    return (mins * 60 + secs).toString()
-  }
+    const [mins, secs] = duration.split(':').map(n => parseInt(n) || 0);
+    return (mins * 60 + secs).toString();
+  };
 
   // Handle saving
   const handleSave = () => {
-    onUpdate(localTrack)
-    setIsEditing(false)
-  }
+    onUpdate(localTrack);
+    setIsEditing(false);
+  };
 
   const handleCancel = () => {
-    setLocalTrack(track)
-    setIsEditing(false)
-  }
+    setLocalTrack(track);
+    setIsEditing(false);
+  };
 
   // Artist management
   const addArtist = (type: 'primary' | 'featuring') => {
-    setEditingArtistType(type)
-    setEditingContributor(null)
-    setShowArtistSelector(true)
-  }
+    setEditingArtistType(type);
+    setEditingContributor(null);
+    setShowArtistSelector(true);
+  };
 
   const removeArtist = (artistId: string) => {
     setLocalTrack(prev => ({
       ...prev,
       artists: prev.artists.filter(a => a.id !== artistId)
-    }))
-  }
+    }));
+  };
 
   const handleArtistSave = (contributor: any) => {
     const newArtist: TrackArtist = {
@@ -137,23 +137,23 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
       translations: contributor.translations,
       identifiers: contributor.identifiers,
       isNewArtist: contributor.isNewArtist
-    }
+    };
 
     if (editingContributor) {
       setLocalTrack(prev => ({
         ...prev,
         artists: prev.artists.map(a => a.id === newArtist.id ? newArtist : a)
-      }))
+      }));
     } else {
       setLocalTrack(prev => ({
         ...prev,
         artists: [...prev.artists, newArtist]
-      }))
+      }));
     }
 
-    setShowArtistForm(false)
-    setEditingContributor(null)
-  }
+    setShowArtistForm(false);
+    setEditingContributor(null);
+  };
 
   // Contributor management
   const handleContributorSave = (contributor: any) => {
@@ -161,24 +161,24 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
       setLocalTrack(prev => ({
         ...prev,
         contributors: prev.contributors.map(c => c.id === contributor.id ? contributor : c)
-      }))
+      }));
     } else {
       setLocalTrack(prev => ({
         ...prev,
         contributors: [...prev.contributors, contributor]
-      }))
+      }));
     }
 
-    setShowContributorForm(false)
-    setEditingContributor(null)
-  }
+    setShowContributorForm(false);
+    setEditingContributor(null);
+  };
 
   const removeContributor = (contributorId: string) => {
     setLocalTrack(prev => ({
       ...prev,
       contributors: prev.contributors.filter(c => c.id !== contributorId)
-    }))
-  }
+    }));
+  };
 
   // Handle artist selection from saved artists
   const handleArtistSelection = (artist: any) => {
@@ -189,57 +189,57 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
       translations: artist.translations,
       identifiers: artist.identifiers,
       isNewArtist: false
-    }
+    };
 
     setLocalTrack(prev => ({
       ...prev,
       artists: [...prev.artists, newArtist]
-    }))
+    }));
 
-    setShowArtistSelector(false)
-  }
+    setShowArtistSelector(false);
+  };
 
   // Handle contributor selection from saved contributors
   const handleContributorSelection = (contributor: any) => {
     setLocalTrack(prev => ({
       ...prev,
       contributors: [...prev.contributors, contributor]
-    }))
+    }));
 
-    setShowContributorSelector(false)
-  }
+    setShowContributorSelector(false);
+  };
 
   // Music video management
   const handleMusicVideoSave = (video: MusicVideo) => {
-    const videos = localTrack.musicVideos || []
-    
+    const videos = localTrack.musicVideos || [];
+
     if (editingMusicVideo) {
       setLocalTrack(prev => ({
         ...prev,
         musicVideos: videos.map(v => v.id === video.id ? video : v)
-      }))
+      }));
     } else {
       setLocalTrack(prev => ({
         ...prev,
         musicVideos: [...videos, { ...video, id: uuidv4() }]
-      }))
+      }));
     }
 
-    setShowMusicVideoForm(false)
-    setEditingMusicVideo(null)
-  }
+    setShowMusicVideoForm(false);
+    setEditingMusicVideo(null);
+  };
 
   const removeMusicVideo = (videoId: string) => {
     setLocalTrack(prev => ({
       ...prev,
       musicVideos: (prev.musicVideos || []).filter(v => v.id !== videoId)
-    }))
-  }
+    }));
+  };
 
   // Group artists by type for display
-  const primaryArtists = localTrack.artists.filter(a => a.type === 'primary')
-  const featuringArtists = localTrack.artists.filter(a => a.type === 'featuring')
-  const musicVideos = localTrack.musicVideos || []
+  const primaryArtists = localTrack.artists.filter(a => a.type === 'primary');
+  const featuringArtists = localTrack.artists.filter(a => a.type === 'featuring');
+  const musicVideos = localTrack.musicVideos || [];
 
   return (
     <>
@@ -314,7 +314,7 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                   Dolby Atmos
                 </span>
               )}
-              
+
               {isEditing ? (
                 <>
                   <button
@@ -376,9 +376,9 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                 <input
                   type="text"
                   value={localTrack.duration ? formatDuration(localTrack.duration) : ''}
-                  onChange={(e) => setLocalTrack(prev => ({ 
-                    ...prev, 
-                    duration: parseDuration(e.target.value) 
+                  onChange={(e) => setLocalTrack(prev => ({
+                    ...prev,
+                    duration: parseDuration(e.target.value)
                   }))}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700"
                   placeholder="3:45"
@@ -468,9 +468,9 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                                   ...artist,
                                   roles: ['performer'],
                                   instruments: []
-                                })
-                                setEditingArtistType('primary')
-                                setShowArtistForm(true)
+                                });
+                                setEditingArtistType('primary');
+                                setShowArtistForm(true);
                               }}
                               className="p-1 text-gray-600 hover:text-gray-800"
                             >
@@ -523,9 +523,9 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                                   ...artist,
                                   roles: ['featuring'],
                                   instruments: []
-                                })
-                                setEditingArtistType('featuring')
-                                setShowArtistForm(true)
+                                });
+                                setEditingArtistType('featuring');
+                                setShowArtistForm(true);
                               }}
                               className="p-1 text-gray-600 hover:text-gray-800"
                             >
@@ -570,8 +570,8 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                 </h4>
                 <button
                   onClick={() => {
-                    setEditingContributor(null)
-                    setShowContributorSelector(true)
+                    setEditingContributor(null);
+                    setShowContributorSelector(true);
                   }}
                   className="px-3 py-1 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700"
                 >
@@ -607,8 +607,8 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => {
-                            setEditingContributor(contributor)
-                            setShowContributorForm(true)
+                            setEditingContributor(contributor);
+                            setShowContributorForm(true);
                           }}
                           className="p-1 text-gray-600 hover:text-gray-800"
                         >
@@ -636,8 +636,8 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                 </h4>
                 <button
                   onClick={() => {
-                    setEditingMusicVideo(null)
-                    setShowMusicVideoForm(true)
+                    setEditingMusicVideo(null);
+                    setShowMusicVideoForm(true);
                   }}
                   className="px-3 py-1 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                 >
@@ -675,8 +675,8 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => {
-                            setEditingMusicVideo(video)
-                            setShowMusicVideoForm(true)
+                            setEditingMusicVideo(video);
+                            setShowMusicVideoForm(true);
                           }}
                           className="p-1 text-gray-600 hover:text-gray-800"
                         >
@@ -717,9 +717,9 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
           contributor={editingContributor}
           onSave={showArtistForm ? handleArtistSave : handleContributorSave}
           onCancel={() => {
-            setShowContributorForm(false)
-            setShowArtistForm(false)
-            setEditingContributor(null)
+            setShowContributorForm(false);
+            setShowArtistForm(false);
+            setEditingContributor(null);
           }}
           trackId={track.id}
           isArtist={showArtistForm}
@@ -749,8 +749,8 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
               type="artist"
               onSelect={handleArtistSelection}
               onCreateNew={() => {
-                setShowArtistSelector(false)
-                setShowArtistForm(true)
+                setShowArtistSelector(false);
+                setShowArtistForm(true);
               }}
               selectedIds={localTrack.artists.map(a => a.id)}
             />
@@ -777,8 +777,8 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
               type="contributor"
               onSelect={handleContributorSelection}
               onCreateNew={() => {
-                setShowContributorSelector(false)
-                setShowContributorForm(true)
+                setShowContributorSelector(false);
+                setShowContributorForm(true);
               }}
               selectedIds={localTrack.contributors.map(c => c.id)}
             />
@@ -804,11 +804,11 @@ export default function TrackForm({ track, albumArtists, onUpdate, onDelete, tot
           ]}
           onSave={handleMusicVideoSave}
           onCancel={() => {
-            setShowMusicVideoForm(false)
-            setEditingMusicVideo(null)
+            setShowMusicVideoForm(false);
+            setEditingMusicVideo(null);
           }}
         />
       )}
     </>
-  )
+  );
 }

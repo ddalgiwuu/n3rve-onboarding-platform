@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { Info, HelpCircle, Music, Disc, Calendar } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+import { useState } from 'react';
+import { Info, HelpCircle, Music, Disc, Calendar } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
 
 interface CopyrightInfoProps {
   copyrightData: {
@@ -19,17 +19,17 @@ interface CopyrightInfoProps {
 }
 
 export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfoProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [showTooltip, setShowTooltip] = useState<'copyright' | 'production' | null>(null)
+  const [showTooltip, setShowTooltip] = useState<'copyright' | 'production' | null>(null);
 
   const handleChange = (field: keyof typeof copyrightData, value: string) => {
     onChange({
       ...copyrightData,
       [field]: value
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -234,5 +234,5 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
         </div>
       </div>
     </div>
-  )
+  );
 }

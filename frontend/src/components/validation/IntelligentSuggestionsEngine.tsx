@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain, TrendingUp, Users, Zap, CheckCircle, X,
   ArrowRight, Star, Clock, Target, Lightbulb
-} from 'lucide-react'
-import { EnhancedValidationWarning, UserValidationPatterns } from '@/types/validationAdvanced'
+} from 'lucide-react';
+import { EnhancedValidationWarning, UserValidationPatterns } from '@/types/validationAdvanced';
 
 interface IntelligentSuggestionsEngineProps {
   warnings: EnhancedValidationWarning[]
@@ -41,8 +41,8 @@ export default function IntelligentSuggestionsEngine({
     dismissalRate: 0.3,
     mostCommonFixes: [],
     learningConfidence: 0
-  })
-  
+  });
+
   const [interactionHistory, setInteractionHistory] = useState<{
     [warningId: string]: {
       timesShown: number
@@ -51,31 +51,31 @@ export default function IntelligentSuggestionsEngine({
       avgTimeToDecision: number
       lastShown: Date
     }
-  }>({})
+  }>({});
 
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   // Load user patterns from localStorage
   useEffect(() => {
-    const savedPatterns = localStorage.getItem('validation-user-patterns')
+    const savedPatterns = localStorage.getItem('validation-user-patterns');
     if (savedPatterns) {
-      setUserPatterns(JSON.parse(savedPatterns))
+      setUserPatterns(JSON.parse(savedPatterns));
     }
 
-    const savedHistory = localStorage.getItem('validation-interaction-history')
+    const savedHistory = localStorage.getItem('validation-interaction-history');
     if (savedHistory) {
-      setInteractionHistory(JSON.parse(savedHistory))
+      setInteractionHistory(JSON.parse(savedHistory));
     }
-  }, [])
+  }, []);
 
   // Save patterns when they change
   useEffect(() => {
-    localStorage.setItem('validation-user-patterns', JSON.stringify(userPatterns))
-  }, [userPatterns])
+    localStorage.setItem('validation-user-patterns', JSON.stringify(userPatterns));
+  }, [userPatterns]);
 
   useEffect(() => {
-    localStorage.setItem('validation-interaction-history', JSON.stringify(interactionHistory))
-  }, [interactionHistory])
+    localStorage.setItem('validation-interaction-history', JSON.stringify(interactionHistory));
+  }, [interactionHistory]);
 
   // Generate smart suggestions with intelligence scoring
   const smartSuggestions = useMemo<SmartSuggestion[]>(() => {
@@ -88,76 +88,76 @@ export default function IntelligentSuggestionsEngine({
           timesDismissed: 0,
           avgTimeToDecision: 30,
           lastShown: new Date()
-        }
+        };
 
         // Calculate intelligence score based on multiple factors
-        let intelligenceScore = 50 // Base score
+        let intelligenceScore = 50; // Base score
 
         // User pattern matching
         if (userPatterns.preferredSuggestionTypes.includes(warning.type)) {
-          intelligenceScore += 20
+          intelligenceScore += 20;
         }
 
         // Historical success rate
-        const acceptanceRate = history.timesShown > 0 
-          ? history.timesAccepted / history.timesShown 
-          : userPatterns.acceptanceRate
-        intelligenceScore += Math.round(acceptanceRate * 30)
+        const acceptanceRate = history.timesShown > 0
+          ? history.timesAccepted / history.timesShown
+          : userPatterns.acceptanceRate;
+        intelligenceScore += Math.round(acceptanceRate * 30);
 
         // Warning priority and severity
-        intelligenceScore += (warning.priority || 5) * 2
-        if (warning.type === 'error') intelligenceScore += 15
-        else if (warning.type === 'warning') intelligenceScore += 10
+        intelligenceScore += (warning.priority || 5) * 2;
+        if (warning.type === 'error') intelligenceScore += 15;
+        else if (warning.type === 'warning') intelligenceScore += 10;
 
         // Industry usage boost
         if (warning.industryUsage && warning.industryUsage > 70) {
-          intelligenceScore += 15
+          intelligenceScore += 15;
         }
 
         // Success rate boost
         if (warning.successRate && warning.successRate > 80) {
-          intelligenceScore += 10
+          intelligenceScore += 10;
         }
 
         // Cap at 100
-        intelligenceScore = Math.min(100, intelligenceScore)
+        intelligenceScore = Math.min(100, intelligenceScore);
 
         // Generate reasoning
-        let reasoning = ''
+        let reasoning = '';
         if (acceptanceRate > 0.8) {
-          reasoning = t('이 유형의 제안을 자주 수락하셨습니다', 'You often accept this type of suggestion')
+          reasoning = t('이 유형의 제안을 자주 수락하셨습니다', 'You often accept this type of suggestion');
         } else if (warning.industryUsage && warning.industryUsage > 80) {
-          reasoning = t('업계에서 널리 사용되는 방식입니다', 'Widely used in the industry')
+          reasoning = t('업계에서 널리 사용되는 방식입니다', 'Widely used in the industry');
         } else if (warning.successRate && warning.successRate > 85) {
-          reasoning = t('높은 성공률을 보이는 수정입니다', 'This fix has a high success rate')
+          reasoning = t('높은 성공률을 보이는 수정입니다', 'This fix has a high success rate');
         } else if (warning.type === 'error') {
-          reasoning = t('DSP 거절을 방지하는 중요한 수정입니다', 'Critical fix to prevent DSP rejection')
+          reasoning = t('DSP 거절을 방지하는 중요한 수정입니다', 'Critical fix to prevent DSP rejection');
         } else {
-          reasoning = t('품질 향상에 도움이 됩니다', 'Helps improve overall quality')
+          reasoning = t('품질 향상에 도움이 됩니다', 'Helps improve overall quality');
         }
 
         // Calculate confidence
-        const confidence = Math.min(100, 
+        const confidence = Math.min(100,
           (userPatterns.learningConfidence * 0.3) +
           (acceptanceRate * 40) +
           ((warning.successRate || 50) * 0.3)
-        )
+        );
 
         // Estimate success rate
         const estimatedSuccessRate = Math.round(
           ((warning.successRate || 70) * 0.4) +
           (acceptanceRate * 100 * 0.3) +
           ((warning.industryUsage || 50) * 0.3)
-        )
+        );
 
         // Generate quick fix if applicable
-        let quickFix
+        let quickFix;
         if (warning.fixComplexity === 'easy' && warning.suggestedValue) {
           quickFix = {
             action: t('클릭으로 수정', 'One-click fix'),
             preview: warning.suggestedValue,
             oneClick: true
-          }
+          };
         }
 
         return {
@@ -169,11 +169,11 @@ export default function IntelligentSuggestionsEngine({
           basePattern: warning.warningGroup || warning.type,
           estimatedSuccessRate,
           quickFix
-        }
+        };
       })
       .sort((a, b) => b.intelligenceScore - a.intelligenceScore)
-      .slice(0, 5) // Show top 5 suggestions
-  }, [warnings, userPatterns, interactionHistory, t])
+      .slice(0, 5); // Show top 5 suggestions
+  }, [warnings, userPatterns, interactionHistory, t]);
 
   const handleAccept = (suggestion: SmartSuggestion) => {
     // Update interaction history
@@ -184,42 +184,42 @@ export default function IntelligentSuggestionsEngine({
         timesAccepted: (prev[suggestion.id]?.timesAccepted || 0) + 1,
         timesShown: (prev[suggestion.id]?.timesShown || 0) + 1
       }
-    }))
+    }));
 
     // Update user patterns
     setUserPatterns(prev => {
-      const newPatterns = { ...prev }
-      
+      const newPatterns = { ...prev };
+
       // Update preferred suggestion types
       if (!newPatterns.preferredSuggestionTypes.includes(suggestion.warning.type)) {
-        newPatterns.preferredSuggestionTypes.push(suggestion.warning.type)
+        newPatterns.preferredSuggestionTypes.push(suggestion.warning.type);
       }
 
       // Update most common fixes
-      const fix = suggestion.warning.suggestedValue || 'unknown'
-      const existingFix = newPatterns.mostCommonFixes.find(f => f.fix === fix)
+      const fix = suggestion.warning.suggestedValue || 'unknown';
+      const existingFix = newPatterns.mostCommonFixes.find(f => f.fix === fix);
       if (existingFix) {
-        existingFix.count++
-        existingFix.successRate = Math.min(100, existingFix.successRate + 2)
+        existingFix.count++;
+        existingFix.successRate = Math.min(100, existingFix.successRate + 2);
       } else {
         newPatterns.mostCommonFixes.push({
           fix,
           count: 1,
           successRate: 80
-        })
+        });
       }
 
       // Update acceptance rate
-      newPatterns.acceptanceRate = Math.min(1, newPatterns.acceptanceRate + 0.05)
-      
+      newPatterns.acceptanceRate = Math.min(1, newPatterns.acceptanceRate + 0.05);
+
       // Increase learning confidence
-      newPatterns.learningConfidence = Math.min(100, newPatterns.learningConfidence + 2)
+      newPatterns.learningConfidence = Math.min(100, newPatterns.learningConfidence + 2);
 
-      return newPatterns
-    })
+      return newPatterns;
+    });
 
-    onAcceptSuggestion(suggestion.warning)
-  }
+    onAcceptSuggestion(suggestion.warning);
+  };
 
   const handleDismiss = (suggestion: SmartSuggestion) => {
     // Update interaction history
@@ -230,19 +230,19 @@ export default function IntelligentSuggestionsEngine({
         timesDismissed: (prev[suggestion.id]?.timesDismissed || 0) + 1,
         timesShown: (prev[suggestion.id]?.timesShown || 0) + 1
       }
-    }))
+    }));
 
     // Update user patterns
     setUserPatterns(prev => ({
       ...prev,
       dismissalRate: Math.min(1, prev.dismissalRate + 0.02),
       learningConfidence: Math.min(100, prev.learningConfidence + 1)
-    }))
+    }));
 
-    onDismissSuggestion(suggestion.warning)
-  }
+    onDismissSuggestion(suggestion.warning);
+  };
 
-  if (smartSuggestions.length === 0) return null
+  if (smartSuggestions.length === 0) return null;
 
   return (
     <motion.div
@@ -301,11 +301,11 @@ export default function IntelligentSuggestionsEngine({
             >
               {/* Intelligence Score Indicator */}
               <div className="absolute top-0 right-0 w-16 h-16 -mr-8 -mt-8">
-                <div 
+                <div
                   className={`w-full h-full rounded-full opacity-20 ${
                     suggestion.intelligenceScore >= 80 ? 'bg-green-500' :
-                    suggestion.intelligenceScore >= 60 ? 'bg-yellow-500' : 'bg-blue-500'
-                  }`} 
+                      suggestion.intelligenceScore >= 60 ? 'bg-yellow-500' : 'bg-blue-500'
+                  }`}
                 />
                 <div className="absolute top-2 right-2 text-xs font-bold text-gray-600 dark:text-gray-400">
                   {suggestion.intelligenceScore}
@@ -379,7 +379,7 @@ export default function IntelligentSuggestionsEngine({
                     whileTap={{ scale: 0.95 }}
                   >
                     <CheckCircle className="w-3 h-3" />
-                    {suggestion.quickFix?.oneClick 
+                    {suggestion.quickFix?.oneClick
                       ? t('즉시 적용', 'Apply now')
                       : t('수락', 'Accept')
                     }
@@ -423,5 +423,5 @@ export default function IntelligentSuggestionsEngine({
         </motion.div>
       )}
     </motion.div>
-  )
+  );
 }

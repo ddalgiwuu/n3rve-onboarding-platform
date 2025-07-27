@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
-import { Save, Plus, Search, ChevronDown, User, Globe, Music } from 'lucide-react'
-import { useSavedArtistsStore } from '@/store/savedArtists.store'
-import toast from 'react-hot-toast'
+import { useState, useEffect } from 'react';
+import { Save, Plus, Search, ChevronDown, User, Globe, Music } from 'lucide-react';
+import { useSavedArtistsStore } from '@/store/savedArtists.store';
+import toast from 'react-hot-toast';
 
 interface Props {
   value: string
@@ -13,75 +13,75 @@ interface Props {
   className?: string
 }
 
-export default function ArtistSelector({ 
-  value, 
-  onChange, 
+export default function ArtistSelector({
+  value,
+  onChange,
   placeholder = 'Enter artist name',
   label,
   required = false,
   language = 'en',
   className = ''
 }: Props) {
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  const savedArtistsStore = useSavedArtistsStore()
-  const [showSavedArtists, setShowSavedArtists] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null)
-  const [isNewArtist, setIsNewArtist] = useState(false)
-  const [showSaveOption, setShowSaveOption] = useState(false)
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const savedArtistsStore = useSavedArtistsStore();
+  const [showSavedArtists, setShowSavedArtists] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedArtistId, setSelectedArtistId] = useState<string | null>(null);
+  const [isNewArtist, setIsNewArtist] = useState(false);
+  const [showSaveOption, setShowSaveOption] = useState(false);
 
   // Load saved artists when dropdown opens
   useEffect(() => {
     if (showSavedArtists && savedArtistsStore.artists.length === 0) {
       savedArtistsStore.fetchArtists().catch(error => {
-        console.error('Failed to fetch saved artists:', error)
-        toast.error(t('저장된 아티스트를 불러오는데 실패했습니다', 'Failed to load saved artists'))
-      })
+        console.error('Failed to fetch saved artists:', error);
+        toast.error(t('저장된 아티스트를 불러오는데 실패했습니다', 'Failed to load saved artists'));
+      });
     }
-  }, [showSavedArtists])
+  }, [showSavedArtists]);
 
   // Check if current value matches any saved artist
   useEffect(() => {
     if (value && savedArtistsStore.artists.length > 0) {
       const matchingArtist = savedArtistsStore.artists.find(
         artist => artist.name.toLowerCase() === value.toLowerCase()
-      )
+      );
       if (matchingArtist) {
-        setSelectedArtistId(matchingArtist.id)
-        setIsNewArtist(false)
-        setShowSaveOption(false)
+        setSelectedArtistId(matchingArtist.id);
+        setIsNewArtist(false);
+        setShowSaveOption(false);
       } else {
-        setSelectedArtistId(null)
-        setIsNewArtist(true)
-        setShowSaveOption(true)
+        setSelectedArtistId(null);
+        setIsNewArtist(true);
+        setShowSaveOption(true);
       }
     } else {
-      setSelectedArtistId(null)
-      setIsNewArtist(false)
-      setShowSaveOption(false)
+      setSelectedArtistId(null);
+      setIsNewArtist(false);
+      setShowSaveOption(false);
     }
-  }, [value, savedArtistsStore.artists])
+  }, [value, savedArtistsStore.artists]);
 
   const selectSavedArtist = (artist: any) => {
-    onChange(artist.name)
-    setSelectedArtistId(artist.id)
-    setIsNewArtist(false)
-    setShowSaveOption(false)
-    setShowSavedArtists(false)
-    setSearchQuery('')
-    
+    onChange(artist.name);
+    setSelectedArtistId(artist.id);
+    setIsNewArtist(false);
+    setShowSaveOption(false);
+    setShowSavedArtists(false);
+    setSearchQuery('');
+
     // Update usage count
     savedArtistsStore.useArtist(artist.id).catch(error => {
-      console.error('Failed to update usage count:', error)
-    })
-    
-    toast.success(t('저장된 아티스트가 선택되었습니다', 'Saved artist selected'))
-  }
+      console.error('Failed to update usage count:', error);
+    });
+
+    toast.success(t('저장된 아티스트가 선택되었습니다', 'Saved artist selected'));
+  };
 
   const saveCurrentArtist = async () => {
     if (!value.trim()) {
-      toast.error(t('아티스트 이름을 입력해주세요', 'Please enter artist name'))
-      return
+      toast.error(t('아티스트 이름을 입력해주세요', 'Please enter artist name'));
+      return;
     }
 
     try {
@@ -89,19 +89,19 @@ export default function ArtistSelector({
         name: value,
         translations: [],
         identifiers: []
-      })
-      
-      toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'))
-      setSelectedArtistId(newArtist.id)
-      setIsNewArtist(false)
-      setShowSaveOption(false)
-    } catch (error) {
-      console.error('Failed to save artist:', error)
-      toast.error(t('아티스트 저장에 실패했습니다', 'Failed to save artist'))
-    }
-  }
+      });
 
-  const filteredArtists = savedArtistsStore.searchArtists(searchQuery)
+      toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'));
+      setSelectedArtistId(newArtist.id);
+      setIsNewArtist(false);
+      setShowSaveOption(false);
+    } catch (error) {
+      console.error('Failed to save artist:', error);
+      toast.error(t('아티스트 저장에 실패했습니다', 'Failed to save artist'));
+    }
+  };
+
+  const filteredArtists = savedArtistsStore.searchArtists(searchQuery);
 
   return (
     <div className={className}>
@@ -110,7 +110,7 @@ export default function ArtistSelector({
           {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      
+
       <div className="relative">
         {/* Main input */}
         <div className="relative">
@@ -121,7 +121,7 @@ export default function ArtistSelector({
             placeholder={placeholder}
             className="w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-accent focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           />
-          
+
           {/* Status indicator */}
           {value && (
             <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -209,7 +209,7 @@ export default function ArtistSelector({
                 </div>
               ) : filteredArtists.length === 0 ? (
                 <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                  {searchQuery 
+                  {searchQuery
                     ? t('검색 결과가 없습니다', 'No results found')
                     : t('저장된 아티스트가 없습니다', 'No saved artists')
                   }
@@ -252,5 +252,5 @@ export default function ArtistSelector({
         )}
       </div>
     </div>
-  )
+  );
 }

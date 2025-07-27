@@ -1,27 +1,27 @@
-import { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
-import { useAuthStore } from '@/store/auth.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { useTranslation } from '@/hooks/useTranslation'
-import toast from 'react-hot-toast'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuthStore } from '@/store/auth.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import toast from 'react-hot-toast';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function AuthCallback() {
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth)
-  const { t } = useTranslation()
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleAuth = async () => {
-      const accessToken = searchParams.get('access_token')
-      const refreshToken = searchParams.get('refresh_token')
-      const profileComplete = searchParams.get('profile_complete') === 'true'
+      const accessToken = searchParams.get('access_token');
+      const refreshToken = searchParams.get('refresh_token');
+      const profileComplete = searchParams.get('profile_complete') === 'true';
 
       if (!accessToken || !refreshToken) {
-        toast.error(t('auth.loginFailed'))
-        navigate('/login')
-        return
+        toast.error(t('auth.loginFailed'));
+        navigate('/login');
+        return;
       }
 
       try {
@@ -30,46 +30,46 @@ export default function AuthCallback() {
           headers: {
             Authorization: `Bearer ${accessToken}`
           }
-        })
+        });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch profile')
+          throw new Error('Failed to fetch profile');
         }
 
-        const user = await response.json()
+        const user = await response.json();
 
         // Get return URL from session storage
-        const returnUrl = sessionStorage.getItem('returnUrl')
-        sessionStorage.removeItem('returnUrl')
+        const returnUrl = sessionStorage.getItem('returnUrl');
+        sessionStorage.removeItem('returnUrl');
 
         // Check if user is admin and show role selection
         if (user.role === 'ADMIN' && profileComplete) {
           // Store tokens temporarily for role selection
-          sessionStorage.setItem('temp_access_token', accessToken)
-          sessionStorage.setItem('temp_refresh_token', refreshToken)
-          sessionStorage.setItem('temp_user', JSON.stringify(user))
-          navigate('/role-select')
+          sessionStorage.setItem('temp_access_token', accessToken);
+          sessionStorage.setItem('temp_refresh_token', refreshToken);
+          sessionStorage.setItem('temp_user', JSON.stringify(user));
+          navigate('/role-select');
         } else {
           // Set auth in store for non-admin users or when profile setup is needed
-          setAuth?.(user, accessToken, refreshToken)
-          
+          setAuth?.(user, accessToken, refreshToken);
+
           if (!profileComplete) {
-            navigate('/profile-setup')
+            navigate('/profile-setup');
           } else {
-            navigate(returnUrl || '/dashboard')
+            navigate(returnUrl || '/dashboard');
           }
         }
 
-        toast.success(t('auth.loginSuccess'))
+        toast.success(t('auth.loginSuccess'));
       } catch (error) {
-        console.error('Auth error:', error)
-        toast.error(t('auth.loginProcessError'))
-        navigate('/login')
+        console.error('Auth error:', error);
+        toast.error(t('auth.loginProcessError'));
+        navigate('/login');
       }
-    }
+    };
 
-    handleAuth()
-  }, [searchParams, navigate, setAuth, t])
+    handleAuth();
+  }, [searchParams, navigate, setAuth, t]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 flex items-center justify-center">
@@ -78,5 +78,5 @@ export default function AuthCallback() {
         <span className="text-gray-600 dark:text-gray-400 font-medium">{t('auth.signingInProgress')}</span>
       </div>
     </div>
-  )
+  );
 }

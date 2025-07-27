@@ -4,7 +4,7 @@ import { Building2, User, Mail, Lock, Eye, EyeOff, Check, Phone, ArrowRight, Mus
 import { useTranslation } from '@/hooks/useTranslation';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
-import toast from 'react-hot-toast'
+import toast from 'react-hot-toast';
 import { logger } from '@/utils/logger';
 
 export default function Register() {
@@ -20,7 +20,7 @@ export default function Register() {
   const [formProgress, setFormProgress] = useState(0);
   const [showPasswordTooltip, setShowPasswordTooltip] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -49,17 +49,17 @@ export default function Register() {
 
   // Calculate form progress
   useEffect(() => {
-    const requiredFields = accountType === 'company' 
+    const requiredFields = accountType === 'company'
       ? ['name', 'email', 'password', 'confirmPassword', 'company']
       : ['name', 'email', 'password', 'confirmPassword'];
-    
+
     const filledFields = requiredFields.filter(field => {
       if (field === 'confirmPassword') {
         return formData.confirmPassword && formData.confirmPassword === formData.password;
       }
       return formData[field as keyof typeof formData];
     });
-    
+
     const progress = (filledFields.length / requiredFields.length) * 100;
     setFormProgress(progress);
   }, [formData, accountType]);
@@ -68,13 +68,13 @@ export default function Register() {
   useEffect(() => {
     const password = formData.password;
     let strength = 0;
-    
+
     if (password.length >= 8) strength += 20;
     if (password.length >= 12) strength += 20;
     if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 20;
     if (/\d/.test(password)) strength += 20;
     if (/[^a-zA-Z\d]/.test(password)) strength += 20;
-    
+
     setPasswordStrength(strength);
     setFieldValid(prev => ({ ...prev, password: strength >= 60 }));
   }, [formData.password]);
@@ -128,7 +128,7 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.agreeToTerms) {
       toast.error(t('이용약관에 동의해주세요.', 'Please agree to the terms of service', '利用規約に同意してください'));
       return;
@@ -157,7 +157,7 @@ export default function Register() {
       };
 
       const response = await authService.register(registerData);
-      
+
       if (response.access_token) {
         setAuth(response.user, response.access_token);
         toast.success(t('회원가입이 완료되었습니다!', 'Registration successful!', '登録が完了しました！'));
@@ -184,7 +184,7 @@ export default function Register() {
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-purple-600 to-pink-600 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-float"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-tr from-blue-600 to-cyan-600 rounded-full mix-blend-screen filter blur-3xl opacity-30 animate-float-delayed"></div>
         <div className="absolute top-1/2 left-1/3 w-72 h-72 bg-gradient-to-bl from-pink-600 to-orange-600 rounded-full mix-blend-screen filter blur-3xl opacity-20 animate-float-slow"></div>
-        
+
         {/* Grid pattern */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%239C92AC%22%20fill-opacity%3D%220.05%22%3E%3Cpath%20d%3D%22M36%2034v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6%2034v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6%204V0H4v4H0v2h4v4h2V6h4V4H6z%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-30"></div>
       </div>
@@ -224,7 +224,7 @@ export default function Register() {
                 {t('N3RVE와 함께 음악 여정을 시작하세요', 'Start your music journey with N3RVE', 'N3RVEで音楽の旅を始めましょう')}
               </p>
             </div>
-            
+
             <div className="grid md:grid-cols-2 gap-6">
               {/* Company/Label Account */}
               <button
@@ -233,7 +233,7 @@ export default function Register() {
               >
                 {/* Glow effect */}
                 <div className="absolute -inset-1 bg-gradient-to-br from-purple-600 to-pink-600 rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500"></div>
-                
+
                 {/* Card content */}
                 <div className="relative z-10">
                   {/* Icon with animation */}
@@ -243,11 +243,11 @@ export default function Register() {
                       <Building2 className="w-12 h-12 text-white group-hover:scale-110 transition-transform duration-300" />
                     </div>
                   </div>
-                  
+
                   <h3 className="text-3xl font-bold text-white mb-4 group-hover:text-purple-300 transition-colors duration-300">
                     {t('회사/레이블', 'Company/Label', '会社/レーベル')}
                   </h3>
-                  
+
                   <p className="text-gray-300 mb-8 leading-relaxed text-lg">
                     {t(
                       '여러 아티스트를 관리하고 팀과 협업하세요',
@@ -255,7 +255,7 @@ export default function Register() {
                       '複数のアーティストを管理し、チームと協力'
                     )}
                   </p>
-                  
+
                   <div className="space-y-4 mb-8">
                     <div className="flex items-center gap-4 group/item">
                       <div className="w-10 h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover/item:scale-110 transition-transform duration-300">
@@ -276,7 +276,7 @@ export default function Register() {
                       <span className="text-gray-200 group-hover/item:text-purple-400 transition-colors duration-300">{t('대량 업로드 지원', 'Bulk upload support', '一括アップロード対応')}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-400">
                       {t('팀을 위한 최적의 선택', 'Best for teams', 'チームに最適')}
@@ -296,7 +296,7 @@ export default function Register() {
               >
                 {/* Glow effect */}
                 <div className="absolute -inset-1 bg-gradient-to-br from-blue-600 to-cyan-600 rounded-3xl opacity-0 group-hover:opacity-20 blur-xl transition-opacity duration-500"></div>
-                
+
                 {/* Card content */}
                 <div className="relative z-10">
                   {/* Icon with animation */}
@@ -306,11 +306,11 @@ export default function Register() {
                       <Headphones className="w-12 h-12 text-white group-hover:scale-110 transition-transform duration-300" />
                     </div>
                   </div>
-                  
+
                   <h3 className="text-3xl font-bold text-white mb-4 group-hover:text-blue-300 transition-colors duration-300">
                     {t('개인 아티스트', 'Individual Artist', '個人アーティスト')}
                   </h3>
-                  
+
                   <p className="text-gray-300 mb-8 leading-relaxed text-lg">
                     {t(
                       '독립 아티스트로서 음악을 직접 관리하세요',
@@ -318,7 +318,7 @@ export default function Register() {
                       '独立アーティストとして音楽を直接管理'
                     )}
                   </p>
-                  
+
                   <div className="space-y-4 mb-8">
                     <div className="flex items-center gap-4 group/item">
                       <div className="w-10 h-10 bg-gradient-to-br from-green-500/20 to-green-600/20 backdrop-blur-sm rounded-xl flex items-center justify-center group-hover/item:scale-110 transition-transform duration-300">
@@ -339,7 +339,7 @@ export default function Register() {
                       <span className="text-gray-200 group-hover/item:text-purple-400 transition-colors duration-300">{t('개인 프로필 설정', 'Personal profile setup', '個人プロフィール設定')}</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-400">
                       {t('독립 아티스트에 최적', 'Best for independents', '独立アーティストに最適')}
@@ -367,7 +367,7 @@ export default function Register() {
           <div className="relative bg-gray-900/40 backdrop-blur-2xl rounded-3xl shadow-[0_0_50px_rgba(147,51,234,0.3)] border border-gray-800/50 p-8 md:p-12 animate-fade-in overflow-hidden">
             {/* Glow effect */}
             <div className="absolute -inset-1 bg-gradient-to-br from-purple-600/20 to-pink-600/20 rounded-3xl blur-2xl"></div>
-            
+
             {/* Form content */}
             <div className="relative z-10">
               <button
@@ -379,15 +379,15 @@ export default function Register() {
               </button>
 
               <div className="text-center mb-8">
-                <div className={`relative mb-6 group`}>
+                <div className={'relative mb-6 group'}>
                   <div className={`absolute inset-0 ${accountType === 'company' ? 'bg-gradient-to-br from-purple-600 to-pink-600' : 'bg-gradient-to-br from-blue-600 to-cyan-600'} rounded-3xl blur-2xl opacity-50 group-hover:opacity-70 transition-opacity duration-300`}></div>
                   <div className={`relative w-20 h-20 ${accountType === 'company' ? 'bg-gradient-to-br from-purple-600 to-pink-600' : 'bg-gradient-to-br from-blue-600 to-cyan-600'} rounded-3xl flex items-center justify-center mx-auto shadow-2xl transform group-hover:rotate-3 group-hover:scale-110 transition-all duration-300`}>
                     {accountType === 'company' ? <Building2 className="w-10 h-10 text-white" /> : <Music className="w-10 h-10 text-white" />}
                   </div>
                 </div>
-                
+
                 <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
-                  {accountType === 'company' 
+                  {accountType === 'company'
                     ? t('회사/레이블 등록', 'Company/Label Registration', '会社/レーベル登録')
                     : t('아티스트 등록', 'Artist Registration', 'アーティスト登録')
                   }
@@ -395,11 +395,11 @@ export default function Register() {
                 <p className="text-gray-300">
                   {t('정보를 입력하여 계정을 생성하세요', 'Enter your information to create an account', '情報を入力してアカウントを作成')}
                 </p>
-                
+
                 {/* Progress bar */}
                 <div className="mt-6 w-full max-w-xs mx-auto">
                   <div className="h-2 bg-gray-800 rounded-full overflow-hidden">
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-purple-600 to-pink-600 rounded-full transition-all duration-500 ease-out"
                       style={{ width: `${formProgress}%` }}
                     ></div>
@@ -426,11 +426,11 @@ export default function Register() {
                       required
                     />
                     <label className={`absolute left-5 transition-all duration-300 pointer-events-none ${
-                      formData.name || focusedField === 'name' 
-                        ? 'top-2.5 text-xs text-purple-400' 
+                      formData.name || focusedField === 'name'
+                        ? 'top-2.5 text-xs text-purple-400'
                         : 'top-5 text-sm text-gray-400'
                     }`}>
-                      {accountType === 'company' 
+                      {accountType === 'company'
                         ? t('담당자 이름', 'Contact Name', '担当者名')
                         : t('아티스트명', 'Artist Name', 'アーティスト名')
                       }
@@ -460,12 +460,12 @@ export default function Register() {
                         onFocus={() => setFocusedField('company')}
                         onBlur={() => setFocusedField(null)}
                         className="peer w-full px-5 pt-7 pb-3 bg-gray-800/50 border-2 border-gray-700/50 rounded-2xl focus:border-purple-500 focus:bg-gray-800/70 transition-all duration-300 outline-none text-white placeholder-transparent"
-                      placeholder=" "
-                      required
-                    />
+                        placeholder=" "
+                        required
+                      />
                       <label className={`absolute left-5 transition-all duration-300 pointer-events-none ${
-                        formData.company || focusedField === 'company' 
-                          ? 'top-2.5 text-xs text-purple-400' 
+                        formData.company || focusedField === 'company'
+                          ? 'top-2.5 text-xs text-purple-400'
                           : 'top-5 text-sm text-gray-400'
                       }`}>
                         {t('회사/레이블명', 'Company/Label Name', '会社/レーベル名')}
@@ -502,8 +502,8 @@ export default function Register() {
                       required
                     />
                     <label className={`absolute left-5 transition-all duration-300 pointer-events-none ${
-                      formData.email || focusedField === 'email' 
-                        ? 'top-2.5 text-xs text-purple-400' 
+                      formData.email || focusedField === 'email'
+                        ? 'top-2.5 text-xs text-purple-400'
                         : 'top-5 text-sm text-gray-400'
                     }`}>
                       {t('이메일', 'Email', 'メール')}
@@ -543,8 +543,8 @@ export default function Register() {
                       placeholder=" "
                     />
                     <label className={`absolute left-5 transition-all duration-300 pointer-events-none ${
-                      formData.phone || focusedField === 'phone' 
-                        ? 'top-2.5 text-xs text-purple-400' 
+                      formData.phone || focusedField === 'phone'
+                        ? 'top-2.5 text-xs text-purple-400'
                         : 'top-5 text-sm text-gray-400'
                     }`}>
                       {t('전화번호 (선택)', 'Phone Number (Optional)', '電話番号（任意）')}
@@ -589,8 +589,8 @@ export default function Register() {
                       required
                     />
                     <label className={`absolute left-5 transition-all duration-300 pointer-events-none ${
-                      formData.password || focusedField === 'password' 
-                        ? 'top-2.5 text-xs text-purple-400' 
+                      formData.password || focusedField === 'password'
+                        ? 'top-2.5 text-xs text-purple-400'
                         : 'top-5 text-sm text-gray-400'
                     }`}>
                       {t('비밀번호', 'Password', 'パスワード')}
@@ -612,20 +612,20 @@ export default function Register() {
                     <div className={`absolute inset-0 rounded-2xl bg-purple-500/20 blur-xl transition-opacity duration-300 ${
                       focusedField === 'password' ? 'opacity-100' : 'opacity-0'
                     }`}></div>
-                  
+
                     {/* Password strength indicator */}
                     {formData.password && (
                       <div className="absolute -bottom-14 left-0 right-0">
                         <div className="mb-2">
                           <div className="flex gap-1">
                             {[20, 40, 60, 80, 100].map((segment, index) => (
-                              <div 
+                              <div
                                 key={index}
                                 className={`flex-1 h-1.5 rounded-full transition-all duration-500 ${
                                   passwordStrength >= segment
                                     ? passwordStrength <= 40 ? 'bg-red-500' :
                                       passwordStrength <= 60 ? 'bg-orange-500' :
-                                      passwordStrength <= 80 ? 'bg-yellow-500' : 'bg-green-500'
+                                        passwordStrength <= 80 ? 'bg-yellow-500' : 'bg-green-500'
                                     : 'bg-gray-700'
                                 }`}
                               />
@@ -633,16 +633,16 @@ export default function Register() {
                           </div>
                           <span className={`text-xs font-medium mt-1 block ${
                             passwordStrength <= 40 ? 'text-red-400' :
-                            passwordStrength <= 60 ? 'text-orange-400' :
-                            passwordStrength <= 80 ? 'text-yellow-400' :
-                            'text-green-400'
+                              passwordStrength <= 60 ? 'text-orange-400' :
+                                passwordStrength <= 80 ? 'text-yellow-400' :
+                                  'text-green-400'
                           }`}>
                             {getPasswordStrengthText()}
                           </span>
                         </div>
                       </div>
                     )}
-                    
+
                     {/* Password requirements tooltip */}
                     {showPasswordTooltip && formData.password && (
                       <div className="absolute top-full mt-2 left-0 bg-gray-800 border border-gray-700 rounded-lg p-3 shadow-xl z-20 animate-fade-in">
@@ -687,8 +687,8 @@ export default function Register() {
                       required
                     />
                     <label className={`absolute left-5 transition-all duration-300 pointer-events-none ${
-                      formData.confirmPassword || focusedField === 'confirmPassword' 
-                        ? 'top-2.5 text-xs text-purple-400' 
+                      formData.confirmPassword || focusedField === 'confirmPassword'
+                        ? 'top-2.5 text-xs text-purple-400'
                         : 'top-5 text-sm text-gray-400'
                     }`}>
                       {t('비밀번호 확인', 'Confirm Password', 'パスワード確認')}
@@ -719,7 +719,7 @@ export default function Register() {
                       focusedField === 'confirmPassword' ? 'opacity-100' : 'opacity-0'
                     }`}></div>
                   </div>
-              </div>
+                </div>
 
                 {/* Terms Agreement */}
                 <div className="flex items-start mt-8">
@@ -750,7 +750,7 @@ export default function Register() {
                 >
                   {/* Button glow effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-300"></div>
-                  
+
                   <div className="relative z-10 flex items-center gap-3">
                     {loading ? (
                       <>

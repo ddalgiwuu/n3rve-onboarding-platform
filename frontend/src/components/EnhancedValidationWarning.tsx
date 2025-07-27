@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react'
-import { 
-  AlertCircle, AlertTriangle, CheckCircle, 
+import { useState, useMemo } from 'react';
+import {
+  AlertCircle, AlertTriangle, CheckCircle,
   X, ChevronDown, ChevronUp, Lightbulb, Sparkles,
   Music
-} from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface ValidationWarning {
   id: string
@@ -40,17 +40,17 @@ const SpotifyIcon = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
     <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.24 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
   </svg>
-)
+);
 
 const AppleMusicIcon = () => (
   <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
     <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043a5.022 5.022 0 00-1.877-.726 10.496 10.496 0 00-1.564-.15c-.04-.003-.083-.01-.124-.013H5.99c-.152.01-.303.017-.455.026-.747.043-1.49.123-2.193.4-1.336.53-2.3 1.452-2.865 2.78-.192.448-.292.925-.363 1.408-.056.392-.088.785-.1 1.18 0 .032-.007.062-.01.093v12.223c.01.14.017.283.027.424.05.815.154 1.624.497 2.373.65 1.42 1.738 2.353 3.234 2.801.42.127.856.187 1.293.228.555.053 1.11.06 1.667.06h11.03a12.5 12.5 0 001.57-.1c.822-.078 1.596-.31 2.3-.81a5.384 5.384 0 001.93-2.502c.23-.612.346-1.252.418-1.9.024-.21.043-.42.058-.63.01-.14.017-.28.024-.42V6.364c-.003-.083-.01-.167-.015-.25l-.004-.014zm-1.574 5.793V19.97c0 .26-.015.52-.045.78-.057.493-.165.97-.394 1.41-.456.877-1.197 1.414-2.15 1.612a9.68 9.68 0 01-1.847.1H5.974c-.327 0-.653-.01-.98-.035a5.02 5.02 0 01-.968-.163c-.816-.25-1.402-.77-1.737-1.57-.202-.478-.293-.984-.334-1.5a12.4 12.4 0 01-.033-.994V6.39c0-.166.007-.333.018-.5.022-.355.06-.71.144-1.055.184-.76.574-1.384 1.253-1.788.418-.25.88-.397 1.36-.46.585-.08 1.175-.082 1.764-.082h11.535c.44 0 .88.017 1.316.08.654.095 1.265.297 1.78.72.576.47.933 1.073 1.102 1.8.107.46.144.935.144 1.412v5.4h-.003zm-6.543-6.475c-.027-.153-.058-.306-.105-.453a1.764 1.764 0 00-.662-.965 1.96 1.96 0 00-.735-.28 5.697 5.697 0 00-.84-.065c-.607-.01-1.213 0-1.82 0h-6.78c-.346 0-.692.01-1.037.05-.393.044-.773.135-1.115.35-.527.33-.847.807-.98 1.407-.044.2-.064.407-.064.613v9.07c0 .214.02.427.068.636.144.635.516 1.096 1.094 1.372.223.107.462.166.708.2.34.047.683.058 1.026.058.71 0 1.42 0 2.13-.002.212 0 .382-.147.447-.35a.51.51 0 00-.054-.475.502.502 0 00-.425-.204c-.547.003-1.094.002-1.64.002-.294 0-.587-.01-.878-.04a1.46 1.46 0 01-.432-.123c-.292-.138-.474-.372-.547-.684a2.14 2.14 0 01-.05-.468V6.366c0-.2.015-.398.066-.59.094-.345.307-.578.627-.71.197-.08.408-.122.622-.137.315-.022.632-.027.95-.027h7.02c.284 0 .567.01.85.033.24.02.472.063.69.162.35.16.578.437.68.808.038.142.056.29.056.437v7.467c0 .445-.12.82-.484 1.076-.217.152-.468.224-.73.258-.255.033-.513.043-.77.043-.592 0-1.184 0-1.776.002a.51.51 0 00-.492.444.502.502 0 00.376.566c.102.024.208.03.313.03.73 0 1.46-.002 2.19-.003.327-.002.654-.02.977-.07.442-.067.853-.21 1.21-.47.582-.42.875-1.027.875-1.8V6.446c0-.183-.007-.366-.026-.548l.002.002z"/>
   </svg>
-)
+);
 
-export default function EnhancedValidationWarning({ 
-  warnings, 
-  onAcceptSuggestion, 
+export default function EnhancedValidationWarning({
+  warnings,
+  onAcceptSuggestion,
   onAcceptAll,
   onDismissWarning,
   onDismissAll,
@@ -58,61 +58,61 @@ export default function EnhancedValidationWarning({
   displayMode = 'grouped',
   relatedInputId
 }: EnhancedValidationWarningProps) {
-  const [expandedWarnings, setExpandedWarnings] = useState<Set<string>>(new Set())
-  const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(new Set())
+  const [expandedWarnings, setExpandedWarnings] = useState<Set<string>>(new Set());
+  const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(new Set());
   // Removed unused showAllGroups state
 
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   // Group warnings by type
   const groupedWarnings = useMemo(() => {
-    const groups: Record<string, ValidationWarning[]> = {}
+    const groups: Record<string, ValidationWarning[]> = {};
     warnings.forEach(warning => {
-      const group = warning.warningGroup || warning.type
-      if (!groups[group]) groups[group] = []
-      groups[group].push(warning)
-    })
-    return groups
-  }, [warnings])
+      const group = warning.warningGroup || warning.type;
+      if (!groups[group]) groups[group] = [];
+      groups[group].push(warning);
+    });
+    return groups;
+  }, [warnings]);
 
   // Calculate summary stats
   const summary = useMemo(() => {
-    const active = warnings.filter(w => !dismissedWarnings.has(w.id))
+    const active = warnings.filter(w => !dismissedWarnings.has(w.id));
     return {
       total: active.length,
       errors: active.filter(w => w.type === 'error').length,
       warnings: active.filter(w => w.type === 'warning').length,
       suggestions: active.filter(w => w.type === 'suggestion').length,
-      avgRejectionProbability: active.length > 0 
+      avgRejectionProbability: active.length > 0
         ? Math.round(active.reduce((sum, w) => sum + (w.rejectionProbability || 0), 0) / active.length)
         : 0
-    }
-  }, [warnings, dismissedWarnings])
+    };
+  }, [warnings, dismissedWarnings]);
 
   const toggleExpanded = (warningId: string) => {
     setExpandedWarnings(prev => {
-      const newSet = new Set(prev)
+      const newSet = new Set(prev);
       if (newSet.has(warningId)) {
-        newSet.delete(warningId)
+        newSet.delete(warningId);
       } else {
-        newSet.add(warningId)
+        newSet.add(warningId);
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
   const handleDismiss = (warning: ValidationWarning) => {
-    setDismissedWarnings(prev => new Set(prev).add(warning.id))
-    onDismissWarning?.(warning)
-  }
+    setDismissedWarnings(prev => new Set(prev).add(warning.id));
+    onDismissWarning?.(warning);
+  };
 
   const handleDismissGroup = (group: string) => {
-    const groupWarnings = groupedWarnings[group] || []
+    const groupWarnings = groupedWarnings[group] || [];
     groupWarnings.forEach(w => {
-      setDismissedWarnings(prev => new Set(prev).add(w.id))
-    })
-    onDismissAll?.(group)
-  }
+      setDismissedWarnings(prev => new Set(prev).add(w.id));
+    });
+    onDismissAll?.(group);
+  };
 
   const getWarningConfig = (type: ValidationWarning['type']) => {
     switch (type) {
@@ -131,7 +131,7 @@ export default function EnhancedValidationWarning({
           darkTextColor: 'dark:text-red-300',
           title: t('오류', 'Error'),
           inputBorderClass: 'border-red-500 focus:border-red-500'
-        }
+        };
       case 'warning':
         return {
           icon: AlertTriangle,
@@ -147,7 +147,7 @@ export default function EnhancedValidationWarning({
           darkTextColor: 'dark:text-amber-300',
           title: t('경고', 'Warning'),
           inputBorderClass: 'border-amber-500 focus:border-amber-500'
-        }
+        };
       case 'suggestion':
         return {
           icon: Lightbulb,
@@ -163,31 +163,31 @@ export default function EnhancedValidationWarning({
           darkTextColor: 'dark:text-blue-300',
           title: t('제안', 'Suggestion'),
           inputBorderClass: 'border-blue-500 focus:border-blue-500'
-        }
+        };
     }
-  }
+  };
 
   const getPlatformIcon = (platform: string) => {
-    if (platform.toLowerCase().includes('spotify')) return <SpotifyIcon />
-    if (platform.toLowerCase().includes('apple')) return <AppleMusicIcon />
-    return <Music className="w-4 h-4" />
-  }
+    if (platform.toLowerCase().includes('spotify')) return <SpotifyIcon />;
+    if (platform.toLowerCase().includes('apple')) return <AppleMusicIcon />;
+    return <Music className="w-4 h-4" />;
+  };
 
   const getPlatformColor = (platform: string) => {
-    if (platform.toLowerCase().includes('spotify')) return 'text-green-600 dark:text-green-400'
-    if (platform.toLowerCase().includes('apple')) return 'text-gray-800 dark:text-gray-300'
-    return 'text-purple-600 dark:text-purple-400'
-  }
+    if (platform.toLowerCase().includes('spotify')) return 'text-green-600 dark:text-green-400';
+    if (platform.toLowerCase().includes('apple')) return 'text-gray-800 dark:text-gray-300';
+    return 'text-purple-600 dark:text-purple-400';
+  };
 
-  const activeWarnings = warnings.filter(w => !dismissedWarnings.has(w.id))
+  const activeWarnings = warnings.filter(w => !dismissedWarnings.has(w.id));
 
-  if (activeWarnings.length === 0) return null
+  if (activeWarnings.length === 0) return null;
 
   // Add input highlighting effect
   if (relatedInputId && activeWarnings.some(w => w.type === 'error')) {
-    const input = document.getElementById(relatedInputId)
+    const input = document.getElementById(relatedInputId);
     if (input) {
-      input.classList.add('border-red-500', 'focus:border-red-500')
+      input.classList.add('border-red-500', 'focus:border-red-500');
     }
   }
 
@@ -243,8 +243,8 @@ export default function EnhancedValidationWarning({
                   </span>
                   <span className={`text-sm font-medium ${
                     summary.avgRejectionProbability > 70 ? 'text-red-600 dark:text-red-400' :
-                    summary.avgRejectionProbability > 40 ? 'text-amber-600 dark:text-amber-400' :
-                    'text-green-600 dark:text-green-400'
+                      summary.avgRejectionProbability > 40 ? 'text-amber-600 dark:text-amber-400' :
+                        'text-green-600 dark:text-green-400'
                   }`}>
                     {summary.avgRejectionProbability}%
                   </span>
@@ -276,11 +276,11 @@ export default function EnhancedValidationWarning({
           ) : (
             // Grouped mode
             Object.entries(groupedWarnings).map(([group, groupWarnings]) => {
-              const activeGroupWarnings = groupWarnings.filter(w => !dismissedWarnings.has(w.id))
-              if (activeGroupWarnings.length === 0) return null
+              const activeGroupWarnings = groupWarnings.filter(w => !dismissedWarnings.has(w.id));
+              if (activeGroupWarnings.length === 0) return null;
 
-              const canFixAll = activeGroupWarnings.some(w => w.suggestedValue && w.type !== 'error')
-              const canDismissAll = activeGroupWarnings.some(w => w.canIgnore)
+              const canFixAll = activeGroupWarnings.some(w => w.suggestedValue && w.type !== 'error');
+              const canDismissAll = activeGroupWarnings.some(w => w.canIgnore);
 
               return (
                 <motion.div
@@ -333,13 +333,13 @@ export default function EnhancedValidationWarning({
                     ))}
                   </div>
                 </motion.div>
-              )
+              );
             })
           )}
         </div>
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }
 
 // Individual warning item component
@@ -356,8 +356,8 @@ function WarningItem({
   language,
   isGrouped = false
 }: any) {
-  const config = getWarningConfig(warning.type)
-  const Icon = config.icon
+  const config = getWarningConfig(warning.type);
+  const Icon = config.icon;
 
   return (
     <motion.div
@@ -374,7 +374,7 @@ function WarningItem({
         {/* Header */}
         <div className="flex items-start gap-3">
           <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${config.iconColor} ${config.darkIconColor}`} />
-          
+
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className={`text-xs font-medium ${config.titleColor} ${config.darkTitleColor}`}>
@@ -383,8 +383,8 @@ function WarningItem({
               {warning.rejectionProbability && (
                 <span className={`text-xs px-1.5 py-0.5 rounded-full ${
                   warning.rejectionProbability > 70 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
-                  warning.rejectionProbability > 40 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
-                  'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
+                    warning.rejectionProbability > 40 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300' :
+                      'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300'
                 }`}>
                   {warning.rejectionProbability}% {t('거절 가능성', 'rejection risk')}
                 </span>
@@ -395,7 +395,7 @@ function WarningItem({
                 </span>
               )}
             </div>
-            
+
             <p className={`text-sm ${config.textColor} ${config.darkTextColor}`}>
               {warning.message}
             </p>
@@ -521,7 +521,7 @@ function WarningItem({
         </div>
       </div>
     </motion.div>
-  )
+  );
 }
 
 // Helper function to get group titles
@@ -535,6 +535,6 @@ function getGroupTitle(group: string, t: (ko: string, en: string) => string): st
     'error': t('오류', 'Errors'),
     'warning': t('경고', 'Warnings'),
     'suggestion': t('제안사항', 'Suggestions')
-  }
-  return groupTitles[group] || group
+  };
+  return groupTitles[group] || group;
 }

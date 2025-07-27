@@ -11,7 +11,7 @@ export const contributorRoles: ContributorRole[] = [
   { value: 'a&r-manager', label: 'A&R 매니저', labelEn: 'A&R Manager', category: '관리' },
   { value: 'agent', label: '에이전트', labelEn: 'Agent', category: '관리' },
   { value: 'artist-management', label: '아티스트 매니지먼트', labelEn: 'Artist Management', category: '관리' },
-  
+
   // Production
   { value: 'producer', label: '프로듀서', labelEn: 'Producer', category: '프로덕션' },
   { value: 'executive-producer', label: '총괄 프로듀서', labelEn: 'Executive Producer', category: '프로덕션' },
@@ -19,7 +19,7 @@ export const contributorRoles: ContributorRole[] = [
   { value: 'assistant-producer', label: '어시스턴트 프로듀서', labelEn: 'Assistant Producer', category: '프로덕션' },
   { value: 'post-producer', label: '포스트 프로듀서', labelEn: 'Post-Producer', category: '프로덕션' },
   { value: 'vocal-producer', label: '보컬 프로듀서', labelEn: 'Vocal Producer', category: '프로덕션' },
-  
+
   // Engineering
   { value: 'engineer', label: '엔지니어', labelEn: 'Engineer', category: '엔지니어링' },
   { value: 'mixing-engineer', label: '믹싱 엔지니어', labelEn: 'Mixing Engineer', category: '엔지니어링' },
@@ -35,7 +35,7 @@ export const contributorRoles: ContributorRole[] = [
   { value: 'immersive-mastering-engineer', label: '임머시브 마스터링 엔지니어', labelEn: 'Immersive Mastering Engineer', category: '엔지니어링' },
   { value: 'immersive-mixing-engineer', label: '임머시브 믹싱 엔지니어', labelEn: 'Immersive Mixing Engineer', category: '엔지니어링' },
   { value: 'tonmeister', label: '톤마이스터', labelEn: 'Tonmeister', category: '엔지니어링' },
-  
+
   // Composition & Writing
   { value: 'composer', label: '작곡가', labelEn: 'Composer', category: '작곡' },
   { value: 'lyricist', label: '작사가', labelEn: 'Lyricist', category: '작곡' },
@@ -49,7 +49,7 @@ export const contributorRoles: ContributorRole[] = [
   { value: 'librettist', label: '대본작가', labelEn: 'Librettist', category: '작곡' },
   { value: 'translator', label: '번역가', labelEn: 'Translator', category: '작곡' },
   { value: 'playwright', label: '극작가', labelEn: 'Playwright', category: '작곡' },
-  
+
   // Performance - Vocals
   { value: 'featured-artist', label: '피처링 아티스트', labelEn: 'Featured Artist', category: '보컬' },
   { value: 'featuring', label: '피처링', labelEn: 'Featuring', category: '보컬' },
@@ -64,7 +64,7 @@ export const contributorRoles: ContributorRole[] = [
   { value: 'narrator', label: '내레이터', labelEn: 'Narrator', category: '보컬' },
   { value: 'spoken-word', label: '스포큰 워드', labelEn: 'Spoken Word', category: '보컬' },
   { value: 'vocal-effects', label: '보컬 이펙트', labelEn: 'Vocal Effects', category: '보컬' },
-  
+
   // Performance - Musicians
   { value: 'instrumentalist', label: '연주자', labelEn: 'Instrumentalist', category: '연주' },
   { value: 'band', label: '밴드', labelEn: 'Band', category: '연주' },
@@ -75,7 +75,7 @@ export const contributorRoles: ContributorRole[] = [
   { value: 'studio-musician', label: '스튜디오 뮤지션', labelEn: 'Studio Musician', category: '연주' },
   { value: 'contributing-artist', label: '참여 아티스트', labelEn: 'Contributing Artist', category: '연주' },
   { value: 'sampled-artist', label: '샘플링 아티스트', labelEn: 'Sampled Artist', category: '연주' },
-  
+
   // Conducting
   { value: 'conductor', label: '지휘자', labelEn: 'Conductor', category: '지휘' },
   { value: 'assistant-conductor', label: '부지휘자', labelEn: 'Assistant Conductor', category: '지휘' },
@@ -84,7 +84,7 @@ export const contributorRoles: ContributorRole[] = [
   { value: 'musical-director', label: '음악 감독', labelEn: 'Musical Director', category: '지휘' },
   { value: 'strings-conductor', label: '현악 지휘자', labelEn: 'Strings Conductor', category: '지휘' },
   { value: 'orchestrator', label: '오케스트레이터', labelEn: 'Orchestrator', category: '지휘' },
-  
+
   // Technical
   { value: 'programmer', label: '프로그래머', labelEn: 'Programmer', category: '기술' },
   { value: 'sound-designer', label: '사운드 디자이너', labelEn: 'Sound Designer', category: '기술' },
@@ -99,7 +99,7 @@ export const contributorRoles: ContributorRole[] = [
   { value: 'production-assistant', label: '프로덕션 어시스턴트', labelEn: 'Production Assistant', category: '기술' },
   { value: 'studio-personnel', label: '스튜디오 스태프', labelEn: 'Studio Personnel', category: '기술' },
   { value: 'tape', label: '테이프', labelEn: 'Tape', category: '기술' },
-  
+
   // Visual & Video
   { value: 'art-director', label: '아트 디렉터', labelEn: 'Art Director', category: '비주얼' },
   { value: 'art-direction', label: '아트 디렉션', labelEn: 'Art Direction', category: '비주얼' },
@@ -119,33 +119,33 @@ export const contributorRoles: ContributorRole[] = [
   { value: 'visual-effects-technician', label: '시각효과 기술자', labelEn: 'Visual Effects Technician', category: '비주얼' },
   { value: 'set-designer', label: '세트 디자이너', labelEn: 'Set Designer', category: '비주얼' },
   { value: 'costume-designer', label: '의상 디자이너', labelEn: 'Costume Designer', category: '비주얼' },
-  
+
   // Dance & Performance
   { value: 'choreographer', label: '안무가', labelEn: 'Choreographer', category: '퍼포먼스' },
   { value: 'dancer', label: '댄서', labelEn: 'Dancer', category: '퍼포먼스' },
   { value: 'actor', label: '배우', labelEn: 'Actor', category: '퍼포먼스' },
-  
+
   // Business
   { value: 'a&r', label: 'A&R', labelEn: 'A&R', category: '비즈니스' },
   { value: 'manager', label: '매니저', labelEn: 'Manager', category: '비즈니스' },
   { value: 'publisher', label: '퍼블리셔', labelEn: 'Publisher', category: '비즈니스' },
   { value: 'label-executive', label: '레이블 담당자', labelEn: 'Label Executive', category: '비즈니스' }
-]
+];
 
 export function getRolesByCategory(category: string): ContributorRole[] {
-  return contributorRoles.filter(role => role.category === category)
+  return contributorRoles.filter(role => role.category === category);
 }
 
 export function searchRoles(query: string): ContributorRole[] {
-  const lowercaseQuery = query.toLowerCase()
-  return contributorRoles.filter(role => 
+  const lowercaseQuery = query.toLowerCase();
+  return contributorRoles.filter(role =>
     role.label.toLowerCase().includes(lowercaseQuery) ||
     role.labelEn.toLowerCase().includes(lowercaseQuery) ||
     role.value.toLowerCase().includes(lowercaseQuery)
-  )
+  );
 }
 
 export function getRoleLabel(value: string, language: 'ko' | 'en' = 'ko'): string {
-  const role = contributorRoles.find(r => r.value === value)
-  return role ? (language === 'ko' ? role.label : role.labelEn) : value
+  const role = contributorRoles.find(r => r.value === value);
+  return role ? (language === 'ko' ? role.label : role.labelEn) : value;
 }

@@ -1,5 +1,5 @@
-import { forwardRef } from 'react'
-import { cn } from '@/utils/cn'
+import { forwardRef } from 'react';
+import { cn } from '@/utils/cn';
 
 interface ToggleProps {
   checked: boolean
@@ -29,12 +29,12 @@ const Toggle = forwardRef<HTMLDivElement, ToggleProps>(
         thumb: 'h-6 w-6',
         translate: 'translate-x-7'
       }
-    }
+    };
 
-    const currentSize = sizes[size]
+    const currentSize = sizes[size];
 
     return (
-      <div ref={ref} className={cn("flex items-center gap-3", className)}>
+      <div ref={ref} className={cn('flex items-center gap-3', className)}>
         <button
           type="button"
           role="switch"
@@ -42,7 +42,7 @@ const Toggle = forwardRef<HTMLDivElement, ToggleProps>(
           disabled={disabled}
           onClick={() => onChange(!checked)}
           className={cn(
-            "relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2",
+            'relative inline-flex shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2',
             currentSize.container,
             {
               'bg-purple-600': checked && !disabled,
@@ -54,7 +54,7 @@ const Toggle = forwardRef<HTMLDivElement, ToggleProps>(
           <span
             aria-hidden="true"
             className={cn(
-              "pointer-events-none inline-block rounded-full bg-white shadow-lg transform ring-0 transition duration-200 ease-in-out",
+              'pointer-events-none inline-block rounded-full bg-white shadow-lg transform ring-0 transition duration-200 ease-in-out',
               currentSize.thumb,
               {
                 [currentSize.translate]: checked,
@@ -63,13 +63,13 @@ const Toggle = forwardRef<HTMLDivElement, ToggleProps>(
             )}
           />
         </button>
-        
+
         {(label || description) && (
           <div className="flex flex-col">
             {label && (
               <label
                 className={cn(
-                  "text-sm font-medium",
+                  'text-sm font-medium',
                   {
                     'text-gray-900 dark:text-white': !disabled,
                     'text-gray-500 dark:text-gray-400': disabled
@@ -87,10 +87,10 @@ const Toggle = forwardRef<HTMLDivElement, ToggleProps>(
           </div>
         )}
       </div>
-    )
+    );
   }
-)
+);
 
-Toggle.displayName = 'Toggle'
+Toggle.displayName = 'Toggle';
 
-export default Toggle
+export default Toggle;

@@ -88,7 +88,7 @@ export const adminService = {
   ): Promise<Submission> {
     const { data } = await api.put(`/admin/submissions/${submissionId}/status`, {
       status,
-      comments,
+      comments
     });
     return data;
   },
@@ -96,7 +96,7 @@ export const adminService = {
   // Analytics
   async getAnalytics(timeRange: 'week' | 'month' | 'year' = 'month') {
     const { data } = await api.get('/admin/analytics', {
-      params: { timeRange },
+      params: { timeRange }
     });
     return data;
   },
@@ -110,5 +110,5 @@ export const adminService = {
   }) {
     const { data } = await api.get('/admin/logs', { params });
     return data;
-  },
+  }
 };

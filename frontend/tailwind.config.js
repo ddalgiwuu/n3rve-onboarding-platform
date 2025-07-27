@@ -2,8 +2,8 @@
 export default {
   darkMode: 'class',
   content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
+    './index.html',
+    './src/**/*.{js,ts,jsx,tsx}'
   ],
   theme: {
     extend: {
@@ -19,7 +19,7 @@ export default {
           700: '#4301cc',
           800: '#3701a6',
           900: '#2d0186',
-          950: '#1a004d',
+          950: '#1a004d'
         }
       },
       backgroundColor: {
@@ -28,14 +28,14 @@ export default {
         'white/95': 'rgba(255, 255, 255, 0.95)',
         'gray-800/80': 'rgba(31, 41, 55, 0.8)',
         'gray-900/80': 'rgba(17, 24, 39, 0.8)',
-        'gray-900/95': 'rgba(17, 24, 39, 0.95)',
+        'gray-900/95': 'rgba(17, 24, 39, 0.95)'
       },
       backdropBlur: {
-        xs: '2px',
+        xs: '2px'
       },
       animation: {
         'gradient-x': 'gradient-x 15s ease infinite',
-        'blob': 'blob 7s infinite',
+        'blob': 'blob 7s infinite'
       },
       keyframes: {
         'gradient-x': {
@@ -63,7 +63,7 @@ export default {
           }
         }
       }
-    },
+    }
   },
   plugins: [
     function({ addUtilities }) {
@@ -72,9 +72,9 @@ export default {
           background: 'rgba(255, 255, 255, 0.8) !important',
           'backdrop-filter': 'blur(10px) !important',
           '-webkit-backdrop-filter': 'blur(10px) !important',
-          border: '1px solid rgba(255, 255, 255, 0.18) !important',
+          border: '1px solid rgba(255, 255, 255, 0.18) !important'
         }
-      })
+      });
     },
     function({ addUtilities }) {
       addUtilities({
@@ -82,16 +82,16 @@ export default {
           background: 'rgba(17, 24, 39, 0.8) !important',
           'backdrop-filter': 'blur(10px) !important',
           '-webkit-backdrop-filter': 'blur(10px) !important',
-          border: '1px solid rgba(255, 255, 255, 0.1) !important',
+          border: '1px solid rgba(255, 255, 255, 0.1) !important'
         }
-      })
+      });
     }
   ],
   safelist: [
     'glass-effect',
     'backdrop-blur-sm',
     'backdrop-blur',
-    'backdrop-blur-md', 
+    'backdrop-blur-md',
     'backdrop-blur-lg',
     'backdrop-blur-xl',
     'backdrop-blur-2xl',
@@ -124,6 +124,6 @@ export default {
     'group-hover:text-purple-600',
     'group-hover:text-blue-600',
     'group-hover:text-pink-600',
-    'group-hover:text-gray-600',
+    'group-hover:text-gray-600'
   ]
-}
+};

@@ -1,25 +1,25 @@
-import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import { useAuthStore } from '@/store/auth.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { useTranslation } from '@/hooks/useTranslation'
-import LanguageToggle from '@/components/common/LanguageToggle'
-import DarkModeToggle from '@/components/common/DarkModeToggle'
-import { Mail, Lock, Eye, EyeOff, Music, Sparkles, Shield, Check, ArrowRight } from 'lucide-react'
-import api from '@/lib/api'
-import { logger } from '@/utils/logger'
-import { useAutoAnimate } from '@formkit/auto-animate/react'
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import { useAuthStore } from '@/store/auth.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import LanguageToggle from '@/components/common/LanguageToggle';
+import DarkModeToggle from '@/components/common/DarkModeToggle';
+import { Mail, Lock, Eye, EyeOff, Music, Sparkles, Shield, Check, ArrowRight } from 'lucide-react';
+import api from '@/lib/api';
+import { logger } from '@/utils/logger';
+import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 // Floating musical notes component
 const FloatingNotes = () => {
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
       {[...Array(15)].map((_, i) => {
-        const randomX = Math.random() * 100
-        const randomDelay = Math.random() * 20
-        const duration = Math.random() * 15 + 20
-        
+        const randomX = Math.random() * 100;
+        const randomDelay = Math.random() * 20;
+        const duration = Math.random() * 15 + 20;
+
         return (
           <div
             key={i}
@@ -28,43 +28,43 @@ const FloatingNotes = () => {
               left: `${randomX}%`,
               bottom: '-20px',
               animationDelay: `${randomDelay}s`,
-              animationDuration: `${duration}s`,
+              animationDuration: `${duration}s`
             }}
           >
             <Music className="w-6 h-6 text-purple-400/30 dark:text-purple-400/20 rotate-12" />
           </div>
-        )
+        );
       })}
     </div>
-  )
-}
+  );
+};
 
 // Animated text component with fade-in effect
 const AnimatedText = ({ children, delay = 0 }: { children: React.ReactNode; delay?: number }) => {
-  const ref = useRef<HTMLDivElement>(null)
-  const [isVisible, setIsVisible] = useState(false)
-  
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          setTimeout(() => setIsVisible(true), delay * 1000)
+          setTimeout(() => setIsVisible(true), delay * 1000);
         }
       },
       { threshold: 0.1 }
-    )
-    
+    );
+
     if (ref.current) {
-      observer.observe(ref.current)
+      observer.observe(ref.current);
     }
-    
+
     return () => {
       if (ref.current) {
-        observer.unobserve(ref.current)
+        observer.unobserve(ref.current);
       }
-    }
-  }, [delay])
-  
+    };
+  }, [delay]);
+
   return (
     <div
       ref={ref}
@@ -72,62 +72,62 @@ const AnimatedText = ({ children, delay = 0 }: { children: React.ReactNode; dela
     >
       {children}
     </div>
-  )
-}
+  );
+};
 
 export default function LoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [loginMethod, setLoginMethod] = useState<'google' | 'email'>('google')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [isSuccess, setIsSuccess] = useState(false)
-  const navigate = useNavigate()
-  const location = useLocation()
-  const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated)
-  const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth)
-  const { t, language } = useTranslation()
-  const popupRef = useRef<Window | null>(null)
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginMethod, setLoginMethod] = useState<'google' | 'email'>('google');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isSuccess, setIsSuccess] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated);
+  const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth);
+  const { t, language } = useTranslation();
+  const popupRef = useRef<Window | null>(null);
+
   // Auto-animate refs
-  const [formRef] = useAutoAnimate()
-  const [tabRef] = useAutoAnimate()
-  
+  const [formRef] = useAutoAnimate();
+  const [tabRef] = useAutoAnimate();
+
   // Component mounted
   useEffect(() => {
     // Component initialization
-  }, [])
-  
+  }, []);
+
   // Mouse tracking effect
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ 
+      setMousePosition({
         x: (e.clientX / window.innerWidth) * 100,
-        y: (e.clientY / window.innerHeight) * 100 
-      })
-    }
-    
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [])
-  
+        y: (e.clientY / window.innerHeight) * 100
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
   // Check for OAuth error in URL
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const error = urlParams.get('error')
-    
+    const urlParams = new URLSearchParams(location.search);
+    const error = urlParams.get('error');
+
     if (error === 'oauth_failed') {
-      toast.error(t('auth.oauthFailed', 'OAuth 인증에 실패했습니다', 'OAuth authentication failed', 'OAuth認証に失敗しました'))
+      toast.error(t('auth.oauthFailed', 'OAuth 인증에 실패했습니다', 'OAuth authentication failed', 'OAuth認証に失敗しました'));
     }
-  }, [location, t])
-  
+  }, [location, t]);
+
   // Handle messages from popup window (Safari OAuth flow)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // Verify origin
-      if (event.origin !== window.location.origin) return
-      
+      if (event.origin !== window.location.origin) return;
+
       // Handle auth callback message
       if (event.data?.type === 'auth-callback') {
         if (event.data.success && event.data.accessToken && event.data.refreshToken) {
@@ -136,143 +136,143 @@ export default function LoginPage() {
             access_token: event.data.accessToken,
             refresh_token: event.data.refreshToken,
             profile_complete: event.data.profileComplete?.toString() || 'false'
-          })
-          navigate(`/auth/callback?${params.toString()}`)
+          });
+          navigate(`/auth/callback?${params.toString()}`);
         } else {
-          setIsLoading(false)
-          toast.error(t('auth.loginFailed', '로그인에 실패했습니다', 'Login failed', 'ログインに失敗しました'))
+          setIsLoading(false);
+          toast.error(t('auth.loginFailed', '로그인에 실패했습니다', 'Login failed', 'ログインに失敗しました'));
         }
       }
-    }
-    
-    window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
-  }, [navigate])
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [navigate]);
 
   const handleGoogleLogin = () => {
-    setIsLoading(true)
+    setIsLoading(true);
     // Get the returnUrl from location state or query params
-    const returnUrl = location.state?.from || new URLSearchParams(location.search).get('returnUrl') || '/dashboard'
-    
+    const returnUrl = location.state?.from || new URLSearchParams(location.search).get('returnUrl') || '/dashboard';
+
     // Store returnUrl in sessionStorage to persist across OAuth redirect
-    sessionStorage.setItem('returnUrl', returnUrl)
-    
-    const googleAuthUrl = `${import.meta.env.VITE_API_URL}/auth/google`
-    
+    sessionStorage.setItem('returnUrl', returnUrl);
+
+    const googleAuthUrl = `${import.meta.env.VITE_API_URL}/auth/google`;
+
     // Safari-friendly approach: Use popup window for OAuth
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-    
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
     if (isSafari) {
       // Open OAuth in a popup for Safari
-      const width = 500
-      const height = 600
-      const left = (window.screen.width - width) / 2
-      const top = (window.screen.height - height) / 2
-      
+      const width = 500;
+      const height = 600;
+      const left = (window.screen.width - width) / 2;
+      const top = (window.screen.height - height) / 2;
+
       popupRef.current = window.open(
         googleAuthUrl,
         'google-auth',
         `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no`
-      )
-      
+      );
+
       if (!popupRef.current) {
-        toast.error(t('auth.popupBlocked', '팝업이 차단되었습니다. 팝업 차단을 해제해주세요.', 'Popup blocked. Please allow popups and try again.', 'ポップアップがブロックされました。ポップアップを許可してください'))
-        setIsLoading(false)
-        return
+        toast.error(t('auth.popupBlocked', '팝업이 차단되었습니다. 팝업 차단을 해제해주세요.', 'Popup blocked. Please allow popups and try again.', 'ポップアップがブロックされました。ポップアップを許可してください'));
+        setIsLoading(false);
+        return;
       }
-      
+
       // Focus the popup
-      popupRef.current.focus()
+      popupRef.current.focus();
     } else {
       // Standard redirect for other browsers
-      window.location.href = googleAuthUrl
+      window.location.href = googleAuthUrl;
     }
-  }
+  };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!email || !password) {
-      toast.error(t('auth.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべての項目を入力してください'))
-      return
+      toast.error(t('auth.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべての項目を入力してください'));
+      return;
     }
-    
-    setIsLoading(true)
-    
+
+    setIsLoading(true);
+
     try {
       const response = await api.post('/auth/login', {
         email,
         password
-      })
-      
-      const { user, accessToken, refreshToken } = response.data
-      
+      });
+
+      const { user, accessToken, refreshToken } = response.data;
+
       // Set auth in store
-      setAuth?.(user, accessToken, refreshToken)
-      
+      setAuth?.(user, accessToken, refreshToken);
+
       // Show success animation
-      setIsSuccess(true)
-      
+      setIsSuccess(true);
+
       // Get return URL
-      const returnUrl = location.state?.from || new URLSearchParams(location.search).get('returnUrl') || '/dashboard'
-      
+      const returnUrl = location.state?.from || new URLSearchParams(location.search).get('returnUrl') || '/dashboard';
+
       // Navigate after animation
       setTimeout(() => {
         // Check if user needs to select role or complete profile
         if (user.role === 'ADMIN' && user.isProfileComplete) {
           // Store tokens temporarily for role selection
-          sessionStorage.setItem('temp_access_token', accessToken)
-          sessionStorage.setItem('temp_refresh_token', refreshToken)
-          sessionStorage.setItem('temp_user', JSON.stringify(user))
-          navigate('/role-select')
+          sessionStorage.setItem('temp_access_token', accessToken);
+          sessionStorage.setItem('temp_refresh_token', refreshToken);
+          sessionStorage.setItem('temp_user', JSON.stringify(user));
+          navigate('/role-select');
         } else if (!user.isProfileComplete) {
-          navigate('/profile-setup')
+          navigate('/profile-setup');
         } else {
-          navigate(returnUrl)
+          navigate(returnUrl);
         }
-      }, 1500)
-      
-      toast.success(t('auth.loginSuccess', '로그인되었습니다', 'Logged in successfully', 'ログインしました'))
+      }, 1500);
+
+      toast.success(t('auth.loginSuccess', '로그인되었습니다', 'Logged in successfully', 'ログインしました'));
     } catch (error: any) {
-      logger.error('Login error:', error)
+      logger.error('Login error:', error);
       if (error.response?.status === 401) {
-        toast.error(t('auth.invalidCredentials', '이메일 또는 비밀번호가 올바르지 않습니다', 'Invalid email or password', 'メールアドレスまたはパスワードが正しくありません'))
+        toast.error(t('auth.invalidCredentials', '이메일 또는 비밀번호가 올바르지 않습니다', 'Invalid email or password', 'メールアドレスまたはパスワードが正しくありません'));
       } else {
-        toast.error(t('auth.loginFailed'))
+        toast.error(t('auth.loginFailed'));
       }
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 relative overflow-hidden">
       {/* Floating musical notes */}
       <FloatingNotes />
-      
+
       {/* Dynamic gradient orbs with parallax */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div 
+        <div
           className="absolute -top-40 -right-40 w-[500px] h-[500px] bg-purple-400 dark:bg-purple-600 rounded-full mix-blend-screen dark:mix-blend-multiply filter blur-3xl opacity-30 dark:opacity-20 animate-blob"
           style={{
-            transform: `translate(${mousePosition.x * 0.05}px, ${mousePosition.y * 0.05}px)`,
+            transform: `translate(${mousePosition.x * 0.05}px, ${mousePosition.y * 0.05}px)`
           }}
         />
-        <div 
+        <div
           className="absolute -bottom-40 -left-40 w-[500px] h-[500px] bg-pink-400 dark:bg-pink-600 rounded-full mix-blend-screen dark:mix-blend-multiply filter blur-3xl opacity-30 dark:opacity-20 animate-blob animation-delay-2000"
           style={{
             transform: `translate(${mousePosition.x * -0.05}px, ${mousePosition.y * -0.05}px)`,
-            animationDuration: '20s',
+            animationDuration: '20s'
           }}
         />
-        <div 
+        <div
           className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-400 dark:bg-blue-600 rounded-full mix-blend-screen dark:mix-blend-multiply filter blur-3xl opacity-20 dark:opacity-15 animate-blob animation-delay-4000"
           style={{
             transform: `translate(${mousePosition.x * 0.03}px, ${mousePosition.y * 0.03}px) translate(-50%, -50%)`,
-            animationDuration: '25s',
+            animationDuration: '25s'
           }}
         />
-        
+
         {/* Sparkle effects */}
         <div className="absolute inset-0">
           {[...Array(20)].map((_, i) => (
@@ -283,7 +283,7 @@ export default function LoginPage() {
                 left: `${Math.random() * 100}%`,
                 top: `${Math.random() * 100}%`,
                 animationDelay: `${Math.random() * 5}s`,
-                animationDuration: '4s',
+                animationDuration: '4s'
               }}
             >
               <Sparkles className="w-3 h-3 text-white/40 dark:text-white/20" />
@@ -291,13 +291,13 @@ export default function LoginPage() {
           ))}
         </div>
       </div>
-      
+
       {/* Language & Dark Mode Toggle in header */}
       <div className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50 flex items-center gap-3">
         <DarkModeToggle />
         <LanguageToggle />
       </div>
-      
+
       {/* Main content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen p-4 sm:p-6 lg:p-8">
         <AnimatedText>
@@ -306,15 +306,15 @@ export default function LoginPage() {
             <div className="relative">
               {/* Background glow effect */}
               <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl blur-xl opacity-30 dark:opacity-20 animate-pulse-glow" />
-              
+
               {/* Main card */}
-              <div 
+              <div
                 className="relative bg-white/80 dark:bg-gray-900/50 backdrop-blur-2xl rounded-3xl shadow-2xl border border-white/50 dark:border-gray-700/30 overflow-hidden"
                 ref={formRef}
               >
                 {/* Animated gradient border */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                
+
                 {/* Success overlay */}
                 {isSuccess && (
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/20 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in">
@@ -328,7 +328,7 @@ export default function LoginPage() {
                     </div>
                   </div>
                 )}
-                
+
                 <div className="p-8 sm:p-10">
                   {/* Animated Logo */}
                   <div className="text-center mb-8">
@@ -338,7 +338,7 @@ export default function LoginPage() {
                         <Music className="w-12 h-12 text-white animate-bounce-slow" />
                       </div>
                     </div>
-                    
+
                     <h1 className="text-4xl font-bold mb-3">
                       <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent animate-gradient-x">
                         N3RVE Platform
@@ -400,26 +400,26 @@ export default function LoginPage() {
                         disabled={isLoading}
                         className="w-full relative group overflow-hidden"
                         onMouseEnter={(e) => {
-                          const rect = e.currentTarget.getBoundingClientRect()
-                          const x = e.clientX - rect.left
-                          const y = e.clientY - rect.top
-                          e.currentTarget.style.setProperty('--mouse-x', `${x}px`)
-                          e.currentTarget.style.setProperty('--mouse-y', `${y}px`)
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          const x = e.clientX - rect.left;
+                          const y = e.clientY - rect.top;
+                          e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+                          e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
                         }}
                       >
                         <div className="relative flex items-center justify-center gap-3 px-6 py-4 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] group-hover:border-purple-400 dark:group-hover:border-purple-600">
                           {/* Magnetic hover effect */}
                           <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <div 
+                            <div
                               className="absolute w-96 h-96 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full blur-3xl opacity-20"
                               style={{
                                 left: 'var(--mouse-x)',
                                 top: 'var(--mouse-y)',
-                                transform: 'translate(-50%, -50%)',
+                                transform: 'translate(-50%, -50%)'
                               }}
                             />
                           </div>
-                          
+
                           {isLoading ? (
                             <div className="w-6 h-6 border-3 border-purple-300 dark:border-purple-500 border-t-transparent rounded-full animate-spin" />
                           ) : (
@@ -472,8 +472,8 @@ export default function LoginPage() {
                                 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base
                                 peer-focus:top-0 peer-focus:text-xs peer-focus:text-purple-600 dark:peer-focus:text-purple-400
                                 peer-focus:bg-white dark:peer-focus:bg-gray-900 peer-focus:px-2 peer-focus:-translate-y-1/2
-                                peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs 
-                                peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-gray-900 
+                                peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs
+                                peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-gray-900
                                 peer-[:not(:placeholder-shown)]:px-2 peer-[:not(:placeholder-shown)]:-translate-y-1/2"
                             >
                               {t('auth.email', '이메일', 'Email', 'メールアドレス')}
@@ -503,8 +503,8 @@ export default function LoginPage() {
                                 peer-placeholder-shown:top-4 peer-placeholder-shown:text-base
                                 peer-focus:top-0 peer-focus:text-xs peer-focus:text-purple-600 dark:peer-focus:text-purple-400
                                 peer-focus:bg-white dark:peer-focus:bg-gray-900 peer-focus:px-2 peer-focus:-translate-y-1/2
-                                peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs 
-                                peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-gray-900 
+                                peer-[:not(:placeholder-shown)]:top-0 peer-[:not(:placeholder-shown)]:text-xs
+                                peer-[:not(:placeholder-shown)]:bg-white dark:peer-[:not(:placeholder-shown)]:bg-gray-900
                                 peer-[:not(:placeholder-shown)]:px-2 peer-[:not(:placeholder-shown)]:-translate-y-1/2"
                             >
                               {t('auth.password', '비밀번호', 'Password', 'パスワード')}
@@ -561,7 +561,7 @@ export default function LoginPage() {
                             </button>
                           </div>
                         </AnimatedText>
-                        
+
                         <AnimatedText delay={0.5}>
                           <div className="relative py-4">
                             <div className="absolute inset-0 flex items-center">
@@ -574,14 +574,14 @@ export default function LoginPage() {
                             </div>
                           </div>
                         </AnimatedText>
-                        
+
                         <AnimatedText delay={0.6}>
                           <div className="group">
                             <p className="text-sm text-gray-600 dark:text-gray-400">
                               {t('auth.noAccount', '계정이 없으신가요?', "Don't have an account?", 'アカウントをお持ちでない方')}
                             </p>
-                            <Link 
-                              to="/register" 
+                            <Link
+                              to="/register"
                               className="relative inline-block text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium mt-1 transition-all duration-300 group"
                             >
                               <span className="relative z-10">{t('auth.signUp', '회원가입', 'Sign up', '新規登録')}</span>
@@ -610,5 +610,5 @@ export default function LoginPage() {
         </AnimatedText>
       </div>
     </div>
-  )
+  );
 }

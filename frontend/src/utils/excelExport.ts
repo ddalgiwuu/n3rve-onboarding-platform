@@ -10,7 +10,7 @@ interface ExcelExportOptions {
 export const exportSubmissionsToExcel = ({
   submissions,
   filename = 'submissions',
-  includeDetails = true,
+  includeDetails = true
 }: ExcelExportOptions) => {
   const workbook = XLSX.utils.book_new();
 
@@ -25,7 +25,7 @@ export const exportSubmissionsToExcel = ({
     const trackCount = sub.tracks?.length || 0;
     const fileCount = sub.files?.length || 0;
     const distribution = Array.isArray(sub.distribution) ? sub.distribution.join(', ') : 'N/A';
-    
+
     return {
       'Submission ID': sub.id || 'N/A',
       'Artist Name': artistName,
@@ -39,12 +39,12 @@ export const exportSubmissionsToExcel = ({
       'Last Updated': sub.updatedAt ? new Date(sub.updatedAt).toLocaleDateString() : 'N/A',
       'Track Count': trackCount,
       'Total Files': fileCount,
-      'Distribution': distribution,
+      'Distribution': distribution
     };
   });
 
   const overviewSheet = XLSX.utils.json_to_sheet(overviewData);
-  
+
   // Apply column widths
   const overviewCols = [
     { wch: 15 }, // Submission ID
@@ -59,7 +59,7 @@ export const exportSubmissionsToExcel = ({
     { wch: 15 }, // Last Updated
     { wch: 12 }, // Track Count
     { wch: 12 }, // Total Files
-    { wch: 30 }, // Distribution
+    { wch: 30 } // Distribution
   ];
   overviewSheet['!cols'] = overviewCols;
 
@@ -87,7 +87,7 @@ export const exportSubmissionsToExcel = ({
       const spotifyArtistId = sub.spotifyArtistId || sub.artist?.spotifyArtistId || 'N/A';
       const appleMusicArtistId = sub.appleMusicArtistId || sub.artist?.appleMusicArtistId || 'N/A';
       const marketingPlan = sub.marketingPlan || sub.release?.marketingPlan || 'N/A';
-      
+
       return {
         'Submission ID': sub.id || 'N/A',
         'Artist Name': artistName,
@@ -109,12 +109,12 @@ export const exportSubmissionsToExcel = ({
         'Apple Music Artist ID': appleMusicArtistId,
         'Marketing Plan': marketingPlan,
         'Status': sub.status || 'pending',
-        'Admin Notes': sub.adminNotes || 'N/A',
+        'Admin Notes': sub.adminNotes || 'N/A'
       };
     });
 
     const detailsSheet = XLSX.utils.json_to_sheet(detailsData);
-    
+
     // Apply column widths
     const detailsCols = [
       { wch: 15 }, // Submission ID
@@ -137,7 +137,7 @@ export const exportSubmissionsToExcel = ({
       { wch: 20 }, // Apple ID
       { wch: 40 }, // Marketing Plan
       { wch: 12 }, // Status
-      { wch: 40 }, // Admin Notes
+      { wch: 40 } // Admin Notes
     ];
     detailsSheet['!cols'] = detailsCols;
 
@@ -150,7 +150,7 @@ export const exportSubmissionsToExcel = ({
       const artistName = sub.artistName || sub.artist?.primaryName || 'N/A';
       const releaseTitle = sub.releaseTitle || sub.album?.titleKo || sub.album?.titleEn || 'N/A';
       const genre = sub.genre || sub.album?.genre || 'N/A';
-      
+
       tracks.forEach((track: any, index: number) => {
         tracksData.push({
           'Submission ID': sub.id || 'N/A',
@@ -164,14 +164,14 @@ export const exportSubmissionsToExcel = ({
           'Genre': track.genre || genre,
           'Lyrics Language': track.lyricsLanguage || 'N/A',
           'Explicit': track.explicit ? 'Yes' : 'No',
-          'Preview Start': track.previewStart || 'N/A',
+          'Preview Start': track.previewStart || 'N/A'
         });
       });
     });
 
     if (tracksData.length > 0) {
       const tracksSheet = XLSX.utils.json_to_sheet(tracksData);
-      
+
       const tracksCols = [
         { wch: 15 }, // Submission ID
         { wch: 20 }, // Artist Name
@@ -184,7 +184,7 @@ export const exportSubmissionsToExcel = ({
         { wch: 15 }, // Genre
         { wch: 15 }, // Lyrics Language
         { wch: 10 }, // Explicit
-        { wch: 12 }, // Preview Start
+        { wch: 12 } // Preview Start
       ];
       tracksSheet['!cols'] = tracksCols;
 
@@ -205,14 +205,14 @@ export const exportSubmissionsToExcel = ({
           'Upload Date': new Date(file.uploadedAt).toLocaleDateString(),
           'Upload Time': new Date(file.uploadedAt).toLocaleTimeString(),
           'Status': file.status,
-          'URL': file.url || 'N/A',
+          'URL': file.url || 'N/A'
         });
       });
     });
 
     if (filesData.length > 0) {
       const filesSheet = XLSX.utils.json_to_sheet(filesData);
-      
+
       const filesCols = [
         { wch: 15 }, // Submission ID
         { wch: 20 }, // Artist Name
@@ -223,7 +223,7 @@ export const exportSubmissionsToExcel = ({
         { wch: 15 }, // Upload Date
         { wch: 15 }, // Upload Time
         { wch: 12 }, // Status
-        { wch: 40 }, // URL
+        { wch: 40 } // URL
       ];
       filesSheet['!cols'] = filesCols;
 
@@ -235,7 +235,7 @@ export const exportSubmissionsToExcel = ({
   workbook.SheetNames.forEach((sheetName) => {
     const sheet = workbook.Sheets[sheetName];
     const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
-    
+
     // Style header row
     for (let col = range.s.c; col <= range.e.c; col++) {
       const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
@@ -243,7 +243,7 @@ export const exportSubmissionsToExcel = ({
         sheet[cellAddress].s = {
           font: { bold: true, color: { rgb: 'FFFFFF' } },
           fill: { fgColor: { rgb: '4472C4' } },
-          alignment: { horizontal: 'center', vertical: 'center' },
+          alignment: { horizontal: 'center', vertical: 'center' }
         };
       }
     }
@@ -252,7 +252,7 @@ export const exportSubmissionsToExcel = ({
   // Generate and download the file
   const timestamp = new Date().toISOString().split('T')[0];
   const fullFilename = `${filename}_${timestamp}.xlsx`;
-  
+
   XLSX.writeFile(workbook, fullFilename);
 };
 
@@ -283,12 +283,12 @@ export const exportSubmissionReport = (submission: Submission) => {
     ['Spotify Artist ID', submission.spotifyArtistId || 'N/A'],
     ['Apple Music Artist ID', submission.appleMusicArtistId || 'N/A'],
     ['Submitted Date', new Date(submission.createdAt).toLocaleString()],
-    ['Last Updated', new Date(submission.updatedAt).toLocaleString()],
+    ['Last Updated', new Date(submission.updatedAt).toLocaleString()]
   ];
 
   const overviewSheet = XLSX.utils.aoa_to_sheet(overviewData);
   overviewSheet['!cols'] = [{ wch: 25 }, { wch: 50 }];
-  
+
   // Style the header
   overviewSheet['A1'].s = { font: { bold: true } };
   overviewSheet['B1'].s = { font: { bold: true } };
@@ -306,7 +306,7 @@ export const exportSubmissionReport = (submission: Submission) => {
       'Genre',
       'Language',
       'Explicit',
-      'Preview Start',
+      'Preview Start'
     ];
 
     const trackData = [trackHeaders];
@@ -320,7 +320,7 @@ export const exportSubmissionReport = (submission: Submission) => {
         track.genre || submission.genre,
         track.lyricsLanguage || 'N/A',
         track.explicit ? 'Yes' : 'No',
-        track.previewStart ? String(track.previewStart) : 'N/A',
+        track.previewStart ? String(track.previewStart) : 'N/A'
       ]);
     });
 
@@ -334,7 +334,7 @@ export const exportSubmissionReport = (submission: Submission) => {
       { wch: 15 },
       { wch: 15 },
       { wch: 10 },
-      { wch: 12 },
+      { wch: 12 }
     ];
 
     XLSX.utils.book_append_sheet(workbook, tracksSheet, 'Tracks');
@@ -351,7 +351,7 @@ export const exportSubmissionReport = (submission: Submission) => {
         file.fileType,
         `${(file.fileSize / (1024 * 1024)).toFixed(2)} MB`,
         file.status,
-        new Date(file.uploadedAt).toLocaleString(),
+        new Date(file.uploadedAt).toLocaleString()
       ]);
     });
 
@@ -361,7 +361,7 @@ export const exportSubmissionReport = (submission: Submission) => {
       { wch: 15 },
       { wch: 15 },
       { wch: 12 },
-      { wch: 20 },
+      { wch: 20 }
     ];
 
     XLSX.utils.book_append_sheet(workbook, filesSheet, 'Files');
@@ -371,12 +371,12 @@ export const exportSubmissionReport = (submission: Submission) => {
   const marketingData = [
     ['Field', 'Value'],
     ['Marketing Plan', submission.marketingPlan || 'No marketing plan provided'],
-    ['Admin Notes', submission.adminNotes || 'No admin notes'],
+    ['Admin Notes', submission.adminNotes || 'No admin notes']
   ];
 
   const marketingSheet = XLSX.utils.aoa_to_sheet(marketingData);
   marketingSheet['!cols'] = [{ wch: 20 }, { wch: 80 }];
-  
+
   // Enable text wrapping for long content
   if (marketingSheet['B2']) {
     marketingSheet['B2'].s = { alignment: { wrapText: true } };

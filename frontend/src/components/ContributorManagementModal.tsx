@@ -1,9 +1,11 @@
-import { useState } from 'react'
-import { X, Plus, Trash2, Users, Music2, Edit3, Mic2 } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import ContributorForm from './ContributorForm'
-import contributorRolesData from '@/data/contributorRoles.json'
-import instrumentsData from '@/data/instruments.json'
+import { useState } from 'react';
+import { X, Plus, Trash2, Users, Music2, Edit3, Mic2 } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import ContributorForm from './ContributorForm';
+import contributorRolesData from '@/data/contributorRoles.json';
+import instrumentsData from '@/data/instruments.json';
+import roleTranslations from '@/data/contributorRolesTranslations.json';
+import instrumentTranslations from '@/data/instrumentTranslations.json';
 
 interface Translation {
   id: string
@@ -42,74 +44,94 @@ export default function ContributorManagementModal({
   onSave,
   trackTitle
 }: ContributorManagementModalProps) {
-  const { language } = useLanguageStore()
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  
-  const [contributors, setContributors] = useState<Contributor[]>(initialContributors)
-  const [editingContributor, setEditingContributor] = useState<Contributor | null>(null)
-  const [showAddForm, setShowAddForm] = useState(false)
+  const { language } = useLanguageStore();
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+
+  const [contributors, setContributors] = useState<Contributor[]>(initialContributors);
+  const [editingContributor, setEditingContributor] = useState<Contributor | null>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   // Get role icons based on category
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'Composition': return Edit3
-      case 'Performance': return Mic2
-      case 'Production': return Music2
-      default: return Users
+      case 'Composition': return Edit3;
+      case 'Performance': return Mic2;
+      case 'Production': return Music2;
+      default: return Users;
     }
-  }
+  };
 
   const addContributor = (contributor: Contributor) => {
-    setContributors([...contributors, contributor])
-    setShowAddForm(false)
-  }
+    setContributors([...contributors, contributor]);
+    setShowAddForm(false);
+  };
 
   const updateContributor = (updatedContributor: Contributor) => {
-    setContributors(contributors.map(c => 
+    setContributors(contributors.map(c =>
       c.id === updatedContributor.id ? updatedContributor : c
-    ))
-    setEditingContributor(null)
-  }
+    ));
+    setEditingContributor(null);
+  };
 
   const removeContributor = (id: string) => {
-    setContributors(contributors.filter(c => c.id !== id))
-  }
+    setContributors(contributors.filter(c => c.id !== id));
+  };
 
   const handleSave = () => {
-    onSave(contributors)
-    onClose()
-  }
+    onSave(contributors);
+    onClose();
+  };
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   // Group contributors by their primary role category
   const groupedContributors = contributors.reduce((acc, contributor) => {
     if (contributor.roles.length > 0) {
-      const primaryRoleId = contributor.roles[0]
-      const primaryRole = contributorRolesData.roles.find(r => r.id === primaryRoleId)
-      const category = primaryRole?.category || 'Other'
-      
+      const primaryRoleId = contributor.roles[0];
+      const primaryRole = contributorRolesData.roles.find(r => r.id === primaryRoleId);
+      const category = primaryRole?.category || 'Other';
+
       if (!acc[category]) {
-        acc[category] = []
+        acc[category] = [];
       }
-      acc[category].push(contributor)
+      acc[category].push(contributor);
     }
-    return acc
-  }, {} as Record<string, Contributor[]>)
+    return acc;
+  }, {} as Record<string, Contributor[]>);
 
   const getRoleName = (roleId: string) => {
-    const role = contributorRolesData.roles.find(r => r.id === roleId)
-    return role?.name || roleId
-  }
+    const role = contributorRolesData.roles.find(r => r.id === roleId);
+    const roleName = role?.name || roleId;
+
+    // Get translation if available
+    const translation = roleTranslations.roleTranslations[roleId];
+    if (translation && language === 'ko') {
+      return `${translation.ko} (${roleName})`;
+    } else if (translation && language === 'ja') {
+      return `${translation.ja} (${roleName})`;
+    }
+
+    return roleName;
+  };
 
   const getInstrumentName = (instrumentId: string) => {
-    const instrument = instrumentsData.instruments.find(i => i.id === instrumentId)
-    return instrument?.name || instrumentId
-  }
+    const instrument = instrumentsData.instruments.find(i => i.id === instrumentId);
+    const instrumentName = instrument?.name || instrumentId;
+
+    // Get translation if available
+    const translation = instrumentTranslations.instrumentTranslations[instrumentId];
+    if (translation && language === 'ko') {
+      return `${translation.ko} (${instrumentName})`;
+    } else if (translation && language === 'ja') {
+      return `${translation.ja} (${instrumentName})`;
+    }
+
+    return instrumentName;
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
           <div className="flex items-center justify-between">
@@ -133,7 +155,7 @@ export default function ContributorManagementModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+        <div className="flex-1 p-6 overflow-y-auto">
           {editingContributor ? (
             <ContributorForm
               contributor={editingContributor}
@@ -160,21 +182,21 @@ export default function ContributorManagementModal({
               {Object.keys(groupedContributors).length > 0 ? (
                 <div className="space-y-6">
                   {Object.entries(groupedContributors).map(([category, categoryContributors]) => {
-                    const CategoryIcon = getCategoryIcon(category)
+                    const CategoryIcon = getCategoryIcon(category);
                     return (
                       <div key={category}>
                         <div className="flex items-center gap-2 mb-3">
                           <CategoryIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                           <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                            {t(
-                              category === 'Composition' ? '작곡/작사' :
-                              category === 'Performance' ? '공연/연주' :
-                              category === 'Production' ? '프로덕션' :
-                              category === 'Business' ? '비즈니스' :
-                              category === 'Technical' ? '기술' :
-                              category === 'Visual' ? '비주얼' : '기타',
-                              category
-                            )}
+                            {(() => {
+                              const categoryTranslation = roleTranslations.categoryTranslations[category];
+                              if (categoryTranslation && language === 'ko') {
+                                return categoryTranslation.ko;
+                              } else if (categoryTranslation && language === 'ja') {
+                                return categoryTranslation.ja;
+                              }
+                              return category;
+                            })()}
                           </h3>
                           <span className="text-sm text-gray-500">({categoryContributors.length})</span>
                         </div>
@@ -259,7 +281,7 @@ export default function ContributorManagementModal({
                           ))}
                         </div>
                       </div>
-                    )
+                    );
                   })}
                 </div>
               ) : (
@@ -279,7 +301,7 @@ export default function ContributorManagementModal({
 
         {/* Footer */}
         {!editingContributor && !showAddForm && (
-          <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+          <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 bg-white dark:bg-gray-800 flex-shrink-0">
             <div className="flex justify-between items-center">
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 {t(
@@ -306,5 +328,5 @@ export default function ContributorManagementModal({
         )}
       </div>
     </div>
-  )
+  );
 }

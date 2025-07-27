@@ -1,16 +1,16 @@
-import React from 'react'
-import { cn } from '@/lib/utils'
+import React from 'react';
+import { cn } from '@/lib/utils';
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string
   error?: string
 }
 
-export default function Textarea({ 
-  label, 
-  error, 
-  className = '', 
-  ...props 
+export default function Textarea({
+  label,
+  error,
+  className = '',
+  ...props
 }: TextareaProps) {
   return (
     <div className="w-full">
@@ -39,5 +39,5 @@ export default function Textarea({
         <p className="mt-1 text-sm text-red-500">{error}</p>
       )}
     </div>
-  )
+  );
 }

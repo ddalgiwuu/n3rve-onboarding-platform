@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import Login from './Login'
-import ModernLogin from './ModernLogin'
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import Login from './Login';
+import ModernLogin from './ModernLogin';
 
 export default function LoginComparison() {
-  const [showModern, setShowModern] = useState(false)
+  const [showModern, setShowModern] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -26,12 +26,12 @@ export default function LoginComparison() {
                 <motion.span
                   className="absolute h-6 w-6 rounded-full bg-purple-600 shadow-lg"
                   animate={{
-                    x: showModern ? 36 : 4,
+                    x: showModern ? 36 : 4
                   }}
                   transition={{
                     type: 'spring',
                     stiffness: 300,
-                    damping: 30,
+                    damping: 30
                   }}
                 />
               </button>
@@ -88,5 +88,5 @@ export default function LoginComparison() {
         </ul>
       </div>
     </div>
-  )
+  );
 }

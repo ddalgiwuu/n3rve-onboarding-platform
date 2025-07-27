@@ -1,27 +1,27 @@
-import { useState, useEffect, useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useLanguageStore } from '@/store/language.store'
-import { 
-  Upload, Music, FileText, Image, CheckCircle, AlertCircle, X, Plus, Trash2, 
-  Globe, Target, Sparkles, Users, MapPin, Calendar, Shield, Languages, Disc, 
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLanguageStore } from '@/store/language.store';
+import {
+  Upload, Music, FileText, Image, CheckCircle, AlertCircle, X, Plus, Trash2,
+  Globe, Target, Sparkles, Users, MapPin, Calendar, Shield, Languages, Disc,
   Building2, Radio, ListMusic, ChevronRight, ChevronLeft, Info, Search,
   Music2, Mic, UserCheck, GripVertical, Edit3, Volume2, BookOpen, Megaphone,
   Tag, Heart, Link as LinkIcon, Video, Download, Eye, Clock
-} from 'lucide-react'
-import toast from 'react-hot-toast'
-import { submissionService } from '@/services/submission.service'
-import { dropboxService } from '@/services/dropbox.service'
-import { useAuthStore } from '@/store/auth.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { validateSubmission, validateField, type QCValidationResult, type QCValidationResults } from '@/utils/fugaQCValidation'
-import QCWarnings from '@/components/submission/QCWarnings'
-import ArtistModal from '@/components/submission/ArtistModal'
-import ArtistSelector from '@/components/submission/ArtistSelector'
-import { DatePicker } from '@/components/DatePicker'
-import { v4 as uuidv4 } from 'uuid'
-import { SavedArtistsProvider } from '@/contexts/SavedArtistsContext'
-import { contributorRoles, getRolesByCategory, searchRoles } from '@/constants/contributorRoles'
-import { instrumentList, searchInstruments, getInstrumentCategory } from '@/constants/instruments'
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import { submissionService } from '@/services/submission.service';
+import { dropboxService } from '@/services/dropbox.service';
+import { useAuthStore } from '@/store/auth.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { validateSubmission, validateField, type QCValidationResult, type QCValidationResults } from '@/utils/fugaQCValidation';
+import QCWarnings from '@/components/submission/QCWarnings';
+import ArtistModal from '@/components/submission/ArtistModal';
+import ArtistSelector from '@/components/submission/ArtistSelector';
+import { DatePicker } from '@/components/DatePicker';
+import { v4 as uuidv4 } from 'uuid';
+import { SavedArtistsProvider } from '@/contexts/SavedArtistsContext';
+import { contributorRoles, getRolesByCategory, searchRoles } from '@/constants/contributorRoles';
+import { instrumentList, searchInstruments, getInstrumentCategory } from '@/constants/instruments';
 // @dnd-kit temporarily disabled for React 19 compatibility
 // import {
 //   DndContext,
@@ -40,20 +40,20 @@ import { instrumentList, searchInstruments, getInstrumentCategory } from '@/cons
 //   useSortable
 // } from '@dnd-kit/sortable'
 // import { CSS } from '@dnd-kit/utilities'
-import AudioPlayer from '@/components/AudioPlayer'
-import RegionSelector from '@/components/RegionSelector'
-import MultiSelect from '@/components/ui/MultiSelect'
-import { 
-  moodOptions, 
-  genderOptions, 
-  socialMovementOptions, 
-  ugcPriorityOptions, 
+import AudioPlayer from '@/components/AudioPlayer';
+import RegionSelector from '@/components/RegionSelector';
+import MultiSelect from '@/components/ui/MultiSelect';
+import {
+  moodOptions,
+  genderOptions,
+  socialMovementOptions,
+  ugcPriorityOptions,
   instrumentOptions,
-  subgenreOptions 
-} from '@/constants/marketingOptions'
-import { countries } from '@/constants/countries'
-import { timezones, convertToUTC, formatUTCInTimezone } from '@/constants/timezones'
-import { generateUPC, generateEAN, validateUPC, validateEAN } from '@/utils/identifiers'
+  subgenreOptions
+} from '@/constants/marketingOptions';
+import { countries } from '@/constants/countries';
+import { timezones, convertToUTC, formatUTCInTimezone } from '@/constants/timezones';
+import { generateUPC, generateEAN, validateUPC, validateEAN } from '@/utils/identifiers';
 
 // Types
 interface Translation {
@@ -166,26 +166,26 @@ const languageOptions = [
   { value: 'tr', label: 'Türkçe' },
   { value: 'pl', label: 'Polski' },
   { value: 'nl', label: 'Nederlands' }
-]
+];
 
 // Genre options
 const genreOptions = [
   'Alternative', 'Blues', 'Classical', 'Country', 'Electronic', 'Folk',
   'Hip-Hop/Rap', 'Jazz', 'K-Pop', 'Latin', 'Metal', 'Pop', 'R&B/Soul',
   'Reggae', 'Rock', 'Soundtrack', 'World', 'Dance', 'Indie', 'Gospel'
-]
+];
 
 export default function ReleaseSubmission() {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const navigate = useNavigate()
-  const user = useSafeStore(useAuthStore, (state) => state.user)
-  
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const navigate = useNavigate();
+  const user = useSafeStore(useAuthStore, (state) => state.user);
+
   // Translation function
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  const [currentStep, setCurrentStep] = useState(0)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null)
-  
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null);
+
   // Form state
   const [formData, setFormData] = useState({
     // Step 0: Metadata (NEW - moved to first)
@@ -199,7 +199,7 @@ export default function ReleaseSubmission() {
     productionHolder: '',
     productionYear: new Date().getFullYear().toString(),
     parentalAdvisory: 'none' as 'none' | 'explicit' | 'edited',
-    
+
     // Consumer Release Date and Original Release Date
     consumerReleaseDate: new Date().toISOString().split('T')[0],
     consumerReleaseTime: '00:00',
@@ -208,11 +208,11 @@ export default function ReleaseSubmission() {
     originalReleaseTime: '00:00',
     originalTimezone: 'Asia/Seoul',
     hasOriginalRelease: false,
-    
+
     // Step 1: Artist Info
     artists: [] as Artist[],
     bandMembers: [] as Member[],
-    
+
     // Step 2: Album Basic Info
     albumTitle: '',
     albumTranslations: [] as Translation[],
@@ -221,26 +221,26 @@ export default function ReleaseSubmission() {
     releaseTime: '00:00',
     timezone: 'Asia/Seoul',
     albumNotes: '', // Album notes for Korean DSPs
-    
+
     // Step 3: Track Info
     tracks: [] as Track[],
-    
+
     // Step 4: Contributors
     albumContributors: [] as Contributor[],
-    
+
     // Step 5: Album Details
     albumCoverArt: null as File | null,
     albumCoverArtUrl: '',
     albumDescription: '',
     albumDescriptionTranslations: [] as Translation[],
-    
+
     // Step 6: Release Settings
     territories: [] as string[],
     excludedTerritories: [] as string[],
     digitalReleaseDate: '',
     physicalReleaseDate: '',
     preOrderDate: '',
-    
+
     // Step 7: Marketing Info
     mainGenre: '',
     moods: [] as string[],
@@ -256,7 +256,7 @@ export default function ReleaseSubmission() {
     projectType: 'FRONTLINE' as 'FRONTLINE' | 'CATALOG',
     privateListeningLink: '',
     factSheetsUrl: '',
-    
+
     marketingGenre: '',
     marketingSubgenre: '',
     marketingTags: [] as string[],
@@ -316,7 +316,7 @@ export default function ReleaseSubmission() {
     metaverseActivations: '',
     brandPartnerships: '',
     syncOpportunities: '',
-    
+
     // Step 7: Distribution
     distributionPlatforms: {
       spotify: true,
@@ -344,29 +344,29 @@ export default function ReleaseSubmission() {
       currency: 'USD',
       territoryPricing: {} as Record<string, { price: string; currency: string }>
     },
-    
+
     // Step 8: Rights & Legal
     copyrightOwner: '',
     publishingRights: '',
     masterRights: '',
     isrcCodes: {} as Record<string, string>,
     licenses: [] as { type: string; territory: string; details: string }[],
-    
+
     // Step 9: Review & QC
     qcNotes: '',
     internalNotes: '',
-    
+
     // Step 10: File Upload
     audioFiles: {} as Record<string, File[]>,
-    
+
     // Step 11: Final Submission
     agreedToTerms: false,
     submissionNotes: ''
-  })
+  });
 
   // Refs for preventing duplicates
-  const isValidatingRef = useRef(false)
-  const lastValidatedDataRef = useRef<string>('')
+  const isValidatingRef = useRef(false);
+  const lastValidatedDataRef = useRef<string>('');
 
   // Steps configuration
   const steps = [
@@ -382,7 +382,7 @@ export default function ReleaseSubmission() {
     { id: 9, label: t('검토 및 QC', 'Review & QC'), icon: CheckCircle },
     { id: 10, label: t('파일 업로드', 'File Upload'), icon: Upload },
     { id: 11, label: t('최종 제출', 'Final Submission'), icon: CheckCircle }
-  ]
+  ];
 
   // Translation management functions
   const addTranslation = (field: string, parentId?: string) => {
@@ -390,29 +390,29 @@ export default function ReleaseSubmission() {
       id: uuidv4(),
       language: '',
       text: ''
-    }
+    };
 
     if (field === 'albumTitle') {
       setFormData(prev => ({
         ...prev,
         albumTranslations: [...prev.albumTranslations, newTranslation]
-      }))
+      }));
     } else if (field === 'albumDescription') {
       setFormData(prev => ({
         ...prev,
         albumDescriptionTranslations: [...prev.albumDescriptionTranslations, newTranslation]
-      }))
+      }));
     } else if (field === 'track' && parentId) {
       setFormData(prev => ({
         ...prev,
-        tracks: prev.tracks.map(track => 
+        tracks: prev.tracks.map(track =>
           track.id === parentId
             ? { ...track, translations: [...(track.translations || []), newTranslation] }
             : track
         )
-      }))
+      }));
     }
-  }
+  };
 
   const updateTranslation = (field: string, translationId: string, updates: Partial<Translation>, parentId?: string) => {
     if (field === 'albumTitle') {
@@ -421,53 +421,53 @@ export default function ReleaseSubmission() {
         albumTranslations: prev.albumTranslations.map(t =>
           t.id === translationId ? { ...t, ...updates } : t
         )
-      }))
+      }));
     } else if (field === 'albumDescription') {
       setFormData(prev => ({
         ...prev,
         albumDescriptionTranslations: prev.albumDescriptionTranslations.map(t =>
           t.id === translationId ? { ...t, ...updates } : t
         )
-      }))
+      }));
     } else if (field === 'track' && parentId) {
       setFormData(prev => ({
         ...prev,
-        tracks: prev.tracks.map(track => 
+        tracks: prev.tracks.map(track =>
           track.id === parentId
             ? {
-                ...track,
-                translations: track.translations.map(t =>
-                  t.id === translationId ? { ...t, ...updates } : t
-                )
-              }
+              ...track,
+              translations: track.translations.map(t =>
+                t.id === translationId ? { ...t, ...updates } : t
+              )
+            }
             : track
         )
-      }))
+      }));
     }
-  }
+  };
 
   const removeTranslation = (field: string, translationId: string, parentId?: string) => {
     if (field === 'albumTitle') {
       setFormData(prev => ({
         ...prev,
         albumTranslations: prev.albumTranslations.filter(t => t.id !== translationId)
-      }))
+      }));
     } else if (field === 'albumDescription') {
       setFormData(prev => ({
         ...prev,
         albumDescriptionTranslations: prev.albumDescriptionTranslations.filter(t => t.id !== translationId)
-      }))
+      }));
     } else if (field === 'track' && parentId) {
       setFormData(prev => ({
         ...prev,
-        tracks: prev.tracks.map(track => 
+        tracks: prev.tracks.map(track =>
           track.id === parentId
             ? { ...track, translations: track.translations.filter(t => t.id !== translationId) }
             : track
         )
-      }))
+      }));
     }
-  }
+  };
 
   // Artist management
   const addArtist = () => {
@@ -478,9 +478,9 @@ export default function ReleaseSubmission() {
       isNewArtist: true,
       customIdentifiers: [],
       role: 'main'
-    }
-    setFormData(prev => ({ ...prev, artists: [...prev.artists, newArtist] }))
-  }
+    };
+    setFormData(prev => ({ ...prev, artists: [...prev.artists, newArtist] }));
+  };
 
   const updateArtist = (id: string, updates: Partial<Artist>) => {
     setFormData(prev => ({
@@ -488,15 +488,15 @@ export default function ReleaseSubmission() {
       artists: prev.artists.map(artist =>
         artist.id === id ? { ...artist, ...updates } : artist
       )
-    }))
-  }
+    }));
+  };
 
   const removeArtist = (id: string) => {
     setFormData(prev => ({
       ...prev,
       artists: prev.artists.filter(artist => artist.id !== id)
-    }))
-  }
+    }));
+  };
 
   // Track management
   const addTrack = () => {
@@ -515,9 +515,9 @@ export default function ReleaseSubmission() {
       metadataLanguage: 'ko',
       explicitContent: false,
       previewLength: 30
-    }
-    setFormData(prev => ({ ...prev, tracks: [...prev.tracks, newTrack] }))
-  }
+    };
+    setFormData(prev => ({ ...prev, tracks: [...prev.tracks, newTrack] }));
+  };
 
   const updateTrack = (id: string, updates: Partial<Track>) => {
     setFormData(prev => ({
@@ -525,15 +525,15 @@ export default function ReleaseSubmission() {
       tracks: prev.tracks.map(track =>
         track.id === id ? { ...track, ...updates } : track
       )
-    }))
-  }
+    }));
+  };
 
   const removeTrack = (id: string) => {
     setFormData(prev => ({
       ...prev,
       tracks: prev.tracks.filter(track => track.id !== id)
-    }))
-  }
+    }));
+  };
 
   // Contributor management
   const addContributor = (trackId?: string) => {
@@ -543,7 +543,7 @@ export default function ReleaseSubmission() {
       translations: [],
       roles: [],
       instruments: []
-    }
+    };
 
     if (trackId) {
       setFormData(prev => ({
@@ -553,14 +553,14 @@ export default function ReleaseSubmission() {
             ? { ...track, contributors: [...track.contributors, newContributor] }
             : track
         )
-      }))
+      }));
     } else {
       setFormData(prev => ({
         ...prev,
         albumContributors: [...prev.albumContributors, newContributor]
-      }))
+      }));
     }
-  }
+  };
 
   const updateContributor = (id: string, updates: Partial<Contributor>, trackId?: string) => {
     if (trackId) {
@@ -569,23 +569,23 @@ export default function ReleaseSubmission() {
         tracks: prev.tracks.map(track =>
           track.id === trackId
             ? {
-                ...track,
-                contributors: track.contributors.map(c =>
-                  c.id === id ? { ...c, ...updates } : c
-                )
-              }
+              ...track,
+              contributors: track.contributors.map(c =>
+                c.id === id ? { ...c, ...updates } : c
+              )
+            }
             : track
         )
-      }))
+      }));
     } else {
       setFormData(prev => ({
         ...prev,
         albumContributors: prev.albumContributors.map(c =>
           c.id === id ? { ...c, ...updates } : c
         )
-      }))
+      }));
     }
-  }
+  };
 
   const removeContributor = (id: string, trackId?: string) => {
     if (trackId) {
@@ -596,14 +596,14 @@ export default function ReleaseSubmission() {
             ? { ...track, contributors: track.contributors.filter(c => c.id !== id) }
             : track
         )
-      }))
+      }));
     } else {
       setFormData(prev => ({
         ...prev,
         albumContributors: prev.albumContributors.filter(c => c.id !== id)
-      }))
+      }));
     }
-  }
+  };
 
   // Track reordering - temporarily disabled for React 19 compatibility
   // const onDragEnd = (event: DragEndEvent) => {
@@ -635,20 +635,20 @@ export default function ReleaseSubmission() {
           ...prev.audioFiles,
           [trackId]: files
         }
-      }))
-      toast.success(t('파일 업로드 성공', 'File upload successful'))
+      }));
+      toast.success(t('파일 업로드 성공', 'File upload successful'));
     } catch (error) {
-      toast.error(t('파일 업로드 실패', 'File upload failed'))
+      toast.error(t('파일 업로드 실패', 'File upload failed'));
     }
-  }
+  };
 
   // Validation
   useEffect(() => {
-    const dataString = JSON.stringify(formData)
+    const dataString = JSON.stringify(formData);
     if (!isValidatingRef.current && dataString !== lastValidatedDataRef.current) {
-      isValidatingRef.current = true
-      lastValidatedDataRef.current = dataString
-      
+      isValidatingRef.current = true;
+      lastValidatedDataRef.current = dataString;
+
       const validationData = {
         artist: {
           nameKo: formData.artists[0]?.primaryName || '',
@@ -676,47 +676,47 @@ export default function ReleaseSubmission() {
           cRights: formData.copyrightOwner,
           pRights: formData.masterRights
         }
-      }
+      };
 
-      const results = validateSubmission(validationData)
-      setValidationResults(results)
-      isValidatingRef.current = false
+      const results = validateSubmission(validationData);
+      setValidationResults(results);
+      isValidatingRef.current = false;
     }
-  }, [formData])
+  }, [formData]);
 
   // Step renderer
   const renderStep = () => {
     switch (currentStep) {
       case 0: // Metadata (NEW - moved to first)
-        return renderMetadata()
+        return renderMetadata();
       case 1: // Artist Info
-        return renderArtistInfo()
+        return renderArtistInfo();
       case 2: // Album Basic Info
-        return renderAlbumBasicInfo()
+        return renderAlbumBasicInfo();
       case 3: // Track Info
-        return renderTrackInfo()
+        return renderTrackInfo();
       case 4: // Contributors
-        return renderContributors()
+        return renderContributors();
       case 5: // Album Details
-        return renderAlbumDetails()
+        return renderAlbumDetails();
       case 6: // Release Settings
-        return renderReleaseSettings()
+        return renderReleaseSettings();
       case 7: // Marketing Info
-        return renderMarketingInfo()
+        return renderMarketingInfo();
       case 8: // Distribution
-        return renderDistribution()
+        return renderDistribution();
       case 9: // Rights & Legal
-        return renderRightsLegal()
+        return renderRightsLegal();
       case 10: // Review & QC
-        return renderReviewQC()
+        return renderReviewQC();
       case 11: // File Upload
-        return renderFileUpload()
+        return renderFileUpload();
       case 12: // Final Submission
-        return renderFinalSubmission()
+        return renderFinalSubmission();
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   // Step 0: Metadata
   const renderMetadata = () => (
@@ -726,7 +726,7 @@ export default function ReleaseSubmission() {
           <FileText className="w-5 h-5" />
           {t('음원 메타데이터', 'Music Metadata')}
         </h3>
-        
+
         {/* Release Version */}
         <div className="space-y-6">
           <div>
@@ -807,7 +807,7 @@ export default function ReleaseSubmission() {
               <Calendar className="w-4 h-4" />
               {t('발매일 설정', 'Release Date Settings')}
             </h4>
-            
+
             {/* Consumer Release Date */}
             <div className="space-y-4">
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
@@ -820,8 +820,8 @@ export default function ReleaseSubmission() {
                     <label className="block text-sm font-medium mb-1">{t('날짜', 'Date')} *</label>
                     <DatePicker
                       selected={new Date(formData.consumerReleaseDate)}
-                      onChange={(date) => setFormData(prev => ({ 
-                        ...prev, 
+                      onChange={(date) => setFormData(prev => ({
+                        ...prev,
                         consumerReleaseDate: date?.toISOString().split('T')[0] || ''
                       }))}
                       className="input w-full"
@@ -883,8 +883,8 @@ export default function ReleaseSubmission() {
                       <label className="block text-sm font-medium mb-1">{t('날짜', 'Date')}</label>
                       <DatePicker
                         selected={formData.originalReleaseDate ? new Date(formData.originalReleaseDate) : null}
-                        onChange={(date) => setFormData(prev => ({ 
-                          ...prev, 
+                        onChange={(date) => setFormData(prev => ({
+                          ...prev,
                           originalReleaseDate: date?.toISOString().split('T')[0] || ''
                         }))}
                         className="input w-full"
@@ -1017,8 +1017,8 @@ export default function ReleaseSubmission() {
             </label>
             <select
               value={formData.parentalAdvisory}
-              onChange={(e) => setFormData(prev => ({ 
-                ...prev, 
+              onChange={(e) => setFormData(prev => ({
+                ...prev,
                 parentalAdvisory: e.target.value as 'none' | 'explicit' | 'edited'
               }))}
               className="input"
@@ -1031,7 +1031,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 1: Artist Info
   const renderArtistInfo = () => (
@@ -1082,10 +1082,10 @@ export default function ReleaseSubmission() {
                           id: uuidv4(),
                           language: '',
                           text: ''
-                        }
+                        };
                         updateArtist(artist.id, {
                           translations: [...artist.translations, newTranslation]
-                        })
+                        });
                       }}
                       className="btn-ghost text-sm"
                     >
@@ -1105,7 +1105,7 @@ export default function ReleaseSubmission() {
                                 ? { ...t, language: e.target.value }
                                 : t
                             )
-                          })
+                          });
                         }}
                         className="input flex-none w-32"
                       >
@@ -1126,7 +1126,7 @@ export default function ReleaseSubmission() {
                                 ? { ...t, text: e.target.value }
                                 : t
                             )
-                          })
+                          });
                         }}
                         className="input flex-1"
                         placeholder={t('번역된 이름', 'Translated name')}
@@ -1135,7 +1135,7 @@ export default function ReleaseSubmission() {
                         onClick={() => {
                           updateArtist(artist.id, {
                             translations: artist.translations.filter(t => t.id !== translation.id)
-                          })
+                          });
                         }}
                         className="text-red-500 hover:text-red-600"
                       >
@@ -1176,7 +1176,7 @@ export default function ReleaseSubmission() {
 
                 <div className="space-y-3">
                   <h5 className="text-sm font-medium">{t('소셜 미디어 링크', 'Social Media Links')}</h5>
-                  
+
                   <div>
                     <label className="block text-sm mb-1">YouTube Channel ID</label>
                     <input
@@ -1224,7 +1224,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 1: Album Basic Info
   const renderAlbumBasicInfo = () => (
@@ -1301,8 +1301,8 @@ export default function ReleaseSubmission() {
               </label>
               <select
                 value={formData.albumType}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
+                onChange={(e) => setFormData(prev => ({
+                  ...prev,
                   albumType: e.target.value as 'single' | 'ep' | 'album'
                 }))}
                 className="input"
@@ -1319,8 +1319,8 @@ export default function ReleaseSubmission() {
               </label>
               <DatePicker
                 selected={new Date(formData.releaseDate)}
-                onChange={(date) => setFormData(prev => ({ 
-                  ...prev, 
+                onChange={(date) => setFormData(prev => ({
+                  ...prev,
                   releaseDate: date?.toISOString().split('T')[0] || ''
                 }))}
                 className="input w-full"
@@ -1484,7 +1484,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 2: Track Info
   const renderTrackInfo = () => (
@@ -1505,25 +1505,25 @@ export default function ReleaseSubmission() {
         </div>
 
         {/* DndContext temporarily disabled for React 19 compatibility */}
-        {/* <DndContext 
+        {/* <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={onDragEnd}
         >
-          <SortableContext 
+          <SortableContext
             items={formData.tracks.map(t => t.id)}
             strategy={verticalListSortingStrategy}
           >
             <div className="space-y-4">
               {formData.tracks.map((track) => (
-                <SortableTrackItem 
-                  key={track.id} 
-                  track={track} 
-                  formData={formData} 
-                  setFormData={setFormData} 
-                  handleFileUpload={handleFileUpload} 
-                  removeTrack={removeTrack} 
-                  t={t} 
+                <SortableTrackItem
+                  key={track.id}
+                  track={track}
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleFileUpload={handleFileUpload}
+                  removeTrack={removeTrack}
+                  t={t}
                 />
               ))}
             </div>
@@ -1533,20 +1533,20 @@ export default function ReleaseSubmission() {
         {/* Simple track list without drag and drop */}
         <div className="space-y-4">
           {formData.tracks.map((track) => (
-            <SimpleTrackItem 
-              key={track.id} 
-              track={track} 
-              formData={formData} 
-              setFormData={setFormData} 
-              handleFileUpload={handleFileUpload} 
-              removeTrack={removeTrack} 
-              t={t} 
+            <SimpleTrackItem
+              key={track.id}
+              track={track}
+              formData={formData}
+              setFormData={setFormData}
+              handleFileUpload={handleFileUpload}
+              removeTrack={removeTrack}
+              t={t}
             />
           ))}
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 3: Contributors
   const renderContributors = () => (
@@ -1596,19 +1596,19 @@ export default function ReleaseSubmission() {
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {Object.entries((contributorRoles || []).reduce((acc, role) => {
-                        if (!acc[role.category]) acc[role.category] = []
-                        acc[role.category].push(role)
-                        return acc
+                        if (!acc[role.category]) acc[role.category] = [];
+                        acc[role.category].push(role);
+                        return acc;
                       }, {} as Record<string, typeof contributorRoles>)).map(([category, roles]) => (
                         <select
                           key={category}
                           className="input text-sm"
                           onChange={(e) => {
-                            const role = e.target.value
+                            const role = e.target.value;
                             if (role && !(contributor.roles || []).includes(role)) {
                               updateContributor(contributor.id, {
                                 roles: [...(contributor.roles || []), role]
-                              })
+                              });
                             }
                           }}
                         >
@@ -1623,7 +1623,7 @@ export default function ReleaseSubmission() {
                     </div>
                     <div className="flex flex-wrap gap-1 mt-2">
                       {(contributor.roles || []).map(roleValue => {
-                        const role = (contributorRoles || []).find(r => r.value === roleValue)
+                        const role = (contributorRoles || []).find(r => r.value === roleValue);
                         return role ? (
                           <span
                             key={roleValue}
@@ -1639,7 +1639,7 @@ export default function ReleaseSubmission() {
                               <X className="w-3 h-3" />
                             </button>
                           </span>
-                        ) : null
+                        ) : null;
                       })}
                     </div>
                   </div>
@@ -1655,7 +1655,7 @@ export default function ReleaseSubmission() {
                         className="input pl-10 text-sm"
                         placeholder={t('악기 검색...', 'Search instruments...')}
                         onChange={(e) => {
-                          const results = searchInstruments(e.target.value)
+                          const results = searchInstruments(e.target.value);
                           // Show results in dropdown (implement dropdown UI)
                         }}
                       />
@@ -1727,7 +1727,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 4: Album Details
   const renderAlbumDetails = () => (
@@ -1752,8 +1752,8 @@ export default function ReleaseSubmission() {
                     className="mx-auto w-48 h-48 object-cover rounded-lg"
                   />
                   <button
-                    onClick={() => setFormData(prev => ({ 
-                      ...prev, 
+                    onClick={() => setFormData(prev => ({
+                      ...prev,
                       albumCoverArt: null,
                       albumCoverArtUrl: ''
                     }))}
@@ -1772,13 +1772,13 @@ export default function ReleaseSubmission() {
                     type="file"
                     accept="image/*"
                     onChange={(e) => {
-                      const file = e.target.files?.[0]
+                      const file = e.target.files?.[0];
                       if (file) {
                         setFormData(prev => ({
                           ...prev,
                           albumCoverArt: file,
                           albumCoverArtUrl: URL.createObjectURL(file)
-                        }))
+                        }));
                       }
                     }}
                     className="hidden"
@@ -1886,7 +1886,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 5: Release Settings
   const renderReleaseSettings = () => (
@@ -1917,8 +1917,8 @@ export default function ReleaseSubmission() {
               </label>
               <DatePicker
                 selected={formData.digitalReleaseDate ? new Date(formData.digitalReleaseDate) : null}
-                onChange={(date) => setFormData(prev => ({ 
-                  ...prev, 
+                onChange={(date) => setFormData(prev => ({
+                  ...prev,
                   digitalReleaseDate: date?.toISOString().split('T')[0] || ''
                 }))}
                 className="input w-full"
@@ -1932,8 +1932,8 @@ export default function ReleaseSubmission() {
               </label>
               <DatePicker
                 selected={formData.physicalReleaseDate ? new Date(formData.physicalReleaseDate) : null}
-                onChange={(date) => setFormData(prev => ({ 
-                  ...prev, 
+                onChange={(date) => setFormData(prev => ({
+                  ...prev,
                   physicalReleaseDate: date?.toISOString().split('T')[0] || ''
                 }))}
                 className="input w-full"
@@ -1947,8 +1947,8 @@ export default function ReleaseSubmission() {
               </label>
               <DatePicker
                 selected={formData.preOrderDate ? new Date(formData.preOrderDate) : null}
-                onChange={(date) => setFormData(prev => ({ 
-                  ...prev, 
+                onChange={(date) => setFormData(prev => ({
+                  ...prev,
                   preOrderDate: date?.toISOString().split('T')[0] || ''
                 }))}
                 className="input w-full"
@@ -1959,7 +1959,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 6: Marketing Info
   const renderMarketingInfo = () => (
@@ -2036,8 +2036,8 @@ export default function ReleaseSubmission() {
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, youtubeShortsPreviews: !prev.youtubeShortsPreviews }))}
                 className={`w-full py-2 rounded-lg transition-colors ${
-                  formData.youtubeShortsPreviews 
-                    ? 'bg-purple-500 text-white' 
+                  formData.youtubeShortsPreviews
+                    ? 'bg-purple-500 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                 }`}
               >
@@ -2056,8 +2056,8 @@ export default function ReleaseSubmission() {
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, thisIsPlaylist: !prev.thisIsPlaylist }))}
                 className={`w-full py-2 rounded-lg transition-colors ${
-                  formData.thisIsPlaylist 
-                    ? 'bg-purple-500 text-white' 
+                  formData.thisIsPlaylist
+                    ? 'bg-purple-500 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                 }`}
               >
@@ -2079,8 +2079,8 @@ export default function ReleaseSubmission() {
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, dolbyAtmosSpatialAudio: !prev.dolbyAtmosSpatialAudio }))}
                 className={`w-full py-2 rounded-lg transition-colors ${
-                  formData.dolbyAtmosSpatialAudio 
-                    ? 'bg-purple-500 text-white' 
+                  formData.dolbyAtmosSpatialAudio
+                    ? 'bg-purple-500 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                 }`}
               >
@@ -2099,8 +2099,8 @@ export default function ReleaseSubmission() {
                 type="button"
                 onClick={() => setFormData(prev => ({ ...prev, motionArtwork: !prev.motionArtwork }))}
                 className={`w-full py-2 rounded-lg transition-colors ${
-                  formData.motionArtwork 
-                    ? 'bg-purple-500 text-white' 
+                  formData.motionArtwork
+                    ? 'bg-purple-500 text-white'
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                 }`}
               >
@@ -2329,12 +2329,12 @@ export default function ReleaseSubmission() {
                             setFormData(prev => ({
                               ...prev,
                               socialMovements: [...(prev.socialMovements || []), movement.value]
-                            }))
+                            }));
                           } else {
                             setFormData(prev => ({
                               ...prev,
                               socialMovements: (prev.socialMovements || []).filter(m => m !== movement.value)
-                            }))
+                            }));
                           }
                         }}
                         className="rounded text-purple-500"
@@ -2372,8 +2372,8 @@ export default function ReleaseSubmission() {
                       setFormData(prev => ({
                         ...prev,
                         similarArtists: [...prev.similarArtists, e.currentTarget.value]
-                      }))
-                      e.currentTarget.value = ''
+                      }));
+                      e.currentTarget.value = '';
                     }
                   }}
                 />
@@ -2676,7 +2676,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 7: Distribution
   const renderDistribution = () => (
@@ -2691,7 +2691,7 @@ export default function ReleaseSubmission() {
           {/* Distribution Platforms */}
           <div>
             <h4 className="font-medium mb-3">{t('배포 플랫폼', 'Distribution Platforms')}</h4>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {Object.entries({
                 spotify: 'Spotify',
@@ -2748,8 +2748,8 @@ export default function ReleaseSubmission() {
                         ...prev.distributionPlatforms,
                         custom: [...(prev.distributionPlatforms.custom || []), e.currentTarget.value]
                       }
-                    }))
-                    e.currentTarget.value = ''
+                    }));
+                    e.currentTarget.value = '';
                   }
                 }}
               />
@@ -2781,7 +2781,7 @@ export default function ReleaseSubmission() {
           {/* Pricing */}
           <div>
             <h4 className="font-medium mb-3">{t('가격 설정', 'Pricing Settings')}</h4>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium mb-1">
@@ -2820,7 +2820,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 8: Rights & Legal
   const renderRightsLegal = () => (
@@ -2910,7 +2910,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 9: Review & QC
   const renderReviewQC = () => (
@@ -2932,7 +2932,7 @@ export default function ReleaseSubmission() {
         <div className="space-y-4">
           <div className="bg-white/10 dark:bg-white/5 rounded-lg p-4">
             <h4 className="font-medium mb-3">{t('제출 요약', 'Submission Summary')}</h4>
-            
+
             <dl className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <dt className="text-gray-400">{t('아티스트', 'Artist')}:</dt>
@@ -2985,7 +2985,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 10: File Upload
   const renderFileUpload = () => (
@@ -3024,7 +3024,7 @@ export default function ReleaseSubmission() {
                                   ...prev.audioFiles,
                                   [track.id]: prev.audioFiles[track.id].filter((_, i) => i !== fileIndex)
                                 }
-                              }))
+                              }));
                             }}
                             className="text-red-500 hover:text-red-600"
                           >
@@ -3041,15 +3041,15 @@ export default function ReleaseSubmission() {
                       </p>
                     </div>
                   )}
-                  
+
                   <input
                     type="file"
                     accept="audio/*"
                     multiple
                     onChange={(e) => {
-                      const files = Array.from(e.target.files || [])
+                      const files = Array.from(e.target.files || []);
                       if (files.length > 0) {
-                        handleFileUpload(files, track.id)
+                        handleFileUpload(files, track.id);
                       }
                     }}
                     className="hidden"
@@ -3093,7 +3093,7 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Step 11: Final Submission
   const renderFinalSubmission = () => (
@@ -3155,129 +3155,129 @@ export default function ReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 
   // Submit handler
   const handleSubmit = async () => {
     if (!formData.agreedToTerms) {
-      toast.error(t('이용약관에 동의해주세요', 'Please agree to the terms of service'))
-      return
+      toast.error(t('이용약관에 동의해주세요', 'Please agree to the terms of service'));
+      return;
     }
 
     if (validationResults && !validationResults.isValid) {
-      toast.error(t('검증 오류를 수정해주세요', 'Please fix validation errors'))
-      return
+      toast.error(t('검증 오류를 수정해주세요', 'Please fix validation errors'));
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
       // Submit the form data
-      await submissionService.createSubmission(formData)
-      toast.success(t('제출이 완료되었습니다', 'Submission completed successfully'))
-      navigate('/submissions')
+      await submissionService.createSubmission(formData);
+      toast.success(t('제출이 완료되었습니다', 'Submission completed successfully'));
+      navigate('/submissions');
     } catch (error) {
-      toast.error(t('제출 중 오류가 발생했습니다', 'An error occurred during submission'))
+      toast.error(t('제출 중 오류가 발생했습니다', 'An error occurred during submission'));
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <SavedArtistsProvider>
       <div className="min-h-screen bg-gradient-to-br from-purple-900/20 via-black to-purple-900/20">
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-3xl font-bold text-white">
-              {t('릴리즈 신청', 'Release Submission')}
-            </h1>
-            <div className="text-sm text-gray-400">
-              {t('단계', 'Step')} {currentStep + 1} / {steps.length}
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Progress Bar */}
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h1 className="text-3xl font-bold text-white">
+                {t('릴리즈 신청', 'Release Submission')}
+              </h1>
+              <div className="text-sm text-gray-400">
+                {t('단계', 'Step')} {currentStep + 1} / {steps.length}
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 bg-white/10 rounded-full" />
+              <div
+                className="relative h-2 bg-purple-500 rounded-full transition-all duration-300"
+                style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between mt-4">
+              {steps.map((step) => (
+                <button
+                  key={step.id}
+                  onClick={() => setCurrentStep(step.id)}
+                  className={`flex items-center gap-2 text-sm transition-colors ${
+                    currentStep === step.id
+                      ? 'text-purple-400'
+                      : currentStep > step.id
+                        ? 'text-green-400'
+                        : 'text-gray-500'
+                  }`}
+                  disabled={currentStep < step.id}
+                >
+                  {currentStep > step.id ? (
+                    <CheckCircle className="w-5 h-5" />
+                  ) : (
+                    <step.icon className="w-5 h-5" />
+                  )}
+                  <span className="hidden md:inline">{step.label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
-          <div className="relative">
-            <div className="absolute inset-0 bg-white/10 rounded-full" />
-            <div
-              className="relative h-2 bg-purple-500 rounded-full transition-all duration-300"
-              style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
-            />
+          {/* Step Content */}
+          <div className="mb-8">
+            {renderStep()}
           </div>
 
-          <div className="flex items-center justify-between mt-4">
-            {steps.map((step) => (
+          {/* Navigation */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+              disabled={currentStep === 0}
+              className="btn-secondary disabled:opacity-50"
+            >
+              <ChevronLeft className="w-4 h-4 mr-2" />
+              {t('이전', 'Previous')}
+            </button>
+
+            {currentStep === steps.length - 1 ? (
               <button
-                key={step.id}
-                onClick={() => setCurrentStep(step.id)}
-                className={`flex items-center gap-2 text-sm transition-colors ${
-                  currentStep === step.id
-                    ? 'text-purple-400'
-                    : currentStep > step.id
-                    ? 'text-green-400'
-                    : 'text-gray-500'
-                }`}
-                disabled={currentStep < step.id}
+                onClick={handleSubmit}
+                disabled={isSubmitting || !formData.agreedToTerms}
+                className="btn-primary disabled:opacity-50"
               >
-                {currentStep > step.id ? (
-                  <CheckCircle className="w-5 h-5" />
+                {isSubmitting ? (
+                  <>
+                    <Clock className="w-4 h-4 mr-2 animate-spin" />
+                    {t('제출 중...', 'Submitting...')}
+                  </>
                 ) : (
-                  <step.icon className="w-5 h-5" />
+                  <>
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    {t('제출하기', 'Submit')}
+                  </>
                 )}
-                <span className="hidden md:inline">{step.label}</span>
               </button>
-            ))}
+            ) : (
+              <button
+                onClick={() => setCurrentStep(prev => Math.min(steps.length - 1, prev + 1))}
+                className="btn-primary"
+              >
+                {t('다음', 'Next')}
+                <ChevronRight className="w-4 h-4 ml-2" />
+              </button>
+            )}
           </div>
-        </div>
-
-        {/* Step Content */}
-        <div className="mb-8">
-          {renderStep()}
-        </div>
-
-        {/* Navigation */}
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
-            disabled={currentStep === 0}
-            className="btn-secondary disabled:opacity-50"
-          >
-            <ChevronLeft className="w-4 h-4 mr-2" />
-            {t('이전', 'Previous')}
-          </button>
-
-          {currentStep === steps.length - 1 ? (
-            <button
-              onClick={handleSubmit}
-              disabled={isSubmitting || !formData.agreedToTerms}
-              className="btn-primary disabled:opacity-50"
-            >
-              {isSubmitting ? (
-                <>
-                  <Clock className="w-4 h-4 mr-2 animate-spin" />
-                  {t('제출 중...', 'Submitting...')}
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  {t('제출하기', 'Submit')}
-                </>
-              )}
-            </button>
-          ) : (
-            <button
-              onClick={() => setCurrentStep(prev => Math.min(steps.length - 1, prev + 1))}
-              className="btn-primary"
-            >
-              {t('다음', 'Next')}
-              <ChevronRight className="w-4 h-4 ml-2" />
-            </button>
-          )}
         </div>
       </div>
-    </div>
     </SavedArtistsProvider>
-  )
+  );
 }
 
 // Sortable Track Item Component - temporarily disabled for React 19 compatibility
@@ -3323,59 +3323,59 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
     setFormData((prev: any) => ({
       ...prev,
       tracks: prev.tracks.map((t: any) => t.id === trackId ? { ...t, ...updates } : t)
-    }))
-  }
+    }));
+  };
 
   const addTranslation = (type: string, trackId?: string) => {
-    const newTranslation = { id: uuidv4(), language: '', text: '' }
-    
+    const newTranslation = { id: uuidv4(), language: '', text: '' };
+
     if (type === 'track' && trackId) {
       setFormData((prev: any) => ({
         ...prev,
-        tracks: prev.tracks.map((t: any) => 
-          t.id === trackId 
+        tracks: prev.tracks.map((t: any) =>
+          t.id === trackId
             ? { ...t, translations: [...(t.translations || []), newTranslation] }
             : t
         )
-      }))
+      }));
     }
-  }
+  };
 
   const updateTranslation = (type: string, translationId: string, updates: any, trackId?: string) => {
     if (type === 'track' && trackId) {
       setFormData((prev: any) => ({
         ...prev,
-        tracks: prev.tracks.map((t: any) => 
-          t.id === trackId 
+        tracks: prev.tracks.map((t: any) =>
+          t.id === trackId
             ? {
-                ...t,
-                translations: t.translations.map((tr: any) => 
-                  tr.id === translationId ? { ...tr, ...updates } : tr
-                )
-              }
+              ...t,
+              translations: t.translations.map((tr: any) =>
+                tr.id === translationId ? { ...tr, ...updates } : tr
+              )
+            }
             : t
         )
-      }))
+      }));
     }
-  }
+  };
 
   const removeTranslation = (type: string, translationId: string, trackId?: string) => {
     if (type === 'track' && trackId) {
       setFormData((prev: any) => ({
         ...prev,
-        tracks: prev.tracks.map((t: any) => 
-          t.id === trackId 
+        tracks: prev.tracks.map((t: any) =>
+          t.id === trackId
             ? {
-                ...t,
-                translations: t.translations.filter((tr: any) => tr.id !== translationId)
-              }
+              ...t,
+              translations: t.translations.filter((tr: any) => tr.id !== translationId)
+            }
             : t
         )
-      }))
+      }));
     }
-  }
+  };
 
-  const trackIndex = formData.tracks.findIndex((t: any) => t.id === track.id)
+  const trackIndex = formData.tracks.findIndex((t: any) => t.id === track.id);
 
   return (
     <div
@@ -3543,7 +3543,7 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
                     ...t,
                     isTitle: t.id === track.id ? e.target.checked : false
                   }))
-                }))
+                }));
               }}
               className="rounded"
             />
@@ -3572,6 +3572,6 @@ function SimpleTrackItem({ track, formData, setFormData, handleFileUpload, remov
         </div>
       </div>
     </div>
-  )
+  );
 }
 

@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
-import { Play, Pause, Volume2 } from 'lucide-react'
-import { cn } from '@/utils/cn'
+import { useState, useRef, useEffect } from 'react';
+import { Play, Pause, Volume2 } from 'lucide-react';
+import { cn } from '@/utils/cn';
 
 interface AudioPlayerProps {
   file: File
@@ -8,82 +8,82 @@ interface AudioPlayerProps {
 }
 
 export default function AudioPlayer({ file, className }: AudioPlayerProps) {
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
-  const [volume, setVolume] = useState(1)
-  const audioRef = useRef<HTMLAudioElement>(null)
-  const [audioUrl, setAudioUrl] = useState<string>('')
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(1);
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [audioUrl, setAudioUrl] = useState<string>('');
 
   useEffect(() => {
     // Create object URL for the audio file
-    const url = URL.createObjectURL(file)
-    setAudioUrl(url)
+    const url = URL.createObjectURL(file);
+    setAudioUrl(url);
 
     // Cleanup
     return () => {
-      URL.revokeObjectURL(url)
-    }
-  }, [file])
+      URL.revokeObjectURL(url);
+    };
+  }, [file]);
 
   useEffect(() => {
-    const audio = audioRef.current
-    if (!audio) return
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime)
-    const handleLoadedMetadata = () => setDuration(audio.duration)
-    const handleEnded = () => setIsPlaying(false)
+    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
+    const handleLoadedMetadata = () => setDuration(audio.duration);
+    const handleEnded = () => setIsPlaying(false);
 
-    audio.addEventListener('timeupdate', handleTimeUpdate)
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata)
-    audio.addEventListener('ended', handleEnded)
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
 
     return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate)
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata)
-      audio.removeEventListener('ended', handleEnded)
-    }
-  }, [audioUrl])
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [audioUrl]);
 
   const togglePlayPause = () => {
-    if (!audioRef.current) return
+    if (!audioRef.current) return;
 
     if (isPlaying) {
-      audioRef.current.pause()
+      audioRef.current.pause();
     } else {
-      audioRef.current.play()
+      audioRef.current.play();
     }
-    setIsPlaying(!isPlaying)
-  }
+    setIsPlaying(!isPlaying);
+  };
 
   const handleSeek = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const audio = audioRef.current
-    if (!audio) return
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    const newTime = parseFloat(e.target.value)
-    audio.currentTime = newTime
-    setCurrentTime(newTime)
-  }
+    const newTime = parseFloat(e.target.value);
+    audio.currentTime = newTime;
+    setCurrentTime(newTime);
+  };
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const audio = audioRef.current
-    if (!audio) return
+    const audio = audioRef.current;
+    if (!audio) return;
 
-    const newVolume = parseFloat(e.target.value)
-    audio.volume = newVolume
-    setVolume(newVolume)
-  }
+    const newVolume = parseFloat(e.target.value);
+    audio.volume = newVolume;
+    setVolume(newVolume);
+  };
 
   const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = Math.floor(seconds % 60)
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   return (
-    <div className={cn("bg-gray-100 dark:bg-gray-800 rounded-lg p-4", className)}>
+    <div className={cn('bg-gray-100 dark:bg-gray-800 rounded-lg p-4', className)}>
       <audio ref={audioRef} src={audioUrl} />
-      
+
       <div className="flex items-center gap-4">
         <button
           onClick={togglePlayPause}
@@ -142,5 +142,5 @@ export default function AudioPlayer({ file, className }: AudioPlayerProps) {
         }
       `}</style>
     </div>
-  )
+  );
 }

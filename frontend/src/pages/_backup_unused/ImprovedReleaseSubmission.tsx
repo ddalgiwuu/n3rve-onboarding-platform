@@ -1,21 +1,21 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useLanguageStore } from '@/store/language.store'
-import { 
-  Upload, Music, Image, CheckCircle, X, Plus, Trash2, 
-  Globe, Users, Disc, 
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLanguageStore } from '@/store/language.store';
+import {
+  Upload, Music, Image, CheckCircle, X, Plus, Trash2,
+  Globe, Users, Disc,
   ChevronRight, ChevronLeft, Info,
   GripVertical,
   HelpCircle, AlertTriangle, Star,
   ExternalLink
-} from 'lucide-react'
-import toast from 'react-hot-toast'
-import { submissionService } from '@/services/submission.service'
-import useSafeStore from '@/hooks/useSafeStore'
-import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation'
-import QCWarnings from '@/components/submission/QCWarnings'
-import DatePicker from '@/components/DatePicker'
-import { v4 as uuidv4 } from 'uuid'
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import { submissionService } from '@/services/submission.service';
+import useSafeStore from '@/hooks/useSafeStore';
+import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation';
+import QCWarnings from '@/components/submission/QCWarnings';
+import DatePicker from '@/components/DatePicker';
+import { v4 as uuidv4 } from 'uuid';
 import {
   DndContext,
   closestCenter,
@@ -24,22 +24,22 @@ import {
   useSensor,
   useSensors,
   DragEndEvent
-} from '@dnd-kit/core'
+} from '@dnd-kit/core';
 import {
   arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
   useSortable
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
-import RegionSelector from '@/components/RegionSelector'
-import MultiSelect from '@/components/ui/MultiSelect'
-import { genreList, subgenreList } from '@/constants/genres'
-import { countries } from '@/constants/countries'
-import { timezones, convertToUTC } from '@/constants/timezones'
-import { generateUPC, generateEAN, validateUPC, validateEAN } from '@/utils/identifiers'
-import { dspList } from '@/constants/dspList'
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import RegionSelector from '@/components/RegionSelector';
+import MultiSelect from '@/components/ui/MultiSelect';
+import { genreList, subgenreList } from '@/constants/genres';
+import { countries } from '@/constants/countries';
+import { timezones, convertToUTC } from '@/constants/timezones';
+import { generateUPC, generateEAN, validateUPC, validateEAN } from '@/utils/identifiers';
+import { dspList } from '@/constants/dspList';
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -79,8 +79,8 @@ const Toggle: React.FC<{
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 // Radio Group Component
 const RadioGroup: React.FC<{
@@ -113,13 +113,13 @@ const RadioGroup: React.FC<{
         </label>
       ))}
     </div>
-  )
-}
+  );
+};
 
 // Tooltip Component
 const Tooltip: React.FC<{ content: string; children: React.ReactNode }> = ({ content, children }) => {
-  const [show, setShow] = useState(false)
-  
+  const [show, setShow] = useState(false);
+
   return (
     <div className="relative inline-block">
       <div
@@ -135,8 +135,8 @@ const Tooltip: React.FC<{ content: string; children: React.ReactNode }> = ({ con
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 // Translation Manager Component
 const TranslationManager: React.FC<{
@@ -145,27 +145,27 @@ const TranslationManager: React.FC<{
   placeholder: string
   label: string
 }> = ({ translations, onChange, placeholder, label }) => {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const addTranslation = () => {
     onChange([
       ...translations,
       { id: uuidv4(), language: '', value: '' }
-    ])
-  }
+    ]);
+  };
 
   const updateTranslation = (id: string, field: 'language' | 'value', value: string) => {
     onChange(
       translations.map(trans =>
         trans.id === id ? { ...trans, [field]: value } : trans
       )
-    )
-  }
+    );
+  };
 
   const removeTranslation = (id: string) => {
-    onChange(translations.filter(trans => trans.id !== id))
-  }
+    onChange(translations.filter(trans => trans.id !== id));
+  };
 
   const availableLanguages = [
     { code: 'en', name: 'English' },
@@ -178,7 +178,7 @@ const TranslationManager: React.FC<{
     { code: 'pt', name: 'Português' },
     { code: 'ru', name: 'Русский' },
     { code: 'ar', name: 'العربية' }
-  ]
+  ];
 
   return (
     <div className="space-y-3">
@@ -193,7 +193,7 @@ const TranslationManager: React.FC<{
           {t('번역 추가', 'Add Translation')}
         </button>
       </div>
-      
+
       {translations.map((translation) => (
         <div key={translation.id} className="flex gap-2">
           <select
@@ -223,19 +223,19 @@ const TranslationManager: React.FC<{
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
 // Main Component
 export default function ImprovedReleaseSubmission() {
-  const navigate = useNavigate()
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const navigate = useNavigate();
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   // Form States
-  const [currentStep, setCurrentStep] = useState(1)
-  const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1);
+  const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     // Artist Information
     artistName: '',
@@ -248,7 +248,7 @@ export default function ImprovedReleaseSubmission() {
     artistSpotifyId: '',
     artistAppleMusicId: '',
     artistYoutubeChannelId: '',
-    
+
     // Album Information
     albumTitle: '',
     albumTitleEn: '',
@@ -258,13 +258,13 @@ export default function ImprovedReleaseSubmission() {
     upc: '',
     ean: '',
     catalogNumber: '',
-    
+
     // Release Dates
     originalReleaseDate: '',
     consumerReleaseDate: '',
     releaseTime: '00:00',
     selectedTimezone: 'Asia/Seoul',
-    
+
     // Product Level
     genre: [] as string[],
     subgenre: [] as string[],
@@ -274,17 +274,17 @@ export default function ImprovedReleaseSubmission() {
     productionHolder: '',
     productionYear: new Date().getFullYear().toString(),
     parentalAdvisory: 'NONE',
-    
+
     // Tracks
     tracks: [] as any[],
     focusTrackId: '',
-    
+
     // Distribution
     territories: [] as string[],
     excludedTerritories: [] as string[],
     selectedDSPs: [] as string[],
     priceType: 'PAID',
-    
+
     // Marketing
     marketingGenre: [] as string[],
     marketingSubgenre: [] as string[],
@@ -296,16 +296,16 @@ export default function ImprovedReleaseSubmission() {
     socialMovements: [] as string[],
     similarArtists: [] as string[],
     marketingAngle: '',
-    
+
     // Files
     coverArt: null as File | null,
     audioFiles: [] as File[],
     lyrics: [] as any[],
-    
+
     // Additional
     notes: '',
     qcReport: null as any
-  })
+  });
 
   // Steps Configuration
   const steps = [
@@ -345,18 +345,18 @@ export default function ImprovedReleaseSubmission() {
       icon: <CheckCircle className="w-5 h-5" />,
       description: t('최종 검토 및 제출', 'Final review and submission')
     }
-  ]
+  ];
 
   // Validation
   useEffect(() => {
-    const results = validateSubmission(formData)
-    setValidationResults(results)
-  }, [formData])
+    const results = validateSubmission(formData);
+    setValidationResults(results);
+  }, [formData]);
 
   // Step Navigation
   const canProceed = () => {
-    if (!validationResults) return true
-    
+    if (!validationResults) return true;
+
     const stepFields: Record<number, string[]> = {
       1: ['artistName', 'displayArtistName', 'labelName'],
       2: ['albumTitle', 'albumType', 'releaseDate'],
@@ -364,31 +364,31 @@ export default function ImprovedReleaseSubmission() {
       4: ['coverArt', 'audioFiles'],
       5: ['territories', 'selectedDSPs'],
       6: []
-    }
+    };
 
-    const currentStepFields = stepFields[currentStep] || []
-    return !currentStepFields.some(field => 
+    const currentStepFields = stepFields[currentStep] || [];
+    return !currentStepFields.some(field =>
       validationResults.errors.some((error: any) => error.field === field && error.severity === 'error')
-    )
-  }
+    );
+  };
 
   const nextStep = () => {
     if (canProceed() && currentStep < steps.length) {
-      setCurrentStep(currentStep + 1)
-      window.scrollTo(0, 0)
+      setCurrentStep(currentStep + 1);
+      window.scrollTo(0, 0);
     }
-  }
+  };
 
   const prevStep = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
-      window.scrollTo(0, 0)
+      setCurrentStep(currentStep - 1);
+      window.scrollTo(0, 0);
     }
-  }
+  };
 
   // Form Submit
   const handleSubmit = async () => {
-    setIsSubmitting(true)
+    setIsSubmitting(true);
     try {
       const submissionData = {
         artist: {
@@ -433,37 +433,37 @@ export default function ImprovedReleaseSubmission() {
             fileSize: file.size
           }))
         }
-      }
-      const response = await submissionService.createSubmission(submissionData)
-      toast.success(t('제출이 완료되었습니다!', 'Submission completed!'))
-      navigate('/submission-success', { state: { submissionId: response.id } })
+      };
+      const response = await submissionService.createSubmission(submissionData);
+      toast.success(t('제출이 완료되었습니다!', 'Submission completed!'));
+      navigate('/submission-success', { state: { submissionId: response.id } });
     } catch (error) {
-      console.error('Submission error:', error)
-      toast.error(t('제출 중 오류가 발생했습니다', 'Error during submission'))
+      console.error('Submission error:', error);
+      toast.error(t('제출 중 오류가 발생했습니다', 'Error during submission'));
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   // Render Step Content
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <ArtistInfoStep formData={formData} setFormData={setFormData} />
+        return <ArtistInfoStep formData={formData} setFormData={setFormData} />;
       case 2:
-        return <AlbumInfoStep formData={formData} setFormData={setFormData} />
+        return <AlbumInfoStep formData={formData} setFormData={setFormData} />;
       case 3:
-        return <TrackInfoStep formData={formData} setFormData={setFormData} />
+        return <TrackInfoStep formData={formData} setFormData={setFormData} />;
       case 4:
-        return <FileUploadStep formData={formData} setFormData={setFormData} />
+        return <FileUploadStep formData={formData} setFormData={setFormData} />;
       case 5:
-        return <DistributionStep formData={formData} setFormData={setFormData} />
+        return <DistributionStep formData={formData} setFormData={setFormData} />;
       case 6:
-        return <ReviewStep formData={formData} validationResults={validationResults} />
+        return <ReviewStep formData={formData} validationResults={validationResults} />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -518,9 +518,9 @@ export default function ImprovedReleaseSubmission() {
                     className={`
                       w-10 h-10 rounded-full flex items-center justify-center
                       ${currentStep >= step.id
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                      }
+                ? 'bg-purple-600 text-white'
+                : 'bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+              }
                     `}
                   >
                     {currentStep > step.id ? (
@@ -531,8 +531,8 @@ export default function ImprovedReleaseSubmission() {
                   </div>
                   <div className="ml-3">
                     <p className={`text-sm font-medium ${
-                      currentStep >= step.id 
-                        ? 'text-gray-900 dark:text-white' 
+                      currentStep >= step.id
+                        ? 'text-gray-900 dark:text-white'
                         : 'text-gray-500 dark:text-gray-400'
                     }`}>
                       {step.title}
@@ -541,8 +541,8 @@ export default function ImprovedReleaseSubmission() {
                 </div>
                 {index < steps.length - 1 && (
                   <div className={`flex-1 h-0.5 mx-4 ${
-                    currentStep > step.id 
-                      ? 'bg-purple-600' 
+                    currentStep > step.id
+                      ? 'bg-purple-600'
                       : 'bg-gray-200 dark:bg-gray-700'
                   }`} />
                 )}
@@ -574,9 +574,9 @@ export default function ImprovedReleaseSubmission() {
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors
                 ${currentStep === 1
-                  ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
-                  : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-500 border border-gray-300 dark:border-gray-600'
-                }
+      ? 'bg-gray-200 dark:bg-gray-700 text-gray-400 cursor-not-allowed'
+      : 'bg-white dark:bg-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-500 border border-gray-300 dark:border-gray-600'
+    }
               `}
             >
               <ChevronLeft className="w-5 h-5" />
@@ -588,7 +588,7 @@ export default function ImprovedReleaseSubmission() {
                 onClick={() => {
                   if (confirm(t('저장하고 나중에 계속하시겠습니까?', 'Save and continue later?'))) {
                     // Save draft logic
-                    navigate('/dashboard')
+                    navigate('/dashboard');
                   }
                 }}
                 className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
@@ -603,9 +603,9 @@ export default function ImprovedReleaseSubmission() {
                   className={`
                     flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors
                     ${canProceed()
-                      ? 'bg-purple-600 text-white hover:bg-purple-700'
-                      : 'bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed'
-                    }
+                  ? 'bg-purple-600 text-white hover:bg-purple-700'
+                  : 'bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed'
+                }
                   `}
                 >
                   {t('다음', 'Next')}
@@ -618,9 +618,9 @@ export default function ImprovedReleaseSubmission() {
                   className={`
                     flex items-center gap-2 px-6 py-2 rounded-lg font-medium transition-colors
                     ${canProceed() && !isSubmitting
-                      ? 'bg-purple-600 text-white hover:bg-purple-700'
-                      : 'bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed'
-                    }
+                  ? 'bg-purple-600 text-white hover:bg-purple-700'
+                  : 'bg-gray-300 dark:bg-gray-600 text-gray-500 cursor-not-allowed'
+                }
                   `}
                 >
                   {isSubmitting ? (
@@ -641,20 +641,20 @@ export default function ImprovedReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Step 1: Artist Information
 function ArtistInfoStep({ formData, setFormData }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const artistTypes = [
     { value: 'SOLO', label: t('솔로', 'Solo'), description: t('개인 아티스트', 'Individual artist') },
     { value: 'GROUP', label: t('그룹', 'Group'), description: t('2인 이상의 그룹', 'Group of 2 or more') },
     { value: 'BAND', label: t('밴드', 'Band'), description: t('악기 연주 밴드', 'Instrumental band') },
     { value: 'ORCHESTRA', label: t('오케스트라', 'Orchestra'), description: t('관현악단', 'Orchestra ensemble') }
-  ]
+  ];
 
   return (
     <div className="space-y-6">
@@ -766,7 +766,7 @@ function ArtistInfoStep({ formData, setFormData }: any) {
           <h3 className="text-md font-medium text-gray-900 dark:text-white mb-4">
             {t('아티스트 프로필 URL', 'Artist Profile URLs')}
           </h3>
-          
+
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -843,42 +843,42 @@ function ArtistInfoStep({ formData, setFormData }: any) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-// Step 2: Album Information  
+// Step 2: Album Information
 function AlbumInfoStep({ formData, setFormData }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const albumTypes = [
-    { 
-      value: 'SINGLE', 
-      label: t('싱글', 'Single'), 
-      description: t('1~3곡이 수록된 음반', 'Album with 1-3 tracks') 
+    {
+      value: 'SINGLE',
+      label: t('싱글', 'Single'),
+      description: t('1~3곡이 수록된 음반', 'Album with 1-3 tracks')
     },
-    { 
-      value: 'EP', 
-      label: t('EP', 'EP'), 
-      description: t('4~6곡이 수록된 음반', 'Album with 4-6 tracks') 
+    {
+      value: 'EP',
+      label: t('EP', 'EP'),
+      description: t('4~6곡이 수록된 음반', 'Album with 4-6 tracks')
     },
-    { 
-      value: 'ALBUM', 
-      label: t('정규 앨범', 'Full Album'), 
-      description: t('7곡 이상이 수록된 음반', 'Album with 7 or more tracks') 
+    {
+      value: 'ALBUM',
+      label: t('정규 앨범', 'Full Album'),
+      description: t('7곡 이상이 수록된 음반', 'Album with 7 or more tracks')
     },
-    { 
-      value: 'COMPILATION', 
-      label: t('컴필레이션', 'Compilation'), 
-      description: t('여러 아티스트의 곡이 수록된 음반', 'Album with tracks from various artists') 
+    {
+      value: 'COMPILATION',
+      label: t('컴필레이션', 'Compilation'),
+      description: t('여러 아티스트의 곡이 수록된 음반', 'Album with tracks from various artists')
     }
-  ]
+  ];
 
   const parentalAdvisoryOptions = [
     { value: 'NONE', label: t('없음', 'None'), description: t('연령 제한 없음', 'No age restriction') },
     { value: 'EXPLICIT', label: t('명시적 콘텐츠', 'Explicit'), description: t('19세 이상 청취 권장', 'Recommended for 19+') },
     { value: 'CLEAN', label: t('클린 버전', 'Clean'), description: t('명시적 콘텐츠 편집됨', 'Explicit content edited') }
-  ]
+  ];
 
   return (
     <div className="space-y-6">
@@ -1209,36 +1209,36 @@ function AlbumInfoStep({ formData, setFormData }: any) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Step 3: Track Information
 function TrackInfoStep({ formData, setFormData }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
+      coordinateGetter: sortableKeyboardCoordinates
     })
-  )
+  );
 
   const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
+    const { active, over } = event;
 
     if (active.id !== over?.id) {
-      const oldIndex = formData.tracks.findIndex((t: any) => t.id === active.id)
-      const newIndex = formData.tracks.findIndex((t: any) => t.id === over?.id)
-      
+      const oldIndex = formData.tracks.findIndex((t: any) => t.id === active.id);
+      const newIndex = formData.tracks.findIndex((t: any) => t.id === over?.id);
+
       const newTracks = arrayMove(formData.tracks, oldIndex, newIndex).map((track: any, index: number) => ({
         ...track,
         trackNumber: index + 1
-      }))
-      
-      setFormData({ ...formData, tracks: newTracks })
+      }));
+
+      setFormData({ ...formData, tracks: newTracks });
     }
-  }
+  };
 
   const addTrack = () => {
     const newTrack = {
@@ -1258,10 +1258,10 @@ function TrackInfoStep({ formData, setFormData }: any) {
       languageCode: 'ko',
       lyrics: '',
       audioFile: null
-    }
-    
-    setFormData({ ...formData, tracks: [...formData.tracks, newTrack] })
-  }
+    };
+
+    setFormData({ ...formData, tracks: [...formData.tracks, newTrack] });
+  };
 
   const updateTrack = (trackId: string, updates: any) => {
     setFormData({
@@ -1269,8 +1269,8 @@ function TrackInfoStep({ formData, setFormData }: any) {
       tracks: formData.tracks.map((track: any) =>
         track.id === trackId ? { ...track, ...updates } : track
       )
-    })
-  }
+    });
+  };
 
   const removeTrack = (trackId: string) => {
     if (formData.tracks.length > 1) {
@@ -1279,15 +1279,15 @@ function TrackInfoStep({ formData, setFormData }: any) {
         .map((track: any, index: number) => ({
           ...track,
           trackNumber: index + 1
-        }))
-      
-      setFormData({ ...formData, tracks: newTracks })
+        }));
+
+      setFormData({ ...formData, tracks: newTracks });
     }
-  }
+  };
 
   const setFocusTrack = (trackId: string) => {
-    setFormData({ ...formData, focusTrackId: trackId })
-  }
+    setFormData({ ...formData, focusTrackId: trackId });
+  };
 
   return (
     <div className="space-y-6">
@@ -1357,14 +1357,14 @@ function TrackInfoStep({ formData, setFormData }: any) {
         )}
       </div>
     </div>
-  )
+  );
 }
 
 // Sortable Track Item
 function SortableTrackItem({ track, updateTrack, removeTrack, setFocusTrack, isFocusTrack, canRemove }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  const [isExpanded, setIsExpanded] = useState(false)
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const {
     attributes,
@@ -1373,21 +1373,21 @@ function SortableTrackItem({ track, updateTrack, removeTrack, setFocusTrack, isF
     transform,
     transition,
     isDragging
-  } = useSortable({ id: track.id })
+  } = useSortable({ id: track.id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1
-  }
+  };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
       className={`border rounded-lg ${
-        isFocusTrack 
-          ? 'border-purple-500 dark:border-purple-400 shadow-lg' 
+        isFocusTrack
+          ? 'border-purple-500 dark:border-purple-400 shadow-lg'
           : 'border-gray-200 dark:border-gray-700'
       } bg-white dark:bg-gray-800`}
     >
@@ -1531,7 +1531,7 @@ function SortableTrackItem({ track, updateTrack, removeTrack, setFocusTrack, isF
                 label={t('연주곡', 'Instrumental Track')}
                 helpText={t('가사가 없는 연주곡인 경우 선택', 'Select if this is an instrumental track without lyrics')}
               />
-              
+
               <Toggle
                 checked={track.parentalAdvisory === 'EXPLICIT'}
                 onChange={(checked) => updateTrack(track.id, { parentalAdvisory: checked ? 'EXPLICIT' : 'NONE' })}
@@ -1557,53 +1557,53 @@ function SortableTrackItem({ track, updateTrack, removeTrack, setFocusTrack, isF
         )}
       </div>
     </div>
-  )
+  );
 }
 
 // Step 4: File Upload
 function FileUploadStep({ formData, setFormData }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  const [uploadProgress] = useState<{ [key: string]: number }>({})
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const [uploadProgress] = useState<{ [key: string]: number }>({});
 
   const handleCoverArtUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
       // Validate file type and size
       if (!file.type.startsWith('image/')) {
-        toast.error(t('이미지 파일만 업로드 가능합니다', 'Only image files are allowed'))
-        return
+        toast.error(t('이미지 파일만 업로드 가능합니다', 'Only image files are allowed'));
+        return;
       }
       if (file.size > 10 * 1024 * 1024) { // 10MB
-        toast.error(t('파일 크기는 10MB 이하여야 합니다', 'File size must be less than 10MB'))
-        return
+        toast.error(t('파일 크기는 10MB 이하여야 합니다', 'File size must be less than 10MB'));
+        return;
       }
-      setFormData({ ...formData, coverArt: file })
+      setFormData({ ...formData, coverArt: file });
     }
-  }
+  };
 
   const handleAudioFilesUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
+    const files = Array.from(e.target.files || []);
     const validFiles = files.filter(file => {
       if (!file.type.startsWith('audio/') && !file.name.endsWith('.wav') && !file.name.endsWith('.flac')) {
-        toast.error(t(`${file.name}은 오디오 파일이 아닙니다`, `${file.name} is not an audio file`))
-        return false
+        toast.error(t(`${file.name}은 오디오 파일이 아닙니다`, `${file.name} is not an audio file`));
+        return false;
       }
       if (file.size > 500 * 1024 * 1024) { // 500MB
-        toast.error(t(`${file.name}의 크기가 너무 큽니다 (최대 500MB)`, `${file.name} is too large (max 500MB)`))
-        return false
+        toast.error(t(`${file.name}의 크기가 너무 큽니다 (최대 500MB)`, `${file.name} is too large (max 500MB)`));
+        return false;
       }
-      return true
-    })
-    
-    setFormData({ ...formData, audioFiles: [...formData.audioFiles, ...validFiles] })
-  }
+      return true;
+    });
+
+    setFormData({ ...formData, audioFiles: [...formData.audioFiles, ...validFiles] });
+  };
 
   const removeAudioFile = (index: number) => {
-    const newFiles = [...formData.audioFiles]
-    newFiles.splice(index, 1)
-    setFormData({ ...formData, audioFiles: newFiles })
-  }
+    const newFiles = [...formData.audioFiles];
+    newFiles.splice(index, 1);
+    setFormData({ ...formData, audioFiles: newFiles });
+  };
 
   return (
     <div className="space-y-6">
@@ -1741,48 +1741,48 @@ function FileUploadStep({ formData, setFormData }: any) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Step 5: Distribution Settings
 function DistributionStep({ formData, setFormData }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const priceTypes = [
     { value: 'FREE', label: t('무료', 'Free'), description: t('무료로 제공', 'Provided for free') },
     { value: 'PAID', label: t('유료', 'Paid'), description: t('구매 필요', 'Purchase required') },
     { value: 'PREMIUM', label: t('프리미엄', 'Premium'), description: t('프리미엄 구독자 전용', 'Premium subscribers only') }
-  ]
+  ];
 
   const toggleDSP = (dspId: string) => {
-    const isSelected = formData.selectedDSPs.includes(dspId)
+    const isSelected = formData.selectedDSPs.includes(dspId);
     if (isSelected) {
       setFormData({
         ...formData,
         selectedDSPs: formData.selectedDSPs.filter((id: string) => id !== dspId)
-      })
+      });
     } else {
       setFormData({
         ...formData,
         selectedDSPs: [...formData.selectedDSPs, dspId]
-      })
+      });
     }
-  }
+  };
 
   const selectAllDSPs = () => {
     setFormData({
       ...formData,
       selectedDSPs: dspList.map(dsp => dsp.id)
-    })
-  }
+    });
+  };
 
   const deselectAllDSPs = () => {
     setFormData({
       ...formData,
       selectedDSPs: []
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -1841,9 +1841,9 @@ function DistributionStep({ formData, setFormData }: any) {
                 className={`
                   flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all
                   ${formData.selectedDSPs.includes(dsp.id)
-                    ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                  }
+                ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+              }
                 `}
               >
                 <input
@@ -1880,13 +1880,13 @@ function DistributionStep({ formData, setFormData }: any) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Step 6: Review & Submit
 function ReviewStep({ formData, validationResults }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const sections = [
     {
@@ -1926,7 +1926,7 @@ function ReviewStep({ formData, validationResults }: any) {
         { label: t('가격 유형', 'Price Type'), value: formData.priceType }
       ]
     }
-  ]
+  ];
 
   return (
     <div className="space-y-6">
@@ -1976,7 +1976,7 @@ function ReviewStep({ formData, validationResults }: any) {
                 </span>
               )}
             </div>
-            
+
             {validationResults.errors.length > 0 && (
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 <p>{t('제출 전에 모든 오류를 수정해야 합니다.', 'All errors must be fixed before submission.')}</p>
@@ -2002,5 +2002,5 @@ function ReviewStep({ formData, validationResults }: any) {
         </div>
       </div>
     </div>
-  )
+  );
 }

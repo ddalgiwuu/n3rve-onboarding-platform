@@ -15,7 +15,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
   onChange,
   className = '',
   placeholder = '00:00',
-  disabled = false,
+  disabled = false
 }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -89,7 +89,7 @@ const TimePicker: React.FC<TimePickerProps> = ({
     { label: '12:00', value: '12:00' },
     { label: '15:00', value: '15:00' },
     { label: '18:00', value: '18:00' },
-    { label: '21:00', value: '21:00' },
+    { label: '21:00', value: '21:00' }
   ];
 
   return (
@@ -137,9 +137,9 @@ const TimePicker: React.FC<TimePickerProps> = ({
                   className={`
                     px-2 py-1 text-xs rounded transition-all
                     ${value === option.value
-                      ? 'bg-purple-500 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
-                    }
+                  ? 'bg-purple-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                }
                   `}
                 >
                   {option.label}

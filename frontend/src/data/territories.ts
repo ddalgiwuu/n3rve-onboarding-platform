@@ -237,38 +237,38 @@ export const continents: Continent[] = [
       { code: 'VU', name: 'Vanuatu', continent: 'oceania' }
     ]
   }
-]
+];
 
 // Get all countries as a flat array
-export const allCountries: Territory[] = continents.flatMap(continent => continent.countries)
+export const allCountries: Territory[] = continents.flatMap(continent => continent.countries);
 
 // DSP-specific exclusions
 export const dspExclusions = {
   spotify: ['SY', 'IR', 'CU', 'KP'], // Syria, Iran, Cuba, North Korea
   appleMusic: ['SY', 'IR', 'CU', 'KP', 'SD'], // Syria, Iran, Cuba, North Korea, Sudan
   youtubeMusic: ['SY', 'IR', 'CU', 'KP'],
-  tiktok: ['IN'], // India has banned TikTok
-}
+  tiktok: ['IN'] // India has banned TikTok
+};
 
 // Helper functions
 export function getCountryByCode(code: string): Territory | undefined {
-  return allCountries.find(country => country.code === code)
+  return allCountries.find(country => country.code === code);
 }
 
 export function getCountriesByContinent(continentId: string): Territory[] {
-  const continent = continents.find(c => c.id === continentId)
-  return continent ? continent.countries : []
+  const continent = continents.find(c => c.id === continentId);
+  return continent ? continent.countries : [];
 }
 
 export function getExcludedCountriesForDSPs(selectedDSPs: string[]): string[] {
-  const excludedCodes = new Set<string>()
-  
+  const excludedCodes = new Set<string>();
+
   selectedDSPs.forEach(dsp => {
-    const exclusions = dspExclusions[dsp as keyof typeof dspExclusions]
+    const exclusions = dspExclusions[dsp as keyof typeof dspExclusions];
     if (exclusions) {
-      exclusions.forEach(code => excludedCodes.add(code))
+      exclusions.forEach(code => excludedCodes.add(code));
     }
-  })
-  
-  return Array.from(excludedCodes)
+  });
+
+  return Array.from(excludedCodes);
 }

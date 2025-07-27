@@ -3,7 +3,7 @@ import { Globe, ChevronDown, ChevronUp, Search } from 'lucide-react';
 import { territories, regions, getTerritoriesByRegion, regionCounts, type Region } from '@/constants/territories';
 import { dsps, getDSPsByTerritory } from '@/constants/dsps';
 import { useLanguageStore } from '@/store/language.store';
-import useSafeStore from '@/hooks/useSafeStore'
+import useSafeStore from '@/hooks/useSafeStore';
 
 interface TerritoryDSPSelectorProps {
   value: {
@@ -19,7 +19,7 @@ interface TerritoryDSPSelectorProps {
 export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSelectorProps) {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string) => language === 'ko' ? ko : en;
-  
+
   const [selectedRegion, setSelectedRegion] = useState<Region>('World');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedDSPs, setExpandedDSPs] = useState<Set<string>>(new Set());
@@ -48,7 +48,7 @@ export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSe
   const toggleRegion = (region: Region) => {
     const regionTerritories = getTerritoriesByRegion(region);
     const regionCodes = regionTerritories.map(t => t.code);
-    
+
     if (isRegionFullySelected(region)) {
       // Deselect all
       onChange({
@@ -83,18 +83,18 @@ export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSe
   // Toggle DSP exclusion for a territory
   const toggleDSPExclusion = (dspId: string, territoryCode: string) => {
     const currentExclusions = value.dspExclusions[dspId] || [];
-    
+
     if (currentExclusions.includes(territoryCode)) {
       // Remove exclusion
       const newExclusions = currentExclusions.filter(t => t !== territoryCode);
       const newDspExclusions = { ...value.dspExclusions };
-      
+
       if (newExclusions.length === 0) {
         delete newDspExclusions[dspId];
       } else {
         newDspExclusions[dspId] = newExclusions;
       }
-      
+
       onChange({
         ...value,
         dspExclusions: newDspExclusions
@@ -113,7 +113,7 @@ export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSe
 
   // Get DSPs available in selected territories
   const availableDSPs = Array.from(new Set(
-    value.territories.flatMap(territoryCode => 
+    value.territories.flatMap(territoryCode =>
       getDSPsByTerritory(territoryCode).map(dsp => dsp.id)
     )
   )).map(dspId => dsps.find(dsp => dsp.id === dspId)!).filter(Boolean);
@@ -126,7 +126,7 @@ export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSe
           <Globe className="w-4 h-4" />
           {t('발매 지역 선택', 'Select Release Territories')}
         </h4>
-        
+
         <div className="flex flex-wrap gap-2 mb-4">
           {regions.map(region => (
             <button
@@ -147,10 +147,10 @@ export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSe
                 region === 'World' && value.territories.length === territories.length
                   ? 'bg-blue-500 text-white border-blue-500'
                   : isRegionFullySelected(region)
-                  ? 'bg-blue-500 text-white border-blue-500'
-                  : isRegionPartiallySelected(region)
-                  ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700'
-                  : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-blue-400'
+                    ? 'bg-blue-500 text-white border-blue-500'
+                    : isRegionPartiallySelected(region)
+                      ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-700'
+                      : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 hover:border-blue-400'
               }`}
             >
               {region} ({region === 'World' ? territories.length : regionCounts[region]})
@@ -236,7 +236,7 @@ export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSe
             {availableDSPs.map(dsp => {
               const isExpanded = expandedDSPs.has(dsp.id);
               const excludedCount = value.dspExclusions[dsp.id]?.length || 0;
-              const availableInTerritories = value.territories.filter(t => 
+              const availableInTerritories = value.territories.filter(t =>
                 dsp.availableRegions.includes(t)
               );
 
@@ -278,13 +278,13 @@ export default function TerritoryDSPSelector({ value, onChange }: TerritoryDSPSe
                       {availableInTerritories.map(territoryCode => {
                         const territory = territories.find(t => t.code === territoryCode)!;
                         const isExcluded = value.dspExclusions[dsp.id]?.includes(territoryCode);
-                        
+
                         return (
                           <label
                             key={territoryCode}
                             className={`flex items-center gap-2 cursor-pointer p-2 rounded ${
-                              isExcluded 
-                                ? 'bg-red-50 dark:bg-red-900/20' 
+                              isExcluded
+                                ? 'bg-red-50 dark:bg-red-900/20'
                                 : 'hover:bg-gray-50 dark:hover:bg-gray-700'
                             }`}
                           >

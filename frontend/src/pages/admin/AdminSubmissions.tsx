@@ -1,27 +1,27 @@
-import { useState } from 'react'
-import { Search } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+import { useState } from 'react';
+import { Search } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
 
 export default function AdminSubmissions() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
-  
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string, ja?: string) => {
     switch (language) {
-      case 'ko': return ko
-      case 'en': return en
-      case 'ja': return ja || en
-      default: return en
+      case 'ko': return ko;
+      case 'en': return en;
+      case 'ja': return ja || en;
+      default: return en;
     }
-  }
+  };
 
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">{t('제출 관리', 'Submission Management', '提出管理')}</h1>
-        
+
         <div className="flex gap-4">
           {/* 검색 / Search / 検索 */}
           <div className="relative">
@@ -34,7 +34,7 @@ export default function AdminSubmissions() {
               className="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
             />
           </div>
-          
+
           {/* 필터 / Filter / フィルター */}
           <select
             value={filterStatus}
@@ -91,5 +91,5 @@ export default function AdminSubmissions() {
         </table>
       </div>
     </div>
-  )
+  );
 }

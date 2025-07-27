@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
-import { Calendar, Clock, Info, Copy, Globe } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import DateTimePicker from '@/components/DateTimePicker'
-import { timezones, convertToUTC } from '@/constants/timezones'
+import { useState, useEffect } from 'react';
+import { Calendar, Clock, Info, Copy, Globe } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import DateTimePicker from '@/components/DateTimePicker';
+import { timezones, convertToUTC } from '@/constants/timezones';
 
 interface ReleaseDateSettingsProps {
   consumerDate: {
@@ -24,10 +24,10 @@ interface ReleaseDateSettingsProps {
 }
 
 export default function ReleaseDateSettings({ consumerDate, originalDate, onChange }: ReleaseDateSettingsProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [showOriginalDateEdit, setShowOriginalDateEdit] = useState(false)
+  const [showOriginalDateEdit, setShowOriginalDateEdit] = useState(false);
 
   // Auto-sync original date with consumer date when not re-release
   useEffect(() => {
@@ -38,35 +38,35 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
           ...consumerDate,
           isReRelease: false
         }
-      })
+      });
     }
-  }, [consumerDate, originalDate.isReRelease, showOriginalDateEdit])
+  }, [consumerDate, originalDate.isReRelease, showOriginalDateEdit]);
 
   const handleConsumerDateChange = (field: 'date' | 'time' | 'timezone' | 'datetime', value: string) => {
     if (field === 'datetime') {
       // Parse datetime ISO string
-      const date = new Date(value)
+      const date = new Date(value);
       const updatedConsumerDate = {
         ...consumerDate,
         date: date.toISOString().split('T')[0],
         time: `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
-      }
+      };
       onChange({
         consumerDate: updatedConsumerDate,
         originalDate: originalDate.isReRelease ? originalDate : { ...updatedConsumerDate, isReRelease: false }
-      })
+      });
     } else {
-      const updatedConsumerDate = { ...consumerDate, [field]: value }
+      const updatedConsumerDate = { ...consumerDate, [field]: value };
       onChange({
         consumerDate: updatedConsumerDate,
         originalDate: originalDate.isReRelease ? originalDate : { ...updatedConsumerDate, isReRelease: false }
-      })
+      });
     }
-  }
+  };
 
   const handleOriginalDateChange = (field: 'date' | 'time' | 'timezone' | 'isReRelease' | 'datetime', value: string | boolean) => {
     if (field === 'isReRelease') {
-      const isReRelease = value as boolean
+      const isReRelease = value as boolean;
       onChange({
         consumerDate,
         originalDate: {
@@ -75,11 +75,11 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
           // If turning off re-release, sync with consumer date
           ...(isReRelease ? {} : consumerDate)
         }
-      })
-      setShowOriginalDateEdit(isReRelease)
+      });
+      setShowOriginalDateEdit(isReRelease);
     } else if (field === 'datetime') {
       // Parse datetime ISO string
-      const date = new Date(value as string)
+      const date = new Date(value as string);
       onChange({
         consumerDate,
         originalDate: {
@@ -87,23 +87,23 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
           date: date.toISOString().split('T')[0],
           time: `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
         }
-      })
+      });
     } else {
       onChange({
         consumerDate,
         originalDate: { ...originalDate, [field]: value }
-      })
+      });
     }
-  }
+  };
 
   // Calculate UTC times
-  const consumerUTC = consumerDate.date && consumerDate.time 
+  const consumerUTC = consumerDate.date && consumerDate.time
     ? convertToUTC(consumerDate.date, consumerDate.time, consumerDate.timezone)
-    : null
+    : null;
 
   const originalUTC = originalDate.date && originalDate.time
     ? convertToUTC(originalDate.date, originalDate.time, originalDate.timezone)
-    : null
+    : null;
 
   return (
     <div className="space-y-6">
@@ -129,8 +129,8 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-1">
             <DateTimePicker
-              value={consumerDate.date && consumerDate.time ? 
-                `${consumerDate.date}T${consumerDate.time}:00` : 
+              value={consumerDate.date && consumerDate.time ?
+                `${consumerDate.date}T${consumerDate.time}:00` :
                 new Date().toISOString()
               }
               onChange={(datetime: string) => handleConsumerDateChange('datetime', datetime)}
@@ -140,7 +140,7 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
               hint={t('발매일과 시간을 선택하세요', 'Select release date and time')}
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5">
               {t('시간대', 'Timezone')} <span className="text-red-500">*</span>
@@ -224,8 +224,8 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-1">
               <DateTimePicker
-                value={originalDate.date && originalDate.time ? 
-                  `${originalDate.date}T${originalDate.time}:00` : 
+                value={originalDate.date && originalDate.time ?
+                  `${originalDate.date}T${originalDate.time}:00` :
                   new Date().toISOString()
                 }
                 onChange={(datetime: string) => handleOriginalDateChange('datetime', datetime)}
@@ -234,7 +234,7 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
                 hint={t('원곡이 발매된 날짜와 시간', 'Original release date and time')}
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5">
                 {t('시간대', 'Timezone')}
@@ -357,5 +357,5 @@ export default function ReleaseDateSettings({ consumerDate, originalDate, onChan
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,19 +1,19 @@
-import { useState, useEffect, forwardRef } from 'react'
-import { motion } from 'framer-motion'
-import EnhancedValidationWarning from './EnhancedValidationWarning'
-import { useValidationContext } from '@/contexts/ValidationContext'
-import { AlertCircle, AlertTriangle, Lightbulb } from 'lucide-react'
+import { useState, useEffect, forwardRef } from 'react';
+import { motion } from 'framer-motion';
+import EnhancedValidationWarning from './EnhancedValidationWarning';
+import { useValidationContext } from '@/contexts/ValidationContext';
+import { AlertCircle, AlertTriangle, Lightbulb } from 'lucide-react';
 
 interface ValidatedInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   fieldId: string
-  validationType: 'album' | 'track' | 'artist'
+  validationType: 'album' | 'track' | 'artist' | 'label'
   validationOptions?: {
     trackNumber?: number
     isComposer?: boolean
   }
   onValueChange?: (value: string) => void
   showInlineWarnings?: boolean
-  language?: 'ko' | 'en'
+  language?: 'ko' | 'en' | 'ja'
   label?: React.ReactNode
   helpText?: string
 }
@@ -32,81 +32,81 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(({
   onChange,
   ...props
 }, ref) => {
-  const [localValue, setLocalValue] = useState(value || '')
-  const [hasBeenTouched, setHasBeenTouched] = useState(false)
-  
+  const [localValue, setLocalValue] = useState(value || '');
+  const [hasBeenTouched, setHasBeenTouched] = useState(false);
+
   const {
     validateWithDebounce,
     getFieldWarnings,
     dismissWarning,
     acceptSuggestion,
     getInputBorderClass
-  } = useValidationContext()
+  } = useValidationContext();
 
-  const warnings = getFieldWarnings(fieldId)
-  const borderClass = getInputBorderClass(fieldId)
+  const warnings = getFieldWarnings(fieldId);
+  const borderClass = getInputBorderClass(fieldId);
 
   // Update local value when prop changes
   useEffect(() => {
-    setLocalValue(value || '')
-  }, [value])
+    setLocalValue(value || '');
+  }, [value]);
 
   // Validate on value change
   useEffect(() => {
     if (hasBeenTouched && localValue) {
-      validateWithDebounce(fieldId, localValue.toString(), validationType, validationOptions)
+      validateWithDebounce(fieldId, localValue.toString(), validationType, validationOptions);
     }
-  }, [localValue, fieldId, validationType, validationOptions, validateWithDebounce, hasBeenTouched])
+  }, [localValue, fieldId, validationType, validationOptions, validateWithDebounce, hasBeenTouched]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value
-    setLocalValue(newValue)
-    setHasBeenTouched(true)
-    onChange?.(e)
-    onValueChange?.(newValue)
-  }
+    const newValue = e.target.value;
+    setLocalValue(newValue);
+    setHasBeenTouched(true);
+    onChange?.(e);
+    onValueChange?.(newValue);
+  };
 
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    setHasBeenTouched(true)
-    props.onBlur?.(e)
-  }
+    setHasBeenTouched(true);
+    props.onBlur?.(e);
+  };
 
   const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    props.onFocus?.(e)
-  }
+    props.onFocus?.(e);
+  };
 
   const handleAcceptSuggestion = (warning: any) => {
-    const suggestedValue = acceptSuggestion(fieldId, warning)
+    const suggestedValue = acceptSuggestion(fieldId, warning);
     if (suggestedValue) {
-      setLocalValue(suggestedValue)
-      onValueChange?.(suggestedValue)
+      setLocalValue(suggestedValue);
+      onValueChange?.(suggestedValue);
       // Create synthetic event for onChange
       const syntheticEvent = {
         target: { value: suggestedValue }
-      } as React.ChangeEvent<HTMLInputElement>
-      onChange?.(syntheticEvent)
+      } as React.ChangeEvent<HTMLInputElement>;
+      onChange?.(syntheticEvent);
     }
-  }
+  };
 
   const handleDismissWarning = (warning: any) => {
-    dismissWarning(fieldId, warning.id)
-  }
+    dismissWarning(fieldId, warning.id);
+  };
 
   // Get validation status icon
   const getStatusIcon = () => {
-    if (!hasBeenTouched || warnings.length === 0) return null
-    
-    const hasError = warnings.some(w => w.type === 'error')
-    const hasWarning = warnings.some(w => w.type === 'warning')
-    
+    if (!hasBeenTouched || warnings.length === 0) return null;
+
+    const hasError = warnings.some(w => w.type === 'error');
+    const hasWarning = warnings.some(w => w.type === 'warning');
+
     if (hasError) {
-      return <AlertCircle className="w-5 h-5 text-red-500" />
+      return <AlertCircle className="w-5 h-5 text-red-500" />;
     } else if (hasWarning) {
-      return <AlertTriangle className="w-5 h-5 text-amber-500" />
+      return <AlertTriangle className="w-5 h-5 text-amber-500" />;
     } else {
-      return <Lightbulb className="w-5 h-5 text-blue-500" />
+      return <Lightbulb className="w-5 h-5 text-blue-500" />;
     }
-  }
+  };
 
   return (
     <div className="w-full">
@@ -115,7 +115,7 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(({
           {label}
         </label>
       )}
-      
+
       <div className="relative">
         <input
           ref={ref}
@@ -135,7 +135,7 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(({
           `}
           {...props}
         />
-        
+
         {/* Status Icon */}
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none">
           {getStatusIcon()}
@@ -167,9 +167,9 @@ const ValidatedInput = forwardRef<HTMLInputElement, ValidatedInputProps>(({
         </motion.div>
       )}
     </div>
-  )
-})
+  );
+});
 
-ValidatedInput.displayName = 'ValidatedInput'
+ValidatedInput.displayName = 'ValidatedInput';
 
-export default ValidatedInput
+export default ValidatedInput;

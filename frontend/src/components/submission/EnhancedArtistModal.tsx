@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
-import { X, Info, Youtube, Plus, User, Save, Search, ChevronDown, Globe } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import { useSavedArtistsStore } from '@/store/savedArtists.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { v4 as uuidv4 } from 'uuid'
-import toast from 'react-hot-toast'
+import { useState, useEffect } from 'react';
+import { X, Info, Youtube, Plus, User, Save, Search, ChevronDown, Globe } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import { useSavedArtistsStore } from '@/store/savedArtists.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { v4 as uuidv4 } from 'uuid';
+import toast from 'react-hot-toast';
 
 interface ArtistIdentifier {
   type: string
@@ -45,13 +45,13 @@ const translationLanguages = [
   { code: 'it', name: 'Italiano (Italian)' },
   { code: 'pt', name: 'Português (Portuguese)' },
   { code: 'ru', name: 'Русский (Russian)' }
-]
+];
 
 export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, editingArtist }: Props) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  const savedArtistsStore = useSavedArtistsStore()
-  
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const savedArtistsStore = useSavedArtistsStore();
+
   const [artist, setArtist] = useState<Artist>(editingArtist || {
     id: uuidv4(),
     primaryName: '',
@@ -65,59 +65,59 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
     youtubeChannelId: '',
     spotifyId: '',
     appleId: ''
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [showHelpModal, setShowHelpModal] = useState<'spotify' | 'apple' | null>(null)
-  const [showSavedArtists, setShowSavedArtists] = useState(false)
-  const [savedArtistSearch, setSavedArtistSearch] = useState('')
-  const [activeTranslations, setActiveTranslations] = useState<string[]>([])
-  const [translations, setTranslations] = useState<Record<string, string>>({})
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showHelpModal, setShowHelpModal] = useState<'spotify' | 'apple' | null>(null);
+  const [showSavedArtists, setShowSavedArtists] = useState(false);
+  const [savedArtistSearch, setSavedArtistSearch] = useState('');
+  const [activeTranslations, setActiveTranslations] = useState<string[]>([]);
+  const [translations, setTranslations] = useState<Record<string, string>>({});
 
   // Initialize translations from existing artist
   useEffect(() => {
     if (editingArtist && editingArtist.hasTranslation && editingArtist.translationLanguage && editingArtist.translatedName) {
-      setActiveTranslations([editingArtist.translationLanguage])
-      setTranslations({ [editingArtist.translationLanguage]: editingArtist.translatedName })
+      setActiveTranslations([editingArtist.translationLanguage]);
+      setTranslations({ [editingArtist.translationLanguage]: editingArtist.translatedName });
     }
-  }, [editingArtist])
+  }, [editingArtist]);
 
   // Load saved artists on mount and when modal opens
   useEffect(() => {
     if (isOpen) {
       savedArtistsStore.fetchArtists().catch(error => {
-        console.error('Failed to fetch saved artists:', error)
-        toast.error(t('저장된 아티스트를 불러오는데 실패했습니다', 'Failed to load saved artists'))
-      })
+        console.error('Failed to fetch saved artists:', error);
+        toast.error(t('저장된 아티스트를 불러오는데 실패했습니다', 'Failed to load saved artists'));
+      });
     }
-  }, [isOpen])
+  }, [isOpen]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const validate = () => {
-    const newErrors: Record<string, string> = {}
-    
+    const newErrors: Record<string, string> = {};
+
     if (!artist.primaryName.trim()) {
-      newErrors.primaryName = t('필수 항목입니다', 'This field is required')
+      newErrors.primaryName = t('필수 항목입니다', 'This field is required');
     }
-    
+
     // Platform IDs validation - only validate if provided
     if (!artist.isNewArtist && artist.spotifyId && artist.spotifyId.trim() && artist.spotifyId === 'MAKE_NEW') {
       // If user selected "MAKE_NEW", they need to be marked as new artist
-      newErrors.spotifyId = t('신인 아티스트로 체크해주세요', 'Please check as new artist')
+      newErrors.spotifyId = t('신인 아티스트로 체크해주세요', 'Please check as new artist');
     }
-    
+
     if (!artist.isNewArtist && artist.appleId && artist.appleId.trim() && artist.appleId === 'MAKE_NEW') {
       // If user selected "MAKE_NEW", they need to be marked as new artist
-      newErrors.appleId = t('신인 아티스트로 체크해주세요', 'Please check as new artist')
+      newErrors.appleId = t('신인 아티스트로 체크해주세요', 'Please check as new artist');
     }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSave = async () => {
-    const isValid = validate()
-    
+    const isValid = validate();
+
     if (isValid) {
       // Prepare artist with translations
       const finalArtist = {
@@ -125,12 +125,12 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
         hasTranslation: activeTranslations.length > 0,
         translationLanguage: activeTranslations[0] || '',
         translatedName: translations[activeTranslations[0]] || ''
-      }
-      
+      };
+
       // Save to database if not editing existing
       if (!editingArtist) {
         try {
-          
+
           const artistDataToSave = {
             name: artist.primaryName,
             translations: Object.entries(translations).map(([language, name]) => ({
@@ -142,36 +142,36 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
               ...(artist.appleId && artist.appleId !== 'MAKE_NEW' ? [{ type: 'APPLE_MUSIC', value: artist.appleId }] : []),
               ...(artist.youtubeChannelId ? [{ type: 'YOUTUBE', value: artist.youtubeChannelId }] : [])
             ]
-          }
-          
-          await savedArtistsStore.addArtist(artistDataToSave)
-          toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'))
+          };
+
+          await savedArtistsStore.addArtist(artistDataToSave);
+          toast.success(t('아티스트가 저장되었습니다', 'Artist saved successfully'));
         } catch (error) {
-          console.error('EnhancedArtistModal: Error saving artist:', error)
-          console.error('EnhancedArtistModal: Error details:', error instanceof Error ? error.message : 'Unknown error')
-          console.error('EnhancedArtistModal: Error stack:', error instanceof Error ? error.stack : 'No stack trace')
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error'
-          toast.error(t(`아티스트 저장에 실패했습니다: ${errorMessage}`, `Failed to save artist: ${errorMessage}`))
-          return // Don't close modal if save failed
+          console.error('EnhancedArtistModal: Error saving artist:', error);
+          console.error('EnhancedArtistModal: Error details:', error instanceof Error ? error.message : 'Unknown error');
+          console.error('EnhancedArtistModal: Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          toast.error(t(`아티스트 저장에 실패했습니다: ${errorMessage}`, `Failed to save artist: ${errorMessage}`));
+          return; // Don't close modal if save failed
         }
       }
-      
-      onSave(finalArtist)
-      onClose()
+
+      onSave(finalArtist);
+      onClose();
     }
-  }
+  };
 
   const selectSavedArtist = (savedArtist: any) => {
-    const spotifyId = savedArtist.identifiers.find((id: any) => id.type === 'SPOTIFY')?.value
-    const appleId = savedArtist.identifiers.find((id: any) => id.type === 'APPLE_MUSIC')?.value
-    const youtubeId = savedArtist.identifiers.find((id: any) => id.type === 'YOUTUBE')?.value
-    
+    const spotifyId = savedArtist.identifiers.find((id: any) => id.type === 'SPOTIFY')?.value;
+    const appleId = savedArtist.identifiers.find((id: any) => id.type === 'APPLE_MUSIC')?.value;
+    const youtubeId = savedArtist.identifiers.find((id: any) => id.type === 'YOUTUBE')?.value;
+
     // Convert saved artist translations to our format
-    const translationMap: Record<string, string> = {}
+    const translationMap: Record<string, string> = {};
     savedArtist.translations.forEach((trans: any) => {
-      translationMap[trans.language] = trans.name
-    })
-    
+      translationMap[trans.language] = trans.name;
+    });
+
     setArtist({
       ...artist,
       primaryName: savedArtist.name,
@@ -179,29 +179,29 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
       appleId: appleId || '',
       youtubeChannelId: youtubeId || '',
       isNewArtist: false
-    })
-    
-    setTranslations(translationMap)
-    setActiveTranslations(Object.keys(translationMap))
-    setShowSavedArtists(false)
-    
+    });
+
+    setTranslations(translationMap);
+    setActiveTranslations(Object.keys(translationMap));
+    setShowSavedArtists(false);
+
     // Update usage count
-    savedArtistsStore.useArtist(savedArtist.id)
-    toast.success(t('저장된 아티스트가 선택되었습니다', 'Saved artist selected'))
-  }
+    savedArtistsStore.useArtist(savedArtist.id);
+    toast.success(t('저장된 아티스트가 선택되었습니다', 'Saved artist selected'));
+  };
 
   const addTranslation = (langCode: string) => {
     if (!activeTranslations.includes(langCode)) {
-      setActiveTranslations([...activeTranslations, langCode])
+      setActiveTranslations([...activeTranslations, langCode]);
     }
-  }
+  };
 
   const removeTranslation = (langCode: string) => {
-    setActiveTranslations(activeTranslations.filter(l => l !== langCode))
-    const newTranslations = { ...translations }
-    delete newTranslations[langCode]
-    setTranslations(newTranslations)
-  }
+    setActiveTranslations(activeTranslations.filter(l => l !== langCode));
+    const newTranslations = { ...translations };
+    delete newTranslations[langCode];
+    setTranslations(newTranslations);
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -243,7 +243,7 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
                 </div>
                 <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${showSavedArtists ? 'rotate-180' : ''}`} />
               </button>
-              
+
               {showSavedArtists && (
                 <div className="mt-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                   <div className="p-3 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
@@ -258,7 +258,7 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
                       />
                     </div>
                   </div>
-                  
+
                   <div className="max-h-48 overflow-y-auto">
                     {savedArtistsStore.loading && (
                       <div className="p-4 text-center text-gray-500 dark:text-gray-400">
@@ -317,7 +317,7 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
                         </div>
                       </button>
                     ))}
-                    
+
                     {savedArtistsStore.searchArtists(savedArtistSearch).length === 0 && (
                       <div className="text-center py-6">
                         <p className="text-gray-500 dark:text-gray-400">
@@ -359,11 +359,11 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
                     {t('선택사항', 'Optional')}
                   </span>
                 </div>
-                
+
                 {/* Active translations */}
                 <div className="space-y-2">
                   {activeTranslations.map(langCode => {
-                    const lang = translationLanguages.find(l => l.code === langCode)
+                    const lang = translationLanguages.find(l => l.code === langCode);
                     return (
                       <div key={langCode} className="flex items-center gap-2">
                         <div className="flex-1 flex items-center gap-2">
@@ -389,23 +389,23 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
                           <X className="w-4 h-4" />
                         </button>
                       </div>
-                    )
+                    );
                   })}
-                  
+
                   {activeTranslations.length === 0 && (
                     <p className="text-center py-3 text-sm text-gray-500 dark:text-gray-400">
                       {t('번역이 추가되지 않았습니다', 'No translations added')}
                     </p>
                   )}
                 </div>
-                
+
                 {/* Add translation button */}
                 <button
                   type="button"
                   onClick={() => {
-                    const availableLangs = translationLanguages.filter(l => !activeTranslations.includes(l.code))
+                    const availableLangs = translationLanguages.filter(l => !activeTranslations.includes(l.code));
                     if (availableLangs.length > 0) {
-                      addTranslation(availableLangs[0].code)
+                      addTranslation(availableLangs[0].code);
                     }
                   }}
                   className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm"
@@ -594,5 +594,5 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -128,7 +128,7 @@ const ArtistProfileGuide = () => {
             <ArrowLeft className="w-5 h-5" />
             {t('뒤로가기', 'Back')}
           </button>
-          
+
           <div className="flex items-center gap-4">
             <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg">
               <Star className="w-8 h-8 text-white" />
@@ -156,7 +156,7 @@ const ArtistProfileGuide = () => {
                 Spotify for Artists
               </h2>
             </div>
-            
+
             <div className="space-y-6">
               {verificationSteps.spotify.map((step, index) => (
                 <div key={index} className="border-l-4 border-green-500 pl-4">
@@ -192,7 +192,7 @@ const ArtistProfileGuide = () => {
                 Apple Music for Artists
               </h2>
             </div>
-            
+
             <div className="space-y-6">
               {verificationSteps.apple.map((step, index) => (
                 <div key={index} className="border-l-4 border-gray-700 dark:border-gray-600 pl-4">
@@ -224,7 +224,7 @@ const ArtistProfileGuide = () => {
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
             {t('프로필 구성 요소', 'Profile Elements')}
           </h2>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {profileElements.map((section, index) => {
               const Icon = section.icon;

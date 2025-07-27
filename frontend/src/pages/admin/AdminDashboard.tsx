@@ -1,85 +1,85 @@
-import { useState, useEffect } from 'react'
-import { ClipboardList, Users, CheckCircle, XCircle, Calendar, Music, Eye, Download, Search, Filter, Clock, Settings } from 'lucide-react'
-import { submissionService } from '@/services/submission.service'
-import { useNavigate, Link } from 'react-router-dom'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { useState, useEffect } from 'react';
+import { ClipboardList, Users, CheckCircle, XCircle, Calendar, Music, Eye, Download, Search, Filter, Clock, Settings } from 'lucide-react';
+import { submissionService } from '@/services/submission.service';
+import { useNavigate, Link } from 'react-router-dom';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function AdminDashboard() {
-  const navigate = useNavigate()
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const navigate = useNavigate();
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string, ja?: string) => {
     switch (language) {
-      case 'ko': return ko
-      case 'en': return en
-      case 'ja': return ja || en
-      default: return en
+      case 'ko': return ko;
+      case 'en': return en;
+      case 'ja': return ja || en;
+      default: return en;
     }
-  }
-  
-  const [loading, setLoading] = useState(true)
+  };
+
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalSubmissions: 0,
     pendingReview: 0,
     approved: 0,
     rejected: 0,
     totalCustomers: 0
-  })
-  const [recentSubmissions, setRecentSubmissions] = useState<any[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+  });
+  const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
 
   useEffect(() => {
-    loadDashboardData()
-  }, [])
+    loadDashboardData();
+  }, []);
 
   const loadDashboardData = async () => {
     try {
-      setLoading(true)
-      
+      setLoading(true);
+
       // Load statistics
-      const statsData = await submissionService.getSubmissionStats()
-      setStats(statsData)
-      
+      const statsData = await submissionService.getSubmissionStats();
+      setStats(statsData);
+
       // Load recent submissions
       const submissionsData = await submissionService.getAllSubmissions({
         limit: 10,
         page: 1
-      })
-      setRecentSubmissions(submissionsData.submissions || [])
+      });
+      setRecentSubmissions(submissionsData.submissions || []);
     } catch (error) {
-      console.error('Failed to load dashboard data:', error)
+      console.error('Failed to load dashboard data:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800'
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800';
       case 'rejected':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800'
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800';
       case 'pending':
       default:
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800'
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 border border-yellow-200 dark:border-yellow-800';
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return date.toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit'
-    })
-  }
+    });
+  };
 
   if (loading) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   return (
@@ -226,11 +226,11 @@ export default function AdminDashboard() {
                       <td className="p-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(submission.status)}`}>
                           {t(
-                            submission.status === 'approved' ? '승인됨' : 
-                            submission.status === 'rejected' ? '반려됨' : '대기 중',
+                            submission.status === 'approved' ? '승인됨' :
+                              submission.status === 'rejected' ? '반려됨' : '대기 중',
                             submission.status.charAt(0).toUpperCase() + submission.status.slice(1),
-                            submission.status === 'approved' ? '承認済み' : 
-                            submission.status === 'rejected' ? '却下' : '待機中'
+                            submission.status === 'approved' ? '承認済み' :
+                              submission.status === 'rejected' ? '却下' : '待機中'
                           )}
                         </span>
                       </td>
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
               </tbody>
             </table>
           </div>
-          
+
           {/* 더보기 버튼 */}
           <div className="p-4 border-t border-gray-200 dark:border-white/20 text-center">
             <button
@@ -307,5 +307,5 @@ export default function AdminDashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

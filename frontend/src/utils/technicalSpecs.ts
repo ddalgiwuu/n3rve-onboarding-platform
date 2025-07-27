@@ -143,15 +143,15 @@ export const VIDEO_SPECIFICATIONS: VideoSpec = {
 export const validateAudioFile = (file: File): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
   const extension = file.name.split('.').pop()?.toUpperCase();
-  
+
   if (!extension || !AUDIO_SPECIFICATIONS.formats.includes(extension)) {
     errors.push(`Invalid format. Accepted formats: ${AUDIO_SPECIFICATIONS.formats.join(', ')}`);
   }
-  
+
   if (file.size > 2 * 1024 * 1024 * 1024) { // 2GB in bytes
     errors.push('File size exceeds 2GB limit');
   }
-  
+
   return {
     valid: errors.length === 0,
     errors
@@ -161,17 +161,17 @@ export const validateAudioFile = (file: File): { valid: boolean; errors: string[
 export const validateArtworkFile = (file: File): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
   const extension = file.name.split('.').pop()?.toUpperCase();
-  
+
   if (!extension || !['JPG', 'JPEG', 'PNG'].includes(extension)) {
     errors.push('Invalid format. Accepted formats: JPG/JPEG, PNG');
   }
-  
+
   if (file.size > 10 * 1024 * 1024) { // 10MB in bytes
     errors.push('File size exceeds 10MB limit');
   }
-  
+
   // Additional validation would require reading image metadata
-  
+
   return {
     valid: errors.length === 0,
     errors
@@ -181,15 +181,15 @@ export const validateArtworkFile = (file: File): { valid: boolean; errors: strin
 export const validateMotionArtFile = (file: File): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
   const extension = file.name.split('.').pop()?.toUpperCase();
-  
+
   if (!extension || extension !== 'MP4') {
     errors.push('Invalid format. Only MP4 is accepted');
   }
-  
+
   if (file.size > 100 * 1024 * 1024) { // 100MB in bytes
     errors.push('File size exceeds 100MB limit');
   }
-  
+
   return {
     valid: errors.length === 0,
     errors
@@ -199,15 +199,15 @@ export const validateMotionArtFile = (file: File): { valid: boolean; errors: str
 export const validateVideoFile = (file: File): { valid: boolean; errors: string[] } => {
   const errors: string[] = [];
   const extension = file.name.split('.').pop()?.toUpperCase();
-  
+
   if (!extension || !VIDEO_SPECIFICATIONS.formats.includes(extension)) {
     errors.push(`Invalid format. Accepted formats: ${VIDEO_SPECIFICATIONS.formats.join(', ')}`);
   }
-  
+
   if (file.size > 4 * 1024 * 1024 * 1024) { // 4GB in bytes
     errors.push('File size exceeds 4GB limit');
   }
-  
+
   return {
     valid: errors.length === 0,
     errors
@@ -217,11 +217,11 @@ export const validateVideoFile = (file: File): { valid: boolean; errors: string[
 // Format file size for display
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 };
 

@@ -108,7 +108,7 @@ export default function AccountSettings() {
             <Building2 className="w-6 h-6 text-purple-500" />
             {t('계정 정보', 'Account Information', 'アカウント情報')}
           </h2>
-          
+
           {accountInfo && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>

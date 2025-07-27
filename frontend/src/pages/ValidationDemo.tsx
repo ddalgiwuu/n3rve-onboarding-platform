@@ -1,29 +1,29 @@
-import { useState } from 'react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import ValidationWarning, { ValidationWarning as ValidationWarningType } from '@/components/ValidationWarning'
-import AdvancedValidationDemo from '@/components/validation/AdvancedValidationDemo'
-import { 
-  validateAlbumTitle, 
+import { useState } from 'react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import ValidationWarning, { ValidationWarning as ValidationWarningType } from '@/components/ValidationWarning';
+import AdvancedValidationDemo from '@/components/validation/AdvancedValidationDemo';
+import {
+  validateAlbumTitle,
   validateTrackTitle,
   validateArtistName,
-  createValidationState 
-} from '@/utils/inputValidation'
-import { motion } from 'framer-motion'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs'
+  createValidationState
+} from '@/utils/inputValidation';
+import { motion } from 'framer-motion';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/Tabs';
 
 export default function ValidationDemo() {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const [formData, setFormData] = useState({
     albumTitle: '',
     trackTitle: '',
     artistName: ''
-  })
+  });
 
-  const [validationWarnings, setValidationWarnings] = useState<Record<string, ValidationWarningType[]>>({})
-  const validationState = createValidationState()
+  const [validationWarnings, setValidationWarnings] = useState<Record<string, ValidationWarningType[]>>({});
+  const validationState = createValidationState();
 
   const handleFieldValidation = (field: string, value: string) => {
     let result;
@@ -239,5 +239,5 @@ export default function ValidationDemo() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import { authService } from './auth.service'
-import { logger } from '@/utils/logger'
+import { authService } from './auth.service';
+import { logger } from '@/utils/logger';
 
 export interface SavedArtist {
   id: string
@@ -24,61 +24,61 @@ export interface SavedContributor {
 }
 
 class SavedArtistsService {
-  private baseUrl = `${import.meta.env.VITE_API_URL}/saved-artists`
-  
+  private baseUrl = `${import.meta.env.VITE_API_URL}/saved-artists`;
+
   private async getHeaders() {
-    const token = await authService.getToken()
+    const token = await authService.getToken();
     // Headers prepared with authentication
-    
+
     const headers: HeadersInit = {
       'Content-Type': 'application/json'
-    }
-    
+    };
+
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`
+      headers['Authorization'] = `Bearer ${token}`;
     }
-    
-    return headers
+
+    return headers;
   }
 
   async getArtists(): Promise<SavedArtist[]> {
     // Fetching artists from API
-    
+
     const response = await fetch(`${this.baseUrl}/artists`, {
       method: 'GET',
       headers: await this.getHeaders(),
       credentials: 'include' // Include cookies if any
-    })
-    
+    });
+
     if (!response.ok) {
-      const errorText = await response.text()
-      throw new Error(`Failed to fetch artists: ${response.status} ${response.statusText} - ${errorText}`)
+      const errorText = await response.text();
+      throw new Error(`Failed to fetch artists: ${response.status} ${response.statusText} - ${errorText}`);
     }
-    
-    const result = await response.json()
-    return result
+
+    const result = await response.json();
+    return result;
   }
 
   async addArtist(artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedArtist> {
     try {
       // Adding new artist to API
-      
+
       const response = await fetch(`${this.baseUrl}/artists`, {
         method: 'POST',
         headers: await this.getHeaders(),
         credentials: 'include',
         body: JSON.stringify(artist)
-      })
-      
+      });
+
       if (!response.ok) {
-        const errorText = await response.text()
-        throw new Error(`Failed to add artist: ${response.status} ${response.statusText} - ${errorText}`)
+        const errorText = await response.text();
+        throw new Error(`Failed to add artist: ${response.status} ${response.statusText} - ${errorText}`);
       }
-      
-      const result = await response.json()
-      return result
+
+      const result = await response.json();
+      return result;
     } catch (fetchError) {
-      throw fetchError
+      throw fetchError;
     }
   }
 
@@ -88,13 +88,13 @@ class SavedArtistsService {
       headers: await this.getHeaders(),
       credentials: 'include',
       body: JSON.stringify(updates)
-    })
-    
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to update artist')
+      throw new Error('Failed to update artist');
     }
-    
-    return await response.json()
+
+    return await response.json();
   }
 
   async deleteArtist(id: string): Promise<void> {
@@ -102,10 +102,10 @@ class SavedArtistsService {
       method: 'DELETE',
       headers: await this.getHeaders(),
       credentials: 'include'
-    })
-    
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to delete artist')
+      throw new Error('Failed to delete artist');
     }
   }
 
@@ -114,13 +114,13 @@ class SavedArtistsService {
       method: 'PUT',
       headers: await this.getHeaders(),
       credentials: 'include'
-    })
-    
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to use artist')
+      throw new Error('Failed to use artist');
     }
-    
-    return await response.json()
+
+    return await response.json();
   }
 
   // Contributors
@@ -129,13 +129,13 @@ class SavedArtistsService {
       method: 'GET',
       headers: await this.getHeaders(),
       credentials: 'include'
-    })
-    
+    });
+
     if (!response.ok) {
-      throw new Error(`Failed to fetch contributors: ${response.status} ${response.statusText}`)
+      throw new Error(`Failed to fetch contributors: ${response.status} ${response.statusText}`);
     }
-    
-    return await response.json()
+
+    return await response.json();
   }
 
   async addContributor(contributor: Omit<SavedContributor, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedContributor> {
@@ -144,13 +144,13 @@ class SavedArtistsService {
       headers: await this.getHeaders(),
       credentials: 'include',
       body: JSON.stringify(contributor)
-    })
-    
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to add contributor')
+      throw new Error('Failed to add contributor');
     }
-    
-    return await response.json()
+
+    return await response.json();
   }
 
   async updateContributor(id: string, updates: Partial<SavedContributor>): Promise<SavedContributor> {
@@ -159,13 +159,13 @@ class SavedArtistsService {
       headers: await this.getHeaders(),
       credentials: 'include',
       body: JSON.stringify(updates)
-    })
-    
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to update contributor')
+      throw new Error('Failed to update contributor');
     }
-    
-    return await response.json()
+
+    return await response.json();
   }
 
   async deleteContributor(id: string): Promise<void> {
@@ -173,10 +173,10 @@ class SavedArtistsService {
       method: 'DELETE',
       headers: await this.getHeaders(),
       credentials: 'include'
-    })
-    
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to delete contributor')
+      throw new Error('Failed to delete contributor');
     }
   }
 
@@ -185,14 +185,14 @@ class SavedArtistsService {
       method: 'PUT',
       headers: await this.getHeaders(),
       credentials: 'include'
-    })
-    
+    });
+
     if (!response.ok) {
-      throw new Error('Failed to use contributor')
+      throw new Error('Failed to use contributor');
     }
-    
-    return await response.json()
+
+    return await response.json();
   }
 }
 
-export const savedArtistsService = new SavedArtistsService()
+export const savedArtistsService = new SavedArtistsService();

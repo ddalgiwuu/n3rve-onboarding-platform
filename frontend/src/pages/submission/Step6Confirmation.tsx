@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react'
-import { CheckCircle, AlertTriangle, Info, Music, User, Disc, Calendar, Shield, ChevronDown, ChevronRight, FileText, Star, AlertCircle } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import type { SubmissionData } from '@/services/submission.service'
-import AdminEmailPreview from '@/components/submission/AdminEmailPreview'
-import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation'
-import QCWarnings, { QCStatusBadge } from '@/components/submission/QCWarnings'
+import { useState, useEffect } from 'react';
+import { CheckCircle, AlertTriangle, Info, Music, User, Disc, Calendar, Shield, ChevronDown, ChevronRight, FileText, Star, AlertCircle } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import type { SubmissionData } from '@/services/submission.service';
+import AdminEmailPreview from '@/components/submission/AdminEmailPreview';
+import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation';
+import QCWarnings, { QCStatusBadge } from '@/components/submission/QCWarnings';
 
 interface Props {
   data: Partial<SubmissionData>
@@ -19,81 +19,81 @@ interface ValidationIssue {
 }
 
 export default function Step6Confirmation({ data, onNext, isSubmitting }: Props) {
-  const [expandedSections, setExpandedSections] = useState<string[]>(['artist', 'album', 'tracks', 'release'])
-  const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([])
-  const [termsAccepted, setTermsAccepted] = useState(false)
-  const [qcResults, setQcResults] = useState<QCValidationResults | null>(null)
-  const language = useLanguageStore((state: any) => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const [expandedSections, setExpandedSections] = useState<string[]>(['artist', 'album', 'tracks', 'release']);
+  const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [qcResults, setQcResults] = useState<QCValidationResults | null>(null);
+  const language = useLanguageStore((state: any) => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   useEffect(() => {
     // 검증 로직
-    const issues: ValidationIssue[] = []
+    const issues: ValidationIssue[] = [];
 
     // 트랙 검증
-    const trackList = (data as any).tracks?.tracks || (data as any).tracks
+    const trackList = (data as any).tracks?.tracks || (data as any).tracks;
     if (Array.isArray(trackList)) {
-      const titleTracks = trackList.filter(t => t.isTitle)
+      const titleTracks = trackList.filter(t => t.isTitle);
       if (titleTracks.length === 0) {
         issues.push({
           type: 'error',
           field: 'tracks',
           message: t('타이틀 트랙이 선택되지 않았습니다', 'No title track selected')
-        })
+        });
       }
       if (titleTracks.length > 1) {
         issues.push({
           type: 'warning',
           field: 'tracks',
           message: t('여러 개의 타이틀 트랙이 선택되었습니다', 'Multiple title tracks selected')
-        })
+        });
       }
 
       // ISRC 중복 검사
-      const isrcCodes = trackList.filter(t => t.isrc).map(t => t.isrc)
-      const duplicateIsrc = isrcCodes.find((code, index) => isrcCodes.indexOf(code) !== index)
+      const isrcCodes = trackList.filter(t => t.isrc).map(t => t.isrc);
+      const duplicateIsrc = isrcCodes.find((code, index) => isrcCodes.indexOf(code) !== index);
       if (duplicateIsrc) {
         issues.push({
           type: 'error',
           field: 'tracks',
           message: t('중복된 ISRC 코드가 발견되었습니다', 'Duplicate ISRC codes found')
-        })
+        });
       }
 
       // Explicit content 경고
-      const hasExplicit = trackList.some(t => t.explicitContent)
+      const hasExplicit = trackList.some(t => t.explicitContent);
       if (hasExplicit && data.release?.parentalAdvisory === 'none') {
         issues.push({
           type: 'warning',
           field: 'release',
           message: t('성인 콘텐츠가 감지되었지만 보호자 경고가 설정되지 않았습니다', 'Explicit content detected but parental advisory is set to none')
-        })
+        });
       }
     }
 
     // 발매일 검증
     if (data.release) {
-      const today = new Date()
-      const consumerDate = new Date(data.release.consumerReleaseDate)
-      const daysDiff = Math.ceil((consumerDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
-      
+      const today = new Date();
+      const consumerDate = new Date(data.release.consumerReleaseDate);
+      const daysDiff = Math.ceil((consumerDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
       if (daysDiff < 14) {
         issues.push({
           type: 'warning',
           field: 'release',
           message: t('발매일이 오늘로부터 14일 미만입니다', 'Release date is less than 14 days from today')
-        })
+        });
       }
 
       // Pre-order 검증
       if (data.release.preOrderEnabled && data.release.preOrderDate) {
-        const preOrderDate = new Date(data.release.preOrderDate)
+        const preOrderDate = new Date(data.release.preOrderDate);
         if (preOrderDate >= consumerDate) {
           issues.push({
             type: 'error',
             field: 'release',
             message: t('사전 주문 날짜는 발매일 이전이어야 합니다', 'Pre-order date must be before release date')
-          })
+          });
         }
       }
     }
@@ -104,44 +104,44 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
         type: 'error',
         field: 'files',
         message: t('커버 이미지가 필요합니다', 'Cover image is required')
-      })
+      });
     }
 
-    const trackCount = (data as any).tracks?.tracks?.length || (data as any).tracks?.length || 0
+    const trackCount = (data as any).tracks?.tracks?.length || (data as any).tracks?.length || 0;
     if (!data.files?.audioFiles || data.files.audioFiles.length !== trackCount) {
       issues.push({
         type: 'error',
         field: 'files',
         message: t('오디오 파일 수가 트랙 수와 일치하지 않습니다', 'Number of audio files does not match track count')
-      })
+      });
     }
 
-    setValidationIssues(issues)
-    
+    setValidationIssues(issues);
+
     // Run FUGA QC validation
-    const qcValidation = validateSubmission(data)
-    setQcResults(qcValidation)
-  }, [data])
+    const qcValidation = validateSubmission(data);
+    setQcResults(qcValidation);
+  }, [data]);
 
   const toggleSection = (section: string) => {
     setExpandedSections(prev =>
       prev.includes(section)
         ? prev.filter(s => s !== section)
         : [...prev, section]
-    )
-  }
+    );
+  };
 
-  const hasErrors = validationIssues.some(issue => issue.type === 'error') || (qcResults?.errors.length ?? 0) > 0
-  const hasWarnings = validationIssues.some(issue => issue.type === 'warning') || (qcResults?.warnings.length ?? 0) > 0
-  const hasQcErrors = (qcResults?.errors.length ?? 0) > 0
-  const hasQcWarnings = (qcResults?.warnings.length ?? 0) > 0
+  const hasErrors = validationIssues.some(issue => issue.type === 'error') || (qcResults?.errors.length ?? 0) > 0;
+  const hasWarnings = validationIssues.some(issue => issue.type === 'warning') || (qcResults?.warnings.length ?? 0) > 0;
+  const hasQcErrors = (qcResults?.errors.length ?? 0) > 0;
+  const hasQcWarnings = (qcResults?.warnings.length ?? 0) > 0;
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!hasErrors && termsAccepted) {
-      onNext({ confirmed: true })
+      onNext({ confirmed: true });
     }
-  }
+  };
 
   const formatGenres = (genres: string[]) => {
     return genres.map(g => {
@@ -167,11 +167,11 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
         'latin': { ko: '라틴', en: 'Latin' },
         'world': { ko: '월드', en: 'World' },
         'ambient': { ko: '앰비언트', en: 'Ambient' }
-      }
-      const translation = genreTranslations[g]
-      return translation ? t(translation.ko, translation.en) : g
-    }).join(', ')
-  }
+      };
+      const translation = genreTranslations[g];
+      return translation ? t(translation.ko, translation.en) : g;
+    }).join(', ');
+  };
 
   const formatDistributors = (distributors: string[]) => {
     const dspMap: Record<string, string> = {
@@ -185,9 +185,9 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
       vibe: 'VIBE',
       tiktok: 'TikTok',
       instagram: 'Instagram'
-    }
-    return distributors.map((d: string) => dspMap[d] || d).join(', ')
-  }
+    };
+    return distributors.map((d: string) => dspMap[d] || d).join(', ');
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -214,7 +214,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
                 <QCStatusBadge errors={qcResults.errors.length} warnings={qcResults.warnings.length} />
               </div>
             </div>
-            
+
             <div className="p-6 space-y-6">
               {qcResults.errors.length > 0 && (
                 <div>
@@ -225,7 +225,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
                   <QCWarnings results={qcResults.errors} />
                 </div>
               )}
-              
+
               {qcResults.warnings.length > 0 && (
                 <div>
                   <h4 className="text-sm font-semibold text-amber-700 dark:text-amber-300 mb-3 flex items-center gap-2">
@@ -235,7 +235,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
                   <QCWarnings results={qcResults.warnings} />
                 </div>
               )}
-              
+
               {qcResults.info.length > 0 && (
                 <div>
                   <h4 className="text-sm font-semibold text-blue-700 dark:text-blue-300 mb-3 flex items-center gap-2">
@@ -245,7 +245,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
                   <QCWarnings results={qcResults.info} />
                 </div>
               )}
-              
+
               {qcResults.errors.length === 0 && qcResults.warnings.length === 0 && qcResults.info.length === 0 && (
                 <div className="text-center py-4">
                   <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
@@ -458,7 +458,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
                         )}
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                       <div>
                         <p className="text-gray-500 dark:text-gray-400">{t('작곡가', 'Composer')}</p>
@@ -631,7 +631,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
                     {data.release.koreanDSP.newArtist && (
                       <p>• {t('신인 아티스트 등록', 'New artist registration')}</p>
                     )}
-                    {(data.release.koreanDSP.melonLink || data.release.koreanDSP.genieLink || 
+                    {(data.release.koreanDSP.melonLink || data.release.koreanDSP.genieLink ||
                       data.release.koreanDSP.bugsLink || data.release.koreanDSP.vibeLink) && (
                       <p>• {t('아티스트 페이지 링크 제공됨', 'Artist page links provided')}</p>
                     )}
@@ -697,7 +697,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
         </div>
 
         {/* Korean DSP Email Preview */}
-        {data.release?.koreanDSP && 
+        {data.release?.koreanDSP &&
           data.release.distributors?.some((d: string) => ['melon', 'genie', 'bugs', 'flo', 'vibe'].includes(d)) && (
           <div className="mb-6">
             <AdminEmailPreview data={data} />
@@ -744,7 +744,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
             </div>
           </div>
         )}
-        
+
         <div className="flex justify-end">
           <button
             type="submit"
@@ -756,5 +756,5 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
         </div>
       </div>
     </form>
-  )
+  );
 }

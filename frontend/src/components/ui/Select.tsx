@@ -21,18 +21,18 @@ interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>
   hint?: string;
 }
 
-export default function Select({ 
-  label, 
-  error, 
-  options = [], 
-  className = '', 
+export default function Select({
+  label,
+  error,
+  options = [],
+  className = '',
   placeholder = 'Select an option',
   value,
   onChange,
   disabled,
   searchable = false,
   nativeOnMobile = true,
-  ...props 
+  ...props
 }: SelectProps) {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
@@ -113,9 +113,9 @@ export default function Select({
 
   const filteredOptions = searchTerm
     ? options.filter(opt =>
-        opt.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      opt.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
         ('description' in opt && opt.description && opt.description.toLowerCase().includes(searchTerm.toLowerCase()))
-      )
+    )
     : options;
 
   const handleSelect = (optionValue: string) => {

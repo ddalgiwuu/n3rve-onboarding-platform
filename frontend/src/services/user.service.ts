@@ -62,5 +62,5 @@ export const userService = {
   async upgradeToCompanyAccount(company: string): Promise<any> {
     const { data } = await api.post('/user/upgrade-to-company', { company });
     return data;
-  },
+  }
 };

@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react'
-import { Plus, X, Music, Edit2, Check, ChevronDown } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { TRACK_VERSIONS } from '@/data/languages'
+import { useState, useCallback } from 'react';
+import { Plus, X, Music, Edit2, Check, ChevronDown } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { TRACK_VERSIONS } from '@/data/languages';
 
 interface TrackVersionManagerProps {
   value: string
@@ -17,13 +17,13 @@ export default function TrackVersionManager({
   className = '',
   allowCustom = true
 }: TrackVersionManagerProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [isOpen, setIsOpen] = useState(false)
-  const [isCustom, setIsCustom] = useState(false)
-  const [customValue, setCustomValue] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [isOpen, setIsOpen] = useState(false);
+  const [isCustom, setIsCustom] = useState(false);
+  const [customValue, setCustomValue] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Korean translations for track versions
   const getVersionTranslation = (version: string): string => {
@@ -44,43 +44,43 @@ export default function TrackVersionManager({
       'Remastered': '리마스터드',
       'Deluxe Version': '디럭스 버전',
       'Alternative Version': '얼터너티브 버전'
-    }
+    };
 
     if (language === 'ko' && translations[version]) {
-      return translations[version]
+      return translations[version];
     }
-    return version
-  }
+    return version;
+  };
 
   // Filter versions based on search
   const filteredVersions = TRACK_VERSIONS.filter(version =>
     version.toLowerCase().includes(searchQuery.toLowerCase()) ||
     getVersionTranslation(version).toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  );
 
   const handleSelect = useCallback((version: string) => {
-    onChange(version)
-    setIsOpen(false)
-    setSearchQuery('')
-    setIsCustom(false)
-  }, [onChange])
+    onChange(version);
+    setIsOpen(false);
+    setSearchQuery('');
+    setIsCustom(false);
+  }, [onChange]);
 
   const handleCustomSubmit = useCallback(() => {
     if (customValue.trim()) {
-      onChange(customValue.trim())
-      setCustomValue('')
-      setIsCustom(false)
-      setIsOpen(false)
+      onChange(customValue.trim());
+      setCustomValue('');
+      setIsCustom(false);
+      setIsOpen(false);
     }
-  }, [customValue, onChange])
+  }, [customValue, onChange]);
 
   const handleClear = useCallback(() => {
-    onChange('')
-    setIsOpen(false)
-  }, [onChange])
+    onChange('');
+    setIsOpen(false);
+  }, [onChange]);
 
-  const displayValue = value ? getVersionTranslation(value) : t('버전 선택', 'Select Version')
-  const isStandardVersion = TRACK_VERSIONS.includes(value)
+  const displayValue = value ? getVersionTranslation(value) : t('버전 선택', 'Select Version');
+  const isStandardVersion = TRACK_VERSIONS.includes(value);
 
   return (
     <div className={`relative ${className}`}>
@@ -101,10 +101,10 @@ export default function TrackVersionManager({
         onClick={() => setIsOpen(!isOpen)}
         className={`
           w-full px-3 py-2 text-left border rounded-lg focus:ring-2 focus:ring-purple-500 transition-colors
-          ${value 
-            ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
-            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-          }
+          ${value
+      ? 'border-purple-300 dark:border-purple-700 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
+      : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+    }
           ${isOpen ? 'ring-2 ring-purple-500' : ''}
         `}
       >
@@ -114,8 +114,8 @@ export default function TrackVersionManager({
             {value && (
               <button
                 onClick={(e) => {
-                  e.stopPropagation()
-                  handleClear()
+                  e.stopPropagation();
+                  handleClear();
                 }}
                 className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 rounded"
                 title={t('지우기', 'Clear')}
@@ -205,10 +205,10 @@ export default function TrackVersionManager({
                     onChange={(e) => setCustomValue(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
-                        handleCustomSubmit()
+                        handleCustomSubmit();
                       } else if (e.key === 'Escape') {
-                        setIsCustom(false)
-                        setCustomValue('')
+                        setIsCustom(false);
+                        setCustomValue('');
                       }
                     }}
                     placeholder={t('사용자 정의 버전 입력...', 'Enter custom version...')}
@@ -225,8 +225,8 @@ export default function TrackVersionManager({
                     </button>
                     <button
                       onClick={() => {
-                        setIsCustom(false)
-                        setCustomValue('')
+                        setIsCustom(false);
+                        setCustomValue('');
                       }}
                       className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm hover:bg-gray-50 dark:hover:bg-gray-700"
                     >
@@ -257,5 +257,5 @@ export default function TrackVersionManager({
         </div>
       )}
     </div>
-  )
+  );
 }

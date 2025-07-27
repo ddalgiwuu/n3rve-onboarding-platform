@@ -100,7 +100,7 @@ const Settings = () => {
                       className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {t('settings.email')}
@@ -112,7 +112,7 @@ const Settings = () => {
                       className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {t('settings.phone')}
@@ -124,7 +124,7 @@ const Settings = () => {
                       className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       {t('settings.company')}
@@ -136,7 +136,7 @@ const Settings = () => {
                       className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
                     />
                   </div>
-                  
+
                   <button
                     onClick={handleSaveProfile}
                     className="btn-modern btn-primary hover-lift flex items-center gap-2"
@@ -162,7 +162,7 @@ const Settings = () => {
                       onChange={() => setNotifications({ ...notifications, email: !notifications.email })}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.pushNotifications')}</h3>
@@ -173,7 +173,7 @@ const Settings = () => {
                       onChange={() => setNotifications({ ...notifications, push: !notifications.push })}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.smsNotifications')}</h3>
@@ -184,7 +184,7 @@ const Settings = () => {
                       onChange={() => setNotifications({ ...notifications, sms: !notifications.sms })}
                     />
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-gray-900 dark:text-white font-medium">{t('settings.marketingEmails')}</h3>
@@ -215,7 +215,7 @@ const Settings = () => {
                       {t('settings.updatePassword')}
                     </button>
                   </div>
-                  
+
                   <div className="p-6 bg-gray-100 dark:bg-gray-800/30 rounded-lg">
                     <div className="flex items-center gap-4 mb-4">
                       <Shield className="w-8 h-8 text-green-400" />
@@ -252,7 +252,7 @@ const Settings = () => {
                       {language === 'en' && <CheckCircle className="w-5 h-5 text-purple-400" />}
                     </div>
                   </button>
-                  
+
                   <button
                     onClick={() => setLanguage?.('ko')}
                     className={`w-full p-4 rounded-lg border transition-all ${
@@ -269,7 +269,7 @@ const Settings = () => {
                       {language === 'ko' && <CheckCircle className="w-5 h-5 text-purple-400" />}
                     </div>
                   </button>
-                  
+
                   <button
                     onClick={() => setLanguage?.('ja')}
                     className={`w-full p-4 rounded-lg border transition-all ${
@@ -306,7 +306,7 @@ const Settings = () => {
                       </button>
                     </div>
                   </div>
-                  
+
                   <div className="p-6 bg-gray-100 dark:bg-gray-800/30 rounded-lg">
                     <h3 className="text-gray-900 dark:text-white font-medium mb-4">{t('settings.paymentMethod')}</h3>
                     <div className="flex items-center gap-4">

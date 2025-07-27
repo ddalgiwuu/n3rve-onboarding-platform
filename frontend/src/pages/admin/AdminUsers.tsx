@@ -1,85 +1,85 @@
-import { useState, useEffect } from 'react'
-import { Users, Search, Shield, UserCheck, UserX, Mail, Phone, Calendar, Building, Clock } from 'lucide-react'
-import { usersService } from '@/services/users.service'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
+import { useState, useEffect } from 'react';
+import { Users, Search, Shield, UserCheck, UserX, Mail, Phone, Calendar, Building, Clock } from 'lucide-react';
+import { usersService } from '@/services/users.service';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function AdminUsers() {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  
-  const [loading, setLoading] = useState(true)
-  const [users, setUsers] = useState<any[]>([])
-  const [searchQuery, setSearchQuery] = useState('')
-  const [roleFilter, setRoleFilter] = useState<'all' | 'USER' | 'ADMIN'>('all')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+
+  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState<'all' | 'USER' | 'ADMIN'>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    loadUsers()
-  }, [currentPage, roleFilter])
+    loadUsers();
+  }, [currentPage, roleFilter]);
 
   const loadUsers = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const data = await usersService.getAllUsers({
         searchQuery,
         role: roleFilter,
         page: currentPage,
         limit: 20
-      })
-      
+      });
+
       // Add defensive programming
       if (!data || !Array.isArray(data.users)) {
-        console.error('Invalid response format:', data)
-        setUsers([])
-        setTotalPages(1)
-        return
+        console.error('Invalid response format:', data);
+        setUsers([]);
+        setTotalPages(1);
+        return;
       }
-      
-      setUsers(data.users || [])
-      setTotalPages(data.totalPages || 1)
+
+      setUsers(data.users || []);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
-      console.error('Failed to load users:', error)
-      setUsers([])
-      setTotalPages(1)
+      console.error('Failed to load users:', error);
+      setUsers([]);
+      setTotalPages(1);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleRoleChange = async (userId: string, newRole: 'USER' | 'ADMIN') => {
     try {
-      await usersService.updateUserRole(userId, newRole)
-      await loadUsers() // Reload users
+      await usersService.updateUserRole(userId, newRole);
+      await loadUsers(); // Reload users
     } catch (error) {
-      console.error('Failed to update user role:', error)
+      console.error('Failed to update user role:', error);
     }
-  }
+  };
 
   const handleStatusChange = async (userId: string, isActive: boolean) => {
     try {
-      await usersService.updateUserStatus(userId, isActive)
-      await loadUsers() // Reload users
+      await usersService.updateUserStatus(userId, isActive);
+      await loadUsers(); // Reload users
     } catch (error) {
-      console.error('Failed to update user status:', error)
+      console.error('Failed to update user status:', error);
     }
-  }
+  };
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString)
+    const date = new Date(dateString);
     return date.toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
       hour: '2-digit',
       minute: '2-digit'
-    })
-  }
+    });
+  };
 
   if (loading && users.length === 0) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   return (
@@ -184,8 +184,8 @@ export default function AdminUsers() {
                           value={user.role}
                           onChange={(e) => handleRoleChange(user.id, e.target.value as 'USER' | 'ADMIN')}
                           className={`px-3 py-1 rounded-lg text-sm font-medium border transition-colors ${
-                            user.role === 'ADMIN' 
-                              ? 'bg-purple-500/20 text-purple-400 border-purple-500/30' 
+                            user.role === 'ADMIN'
+                              ? 'bg-purple-500/20 text-purple-400 border-purple-500/30'
                               : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
                           }`}
                         >
@@ -197,8 +197,8 @@ export default function AdminUsers() {
                         <button
                           onClick={() => handleStatusChange(user.id, !user.isActive)}
                           className={`px-3 py-1 rounded-lg text-sm font-medium border transition-colors ${
-                            user.isActive 
-                              ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                            user.isActive
+                              ? 'bg-green-500/20 text-green-400 border-green-500/30'
                               : 'bg-red-500/20 text-red-400 border-red-500/30'
                           }`}
                         >
@@ -249,7 +249,7 @@ export default function AdminUsers() {
               </tbody>
             </table>
           </div>
-          
+
           {/* 페이지네이션 */}
           {totalPages > 1 && (
             <div className="p-4 border-t border-white/20 flex items-center justify-center gap-2">
@@ -275,5 +275,5 @@ export default function AdminUsers() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,10 +1,10 @@
 // Simplified hook for store compatibility
 const useSafeStore = <T, F>(
   store: () => T,
-  callback: (state: T) => F,
+  callback: (state: T) => F
 ) => {
-  const result = store()
-  return callback(result)
-}
+  const result = store();
+  return callback(result);
+};
 
-export default useSafeStore
+export default useSafeStore;

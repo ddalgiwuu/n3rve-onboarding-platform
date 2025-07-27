@@ -581,5 +581,297 @@
         "answer": "It's the International Standard Recording Code, a unique identifier for recordings. It will be auto-generated if you don't have one, so don't worry."
       }
     ]
+  },
+  
+  "ja": {
+    "overview": {
+      "title": "FUGA QC（品質管理）プロセスとは？",
+      "description": "FUGAは世界の主要音楽配信プラットフォームが要求する品質基準です。この基準を満たすことで、Spotify、Apple Musicなどに音源が正常に登録されます。",
+      "importance": [
+        "音源の却下防止",
+        "迅速な審査通過",
+        "グローバルプラットフォーム互換性",
+        "プロフェッショナルなメタデータ品質"
+      ]
+    },
+    
+    "process": {
+      "title": "QC検証プロセス",
+      "steps": [
+        {
+          "step": 1,
+          "title": "自動検証",
+          "description": "入力された情報がリアルタイムで検証されます",
+          "items": [
+            "特殊文字と絵文字の検査",
+            "言語別の大文字小文字規則",
+            "スペースと空白の検査",
+            "禁止されたプロモーションテキストの検査"
+          ]
+        },
+        {
+          "step": 2,
+          "title": "手動レビュー",
+          "description": "N3RVEチームが追加でレビューします",
+          "items": [
+            "著作権情報の確認",
+            "アーティスト情報の正確性",
+            "音源品質の検査",
+            "アルバムアートの品質確認"
+          ]
+        },
+        {
+          "step": 3,
+          "title": "DSP提出",
+          "description": "検証完了後、各プラットフォームに提出されます",
+          "items": [
+            "Spotify提出（1-2日）",
+            "Apple Music提出（2-3日）",
+            "YouTube Music提出（1日）",
+            "その他のプラットフォーム（3-5日）"
+          ]
+        }
+      ]
+    },
+    
+    "commonErrors": {
+      "title": "よく発生するQCエラー",
+      "errors": [
+        {
+          "type": "タイトルエラー",
+          "examples": [
+            "❌ 「愛してる」 → ✅ 愛してる（特殊括弧を削除）",
+            "❌ L O V E → ✅ LOVE（不要なスペースを削除）",
+            "❌ ❤️愛してる❤️ → ✅ 愛してる（絵文字を削除）",
+            "❌ **HOT** 新曲 → ✅ 新曲（プロモーションテキストを削除）"
+          ]
+        },
+        {
+          "type": "アーティスト名エラー",
+          "examples": [
+            "❌ feat. IU → ✅ フィーチャリングアーティストとして別途登録",
+            "❌ Various Artists → ✅ 実際のアーティスト名を入力",
+            "❌ 未定 → ✅ 正確なアーティスト名が必要",
+            "❌ BTS (防弾少年団) → ✅ BTSまたは防弾少年団のいずれか"
+          ]
+        },
+        {
+          "type": "バージョン表記エラー",
+          "examples": [
+            "❌ Original Version → ✅ 表記しない",
+            "❌ Remix Ver. → ✅ (Remix)",
+            "❌ [Acoustic] → ✅ (Acoustic)",
+            "❌ Inst → ✅ (Instrumental)"
+          ]
+        },
+        {
+          "type": "著作権エラー",
+          "examples": [
+            "❌ ℗ 2024 YG → ✅ 2024 YG（記号を削除）",
+            "❌ (C) YG → ✅ YG（記号を削除）",
+            "❌ 2025 → ✅ 2024（未来の年は不可）",
+            "❌ 空欄 → ✅ 必ず入力が必要"
+          ]
+        }
+      ]
+    },
+    
+    "languageRules": {
+      "title": "言語別表記規則",
+      "korean": {
+        "title": "韓国語",
+        "rules": [
+          "不要な英語併記を避ける",
+          "正書法を遵守",
+          "スペースを正確に",
+          "特殊文字を最小限に"
+        ]
+      },
+      "english": {
+        "title": "英語",
+        "rules": [
+          "タイトルケースを使用（主要な単語を大文字に）",
+          "冠詞（a、an、the）は小文字",
+          "前置詞（of、in、on）は小文字",
+          "最初と最後の単語は常に大文字"
+        ],
+        "examples": [
+          "✅ Love in the Time of Chaos",
+          "✅ The Last of Us",
+          "❌ love in the time of chaos",
+          "❌ The last Of us"
+        ]
+      },
+      "japanese": {
+        "title": "日本語",
+        "rules": [
+          "ひらがな、カタカナ、漢字を正確に",
+          "長音符の使用に注意",
+          "半角/全角文字の区別",
+          "ローマ字表記時はヘボン式を使用"
+        ]
+      }
+    },
+    
+    "genres": {
+      "title": "ジャンルガイドライン",
+      "tips": [
+        "メインジャンルは最も代表的なものを1つだけ",
+        "サブジャンルで詳細なスタイルを表現",
+        "K-Popはメインジャンルとして選択可能",
+        "クラシックは詳細ジャンルが必須（Orchestra、Chamber、Soloなど）"
+      ],
+      "mapping": {
+        "K-Pop": ["Dance", "Ballad", "Hip Hop", "R&B"],
+        "Rock": ["Alternative", "Indie", "Metal", "Punk"],
+        "Electronic": ["House", "Techno", "Dubstep", "Ambient"],
+        "Jazz": ["Smooth Jazz", "Bebop", "Fusion", "Vocal Jazz"]
+      }
+    },
+    
+    "metadata": {
+      "title": "メタデータ作成ガイド",
+      "required": {
+        "title": "必須情報",
+        "fields": [
+          "アーティスト名（韓国語/英語）",
+          "アルバム名（韓国語/英語）",
+          "トラック名（韓国語/英語）",
+          "リリース日",
+          "著作権情報",
+          "ジャンル"
+        ]
+      },
+      "optional": {
+        "title": "オプション情報（入力推奨）",
+        "fields": [
+          "ISRC（なければ自動生成）",
+          "UPC/EAN（なければ自動生成）",
+          "作曲家/作詞家情報",
+          "参加アーティスト情報",
+          "録音場所/日付"
+        ]
+      }
+    },
+    
+    "audioSpecs": {
+      "title": "音源ファイル規格",
+      "required": {
+        "format": "WAVまたはFLAC",
+        "bitDepth": "16bit以上（24bit推奨）",
+        "sampleRate": "44.1kHz以上（48kHz推奨）",
+        "channels": "ステレオ（2チャンネル）"
+      },
+      "dolbyAtmos": {
+        "title": "Dolby Atmos（オプション）",
+        "requirements": [
+          "ADM BWFファイル形式",
+          "48kHz/24bit必須",
+          "別途ステレオマスターが必要",
+          "Apple Digital Masters認証推奨"
+        ]
+      }
+    },
+    
+    "albumArt": {
+      "title": "アルバムアート規格",
+      "requirements": [
+        "最小3000x3000ピクセル",
+        "JPGまたはPNG形式",
+        "RGBカラーモード",
+        "解像度300dpi以上",
+        "ファイルサイズ10MB以下"
+      ],
+      "forbidden": [
+        "著作権侵害の画像",
+        "ウォーターマークやロゴ",
+        "URLやソーシャルメディア情報",
+        "性的または暴力的な内容",
+        "ぼやけたりピクセルが壊れた画像"
+      ]
+    },
+    
+    "timeline": {
+      "title": "一般的な処理時間",
+      "stages": [
+        {
+          "stage": "QC検証",
+          "time": "1-2営業日",
+          "description": "メタデータと音源の検証"
+        },
+        {
+          "stage": "DSP提出",
+          "time": "1日",
+          "description": "各プラットフォームへの送信"
+        },
+        {
+          "stage": "プラットフォーム審査",
+          "time": "2-5営業日",
+          "description": "Spotify、Apple Musicなどの自社審査"
+        },
+        {
+          "stage": "ライブ",
+          "time": "合計5-10営業日",
+          "description": "世界中でのストリーミング開始"
+        }
+      ]
+    },
+    
+    "tips": {
+      "title": "プロのヒント",
+      "items": [
+        "リリース日は最低2-3週間後に設定してください",
+        "金曜日のリリースはチャート集計に有利です",
+        "事前予約（Pre-save）キャンペーンを検討してください",
+        "クレジット情報はできるだけ詳しく入力してください",
+        "シリーズアルバムは一貫したネーミングを使用してください"
+      ]
+    },
+    
+    "resultGuide": {
+      "error": {
+        "title": "必ず修正が必要なエラー",
+        "action": "提出前にすべてのエラーを修正してください",
+        "icon": "🚫"
+      },
+      "warning": {
+        "title": "推奨修正事項",
+        "action": "可能であれば修正することをお勧めします",
+        "icon": "⚠️"
+      },
+      "info": {
+        "title": "参考事項",
+        "action": "確認後、必要に応じて修正してください",
+        "icon": "ℹ️"
+      },
+      "success": {
+        "title": "QC検証合格",
+        "action": "提出準備が完了しました",
+        "icon": "✅"
+      }
+    },
+    
+    "faq": [
+      {
+        "question": "QC検証に失敗したらどうなりますか？",
+        "answer": "失敗した項目を修正して再提出してください。追加料金はかかりません。"
+      },
+      {
+        "question": "特殊文字を必ず使いたいです",
+        "answer": "一部の特殊文字（!?.,- など）は許可されています。しかし、絵文字や特殊な括弧は使用できません。"
+      },
+      {
+        "question": "Feat.アーティストはどのように表記しますか？",
+        "answer": "トラック情報で「フィーチャリングアーティスト」として別途登録してください。タイトルには表記しません。"
+      },
+      {
+        "question": "複数のバージョンを一度に登録できますか？",
+        "answer": "はい、可能です。各バージョンを別々のトラックとして登録し、バージョン情報を明確に表記してください。"
+      },
+      {
+        "question": "ISRCとは何ですか？必要ですか？",
+        "answer": "International Standard Recording Codeで、音源の固有識別コードです。なければ自動生成されるので心配いりません。"
+      }
+    ]
   }
 }

@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react'
-import { X, ChevronRight, CheckCircle, AlertCircle, Info, Clock, FileText, Music, HelpCircle } from 'lucide-react'
-import { getQCHelp } from '@/utils/fugaQCLoader'
-import { useLanguageStore } from '@/store/language.store'
+import { useState, useMemo } from 'react';
+import { X, ChevronRight, CheckCircle, AlertCircle, Info, Clock, FileText, Music, HelpCircle } from 'lucide-react';
+import { getQCHelp } from '@/utils/fugaQCLoader';
+import { useLanguageStore } from '@/store/language.store';
 
 interface FugaQCHelpModalProps {
   isOpen: boolean
@@ -9,20 +9,20 @@ interface FugaQCHelpModalProps {
 }
 
 export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProps) {
-  const [activeTab, setActiveTab] = useState<'overview' | 'process' | 'errors' | 'specs' | 'faq'>('overview')
-  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null)
-  const language = useLanguageStore(state => state.language)
-  
+  const [activeTab, setActiveTab] = useState<'overview' | 'process' | 'errors' | 'specs' | 'faq'>('overview');
+  const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
+  const language = useLanguageStore(state => state.language);
+
   // Load help content based on current language
   const { fugaQCHelp, qcFAQ } = useMemo(() => {
-    const helpContent = getQCHelp(language)
+    const helpContent = getQCHelp(language);
     return {
       fugaQCHelp: helpContent,
       qcFAQ: helpContent.faq || []
-    }
-  }, [language])
+    };
+  }, [language]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const tabs = [
     { id: 'overview', label: language === 'ko' ? '개요' : 'Overview', icon: FileText },
@@ -30,7 +30,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
     { id: 'errors', label: language === 'ko' ? '일반 오류' : 'Common Errors', icon: AlertCircle },
     { id: 'specs', label: language === 'ko' ? '파일 규격' : 'File Specs', icon: Music },
     { id: 'faq', label: 'FAQ', icon: HelpCircle }
-  ]
+  ];
 
   const renderOverview = () => (
     <div className="space-y-6">
@@ -38,7 +38,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
         <h3 className="text-lg font-semibold mb-3">{fugaQCHelp.overview.title}</h3>
         <p className="text-gray-600 dark:text-gray-400 whitespace-pre-line">{fugaQCHelp.overview.description}</p>
       </div>
-      
+
       <div>
         <h4 className="font-medium mb-2">{language === 'ko' ? '중요성' : 'Importance'}</h4>
         <ul className="space-y-2">
@@ -51,12 +51,12 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
         </ul>
       </div>
     </div>
-  )
+  );
 
   const renderProcess = () => (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">{fugaQCHelp.process.title}</h3>
-      
+
       {fugaQCHelp.process.steps.map((step: any) => (
         <div key={step.step} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
           <div className="flex items-start gap-3">
@@ -96,12 +96,12 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderErrors = () => (
     <div className="space-y-6">
       <h3 className="text-lg font-semibold">{fugaQCHelp.commonErrors.title}</h3>
-      
+
       {fugaQCHelp.commonErrors.errors.map((error: any, index: number) => (
         <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
           <h4 className="font-medium mb-3 text-red-600 dark:text-red-400">{error.type}</h4>
@@ -147,7 +147,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderSpecs = () => (
     <div className="space-y-6">
@@ -201,7 +201,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
               ))}
             </ul>
           </div>
-          
+
           <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4">
             <h4 className="font-medium mb-3 text-red-700 dark:text-red-400">{language === 'ko' ? '금지 사항' : 'Forbidden'}</h4>
             <ul className="space-y-1">
@@ -213,12 +213,12 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderFAQ = () => (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold mb-4">{language === 'ko' ? '자주 묻는 질문' : 'Frequently Asked Questions'}</h3>
-      
+
       {qcFAQ.map((faq, index) => (
         <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
           <button
@@ -226,7 +226,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
             className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             <span className="font-medium text-sm">{faq.question}</span>
-            <ChevronRight 
+            <ChevronRight
               className={`w-4 h-4 text-gray-400 transition-transform ${
                 expandedFAQ === index ? 'rotate-90' : ''
               }`}
@@ -240,24 +240,24 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
         </div>
       ))}
     </div>
-  )
+  );
 
   const renderContent = () => {
     switch (activeTab) {
       case 'overview':
-        return renderOverview()
+        return renderOverview();
       case 'process':
-        return renderProcess()
+        return renderProcess();
       case 'errors':
-        return renderErrors()
+        return renderErrors();
       case 'specs':
-        return renderSpecs()
+        return renderSpecs();
       case 'faq':
-        return renderFAQ()
+        return renderFAQ();
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
@@ -276,7 +276,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
         {/* Tabs */}
         <div className="flex border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
           {tabs.map((tab: any) => {
-            const Icon = tab.icon
+            const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
@@ -290,7 +290,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
                 <Icon className="w-4 h-4" />
                 {tab.label}
               </button>
-            )
+            );
           })}
         </div>
 
@@ -315,5 +315,5 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
         </div>
       </div>
     </div>
-  )
+  );
 }

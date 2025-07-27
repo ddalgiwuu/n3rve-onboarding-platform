@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react'
-import { Plus, Music, AlertCircle, Info, Upload } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import TrackForm from './TrackForm'
-import { v4 as uuidv4 } from 'uuid'
+import { useState, useEffect } from 'react';
+import { Plus, Music, AlertCircle, Info, Upload } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import TrackForm from './TrackForm';
+import { v4 as uuidv4 } from 'uuid';
 // @dnd-kit temporarily disabled for React 19 compatibility
 // import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core'
 // import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -42,32 +42,32 @@ interface TrackListProps {
 }
 
 export default function TrackList({ tracks, albumArtists, releaseType, onUpdate }: TrackListProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [localTracks, setLocalTracks] = useState<Track[]>(tracks)
+  const [localTracks, setLocalTracks] = useState<Track[]>(tracks);
 
   useEffect(() => {
-    setLocalTracks(tracks)
-  }, [tracks])
+    setLocalTracks(tracks);
+  }, [tracks]);
 
   // Get track count limits based on release type
   const getTrackLimits = () => {
     switch (releaseType) {
       case 'Single':
-        return { min: 1, max: 3, description: t('1-3 트랙', '1-3 tracks') }
+        return { min: 1, max: 3, description: t('1-3 트랙', '1-3 tracks') };
       case 'EP':
-        return { min: 4, max: 6, description: t('4-6 트랙', '4-6 tracks') }
+        return { min: 4, max: 6, description: t('4-6 트랙', '4-6 tracks') };
       case 'Album':
-        return { min: 7, max: 999, description: t('7개 이상 트랙', '7+ tracks') }
+        return { min: 7, max: 999, description: t('7개 이상 트랙', '7+ tracks') };
       case 'Compilation':
-        return { min: 1, max: 999, description: t('제한 없음', 'No limit') }
+        return { min: 1, max: 999, description: t('제한 없음', 'No limit') };
       default:
-        return { min: 1, max: 999, description: '' }
+        return { min: 1, max: 999, description: '' };
     }
-  }
+  };
 
-  const limits = getTrackLimits()
+  const limits = getTrackLimits();
 
   // Add new track
   const addTrack = () => {
@@ -82,20 +82,20 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
       })),
       contributors: [],
       musicVideos: []
-    }
-    const updatedTracks = [...localTracks, newTrack]
-    setLocalTracks(updatedTracks)
-    onUpdate(updatedTracks)
-  }
+    };
+    const updatedTracks = [...localTracks, newTrack];
+    setLocalTracks(updatedTracks);
+    onUpdate(updatedTracks);
+  };
 
   // Update track
   const updateTrack = (updatedTrack: Track) => {
-    const updatedTracks = localTracks.map(track => 
+    const updatedTracks = localTracks.map(track =>
       track.id === updatedTrack.id ? updatedTrack : track
-    )
-    setLocalTracks(updatedTracks)
-    onUpdate(updatedTracks)
-  }
+    );
+    setLocalTracks(updatedTracks);
+    onUpdate(updatedTracks);
+  };
 
   // Delete track
   const deleteTrack = (trackId: string) => {
@@ -103,17 +103,17 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
       alert(t(
         `${releaseType}는 최소 ${limits.min}개의 트랙이 필요합니다`,
         `${releaseType} requires at least ${limits.min} tracks`
-      ))
-      return
+      ));
+      return;
     }
 
     const updatedTracks = localTracks
       .filter(track => track.id !== trackId)
-      .map((track, index) => ({ ...track, number: index + 1 }))
-    
-    setLocalTracks(updatedTracks)
-    onUpdate(updatedTracks)
-  }
+      .map((track, index) => ({ ...track, number: index + 1 }));
+
+    setLocalTracks(updatedTracks);
+    onUpdate(updatedTracks);
+  };
 
   // Handle drag and drop - temporarily disabled for React 19 compatibility
   // const handleDragEnd = (event: DragEndEvent) => {
@@ -142,58 +142,58 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
 
   // Calculate total duration
   const totalDuration = localTracks.reduce((sum, track) => {
-    return sum + (track.duration ? parseInt(track.duration) : 0)
-  }, 0)
+    return sum + (track.duration ? parseInt(track.duration) : 0);
+  }, 0);
 
   const formatTotalDuration = () => {
-    const hours = Math.floor(totalDuration / 3600)
-    const minutes = Math.floor((totalDuration % 3600) / 60)
-    const seconds = totalDuration % 60
+    const hours = Math.floor(totalDuration / 3600);
+    const minutes = Math.floor((totalDuration % 3600) / 60);
+    const seconds = totalDuration % 60;
 
     if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`
-  }
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
 
   // Validation warnings
   const getValidationWarnings = () => {
-    const warnings = []
-    
+    const warnings = [];
+
     if (localTracks.length < limits.min) {
       warnings.push(t(
         `${releaseType}는 최소 ${limits.min}개의 트랙이 필요합니다`,
         `${releaseType} requires at least ${limits.min} tracks`
-      ))
+      ));
     }
-    
+
     if (releaseType !== 'Compilation' && localTracks.length > limits.max) {
       warnings.push(t(
         `${releaseType}는 최대 ${limits.max}개의 트랙만 가능합니다`,
         `${releaseType} can have maximum ${limits.max} tracks`
-      ))
+      ));
     }
 
-    const tracksWithoutTitle = localTracks.filter(t => !t.title).length
+    const tracksWithoutTitle = localTracks.filter(t => !t.title).length;
     if (tracksWithoutTitle > 0) {
       warnings.push(t(
         `${tracksWithoutTitle}개 트랙의 제목이 없습니다`,
         `${tracksWithoutTitle} tracks are missing titles`
-      ))
+      ));
     }
 
-    const tracksWithoutArtists = localTracks.filter(t => t.artists.length === 0).length
+    const tracksWithoutArtists = localTracks.filter(t => t.artists.length === 0).length;
     if (tracksWithoutArtists > 0) {
       warnings.push(t(
         `${tracksWithoutArtists}개 트랙의 아티스트가 없습니다`,
         `${tracksWithoutArtists} tracks are missing artists`
-      ))
+      ));
     }
 
-    return warnings
-  }
+    return warnings;
+  };
 
-  const warnings = getValidationWarnings()
+  const warnings = getValidationWarnings();
 
   return (
     <div className="space-y-6">
@@ -245,12 +245,12 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
       )}
 
       {/* Track List - DndContext temporarily disabled for React 19 compatibility */}
-      {/* <DndContext 
+      {/* <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext 
+        <SortableContext
           items={localTracks.map(t => t.id)}
           strategy={verticalListSortingStrategy}
         >
@@ -268,7 +268,7 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
           </div>
         </SortableContext>
       </DndContext> */}
-      
+
       {/* Simple track list without drag and drop */}
       <div className="space-y-4">
         {localTracks.map((track) => (
@@ -327,7 +327,7 @@ export default function TrackList({ tracks, albumArtists, releaseType, onUpdate 
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Sortable Track Item Component - temporarily disabled for React 19 compatibility
@@ -394,5 +394,5 @@ function SimpleTrackItem({ track, albumArtists, onUpdate, onDelete, totalTracks 
         totalTracks={totalTracks}
       />
     </div>
-  )
+  );
 }

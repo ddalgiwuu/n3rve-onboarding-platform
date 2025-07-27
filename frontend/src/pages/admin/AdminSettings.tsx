@@ -13,14 +13,14 @@ const AdminSettings = () => {
       default: return en;
     }
   };
-  
+
   const [settings, setSettings] = useState({
     // FUGA QC Management
     qcVersion: '2.1.0',
     qcAutoApprovalEnabled: true,
     qcErrorThreshold: 0, // 0 errors = auto-approve
     qcLastUpdated: '2025-07-15',
-    
+
     // Submission Processing
     autoApprovalEnabled: true,
     trustedArtists: ['artist123', 'artist456'],
@@ -28,30 +28,30 @@ const AdminSettings = () => {
     priorityQueueEnabled: true,
     bulkActionLimit: 50,
     duplicateDetectionSensitivity: 'medium',
-    
+
     // Communication Templates
     emailTemplates: {
       submissionReceived: true,
       approved: true,
       rejected: true,
-      additionalInfoNeeded: true,
+      additionalInfoNeeded: true
     },
     notificationChannels: {
       email: true,
       slack: false,
-      webhook: false,
+      webhook: false
     },
-    
+
     // Business Operations
     businessHours: {
       start: '09:00',
       end: '18:00',
-      timezone: 'Asia/Seoul',
+      timezone: 'Asia/Seoul'
     },
     workingDays: ['mon', 'tue', 'wed', 'thu', 'fri'],
     vipArtists: [],
     blockedArtists: [],
-    
+
     // Distribution Settings
     fugaApiEnabled: true,
     defaultTerritories: ['WW'], // Worldwide
@@ -60,25 +60,25 @@ const AdminSettings = () => {
       artistBio: true,
       albumDescription: true,
       trackCredits: true,
-      artwork3000x3000: true,
+      artwork3000x3000: true
     },
-    
+
     // File Processing
     acceptedFormats: ['WAV', 'FLAC', 'MP3'],
     maxFileSizeMB: {
       WAV: 500,
       FLAC: 300,
-      MP3: 50,
+      MP3: 50
     },
     minBitrate: 320,
     artworkMinSize: 3000,
-    
+
     // Platform Monitoring
     dropboxSyncEnabled: true,
     errorRateThreshold: 5, // percentage
     emailDeliveryRate: 98.5, // percentage
     maintenanceMode: false,
-    maintenanceMessage: '',
+    maintenanceMessage: ''
   });
 
   const handleSave = () => {
@@ -130,7 +130,7 @@ const AdminSettings = () => {
                 v{settings.qcVersion}
               </span>
             </div>
-            
+
             <div className="grid gap-4">
               <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
@@ -151,7 +151,7 @@ const AdminSettings = () => {
                   {t('QC 오류가 0개일 때 자동으로 승인합니다', 'Auto-approve when QC errors = 0', 'QCエラーが0件の場合自動承認')}
                 </p>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -165,7 +165,7 @@ const AdminSettings = () => {
                     className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t('마지막 업데이트', 'Last Updated', '最終更新')}
@@ -178,7 +178,7 @@ const AdminSettings = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="flex gap-3">
                 <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all flex items-center gap-2">
                   <FileText className="w-4 h-4" />
@@ -199,7 +199,7 @@ const AdminSettings = () => {
                 {t('제출 처리 규칙', 'Submission Processing', '提出処理ルール')}
               </h2>
             </div>
-            
+
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -213,7 +213,7 @@ const AdminSettings = () => {
                     className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t('일괄 작업 제한', 'Bulk Action Limit', '一括操作制限')}
@@ -226,7 +226,7 @@ const AdminSettings = () => {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('중복 감지 민감도', 'Duplicate Detection Sensitivity', '重複検出感度')}
@@ -241,7 +241,7 @@ const AdminSettings = () => {
                   <option value="high">{t('높음', 'High', '高')}</option>
                 </select>
               </div>
-              
+
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -279,7 +279,7 @@ const AdminSettings = () => {
                 {t('커뮤니케이션 센터', 'Communication Center', 'コミュニケーションセンター')}
               </h2>
             </div>
-            
+
             <div className="grid gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
@@ -307,7 +307,7 @@ const AdminSettings = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   {t('알림 채널', 'Notification Channels', '通知チャンネル')}
@@ -331,7 +331,7 @@ const AdminSettings = () => {
                   ))}
                 </div>
               </div>
-              
+
               <button className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-all w-full sm:w-auto">
                 {t('템플릿 편집', 'Edit Templates', 'テンプレート編集')}
               </button>
@@ -346,7 +346,7 @@ const AdminSettings = () => {
                 {t('비즈니스 운영', 'Business Operations', 'ビジネス運用')}
               </h2>
             </div>
-            
+
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -363,7 +363,7 @@ const AdminSettings = () => {
                     className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
                   />
                 </div>
-                
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t('업무 종료 시간', 'Business End Time', '業務終了時間')}
@@ -379,7 +379,7 @@ const AdminSettings = () => {
                   />
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('근무일', 'Working Days', '勤務日')}
@@ -425,7 +425,7 @@ const AdminSettings = () => {
                 {t('배포 설정', 'Distribution Settings', '配信設定')}
               </h2>
             </div>
-            
+
             <div className="grid gap-4">
               <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
@@ -437,7 +437,7 @@ const AdminSettings = () => {
                   </span>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('릴리즈 리드 타임 (일)', 'Release Lead Time (days)', 'リリースリードタイム(日)')}
@@ -449,7 +449,7 @@ const AdminSettings = () => {
                   className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
                 />
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                   {t('메타데이터 요구사항', 'Metadata Requirements', 'メタデータ要件')}
@@ -487,7 +487,7 @@ const AdminSettings = () => {
                 {t('플랫폼 모니터링', 'Platform Monitoring', 'プラットフォーム監視')}
               </h2>
             </div>
-            
+
             <div className="grid gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
@@ -501,7 +501,7 @@ const AdminSettings = () => {
                     {t('마지막 동기화: 5분 전', 'Last sync: 5 minutes ago', '最後の同期: 5分前')}
                   </p>
                 </div>
-                
+
                 <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -516,7 +516,7 @@ const AdminSettings = () => {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   {t('오류율 임계값 (%)', 'Error Rate Threshold (%)', 'エラー率しきい値(%)')}
@@ -528,7 +528,7 @@ const AdminSettings = () => {
                   className="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 rounded-lg focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 text-gray-900 dark:text-white"
                 />
               </div>
-              
+
               <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">

@@ -154,7 +154,7 @@ export const helpTexts = {
       minimum: '최소 16bit/44.1kHz (CD 품질)'
     }
   }
-}
+};
 
 // 툴팁 텍스트 (짧은 설명)
 export const tooltips = {
@@ -172,7 +172,7 @@ export const tooltips = {
   parentalAdvisory: '19금 내용 포함 여부',
   previouslyReleased: '이미 다른 플랫폼에 공개된 경우',
   recordLabel: '음반 제작사/레이블명'
-}
+};
 
 // 에러 메시지 설명
 export const errorExplanations = {
@@ -182,4 +182,4 @@ export const errorExplanations = {
   versionFormat: '버전 정보는 괄호 안에 표시하세요. 예: (Acoustic Version)',
   futureCopyright: '미래 연도는 저작권 연도로 사용할 수 없습니다.',
   genericArtistName: '너무 일반적인 아티스트명은 사용할 수 없습니다.'
-}
+};

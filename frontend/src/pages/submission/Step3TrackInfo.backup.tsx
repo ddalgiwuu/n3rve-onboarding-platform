@@ -1,11 +1,11 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react'
-import { Plus, X, Music, Star, User, Edit3, Users, ChevronRight, List, AlertTriangle, Info, Languages, Clock, AlertCircle, Volume2, BookOpen, Megaphone, CheckCircle, FileText, Tag, Target, Disc, Music2, Mic, UserCheck, Calendar, Search, GripVertical } from 'lucide-react'
-import { t, useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { v4 as uuidv4 } from 'uuid'
-import { validateField, type QCValidationResult } from '@/utils/fugaQCValidation'
-import QCWarnings from '@/components/submission/QCWarnings'
-import ArtistModal from '@/components/submission/ArtistModal'
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Plus, X, Music, Star, User, Edit3, Users, ChevronRight, List, AlertTriangle, Info, Languages, Clock, AlertCircle, Volume2, BookOpen, Megaphone, CheckCircle, FileText, Tag, Target, Disc, Music2, Mic, UserCheck, Calendar, Search, GripVertical } from 'lucide-react';
+import { t, useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { v4 as uuidv4 } from 'uuid';
+import { validateField, type QCValidationResult } from '@/utils/fugaQCValidation';
+import QCWarnings from '@/components/submission/QCWarnings';
+import ArtistModal from '@/components/submission/ArtistModal';
 
 interface ArtistIdentifier {
   type: string
@@ -26,23 +26,23 @@ interface Artist {
   youtubeChannelId?: string
 }
 
-type ContributorRole = 
-  | 'a&r_administrator' | 'a&r_manager' | 'actor' | 'adapter' | 'agent' | 'arranger' | 'art_direction' 
-  | 'artist_management' | 'assistant_composer' | 'assistant_conductor' | 'assistant_director' 
-  | 'assistant_mastering_engineer' | 'assistant_mixing_engineer' | 'assistant_producer' 
-  | 'assistant_recording_engineer' | 'assistant_sound_engineer' | 'author' | 'band' 
-  | 'camera_operator' | 'choir' | 'choir_conductor' | 'choreographer' | 'chorus' | 'chorus_master' 
-  | 'cinematographer' | 'co_producer' | 'composer' | 'computer_graphic_creator' | 'conductor' 
-  | 'contributing_artist' | 'costume_designer' | 'creative_director' | 'dancer' | 'director' 
-  | 'dj' | 'editor' | 'engineer' | 'ensemble' | 'executive_producer' | 'featuring' | 'gaffer' 
-  | 'guest_vocals' | 'immersive_audio_engineer' | 'immersive_mastering_engineer' 
-  | 'immersive_mixing_engineer' | 'key_grip' | 'librettist' | 'lighting_director' | 'liner_notes' 
-  | 'lyricist' | 'mastering_engineer' | 'mc' | 'mixer' | 'mixing_engineer' | 'musical_director' 
-  | 'narrator' | 'orchestra' | 'orchestrator' | 'performer' | 'playwright' | 'post_producer' 
-  | 'producer' | 'production_assistant' | 'programmer' | 'rap' | 'recording_engineer' | 'remixer' 
-  | 'sampled_artist' | 'set_designer' | 'soloist' | 'sound_editor' | 'sound_effects' 
-  | 'sound_engineer' | 'special_effects' | 'spoken_word' | 'strings_conductor' | 'studio_musician' 
-  | 'studio_personnel' | 'tape' | 'tonmeister' | 'translator' | 'video_director' | 'video_producer' 
+type ContributorRole =
+  | 'a&r_administrator' | 'a&r_manager' | 'actor' | 'adapter' | 'agent' | 'arranger' | 'art_direction'
+  | 'artist_management' | 'assistant_composer' | 'assistant_conductor' | 'assistant_director'
+  | 'assistant_mastering_engineer' | 'assistant_mixing_engineer' | 'assistant_producer'
+  | 'assistant_recording_engineer' | 'assistant_sound_engineer' | 'author' | 'band'
+  | 'camera_operator' | 'choir' | 'choir_conductor' | 'choreographer' | 'chorus' | 'chorus_master'
+  | 'cinematographer' | 'co_producer' | 'composer' | 'computer_graphic_creator' | 'conductor'
+  | 'contributing_artist' | 'costume_designer' | 'creative_director' | 'dancer' | 'director'
+  | 'dj' | 'editor' | 'engineer' | 'ensemble' | 'executive_producer' | 'featuring' | 'gaffer'
+  | 'guest_vocals' | 'immersive_audio_engineer' | 'immersive_mastering_engineer'
+  | 'immersive_mixing_engineer' | 'key_grip' | 'librettist' | 'lighting_director' | 'liner_notes'
+  | 'lyricist' | 'mastering_engineer' | 'mc' | 'mixer' | 'mixing_engineer' | 'musical_director'
+  | 'narrator' | 'orchestra' | 'orchestrator' | 'performer' | 'playwright' | 'post_producer'
+  | 'producer' | 'production_assistant' | 'programmer' | 'rap' | 'recording_engineer' | 'remixer'
+  | 'sampled_artist' | 'set_designer' | 'soloist' | 'sound_editor' | 'sound_effects'
+  | 'sound_engineer' | 'special_effects' | 'spoken_word' | 'strings_conductor' | 'studio_musician'
+  | 'studio_personnel' | 'tape' | 'tonmeister' | 'translator' | 'video_director' | 'video_producer'
   | 'visual_effects_technician' | 'vocal_effects' | 'vocal_engineer' | 'vocal_producer' | 'writer'
 
 interface Contributor {
@@ -142,7 +142,7 @@ const languageOptions = [
   { value: 'it', label: 'Italiano' },
   { value: 'pt', label: 'Português' },
   { value: 'ru', label: 'Русский' }
-]
+];
 
 const dspList = [
   '7Digital (via IIP-DDS)',
@@ -210,7 +210,7 @@ const dspList = [
   'レコチョク [HD] (Recochoku) (A)',
   'レコチョク [SD/MV] (Recochoku) (A)',
   '楽天 (Rakuten) (A)'
-]
+];
 
 const countryOptions = [
   { value: 'KR', label: '한국' },
@@ -225,7 +225,7 @@ const countryOptions = [
   { value: 'CA', label: '캐나다' },
   { value: 'AU', label: '호주' },
   { value: 'other', label: '기타' }
-]
+];
 
 const territoryData = {
   africa: {
@@ -258,7 +258,7 @@ const territoryData = {
       'AS', 'AQ', 'AU', 'BV', 'IO', 'CX', 'CC', 'CK', 'FJ', 'PF', 'TF', 'GU', 'HM', 'KI', 'MH', 'FM', 'NR', 'NC', 'NZ', 'NU', 'NF', 'MP', 'PW', 'PG', 'PN', 'WS', 'SB', 'GS', 'TK', 'TO', 'TV', 'UM', 'VU', 'WF'
     ]
   }
-}
+};
 
 const countryNames: { [key: string]: { en: string; ko: string } } = {
   // Africa
@@ -427,7 +427,7 @@ const countryNames: { [key: string]: { en: string; ko: string } } = {
   'UZ': { en: 'Uzbekistan', ko: '우즈베키스탄' },
   'VN': { en: 'Vietnam', ko: '베트남' },
   'YE': { en: 'Yemen', ko: '예멘' },
-  // Europe  
+  // Europe
   'AX': { en: 'Aland Islands', ko: '올란드 제도' },
   'AL': { en: 'Albania', ko: '알바니아' },
   'AD': { en: 'Andorra', ko: '안도라' },
@@ -515,67 +515,67 @@ const countryNames: { [key: string]: { en: string; ko: string } } = {
   'UM': { en: 'U.S. Minor Outlying Islands', ko: '미국령 군소 제도' },
   'VU': { en: 'Vanuatu', ko: '바누아투' },
   'WF': { en: 'Wallis and Futuna', ko: '왈리스 푸투나' }
-}
+};
 
 // Contributor Modal Component
-function ContributorModal({ 
-  isOpen, 
-  onClose, 
-  onSave 
-}: { 
+function ContributorModal({
+  isOpen,
+  onClose,
+  onSave
+}: {
   isOpen: boolean
   onClose: () => void
   onSave: (contributor: Contributor) => void
 }) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
   const [contributor, setContributor] = useState<Contributor>({
     id: uuidv4(),
     name: '',
     role: 'composer'
-  })
-  const [instrumentSearch, setInstrumentSearch] = useState('')
-  const [showInstrumentSuggestions, setShowInstrumentSuggestions] = useState(false)
-  const instrumentInputRef = useRef<HTMLInputElement>(null)
+  });
+  const [instrumentSearch, setInstrumentSearch] = useState('');
+  const [showInstrumentSuggestions, setShowInstrumentSuggestions] = useState(false);
+  const instrumentInputRef = useRef<HTMLInputElement>(null);
 
   // Check if the role requires instrument information
   const instrumentRoles: ContributorRole[] = [
-    'performer', 'studio_musician', 'soloist', 'orchestra', 'ensemble', 
+    'performer', 'studio_musician', 'soloist', 'orchestra', 'ensemble',
     'band', 'guest_vocals', 'contributing_artist'
-  ]
-  
-  const showInstrumentField = instrumentRoles.includes(contributor.role)
-  
+  ];
+
+  const showInstrumentField = instrumentRoles.includes(contributor.role);
+
   // Filter instruments based on search
   const filteredInstruments = useMemo(() => {
-    if (!instrumentSearch) return []
-    const searchLower = instrumentSearch.toLowerCase()
+    if (!instrumentSearch) return [];
+    const searchLower = instrumentSearch.toLowerCase();
     return instrumentList
       .filter(instrument => instrument.toLowerCase().includes(searchLower))
-      .slice(0, 10) // Show max 10 suggestions
-  }, [instrumentSearch])
-  
+      .slice(0, 10); // Show max 10 suggestions
+  }, [instrumentSearch]);
+
   // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (instrumentInputRef.current && !instrumentInputRef.current.contains(event.target as Node)) {
-        setShowInstrumentSuggestions(false)
+        setShowInstrumentSuggestions(false);
       }
-    }
-    
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
-  
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   // Initialize instrument search when role changes or contributor has instrument
   useEffect(() => {
     if (contributor.instrument) {
-      setInstrumentSearch(contributor.instrument)
+      setInstrumentSearch(contributor.instrument);
     } else {
-      setInstrumentSearch('')
+      setInstrumentSearch('');
     }
-  }, [contributor.role, contributor.instrument])
+  }, [contributor.role, contributor.instrument]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -609,7 +609,7 @@ function ContributorModal({
             >
               <optgroup label={language === 'ko' ? '프로덕션' : 'Production'}>
                 {roleOptions.filter(r => [
-                  'composer', 'lyricist', 'arranger', 'producer', 'co_producer', 
+                  'composer', 'lyricist', 'arranger', 'producer', 'co_producer',
                   'executive_producer', 'assistant_producer', 'post_producer', 'vocal_producer'
                 ].includes(r.value)).map(role => (
                   <option key={role.value} value={role.value}>
@@ -617,7 +617,7 @@ function ContributorModal({
                   </option>
                 ))}
               </optgroup>
-              
+
               <optgroup label={language === 'ko' ? '엔지니어링' : 'Engineering'}>
                 {roleOptions.filter(r => r.value.includes('engineer') || r.value === 'tonmeister').map(role => (
                   <option key={role.value} value={role.value}>
@@ -625,7 +625,7 @@ function ContributorModal({
                   </option>
                 ))}
               </optgroup>
-              
+
               <optgroup label={language === 'ko' ? '연주/공연' : 'Performance'}>
                 {roleOptions.filter(r => [
                   'performer', 'studio_musician', 'soloist', 'conductor', 'orchestra',
@@ -636,7 +636,7 @@ function ContributorModal({
                   </option>
                 ))}
               </optgroup>
-              
+
               <optgroup label={language === 'ko' ? '보컬/랩' : 'Vocal/Rap'}>
                 {roleOptions.filter(r => ['rap', 'mc', 'narrator', 'spoken_word', 'vocal_effects'].includes(r.value)).map(role => (
                   <option key={role.value} value={role.value}>
@@ -644,7 +644,7 @@ function ContributorModal({
                   </option>
                 ))}
               </optgroup>
-              
+
               <optgroup label={language === 'ko' ? '디렉션' : 'Direction'}>
                 {roleOptions.filter(r => r.value.includes('director') || r.value.includes('conductor') || r.value.includes('master')).map(role => (
                   <option key={role.value} value={role.value}>
@@ -652,7 +652,7 @@ function ContributorModal({
                   </option>
                 ))}
               </optgroup>
-              
+
               <optgroup label={language === 'ko' ? '작곡/편곡' : 'Composition/Arrangement'}>
                 {roleOptions.filter(r => [
                   'assistant_composer', 'orchestrator', 'adapter', 'writer', 'author',
@@ -663,7 +663,7 @@ function ContributorModal({
                   </option>
                 ))}
               </optgroup>
-              
+
               <optgroup label={language === 'ko' ? '기술' : 'Technical'}>
                 {roleOptions.filter(r => [
                   'programmer', 'dj', 'remixer', 'sampled_artist', 'mixer', 'editor',
@@ -675,7 +675,7 @@ function ContributorModal({
                   </option>
                 ))}
               </optgroup>
-              
+
               <optgroup label={language === 'ko' ? '비디오/영상' : 'Video/Film'}>
                 {roleOptions.filter(r => [
                   'video_director', 'video_producer', 'cinematographer', 'camera_operator',
@@ -686,7 +686,7 @@ function ContributorModal({
                   </option>
                 ))}
               </optgroup>
-              
+
               <optgroup label={language === 'ko' ? '크리에이티브' : 'Creative'}>
                 {roleOptions.filter(r => [
                   'choreographer', 'dancer', 'actor', 'costume_designer', 'set_designer'
@@ -696,7 +696,7 @@ function ContributorModal({
                   </option>
                 ))}
               </optgroup>
-              
+
               <optgroup label={language === 'ko' ? '매니지먼트' : 'Management'}>
                 {roleOptions.filter(r => [
                   'a&r_administrator', 'a&r_manager', 'artist_management', 'agent',
@@ -720,9 +720,9 @@ function ContributorModal({
                   type="text"
                   value={instrumentSearch}
                   onChange={(e) => {
-                    setInstrumentSearch(e.target.value)
-                    setContributor({ ...contributor, instrument: e.target.value })
-                    setShowInstrumentSuggestions(true)
+                    setInstrumentSearch(e.target.value);
+                    setContributor({ ...contributor, instrument: e.target.value });
+                    setShowInstrumentSuggestions(true);
                   }}
                   onFocus={() => setShowInstrumentSuggestions(true)}
                   className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -730,7 +730,7 @@ function ContributorModal({
                 />
                 <Search className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
               </div>
-              
+
               {/* Instrument Suggestions Dropdown */}
               {showInstrumentSuggestions && filteredInstruments.length > 0 && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
@@ -739,9 +739,9 @@ function ContributorModal({
                       key={index}
                       type="button"
                       onClick={() => {
-                        setInstrumentSearch(instrument)
-                        setContributor({ ...contributor, instrument })
-                        setShowInstrumentSuggestions(false)
+                        setInstrumentSearch(instrument);
+                        setContributor({ ...contributor, instrument });
+                        setShowInstrumentSuggestions(false);
                       }}
                       className="w-full px-4 py-3 text-left hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex items-center gap-2"
                     >
@@ -751,9 +751,9 @@ function ContributorModal({
                   ))}
                 </div>
               )}
-              
+
               <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                {language === 'ko' 
+                {language === 'ko'
                   ? '악기명을 입력하거나 목록에서 선택하세요. 목록에 없는 악기도 직접 입력 가능합니다.'
                   : 'Type to search instruments or select from the list. You can also enter custom instruments.'
                 }
@@ -765,9 +765,9 @@ function ContributorModal({
         <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={() => {
-              setInstrumentSearch('')
-              setShowInstrumentSuggestions(false)
-              onClose()
+              setInstrumentSearch('');
+              setShowInstrumentSuggestions(false);
+              onClose();
             }}
             className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
           >
@@ -776,10 +776,10 @@ function ContributorModal({
           <button
             onClick={() => {
               if (contributor.name) {
-                onSave(contributor)
-                setInstrumentSearch('')
-                setShowInstrumentSuggestions(false)
-                onClose()
+                onSave(contributor);
+                setInstrumentSearch('');
+                setShowInstrumentSuggestions(false);
+                onClose();
               }
             }}
             disabled={!contributor.name}
@@ -790,7 +790,7 @@ function ContributorModal({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Instrument list
@@ -809,7 +809,7 @@ const instrumentList = [
   'Requinto Guitar', 'Rhythm Guitar', 'Sitar', 'Slide Guitar', 'Spanish Guitar',
   'Tenor Guitar', 'Tres', 'Ukulele', 'Viol', 'Viola', 'Viola D\'Amore', 'Viola Da Gamba',
   'Violin', 'Violoncello', 'Violone', 'Zither',
-  
+
   // Wind Instruments
   'Accordion', 'Alto Clarinet', 'Alto Flute', 'Alto Horn', 'Alto Recorder', 'Alto Saxophone',
   'Alto Trombone', 'Bagpipes', 'Bansuri', 'Baritone Horn', 'Bass Clarinet', 'Bass Flute',
@@ -830,7 +830,7 @@ const instrumentList = [
   'Tabor Pipe', 'Tarogato', 'Tenor Horn', 'Tenor Recorder', 'Tenor Saxophone',
   'Tenor Trombone', 'Tin Whistle', 'Traverso', 'Trombone', 'Trombonium', 'Trumpet',
   'Tuba', 'Uilleann Pipes', 'Valve Trombone', 'Vuvuzela', 'Whistle', 'Wood Flute',
-  
+
   // Keyboard Instruments
   'Celeste', 'Chamberlin', 'Chamber Organ', 'Chest Organ', 'Clavichord', 'Clavinet',
   'Electric Piano', 'Electronic Valve Instrument', 'Farfisa', 'Fender Rhodes',
@@ -838,7 +838,7 @@ const instrumentList = [
   'Keytar', 'Mellotron', 'Omnichord', 'Ondes Martenot', 'Organ', 'Piano', 'Prepared Piano',
   'Reed Organ', 'Rhodes Piano', 'Spinet', 'Synclavier', 'Synthesizer', 'Tack Piano',
   'Toy Piano', 'Upright Piano', 'Wurlitzer',
-  
+
   // Percussion Instruments
   'Balafon', 'Barrel Organ', 'Bass Drum', 'Bata Drums', 'Bells', 'Bendir', 'Berimbau',
   'Bonang', 'Bongos', 'Cajon', 'Calliope', 'Castanets', 'Caxixi', 'Chekere', 'Chimes',
@@ -851,31 +851,31 @@ const instrumentList = [
   'Surdo', 'Tabla', 'Talking Drum', 'Tamborim', 'Tambourine', 'Temple Blocks', 'Tenor Drum',
   'Thavil', 'Timbales', 'Timpani', 'Triangle', 'Tubular Bells', 'Turntable', 'Udu',
   'Vibraphone', 'Vibraslap', 'Washboard', 'Wood Block', 'Xylophone', 'Xylorimba', 'Zarb',
-  
+
   // Traditional/World Instruments
   'Appalachian Dulcimer', 'Archlute', 'Autoharp', 'Baglama', 'Balalaika', 'Bandoneon',
   'Bandurria', 'Barbat', 'Biwa', 'Bouzouki', 'Cavaquinho', 'Concert Harp', 'Dulcimer',
   'Gitern', 'Hag\'houge', 'Hammered Dulcimer', 'Hardingfele', 'Hurdy Gurdy', 'Kora',
   'Koto', 'Lyre', 'Psaltery', 'Rebab', 'Rebec', 'Santoor', 'Santur', 'Sarangi', 'Sarod',
   'Saz', 'Shamisen', 'Tamboura', 'Tanpura', 'Theorbo', 'Vielle',
-  
+
   // Electronic/Modern Instruments
   'E-Bow', 'Electronic Wind Instrument', 'Modular Synth', 'Sampler', 'Talkbox',
   'Theremin', 'Vocoder',
-  
+
   // Vocal Types
   'Alto Vocals', 'Alto Violin', 'Background Vocals', 'Baritone Vocals', 'Bass Vocals',
   'Beat Boxing', 'Chant Vocals', 'Contralto Vocals', 'Counter Tenor', 'Guest Vocals',
   'Harmony Vocals', 'Lead Vocals', 'Mezzo-soprano Vocals', 'Soprano Vocals', 'Tenor Vocals',
   'Vocals',
-  
+
   // String Section
   'Strings', 'String Section', 'String Quartet', 'String Orchestra',
-  
+
   // Others
   'EWI', 'Found Sounds', 'Human Beatbox', 'Loop Station', 'MIDI Controller',
   'Sound Effects', 'Tape Machine'
-].sort()
+].sort();
 
 // Role options definition
 const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] = [
@@ -889,7 +889,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'assistant_producer', label: '어시스턴트 프로듀서', labelEn: 'Assistant Producer' },
   { value: 'post_producer', label: '포스트 프로듀서', labelEn: 'Post-Producer' },
   { value: 'vocal_producer', label: '보컬 프로듀서', labelEn: 'Vocal Producer' },
-  
+
   // Engineering Roles
   { value: 'recording_engineer', label: '레코딩 엔지니어', labelEn: 'Recording Engineer' },
   { value: 'mixing_engineer', label: '믹싱 엔지니어', labelEn: 'Mixing Engineer' },
@@ -905,7 +905,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'immersive_mixing_engineer', label: '입체음향 믹싱 엔지니어', labelEn: 'Immersive Mixing Engineer' },
   { value: 'immersive_mastering_engineer', label: '입체음향 마스터링 엔지니어', labelEn: 'Immersive Mastering Engineer' },
   { value: 'tonmeister', label: '톤마이스터', labelEn: 'Tonmeister' },
-  
+
   // Performance Roles
   { value: 'performer', label: '연주자', labelEn: 'Performer' },
   { value: 'studio_musician', label: '스튜디오 뮤지션', labelEn: 'Studio Musician' },
@@ -919,14 +919,14 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'featuring', label: '피처링', labelEn: 'Featuring' },
   { value: 'guest_vocals', label: '객원 보컬', labelEn: 'Guest Vocals' },
   { value: 'contributing_artist', label: '참여 아티스트', labelEn: 'Contributing Artist' },
-  
+
   // Vocal/Rap Roles
   { value: 'rap', label: '랩', labelEn: 'Rap' },
   { value: 'mc', label: 'MC', labelEn: 'MC' },
   { value: 'narrator', label: '내레이터', labelEn: 'Narrator' },
   { value: 'spoken_word', label: '스포큰 워드', labelEn: 'Spoken Word' },
   { value: 'vocal_effects', label: '보컬 이펙트', labelEn: 'Vocal Effects' },
-  
+
   // Direction Roles
   { value: 'director', label: '디렉터', labelEn: 'Director' },
   { value: 'assistant_director', label: '어시스턴트 디렉터', labelEn: 'Assistant Director' },
@@ -937,7 +937,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'chorus_master', label: '합창 지휘자', labelEn: 'Chorus Master' },
   { value: 'strings_conductor', label: '현악 지휘자', labelEn: 'Strings Conductor' },
   { value: 'assistant_conductor', label: '어시스턴트 지휘자', labelEn: 'Assistant Conductor' },
-  
+
   // Composition/Arrangement Roles
   { value: 'assistant_composer', label: '어시스턴트 작곡가', labelEn: 'Assistant Composer' },
   { value: 'orchestrator', label: '오케스트레이터', labelEn: 'Orchestrator' },
@@ -948,7 +948,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'librettist', label: '대본 작가', labelEn: 'Librettist' },
   { value: 'translator', label: '번역가', labelEn: 'Translator' },
   { value: 'liner_notes', label: '라이너 노트', labelEn: 'Liner Notes' },
-  
+
   // Technical Roles
   { value: 'programmer', label: '프로그래머', labelEn: 'Programmer' },
   { value: 'dj', label: 'DJ', labelEn: 'DJ' },
@@ -961,7 +961,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'special_effects', label: '특수 효과', labelEn: 'Special Effects' },
   { value: 'computer_graphic_creator', label: '컴퓨터 그래픽 크리에이터', labelEn: 'Computer Graphic Creator' },
   { value: 'visual_effects_technician', label: '시각 효과 기술자', labelEn: 'Visual Effects Technician' },
-  
+
   // Video/Film Roles
   { value: 'video_director', label: '비디오 디렉터', labelEn: 'Video Director' },
   { value: 'video_producer', label: '비디오 프로듀서', labelEn: 'Video Producer' },
@@ -970,14 +970,14 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'lighting_director', label: '조명 감독', labelEn: 'Lighting Director' },
   { value: 'gaffer', label: '조명 기사', labelEn: 'Gaffer' },
   { value: 'key_grip', label: '키 그립', labelEn: 'Key Grip' },
-  
+
   // Other Creative Roles
   { value: 'choreographer', label: '안무가', labelEn: 'Choreographer' },
   { value: 'dancer', label: '댄서', labelEn: 'Dancer' },
   { value: 'actor', label: '배우', labelEn: 'Actor' },
   { value: 'costume_designer', label: '의상 디자이너', labelEn: 'Costume Designer' },
   { value: 'set_designer', label: '세트 디자이너', labelEn: 'Set Designer' },
-  
+
   // Management/Admin Roles
   { value: 'a&r_administrator', label: 'A&R 관리자', labelEn: 'A&R Administrator' },
   { value: 'a&r_manager', label: 'A&R 매니저', labelEn: 'A&R Manager' },
@@ -985,23 +985,23 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'agent', label: '에이전트', labelEn: 'Agent' },
   { value: 'production_assistant', label: '프로덕션 어시스턴트', labelEn: 'Production Assistant' },
   { value: 'studio_personnel', label: '스튜디오 스태프', labelEn: 'Studio Personnel' },
-  
+
   // Legacy
   { value: 'tape', label: '테이프', labelEn: 'Tape' }
-]
+];
 
 export default function Step3TrackInfo({ data, onNext }: Props) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  
-  console.log('Step3TrackInfo mounted, data:', data)
-  
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+
+  console.log('Step3TrackInfo mounted, data:', data);
+
   // Get initial tracks from previous data
   const getInitialTracks = (): Track[] => {
     // If Step3 data exists (returning to this step), use it
     if (data?.tracks?.tracks && data.tracks.tracks.length > 0) {
-      return data.tracks.tracks
+      return data.tracks.tracks;
     }
-    
+
     // Otherwise create initial track without artists
     // Always return at least one track
     return [{
@@ -1012,19 +1012,19 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
       featuringArtists: [],
       contributors: [],
       isTitle: true
-    }]
-  }
+    }];
+  };
 
-  const [tracks, setTracks] = useState<Track[]>(getInitialTracks)
-  const [selectedTrackId, setSelectedTrackId] = useState<string>(data?.tracks?.selectedTrackId || tracks[0]?.id || '')
-  const [activeTab, setActiveTab] = useState<'metadata' | 'marketing'>(data?.tracks?.activeTab || 'metadata')
-  const [metadataSubTab, setMetadataSubTab] = useState<'product' | 'asset'>(data?.tracks?.metadataSubTab || 'product')
-  const [showArtistModal, setShowArtistModal] = useState(false)
-  const [showContributorModal, setShowContributorModal] = useState(false)
-  const [artistModalType, setArtistModalType] = useState<'main' | 'featuring'>('main')
-  const [editingArtist, setEditingArtist] = useState<Artist | null>(null)
-  const [editingContributor, setEditingContributor] = useState<Contributor | null>(null)
-  const [keywordInput, setKeywordInput] = useState('')
+  const [tracks, setTracks] = useState<Track[]>(getInitialTracks);
+  const [selectedTrackId, setSelectedTrackId] = useState<string>(data?.tracks?.selectedTrackId || tracks[0]?.id || '');
+  const [activeTab, setActiveTab] = useState<'metadata' | 'marketing'>(data?.tracks?.activeTab || 'metadata');
+  const [metadataSubTab, setMetadataSubTab] = useState<'product' | 'asset'>(data?.tracks?.metadataSubTab || 'product');
+  const [showArtistModal, setShowArtistModal] = useState(false);
+  const [showContributorModal, setShowContributorModal] = useState(false);
+  const [artistModalType, setArtistModalType] = useState<'main' | 'featuring'>('main');
+  const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
+  const [editingContributor, setEditingContributor] = useState<Contributor | null>(null);
+  const [keywordInput, setKeywordInput] = useState('');
 
   // Initialize product metadata
   const [productMetadata, setProductMetadata] = useState({
@@ -1046,14 +1046,14 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
     dspTerritories: data?.tracks?.productMetadata?.dspTerritories || data?.productMetadata?.dspTerritories || {},
     displayArtists: data?.tracks?.productMetadata?.displayArtists || data?.productMetadata?.displayArtists || '',
     explicitContent: data?.tracks?.productMetadata?.explicitContent ?? data?.productMetadata?.explicitContent ?? false
-  })
+  });
 
-  const [showDSPModal, setShowDSPModal] = useState(false)
-  const [editingDSP, setEditingDSP] = useState<string | null>(null)
-  const [showDspTerritoryModal, setShowDspTerritoryModal] = useState(false)
-  const [selectedDsps, setSelectedDsps] = useState<string[]>([])
-  const [dspSearchQuery, setDspSearchQuery] = useState('')
-  const [tempDspTerritories, setTempDspTerritories] = useState<Record<string, string[]>>({})
+  const [showDSPModal, setShowDSPModal] = useState(false);
+  const [editingDSP, setEditingDSP] = useState<string | null>(null);
+  const [showDspTerritoryModal, setShowDspTerritoryModal] = useState(false);
+  const [selectedDsps, setSelectedDsps] = useState<string[]>([]);
+  const [dspSearchQuery, setDspSearchQuery] = useState('');
+  const [tempDspTerritories, setTempDspTerritories] = useState<Record<string, string[]>>({});
 
   const [marketing, setMarketing] = useState({
     albumDescription: data?.tracks?.marketing?.albumDescription || data?.marketing?.albumDescription || '',
@@ -1061,20 +1061,20 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
     marketingKeywords: data?.tracks?.marketing?.marketingKeywords || data?.marketing?.marketingKeywords || [],
     targetAudience: data?.tracks?.marketing?.targetAudience || data?.marketing?.targetAudience || '',
     promotionPlans: data?.tracks?.marketing?.promotionPlans || data?.marketing?.promotionPlans || ''
-  })
+  });
 
   // Drag and drop state
-  const [draggedTrackId, setDraggedTrackId] = useState<string | null>(null)
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const [draggedTrackId, setDraggedTrackId] = useState<string | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  const selectedTrack = tracks.find(t => t.id === selectedTrackId)
+  const selectedTrack = tracks.find(t => t.id === selectedTrackId);
 
   // Ensure selected track ID is valid
   useEffect(() => {
     if (!tracks.find(t => t.id === selectedTrackId) && tracks.length > 0) {
-      setSelectedTrackId(tracks[0].id)
+      setSelectedTrackId(tracks[0].id);
     }
-  }, [tracks, selectedTrackId])
+  }, [tracks, selectedTrackId]);
 
   // Track management functions
   const addTrack = () => {
@@ -1086,245 +1086,245 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
       featuringArtists: [],
       contributors: [],
       isTitle: false
-    }
-    setTracks([...tracks, newTrack])
-    setSelectedTrackId(newTrack.id)
-  }
+    };
+    setTracks([...tracks, newTrack]);
+    setSelectedTrackId(newTrack.id);
+  };
 
   const removeTrack = (trackId: string) => {
     if (tracks.length > 1) {
-      const updatedTracks = tracks.filter(t => t.id !== trackId)
+      const updatedTracks = tracks.filter(t => t.id !== trackId);
       // If removing title track, set first track as title
       if (tracks.find(t => t.id === trackId)?.isTitle) {
-        updatedTracks[0].isTitle = true
+        updatedTracks[0].isTitle = true;
       }
-      setTracks(updatedTracks)
+      setTracks(updatedTracks);
       if (selectedTrackId === trackId) {
-        setSelectedTrackId(updatedTracks[0].id)
+        setSelectedTrackId(updatedTracks[0].id);
       }
     }
-  }
+  };
 
   const updateTrack = (trackId: string, updates: Partial<Track>) => {
-    setTracks(tracks.map(t => t.id === trackId ? { ...t, ...updates } : t))
-  }
+    setTracks(tracks.map(t => t.id === trackId ? { ...t, ...updates } : t));
+  };
 
   const setTitleTrack = (trackId: string) => {
-    setTracks(tracks.map(t => ({ ...t, isTitle: t.id === trackId })))
-  }
+    setTracks(tracks.map(t => ({ ...t, isTitle: t.id === trackId })));
+  };
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, trackId: string) => {
-    setDraggedTrackId(trackId)
-    e.dataTransfer.effectAllowed = 'move'
-  }
+    setDraggedTrackId(trackId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    setDragOverIndex(index)
-  }
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
 
   const handleDragLeave = () => {
-    setDragOverIndex(null)
-  }
+    setDragOverIndex(null);
+  };
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault()
-    
-    if (!draggedTrackId) return
-    
-    const draggedIndex = tracks.findIndex(t => t.id === draggedTrackId)
+    e.preventDefault();
+
+    if (!draggedTrackId) return;
+
+    const draggedIndex = tracks.findIndex(t => t.id === draggedTrackId);
     if (draggedIndex === -1 || draggedIndex === dropIndex) {
-      setDraggedTrackId(null)
-      setDragOverIndex(null)
-      return
+      setDraggedTrackId(null);
+      setDragOverIndex(null);
+      return;
     }
-    
+
     // Reorder tracks
-    const newTracks = [...tracks]
-    const [draggedTrack] = newTracks.splice(draggedIndex, 1)
-    newTracks.splice(dropIndex, 0, draggedTrack)
-    
-    setTracks(newTracks)
-    setDraggedTrackId(null)
-    setDragOverIndex(null)
-  }
+    const newTracks = [...tracks];
+    const [draggedTrack] = newTracks.splice(draggedIndex, 1);
+    newTracks.splice(dropIndex, 0, draggedTrack);
+
+    setTracks(newTracks);
+    setDraggedTrackId(null);
+    setDragOverIndex(null);
+  };
 
   const handleDragEnd = () => {
-    setDraggedTrackId(null)
-    setDragOverIndex(null)
-  }
+    setDraggedTrackId(null);
+    setDragOverIndex(null);
+  };
 
   // Artist management
   const addArtistToTrack = (artist: Artist) => {
-    if (!selectedTrack) return
+    if (!selectedTrack) return;
 
     if (artistModalType === 'main') {
       updateTrack(selectedTrack.id, {
         artists: [...selectedTrack.artists, artist]
-      })
+      });
     } else {
       updateTrack(selectedTrack.id, {
         featuringArtists: [...selectedTrack.featuringArtists, artist]
-      })
+      });
     }
-  }
+  };
 
   const removeArtistFromTrack = (artistId: string, type: 'main' | 'featuring') => {
-    if (!selectedTrack) return
+    if (!selectedTrack) return;
 
     if (type === 'main') {
       updateTrack(selectedTrack.id, {
         artists: selectedTrack.artists.filter(a => a.id !== artistId)
-      })
+      });
     } else {
       updateTrack(selectedTrack.id, {
         featuringArtists: selectedTrack.featuringArtists.filter(a => a.id !== artistId)
-      })
+      });
     }
-  }
+  };
 
   // Contributor management
   const addContributorToTrack = (contributor: Contributor) => {
-    if (!selectedTrack) return
+    if (!selectedTrack) return;
 
     updateTrack(selectedTrack.id, {
       contributors: [...selectedTrack.contributors, contributor]
-    })
-  }
+    });
+  };
 
   const removeContributorFromTrack = (contributorId: string) => {
-    if (!selectedTrack) return
+    if (!selectedTrack) return;
 
     updateTrack(selectedTrack.id, {
       contributors: selectedTrack.contributors.filter(c => c.id !== contributorId)
-    })
-  }
+    });
+  };
 
   // QC Validation
   const qcValidationResults = useMemo(() => {
-    const results: QCValidationResult[] = []
-    
+    const results: QCValidationResult[] = [];
+
     tracks.forEach(track => {
       if (track.titleKo) {
-        results.push(...validateField('trackTitleKo', track.titleKo))
+        results.push(...validateField('trackTitleKo', track.titleKo));
       }
       if (track.titleEn) {
-        results.push(...validateField('trackTitleEn', track.titleEn))
+        results.push(...validateField('trackTitleEn', track.titleEn));
       }
-      
+
       track.artists.forEach(artist => {
         if (artist.primaryName) {
-          results.push(...validateField('artistNameKo', artist.primaryName))
+          results.push(...validateField('artistNameKo', artist.primaryName));
         }
         if (artist.translatedName) {
-          results.push(...validateField('artistNameEn', artist.translatedName))
+          results.push(...validateField('artistNameEn', artist.translatedName));
         }
-      })
-    })
-    
-    return results
-  }, [tracks])
+      });
+    });
+
+    return results;
+  }, [tracks]);
 
   const validateAndHandleSubmit = () => {
-    console.log('validateAndHandleSubmit called')
-    console.log('tracks:', tracks)
-    console.log('productMetadata:', productMetadata)
-    
+    console.log('validateAndHandleSubmit called');
+    console.log('tracks:', tracks);
+    console.log('productMetadata:', productMetadata);
+
     // Required field validation
-    const errors: string[] = []
-    let firstErrorElement: { ref: string; message: string } | null = null
-    
+    const errors: string[] = [];
+    const firstErrorElement: { ref: string; message: string } | null = null;
+
     // Check each track
     tracks.forEach((track, index) => {
       if (!track.titleKo && !track.titleEn) {
-        errors.push(`트랙 ${index + 1}: 제목을 입력해주세요`)
+        errors.push(`트랙 ${index + 1}: 제목을 입력해주세요`);
         if (!firstErrorElement) {
           // Focus on the track list
-          const trackElement = document.getElementById(`track-${track.id}`)
+          const trackElement = document.getElementById(`track-${track.id}`);
           if (trackElement) {
-            trackElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            trackElement.classList.add('ring-2', 'ring-red-500', 'ring-offset-2')
+            trackElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            trackElement.classList.add('ring-2', 'ring-red-500', 'ring-offset-2');
             setTimeout(() => {
-              trackElement.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2')
-            }, 3000)
+              trackElement.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2');
+            }, 3000);
           }
         }
       }
-      
+
       if (track.artists.length === 0) {
-        errors.push(`트랙 ${index + 1}: 메인 아티스트를 추가해주세요`)
+        errors.push(`트랙 ${index + 1}: 메인 아티스트를 추가해주세요`);
       }
-    })
-    
+    });
+
     // Check product metadata required fields
     if (!productMetadata.consumerReleaseDate) {
-      errors.push('Consumer Release Date를 입력해주세요')
+      errors.push('Consumer Release Date를 입력해주세요');
       if (!firstErrorElement) {
-        const element = document.getElementById('consumer-release-date')
+        const element = document.getElementById('consumer-release-date');
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          element.classList.add('ring-2', 'ring-red-500')
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-2', 'ring-red-500');
           setTimeout(() => {
-            element.classList.remove('ring-2', 'ring-red-500')
-          }, 3000)
+            element.classList.remove('ring-2', 'ring-red-500');
+          }, 3000);
         }
       }
     }
-    
+
     if (!productMetadata.displayArtists) {
-      errors.push('Display Artists를 입력해주세요')
+      errors.push('Display Artists를 입력해주세요');
       if (!firstErrorElement) {
-        const element = document.getElementById('display-artists')
+        const element = document.getElementById('display-artists');
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          element.classList.add('ring-2', 'ring-red-500')
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-2', 'ring-red-500');
           setTimeout(() => {
-            element.classList.remove('ring-2', 'ring-red-500')
-          }, 3000)
+            element.classList.remove('ring-2', 'ring-red-500');
+          }, 3000);
         }
       }
     }
-    
+
     if (!productMetadata.copyrightYear || !productMetadata.copyrightText) {
-      errors.push('ⓒ Copyright 정보를 입력해주세요')
+      errors.push('ⓒ Copyright 정보를 입력해주세요');
       if (!firstErrorElement) {
-        const element = document.getElementById('copyright-section')
+        const element = document.getElementById('copyright-section');
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          element.classList.add('ring-2', 'ring-red-500')
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-2', 'ring-red-500');
           setTimeout(() => {
-            element.classList.remove('ring-2', 'ring-red-500')
-          }, 3000)
+            element.classList.remove('ring-2', 'ring-red-500');
+          }, 3000);
         }
       }
     }
-    
+
     if (!productMetadata.phonogramCopyrightYear || !productMetadata.phonogramCopyrightText) {
-      errors.push('℗ Copyright 정보를 입력해주세요')
+      errors.push('℗ Copyright 정보를 입력해주세요');
       if (!firstErrorElement) {
-        const element = document.getElementById('phonogram-section')
+        const element = document.getElementById('phonogram-section');
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          element.classList.add('ring-2', 'ring-red-500')
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-2', 'ring-red-500');
           setTimeout(() => {
-            element.classList.remove('ring-2', 'ring-red-500')
-          }, 3000)
+            element.classList.remove('ring-2', 'ring-red-500');
+          }, 3000);
         }
       }
     }
-    
+
     // Show error toast if validation fails
     if (errors.length > 0) {
-      console.log('Validation errors:', errors)
-      const errorMessage = language === 'ko' 
+      console.log('Validation errors:', errors);
+      const errorMessage = language === 'ko'
         ? `필수 입력 항목을 확인해주세요:\n${errors.join('\n')}`
-        : `Please fill in required fields:\n${errors.join('\n')}`
-      
+        : `Please fill in required fields:\n${errors.join('\n')}`;
+
       // Show error in a prominent way
-      const errorDiv = document.createElement('div')
-      errorDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg max-w-md'
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg max-w-md';
       errorDiv.innerHTML = `
         <div class="flex items-start gap-3">
           <svg class="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1335,17 +1335,17 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
             <div class="text-sm">${errors[0]}</div>
           </div>
         </div>
-      `
-      document.body.appendChild(errorDiv)
+      `;
+      document.body.appendChild(errorDiv);
       setTimeout(() => {
-        errorDiv.remove()
-      }, 5000)
-      
-      return
+        errorDiv.remove();
+      }, 5000);
+
+      return;
     }
-    
-    console.log('Validation passed, calling onNext')
-    
+
+    console.log('Validation passed, calling onNext');
+
     // If validation passes, proceed
     onNext({
       tracks,
@@ -1354,17 +1354,17 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
       selectedTrackId,
       activeTab,
       metadataSubTab
-    })
-  }
-  
+    });
+  };
+
   const handleSubmit = () => {
-    validateAndHandleSubmit()
-  }
+    validateAndHandleSubmit();
+  };
 
   return (
     <form onSubmit={(e) => {
-      e.preventDefault()
-      handleSubmit()
+      e.preventDefault();
+      handleSubmit();
     }} className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t('onboarding.step3')}</h2>
@@ -1381,14 +1381,14 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
             </h3>
             <div className="space-y-1 mt-1">
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {language === 'ko' 
-                  ? '⭐ 아이콘을 클릭하여 타이틀곡을 설정하세요' 
+                {language === 'ko'
+                  ? '⭐ 아이콘을 클릭하여 타이틀곡을 설정하세요'
                   : '⭐ Click the star icon to set the title track'
                 }
               </p>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                {language === 'ko' 
-                  ? '≡ 아이콘을 드래그하여 순서를 변경하세요' 
+                {language === 'ko'
+                  ? '≡ 아이콘을 드래그하여 순서를 변경하세요'
                   : '≡ Drag icon to reorder tracks'
                 }
               </p>
@@ -1439,17 +1439,17 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <button
                   type="button"
                   onClick={(e) => {
-                    e.stopPropagation()
+                    e.stopPropagation();
                     // Update all tracks to set only this one as title
                     const updatedTracks = tracks.map(t => ({
                       ...t,
                       isTitle: t.id === track.id
-                    }))
-                    setTracks(updatedTracks)
+                    }));
+                    setTracks(updatedTracks);
                   }}
                   className={`p-1 rounded-lg transition-all ${
-                    track.isTitle 
-                      ? 'text-yellow-500 hover:text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20' 
+                    track.isTitle
+                      ? 'text-yellow-500 hover:text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20'
                       : 'text-gray-400 hover:text-yellow-500 hover:bg-gray-100 dark:hover:bg-gray-700'
                   }`}
                   title={language === 'ko' ? '타이틀곡으로 설정' : 'Set as title track'}
@@ -1469,8 +1469,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
               {tracks.length > 1 && (
                 <button
                   onClick={(e) => {
-                    e.stopPropagation()
-                    removeTrack(track.id)
+                    e.stopPropagation();
+                    removeTrack(track.id);
                   }}
                   className="text-red-500 hover:text-red-700"
                 >
@@ -1577,18 +1577,18 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       id="consumer-release-date"
                       value={productMetadata.consumerReleaseDate}
                       onChange={(e) => {
-                        const newDate = e.target.value
-                        setProductMetadata({ 
-                          ...productMetadata, 
+                        const newDate = e.target.value;
+                        setProductMetadata({
+                          ...productMetadata,
                           consumerReleaseDate: newDate,
                           // Auto-sync original release date for new releases
                           originalReleaseDate: productMetadata.originalReleaseDate || newDate
-                        })
+                        });
                       }}
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     />
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {language === 'ko' 
+                      {language === 'ko'
                         ? '소비자에게 공개되는 발매일 (신곡의 경우 실제 발매일)'
                         : 'Release date visible to consumers (actual release date for new music)'
                       }
@@ -1605,7 +1605,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                     />
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {language === 'ko' 
+                      {language === 'ko'
                         ? '최초 발매된 날짜 (재발매/리마스터의 경우 과거 발매일)'
                         : 'Original recording/release date (past date for re-releases/remasters)'
                       }
@@ -1617,7 +1617,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     </label>
                     <div className="space-y-3">
                       {!productMetadata.releaseTime ? (
-                        <div 
+                        <div
                           onClick={() => setProductMetadata({ ...productMetadata, releaseTime: '12:00 AM' })}
                           className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
                         >
@@ -1628,52 +1628,52 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                           <select
                             value={productMetadata.releaseTime.split(':')[0]}
                             onChange={(e) => {
-                              const hour = e.target.value
-                              const minute = productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00'
-                              const period = productMetadata.releaseTime.split(' ')[1] || 'AM'
-                              const newTime = `${hour}:${minute} ${period}`
-                              setProductMetadata({ ...productMetadata, releaseTime: newTime })
+                              const hour = e.target.value;
+                              const minute = productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00';
+                              const period = productMetadata.releaseTime.split(' ')[1] || 'AM';
+                              const newTime = `${hour}:${minute} ${period}`;
+                              setProductMetadata({ ...productMetadata, releaseTime: newTime });
                             }}
                             className="flex-1 px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           >
                             {[...Array(12)].map((_, i) => {
-                              const hour = i + 1
+                              const hour = i + 1;
                               return (
                                 <option key={hour} value={hour.toString().padStart(2, '0')}>
                                   {hour}
                                 </option>
-                              )
+                              );
                             })}
                           </select>
                           <span className="flex items-center text-gray-500 dark:text-gray-400">:</span>
                           <select
                             value={productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00'}
                             onChange={(e) => {
-                              const hour = productMetadata.releaseTime.split(':')[0]
-                              const minute = e.target.value
-                              const period = productMetadata.releaseTime.split(' ')[1] || 'AM'
-                              const newTime = `${hour}:${minute} ${period}`
-                              setProductMetadata({ ...productMetadata, releaseTime: newTime })
+                              const hour = productMetadata.releaseTime.split(':')[0];
+                              const minute = e.target.value;
+                              const period = productMetadata.releaseTime.split(' ')[1] || 'AM';
+                              const newTime = `${hour}:${minute} ${period}`;
+                              setProductMetadata({ ...productMetadata, releaseTime: newTime });
                             }}
                             className="flex-1 px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           >
                             {[...Array(12)].map((_, i) => {
-                              const minute = i * 5
+                              const minute = i * 5;
                               return (
                                 <option key={minute} value={minute.toString().padStart(2, '0')}>
                                   {minute.toString().padStart(2, '0')}
                                 </option>
-                              )
+                              );
                             })}
                           </select>
                           <select
                             value={productMetadata.releaseTime.split(' ')[1] || 'AM'}
                             onChange={(e) => {
-                              const hour = productMetadata.releaseTime.split(':')[0]
-                              const minute = productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00'
-                              const period = e.target.value
-                              const newTime = `${hour}:${minute} ${period}`
-                              setProductMetadata({ ...productMetadata, releaseTime: newTime })
+                              const hour = productMetadata.releaseTime.split(':')[0];
+                              const minute = productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00';
+                              const period = e.target.value;
+                              const newTime = `${hour}:${minute} ${period}`;
+                              setProductMetadata({ ...productMetadata, releaseTime: newTime });
                             }}
                             className="px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                           >
@@ -1690,7 +1690,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                           </button>
                         </div>
                       )}
-                      
+
                       {/* Time conversion and display */}
                       {productMetadata.releaseTime && productMetadata.consumerReleaseDate && (
                         <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4">
@@ -1698,7 +1698,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             <div className="text-sm font-semibold text-purple-800 dark:text-purple-200 mb-3">
                               {language === 'ko' ? '🚀 발매 예정 시간' : '🚀 Scheduled Release Time'}
                             </div>
-                            
+
                             {/* KST Display */}
                             <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
                               <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
@@ -1706,23 +1706,23 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               </div>
                               <div className="text-lg font-bold text-gray-900 dark:text-white">
                                 {(() => {
-                                  const date = new Date(productMetadata.consumerReleaseDate)
-                                  const options: Intl.DateTimeFormatOptions = { 
-                                    year: 'numeric', 
-                                    month: 'long', 
+                                  const date = new Date(productMetadata.consumerReleaseDate);
+                                  const options: Intl.DateTimeFormatOptions = {
+                                    year: 'numeric',
+                                    month: 'long',
                                     day: 'numeric',
                                     weekday: 'long'
-                                  }
-                                  const dateStr = language === 'ko' 
+                                  };
+                                  const dateStr = language === 'ko'
                                     ? date.toLocaleDateString('ko-KR', options)
-                                    : date.toLocaleDateString('en-US', options)
-                                  
+                                    : date.toLocaleDateString('en-US', options);
+
                                   // Convert AM/PM to Korean if needed
-                                  const timeStr = language === 'ko' 
+                                  const timeStr = language === 'ko'
                                     ? productMetadata.releaseTime.replace('AM', '오전').replace('PM', '오후')
-                                    : productMetadata.releaseTime
-                                    
-                                  return `${dateStr} ${timeStr}`
+                                    : productMetadata.releaseTime;
+
+                                  return `${dateStr} ${timeStr}`;
                                 })()}
                               </div>
                             </div>
@@ -1742,80 +1742,80 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
                                 {(() => {
                                   try {
-                                    const [hour12, minute] = productMetadata.releaseTime.split(':')
-                                    const period = productMetadata.releaseTime.split(' ')[1]
-                                    let hour24 = parseInt(hour12)
-                                    if (period === 'PM' && hour24 !== 12) hour24 += 12
-                                    if (period === 'AM' && hour24 === 12) hour24 = 0
-                                    
-                                    const kstDate = new Date(`${productMetadata.consumerReleaseDate}T${hour24.toString().padStart(2, '0')}:${minute.split(' ')[0]}:00+09:00`)
-                                    const utcDate = new Date(kstDate.getTime())
-                                    
+                                    const [hour12, minute] = productMetadata.releaseTime.split(':');
+                                    const period = productMetadata.releaseTime.split(' ')[1];
+                                    let hour24 = parseInt(hour12);
+                                    if (period === 'PM' && hour24 !== 12) hour24 += 12;
+                                    if (period === 'AM' && hour24 === 12) hour24 = 0;
+
+                                    const kstDate = new Date(`${productMetadata.consumerReleaseDate}T${hour24.toString().padStart(2, '0')}:${minute.split(' ')[0]}:00+09:00`);
+                                    const utcDate = new Date(kstDate.getTime());
+
                                     if (language === 'ko') {
-                                      const dateOptions = { 
-                                        year: 'numeric', 
-                                        month: 'long', 
+                                      const dateOptions = {
+                                        year: 'numeric',
+                                        month: 'long',
                                         day: 'numeric',
                                         weekday: 'long',
                                         timeZone: 'UTC'
-                                      }
+                                      };
                                       const timeOptions = {
                                         hour: '2-digit',
                                         minute: '2-digit',
                                         hour12: true,
                                         timeZone: 'UTC'
-                                      }
-                                      const dateStr = utcDate.toLocaleDateString('ko-KR', dateOptions)
-                                      const timeStr = utcDate.toLocaleTimeString('en-US', timeOptions)
-                                      const timeKor = timeStr.replace('AM', '오전').replace('PM', '오후')
-                                      return `${dateStr} ${timeKor} UTC`
+                                      };
+                                      const dateStr = utcDate.toLocaleDateString('ko-KR', dateOptions);
+                                      const timeStr = utcDate.toLocaleTimeString('en-US', timeOptions);
+                                      const timeKor = timeStr.replace('AM', '오전').replace('PM', '오후');
+                                      return `${dateStr} ${timeKor} UTC`;
                                     } else {
-                                      const options = { 
-                                        year: 'numeric', 
-                                        month: 'long', 
+                                      const options = {
+                                        year: 'numeric',
+                                        month: 'long',
                                         day: 'numeric',
                                         weekday: 'long',
                                         hour: '2-digit',
                                         minute: '2-digit',
                                         hour12: true,
                                         timeZone: 'UTC'
-                                      }
-                                      return utcDate.toLocaleDateString('en-US', options) + ' UTC'
+                                      };
+                                      return utcDate.toLocaleDateString('en-US', options) + ' UTC';
                                     }
                                   } catch {
-                                    return 'Invalid time'
+                                    return 'Invalid time';
                                   }
                                 })()}
                               </div>
                             </div>
 
                             <div className="text-xs text-purple-600 dark:text-purple-300 mt-2">
-                              {language === 'ko' 
+                              {language === 'ko'
                                 ? '💡 전 세계 음원 플랫폼에서 동시 발매됩니다'
                                 : '💡 Will be released simultaneously on all global platforms'
                               }
                             </div>
-                            
+
                             {/* Timed Release Warning */}
                             <div className="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3">
                               <div className="flex items-start gap-2">
                                 <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                                 <div className="text-xs text-amber-800 dark:text-amber-200">
                                   <div className="font-semibold mb-1">
-                                    {language === 'ko' 
+                                    {language === 'ko'
                                       ? '⚠️ Timed Release 미지원 플랫폼 안내'
                                       : '⚠️ Timed Release Limitations'
                                     }
                                   </div>
                                   <div className="space-y-1">
                                     <p>
-                                      {language === 'ko' 
+                                      {language === 'ko'
                                         ? '일부 음원 플랫폼 (예: Apple Music)은 시간 설정 기능을 지원하지 않습니다.'
                                         : 'Some DSPs (e.g., Apple Music) don\'t support timed release feature.'
                                       }
                                     </p>
                                     <p>
-                                      {language === 'ko' 
+                                      {language === 'ko'
                                         ? '이러한 플랫폼에서는 발매일 각 지역 시간대의 자정(00:00)에 공개됩니다.'
                                         : 'On these platforms, your release will go live at midnight (00:00) in each local timezone on the release date.'
                                       }
@@ -1829,7 +1829,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       )}
                     </div>
                     <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      {language === 'ko' 
+                      {language === 'ko'
                         ? '한국 표준시(KST) 기준으로 발매 시간을 설정하세요 (선택사항)'
                         : 'Set release time in Korea Standard Time (KST) - optional'
                       }
@@ -1845,10 +1845,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       value={productMetadata.displayArtists || ''}
                       onChange={(e) => setProductMetadata({ ...productMetadata, displayArtists: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                      placeholder={language === 'ko' ? "표시될 아티스트명" : "Display artist names"}
+                      placeholder={language === 'ko' ? '표시될 아티스트명' : 'Display artist names'}
                     />
                     <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {language === 'ko' 
+                      {language === 'ko'
                         ? '음원 플랫폼에서 표시될 아티스트명'
                         : 'Artist name to be displayed on streaming platforms'
                       }
@@ -1892,7 +1892,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   </label>
                 </div>
                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  {language === 'ko' 
+                  {language === 'ko'
                     ? '욕설, 성적 내용 등 19세 미만 부적절한 내용 포함 여부'
                     : 'Contains profanity, sexual content, or other inappropriate content for minors'
                   }
@@ -2004,7 +2004,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   {t('track.territory.description')}
                 </p>
-                
+
                 {/* Territory Type Selection */}
                 <div className="space-y-4">
                   <div className="flex gap-4">
@@ -2013,8 +2013,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         type="radio"
                         value="world"
                         checked={(productMetadata.territoryType || 'world') === 'world'}
-                        onChange={(e) => setProductMetadata({ 
-                          ...productMetadata, 
+                        onChange={(e) => setProductMetadata({
+                          ...productMetadata,
                           territoryType: 'world' as const,
                           territories: []
                         })}
@@ -2027,8 +2027,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         type="radio"
                         value="selected"
                         checked={productMetadata.territoryType === 'selected'}
-                        onChange={(e) => setProductMetadata({ 
-                          ...productMetadata, 
+                        onChange={(e) => setProductMetadata({
+                          ...productMetadata,
                           territoryType: 'selected' as const
                         })}
                         className="w-4 h-4 text-purple-600 focus:ring-purple-500"
@@ -2045,11 +2045,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         <button
                           type="button"
                           onClick={() => {
-                            const allCountries = Object.values(territoryData).flatMap(c => c.countries)
+                            const allCountries = Object.values(territoryData).flatMap(c => c.countries);
                             setProductMetadata({
                               ...productMetadata,
                               territories: allCountries
-                            })
+                            });
                           }}
                           className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
                         >
@@ -2061,7 +2061,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             setProductMetadata({
                               ...productMetadata,
                               territories: []
-                            })
+                            });
                           }}
                           className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-colors"
                         >
@@ -2072,12 +2072,12 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       {/* Continent Cards */}
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {Object.entries(territoryData).map(([continentKey, continent]) => {
-                          const selectedCount = continent.countries.filter(c => 
+                          const selectedCount = continent.countries.filter(c =>
                             productMetadata.territories?.includes(c)
-                          ).length
-                          const totalCount = continent.countries.length
-                          const isAllSelected = selectedCount === totalCount
-                          
+                          ).length;
+                          const totalCount = continent.countries.length;
+                          const isAllSelected = selectedCount === totalCount;
+
                           return (
                             <div key={continentKey} className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700 transition-colors">
                               <div className="mb-3">
@@ -2088,30 +2088,30 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      const currentTerritories = productMetadata.territories || []
-                                      
+                                      const currentTerritories = productMetadata.territories || [];
+
                                       if (isAllSelected) {
                                         const newTerritories = currentTerritories.filter(
                                           c => !continent.countries.includes(c)
-                                        )
+                                        );
                                         setProductMetadata({
                                           ...productMetadata,
                                           territories: newTerritories
-                                        })
+                                        });
                                       } else {
                                         const newTerritories = [...new Set([
                                           ...currentTerritories,
                                           ...continent.countries
-                                        ])]
+                                        ])];
                                         setProductMetadata({
                                           ...productMetadata,
                                           territories: newTerritories
-                                        })
+                                        });
                                       }
                                     }}
                                     className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                                      isAllSelected 
-                                        ? 'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900 dark:text-purple-300' 
+                                      isAllSelected
+                                        ? 'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900 dark:text-purple-300'
                                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
                                     }`}
                                   >
@@ -2120,7 +2120,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                    <div 
+                                    <div
                                       className={`h-2 rounded-full transition-all ${
                                         selectedCount === 0 ? 'bg-gray-300 dark:bg-gray-600' : 'bg-purple-600'
                                       }`}
@@ -2132,7 +2132,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                   </span>
                                 </div>
                               </div>
-                              
+
                               {/* Expandable Country List */}
                               <details className="group" id={`territory-${continentKey}`}>
                                 <summary className="cursor-pointer text-sm text-purple-600 hover:text-purple-700 font-medium list-none flex items-center gap-1">
@@ -2141,27 +2141,27 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 </summary>
                                 <div className="mt-3 space-y-1 max-h-48 overflow-y-auto">
                                   {continent.countries.map(countryCode => (
-                                    <label 
-                                      key={countryCode} 
+                                    <label
+                                      key={countryCode}
                                       className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors text-sm
                                         ${productMetadata.territories?.includes(countryCode)
-                                          ? 'bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30' 
-                                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                                        }`}
+                                      ? 'bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30'
+                                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                                    }`}
                                     >
                                       <input
                                         type="checkbox"
                                         value={countryCode}
                                         checked={productMetadata.territories?.includes(countryCode) || false}
                                         onChange={(e) => {
-                                          const currentTerritories = productMetadata.territories || []
+                                          const currentTerritories = productMetadata.territories || [];
                                           const newTerritories = e.target.checked
                                             ? [...currentTerritories, countryCode]
-                                            : currentTerritories.filter(c => c !== countryCode)
+                                            : currentTerritories.filter(c => c !== countryCode);
                                           setProductMetadata({
                                             ...productMetadata,
                                             territories: newTerritories
-                                          })
+                                          });
                                         }}
                                         className="rounded text-purple-600 focus:ring-purple-500"
                                       />
@@ -2180,19 +2180,19 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 </div>
                               </details>
                             </div>
-                          )
+                          );
                         })}
                       </div>
 
                       {/* Selected Countries Summary */}
                       <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
                         <h5 className="font-medium text-purple-900 dark:text-purple-100 mb-2">
-                          {language === 'ko' ? '선택된 국가' : 'Selected Countries'} 
+                          {language === 'ko' ? '선택된 국가' : 'Selected Countries'}
                           ({productMetadata.territories?.length || 0})
                         </h5>
                         <div className="flex flex-wrap gap-2">
                           {(productMetadata.territories || []).map(countryCode => (
-                            <span 
+                            <span
                               key={countryCode}
                               className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-200 rounded-full text-xs"
                             >
@@ -2201,11 +2201,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 type="button"
                                 onClick={() => {
                                   const newTerritories = (productMetadata.territories || [])
-                                    .filter((c: string) => c !== countryCode)
+                                    .filter((c: string) => c !== countryCode);
                                   setProductMetadata({
                                     ...productMetadata,
                                     territories: newTerritories
-                                  })
+                                  });
                                 }}
                                 className="ml-1 hover:text-purple-900 dark:hover:text-purple-100"
                               >
@@ -2229,7 +2229,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   {t('track.dspTerritories.description')}
                 </p>
-                
+
                 {/* Summary of DSP Settings */}
                 <div className="mb-4 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
                   <div className="flex items-center justify-between">
@@ -2240,7 +2240,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         ).length} {language === 'ko' ? '개 DSP 커스텀 설정' : 'DSPs with custom settings'}
                       </p>
                       <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
-                        {language === 'ko' 
+                        {language === 'ko'
                           ? '나머지는 기본 지역 설정을 사용합니다'
                           : 'Others use default territory settings'
                         }
@@ -2248,7 +2248,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     </div>
                     <button
                       onClick={() => {
-                        setShowDspTerritoryModal(true)
+                        setShowDspTerritoryModal(true);
                       }}
                       className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors flex items-center gap-2"
                     >
@@ -2270,7 +2270,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       {Object.entries(productMetadata.dspTerritories || {})
                         .filter(([_, config]) => config.territoryType === 'custom')
                         .map(([dsp, config]) => (
-                          <span 
+                          <span
                             key={dsp}
                             className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs"
                           >
@@ -2334,7 +2334,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       />
                     </div>
                   </div>
-                  
+
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => setTitleTrack(selectedTrack.id)}
@@ -2363,9 +2363,9 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       </h4>
                       <button
                         onClick={() => {
-                          setArtistModalType('main')
-                          setEditingArtist(null)
-                          setShowArtistModal(true)
+                          setArtistModalType('main');
+                          setEditingArtist(null);
+                          setShowArtistModal(true);
                         }}
                         className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors"
                       >
@@ -2417,9 +2417,9 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       </h4>
                       <button
                         onClick={() => {
-                          setArtistModalType('featuring')
-                          setEditingArtist(null)
-                          setShowArtistModal(true)
+                          setArtistModalType('featuring');
+                          setEditingArtist(null);
+                          setShowArtistModal(true);
                         }}
                         className="flex items-center gap-1 px-3 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-sm rounded-lg transition-colors"
                       >
@@ -2473,8 +2473,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   </h4>
                   <button
                     onClick={() => {
-                      setEditingContributor(null)
-                      setShowContributorModal(true)
+                      setEditingContributor(null);
+                      setShowContributorModal(true);
                     }}
                     className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors"
                   >
@@ -2486,11 +2486,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   <div className="space-y-2">
                     {selectedTrack.contributors.map((contributor) => {
                       // Find the role option to get the label
-                      const roleOption = roleOptions.find(r => r.value === contributor.role)
-                      const roleLabel = roleOption 
+                      const roleOption = roleOptions.find(r => r.value === contributor.role);
+                      const roleLabel = roleOption
                         ? (language === 'ko' ? roleOption.label : roleOption.labelEn)
-                        : contributor.role
-                      
+                        : contributor.role;
+
                       return (
                         <div key={contributor.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                           <div className="flex-1">
@@ -2513,7 +2513,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             <X className="w-4 h-4" />
                           </button>
                         </div>
-                      )
+                      );
                     })}
                   </div>
                 ) : (
@@ -2536,11 +2536,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       id={`custom-release-${selectedTrack.id}`}
                       checked={selectedTrack.hasCustomReleaseDate || false}
                       onChange={(e) => {
-                        updateTrack(selectedTrack.id, { 
+                        updateTrack(selectedTrack.id, {
                           hasCustomReleaseDate: e.target.checked,
                           consumerReleaseDate: e.target.checked ? selectedTrack.consumerReleaseDate || productMetadata.consumerReleaseDate : '',
                           releaseTime: e.target.checked ? selectedTrack.releaseTime || productMetadata.releaseTime : ''
-                        })
+                        });
                       }}
                       className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2"
                     />
@@ -2549,21 +2549,21 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     </label>
                   </div>
                 </div>
-                
+
                 {selectedTrack.hasCustomReleaseDate && (
                   <div className="space-y-4 mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
                       <div className="flex items-start gap-2">
                         <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
                         <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                          {language === 'ko' 
+                          {language === 'ko'
                             ? '개별 트랙 발매일은 일부 DSP에서만 지원됩니다. 지원하지 않는 DSP에서는 앨범 발매일이 적용됩니다.'
                             : 'Individual track release dates are only supported by some DSPs. Unsupported DSPs will use the album release date.'
                           }
                         </p>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -2582,7 +2582,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         </label>
                         <div className="space-y-3">
                           {!selectedTrack.releaseTime ? (
-                            <div 
+                            <div
                               onClick={() => updateTrack(selectedTrack.id, { releaseTime: '12:00 AM' })}
                               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
                             >
@@ -2593,52 +2593,52 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               <select
                                 value={selectedTrack.releaseTime.split(':')[0]}
                                 onChange={(e) => {
-                                  const hour = e.target.value
-                                  const minute = selectedTrack.releaseTime!.split(':')[1]?.split(' ')[0] || '00'
-                                  const period = selectedTrack.releaseTime!.split(' ')[1] || 'AM'
-                                  const newTime = `${hour}:${minute} ${period}`
-                                  updateTrack(selectedTrack.id, { releaseTime: newTime })
+                                  const hour = e.target.value;
+                                  const minute = selectedTrack.releaseTime!.split(':')[1]?.split(' ')[0] || '00';
+                                  const period = selectedTrack.releaseTime!.split(' ')[1] || 'AM';
+                                  const newTime = `${hour}:${minute} ${period}`;
+                                  updateTrack(selectedTrack.id, { releaseTime: newTime });
                                 }}
                                 className="flex-1 px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
                                 {[...Array(12)].map((_, i) => {
-                                  const hour = i + 1
+                                  const hour = i + 1;
                                   return (
                                     <option key={hour} value={hour.toString().padStart(2, '0')}>
                                       {hour}
                                     </option>
-                                  )
+                                  );
                                 })}
                               </select>
                               <span className="flex items-center text-gray-500 dark:text-gray-400">:</span>
                               <select
                                 value={selectedTrack.releaseTime.split(':')[1]?.split(' ')[0] || '00'}
                                 onChange={(e) => {
-                                  const hour = selectedTrack.releaseTime!.split(':')[0]
-                                  const minute = e.target.value
-                                  const period = selectedTrack.releaseTime!.split(' ')[1] || 'AM'
-                                  const newTime = `${hour}:${minute} ${period}`
-                                  updateTrack(selectedTrack.id, { releaseTime: newTime })
+                                  const hour = selectedTrack.releaseTime!.split(':')[0];
+                                  const minute = e.target.value;
+                                  const period = selectedTrack.releaseTime!.split(' ')[1] || 'AM';
+                                  const newTime = `${hour}:${minute} ${period}`;
+                                  updateTrack(selectedTrack.id, { releaseTime: newTime });
                                 }}
                                 className="flex-1 px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
                                 {[...Array(12)].map((_, i) => {
-                                  const minute = i * 5
+                                  const minute = i * 5;
                                   return (
                                     <option key={minute} value={minute.toString().padStart(2, '0')}>
                                       {minute.toString().padStart(2, '0')}
                                     </option>
-                                  )
+                                  );
                                 })}
                               </select>
                               <select
                                 value={selectedTrack.releaseTime.split(' ')[1] || 'AM'}
                                 onChange={(e) => {
-                                  const hour = selectedTrack.releaseTime!.split(':')[0]
-                                  const minute = selectedTrack.releaseTime!.split(':')[1]?.split(' ')[0] || '00'
-                                  const period = e.target.value
-                                  const newTime = `${hour}:${minute} ${period}`
-                                  updateTrack(selectedTrack.id, { releaseTime: newTime })
+                                  const hour = selectedTrack.releaseTime!.split(':')[0];
+                                  const minute = selectedTrack.releaseTime!.split(':')[1]?.split(' ')[0] || '00';
+                                  const period = e.target.value;
+                                  const newTime = `${hour}:${minute} ${period}`;
+                                  updateTrack(selectedTrack.id, { releaseTime: newTime });
                                 }}
                                 className="px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
@@ -2658,7 +2658,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         </div>
                       </div>
                     </div>
-                    
+
                     {/* Time conversion display for individual track */}
                     {selectedTrack.releaseTime && selectedTrack.consumerReleaseDate && (
                       <div className="mt-4 bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 border border-purple-200 dark:border-purple-700 rounded-xl p-4">
@@ -2666,7 +2666,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                           <div className="text-sm font-semibold text-purple-800 dark:text-purple-200">
                             {language === 'ko' ? '🚀 트랙 발매 예정 시간' : '🚀 Track Release Time'}
                           </div>
-                          
+
                           {/* KST Display */}
                           <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
                             <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
@@ -2674,26 +2674,26 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             </div>
                             <div className="text-lg font-bold text-gray-900 dark:text-white">
                               {(() => {
-                                const date = new Date(selectedTrack.consumerReleaseDate)
-                                const options: Intl.DateTimeFormatOptions = { 
-                                  year: 'numeric', 
-                                  month: 'long', 
+                                const date = new Date(selectedTrack.consumerReleaseDate);
+                                const options: Intl.DateTimeFormatOptions = {
+                                  year: 'numeric',
+                                  month: 'long',
                                   day: 'numeric',
                                   weekday: 'long'
-                                }
-                                const dateStr = language === 'ko' 
+                                };
+                                const dateStr = language === 'ko'
                                   ? date.toLocaleDateString('ko-KR', options)
-                                  : date.toLocaleDateString('en-US', options)
-                                
-                                const timeStr = language === 'ko' 
+                                  : date.toLocaleDateString('en-US', options);
+
+                                const timeStr = language === 'ko'
                                   ? selectedTrack.releaseTime.replace('AM', '오전').replace('PM', '오후')
-                                  : selectedTrack.releaseTime
-                                
-                                return `${dateStr} ${timeStr}`
+                                  : selectedTrack.releaseTime;
+
+                                return `${dateStr} ${timeStr}`;
                               })()}
                             </div>
                           </div>
-                          
+
                           {/* UTC Display */}
                           <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
                             <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
@@ -2701,32 +2701,32 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             </div>
                             <div className="text-lg font-bold text-gray-900 dark:text-white">
                               {(() => {
-                                const [time, period] = selectedTrack.releaseTime.split(' ')
-                                const [hours, minutes] = time.split(':')
-                                let hour = parseInt(hours)
-                                
-                                if (period === 'PM' && hour !== 12) hour += 12
-                                if (period === 'AM' && hour === 12) hour = 0
-                                
-                                const kstDate = new Date(selectedTrack.consumerReleaseDate)
-                                kstDate.setHours(hour, parseInt(minutes), 0, 0)
-                                
-                                const utcDate = new Date(kstDate.getTime() - (9 * 60 * 60 * 1000))
-                                
+                                const [time, period] = selectedTrack.releaseTime.split(' ');
+                                const [hours, minutes] = time.split(':');
+                                let hour = parseInt(hours);
+
+                                if (period === 'PM' && hour !== 12) hour += 12;
+                                if (period === 'AM' && hour === 12) hour = 0;
+
+                                const kstDate = new Date(selectedTrack.consumerReleaseDate);
+                                kstDate.setHours(hour, parseInt(minutes), 0, 0);
+
+                                const utcDate = new Date(kstDate.getTime() - (9 * 60 * 60 * 1000));
+
                                 const utcDateStr = utcDate.toLocaleDateString('en-US', {
                                   year: 'numeric',
                                   month: 'long',
                                   day: 'numeric',
                                   weekday: 'long'
-                                })
-                                
+                                });
+
                                 const utcTimeStr = utcDate.toLocaleTimeString('en-US', {
                                   hour: '2-digit',
                                   minute: '2-digit',
                                   hour12: true
-                                })
-                                
-                                return `${utcDateStr} ${utcTimeStr}`
+                                });
+
+                                return `${utcDateStr} ${utcTimeStr}`;
                               })()}
                             </div>
                           </div>
@@ -2904,10 +2904,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         id: uuidv4(),
                         language: '',
                         title: ''
-                      }
+                      };
                       updateTrack(selectedTrack.id, {
                         translations: [...(selectedTrack.translations || []), newTranslation]
-                      })
+                      });
                     }}
                     className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-sm rounded-lg transition-colors"
                   >
@@ -2927,9 +2927,9 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             <select
                               value={translation.language}
                               onChange={(e) => {
-                                const updatedTranslations = [...selectedTrack.translations!]
-                                updatedTranslations[index] = { ...translation, language: e.target.value }
-                                updateTrack(selectedTrack.id, { translations: updatedTranslations })
+                                const updatedTranslations = [...selectedTrack.translations!];
+                                updatedTranslations[index] = { ...translation, language: e.target.value };
+                                updateTrack(selectedTrack.id, { translations: updatedTranslations });
                               }}
                               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                             >
@@ -2947,9 +2947,9 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               type="text"
                               value={translation.title}
                               onChange={(e) => {
-                                const updatedTranslations = [...selectedTrack.translations!]
-                                updatedTranslations[index] = { ...translation, title: e.target.value }
-                                updateTrack(selectedTrack.id, { translations: updatedTranslations })
+                                const updatedTranslations = [...selectedTrack.translations!];
+                                updatedTranslations[index] = { ...translation, title: e.target.value };
+                                updateTrack(selectedTrack.id, { translations: updatedTranslations });
                               }}
                               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                               placeholder="번역된 트랙 제목"
@@ -2958,8 +2958,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         </div>
                         <button
                           onClick={() => {
-                            const updatedTranslations = selectedTrack.translations!.filter((_, i) => i !== index)
-                            updateTrack(selectedTrack.id, { translations: updatedTranslations })
+                            const updatedTranslations = selectedTrack.translations!.filter((_, i) => i !== index);
+                            updateTrack(selectedTrack.id, { translations: updatedTranslations });
                           }}
                           className="mt-6 text-red-500 hover:text-red-700"
                         >
@@ -3078,12 +3078,12 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       onChange={(e) => setKeywordInput(e.target.value)}
                       onKeyPress={(e) => {
                         if (e.key === 'Enter' && keywordInput.trim()) {
-                          e.preventDefault()
+                          e.preventDefault();
                           setMarketing(prev => ({
                             ...prev,
                             marketingKeywords: [...prev.marketingKeywords, keywordInput.trim()]
-                          }))
-                          setKeywordInput('')
+                          }));
+                          setKeywordInput('');
                         }
                       }}
                       className="flex-1 px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
@@ -3095,8 +3095,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                           setMarketing(prev => ({
                             ...prev,
                             marketingKeywords: [...prev.marketingKeywords, keywordInput.trim()]
-                          }))
-                          setKeywordInput('')
+                          }));
+                          setKeywordInput('');
                         }
                       }}
                       className="px-4 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
@@ -3117,7 +3117,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               setMarketing(prev => ({
                                 ...prev,
                                 marketingKeywords: prev.marketingKeywords.filter((_: string, i: number) => i !== index)
-                              }))
+                              }));
                             }}
                             className="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-200"
                           >
@@ -3151,7 +3151,6 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
         <QCWarnings results={qcValidationResults} />
       )}
 
-
       {/* Modals */}
       <ArtistModal
         isOpen={showArtistModal}
@@ -3182,10 +3181,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 </div>
                 <button
                   onClick={() => {
-                    setShowDspTerritoryModal(false)
-                    setSelectedDsps([])
-                    setDspSearchQuery('')
-                    setTempDspTerritories({})
+                    setShowDspTerritoryModal(false);
+                    setSelectedDsps([]);
+                    setDspSearchQuery('');
+                    setTempDspTerritories({});
                   }}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
@@ -3202,7 +3201,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
                     {language === 'ko' ? 'DSP 선택' : 'Select DSPs'}
                   </h3>
-                  
+
                   {/* Search */}
                   <div className="relative mb-4">
                     <input
@@ -3220,10 +3219,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     <button
                       type="button"
                       onClick={() => {
-                        const filteredDsps = dspList.filter(dsp => 
+                        const filteredDsps = dspList.filter(dsp =>
                           dsp.toLowerCase().includes(dspSearchQuery.toLowerCase())
-                        )
-                        setSelectedDsps(filteredDsps)
+                        );
+                        setSelectedDsps(filteredDsps);
                       }}
                       className="text-xs px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/70"
                     >
@@ -3252,9 +3251,9 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             checked={selectedDsps.includes(dsp)}
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setSelectedDsps([...selectedDsps, dsp])
+                                setSelectedDsps([...selectedDsps, dsp]);
                               } else {
-                                setSelectedDsps(selectedDsps.filter(d => d !== dsp))
+                                setSelectedDsps(selectedDsps.filter(d => d !== dsp));
                               }
                             }}
                             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -3300,11 +3299,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         <button
                           type="button"
                           onClick={() => {
-                            const newTerritories: Record<string, string[]> = {}
+                            const newTerritories: Record<string, string[]> = {};
                             selectedDsps.forEach(dsp => {
-                              newTerritories[dsp] = productMetadata.territories || []
-                            })
-                            setTempDspTerritories(newTerritories)
+                              newTerritories[dsp] = productMetadata.territories || [];
+                            });
+                            setTempDspTerritories(newTerritories);
                           }}
                           className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                             Object.keys(tempDspTerritories).length > 0
@@ -3329,14 +3328,14 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             <button
                               type="button"
                               onClick={() => {
-                                const allTerritories = Object.keys(territoryData).flatMap(continent => 
+                                const allTerritories = Object.keys(territoryData).flatMap(continent =>
                                   territoryData[continent as keyof typeof territoryData].countries
-                                )
-                                const newTerritories: Record<string, string[]> = {}
+                                );
+                                const newTerritories: Record<string, string[]> = {};
                                 selectedDsps.forEach(dsp => {
-                                  newTerritories[dsp] = allTerritories
-                                })
-                                setTempDspTerritories(newTerritories)
+                                  newTerritories[dsp] = allTerritories;
+                                });
+                                setTempDspTerritories(newTerritories);
                               }}
                               className="text-xs px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded hover:bg-green-200"
                             >
@@ -3345,11 +3344,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             <button
                               type="button"
                               onClick={() => {
-                                const newTerritories: Record<string, string[]> = {}
+                                const newTerritories: Record<string, string[]> = {};
                                 selectedDsps.forEach(dsp => {
-                                  newTerritories[dsp] = []
-                                })
-                                setTempDspTerritories(newTerritories)
+                                  newTerritories[dsp] = [];
+                                });
+                                setTempDspTerritories(newTerritories);
                               }}
                               className="text-xs px-3 py-1 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 rounded hover:bg-red-200"
                             >
@@ -3361,11 +3360,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         {/* Continent Selection */}
                         <div className="grid grid-cols-2 gap-4">
                           {Object.entries(territoryData).map(([continentKey, continent]) => {
-                            const selectedCount = tempDspTerritories[selectedDsps[0]]?.filter(t => 
+                            const selectedCount = tempDspTerritories[selectedDsps[0]]?.filter(t =>
                               continent.countries.includes(t)
-                            ).length || 0
-                            const totalCount = continent.countries.length
-                            const percentage = (selectedCount / totalCount) * 100
+                            ).length || 0;
+                            const totalCount = continent.countries.length;
+                            const percentage = (selectedCount / totalCount) * 100;
 
                             return (
                               <div key={continentKey} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
@@ -3377,10 +3376,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                     {selectedCount}/{totalCount}
                                   </span>
                                 </div>
-                                
+
                                 <div className="mb-3">
                                   <div className="h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
-                                    <div 
+                                    <div
                                       className="h-full bg-blue-500 transition-all duration-300"
                                       style={{ width: `${percentage}%` }}
                                     />
@@ -3391,13 +3390,13 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      const newTerritories = { ...tempDspTerritories }
+                                      const newTerritories = { ...tempDspTerritories };
                                       selectedDsps.forEach(dsp => {
-                                        const current = newTerritories[dsp] || []
-                                        const toAdd = continent.countries.filter(c => !current.includes(c))
-                                        newTerritories[dsp] = [...current, ...toAdd]
-                                      })
-                                      setTempDspTerritories(newTerritories)
+                                        const current = newTerritories[dsp] || [];
+                                        const toAdd = continent.countries.filter(c => !current.includes(c));
+                                        newTerritories[dsp] = [...current, ...toAdd];
+                                      });
+                                      setTempDspTerritories(newTerritories);
                                     }}
                                     className="flex-1 text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200"
                                   >
@@ -3406,13 +3405,13 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      const newTerritories = { ...tempDspTerritories }
+                                      const newTerritories = { ...tempDspTerritories };
                                       selectedDsps.forEach(dsp => {
-                                        newTerritories[dsp] = (newTerritories[dsp] || []).filter(t => 
+                                        newTerritories[dsp] = (newTerritories[dsp] || []).filter(t =>
                                           !continent.countries.includes(t)
-                                        )
-                                      })
-                                      setTempDspTerritories(newTerritories)
+                                        );
+                                      });
+                                      setTempDspTerritories(newTerritories);
                                     }}
                                     className="flex-1 text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200"
                                   >
@@ -3420,7 +3419,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                   </button>
                                 </div>
                               </div>
-                            )
+                            );
                           })}
                         </div>
                       </div>
@@ -3442,8 +3441,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
             {/* Modal Footer */}
             <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {selectedDsps.length > 0 && (language === 'ko' 
-                  ? `${selectedDsps.length}개 DSP에 적용됩니다` 
+                {selectedDsps.length > 0 && (language === 'ko'
+                  ? `${selectedDsps.length}개 DSP에 적용됩니다`
                   : `Applying to ${selectedDsps.length} DSPs`
                 )}
               </p>
@@ -3451,10 +3450,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <button
                   type="button"
                   onClick={() => {
-                    setShowDspTerritoryModal(false)
-                    setSelectedDsps([])
-                    setDspSearchQuery('')
-                    setTempDspTerritories({})
+                    setShowDspTerritoryModal(false);
+                    setSelectedDsps([]);
+                    setDspSearchQuery('');
+                    setTempDspTerritories({});
                   }}
                   className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
@@ -3463,30 +3462,30 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <button
                   type="button"
                   onClick={() => {
-                    const newDspTerritories = { ...productMetadata.dspTerritories }
-                    
+                    const newDspTerritories = { ...productMetadata.dspTerritories };
+
                     selectedDsps.forEach(dsp => {
                       if (Object.keys(tempDspTerritories).length === 0) {
                         // Use default territories
-                        delete newDspTerritories[dsp]
+                        delete newDspTerritories[dsp];
                       } else {
                         // Use custom territories
                         newDspTerritories[dsp] = {
                           territoryType: 'custom' as const,
                           territories: tempDspTerritories[dsp] || []
-                        }
+                        };
                       }
-                    })
-                    
+                    });
+
                     setProductMetadata({
                       ...productMetadata,
                       dspTerritories: newDspTerritories
-                    })
-                    
-                    setShowDspTerritoryModal(false)
-                    setSelectedDsps([])
-                    setDspSearchQuery('')
-                    setTempDspTerritories({})
+                    });
+
+                    setShowDspTerritoryModal(false);
+                    setSelectedDsps([]);
+                    setDspSearchQuery('');
+                    setTempDspTerritories({});
                   }}
                   disabled={selectedDsps.length === 0}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -3508,7 +3507,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 {editingDSP} - {t('track.territory')}
               </h3>
             </div>
-            
+
             <div className="p-6 overflow-y-auto flex-1">
               <div className="space-y-4">
                 {/* Territory Type Selection */}
@@ -3525,7 +3524,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             ...productMetadata.dspTerritories,
                             [editingDSP]: { territoryType: 'default' }
                           }
-                        })
+                        });
                       }}
                       className="w-4 h-4 text-purple-600 focus:ring-purple-500"
                     />
@@ -3541,12 +3540,12 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                           ...productMetadata,
                           dspTerritories: {
                             ...productMetadata.dspTerritories,
-                            [editingDSP]: { 
+                            [editingDSP]: {
                               territoryType: 'custom',
                               territories: productMetadata.dspTerritories?.[editingDSP]?.territories || []
                             }
                           }
-                        })
+                        });
                       }}
                       className="w-4 h-4 text-purple-600 focus:ring-purple-500"
                     />
@@ -3562,7 +3561,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       <button
                         type="button"
                         onClick={() => {
-                          const allCountries = Object.values(territoryData).flatMap(c => c.countries)
+                          const allCountries = Object.values(territoryData).flatMap(c => c.countries);
                           setProductMetadata({
                             ...productMetadata,
                             dspTerritories: {
@@ -3572,7 +3571,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 territories: allCountries
                               }
                             }
-                          })
+                          });
                         }}
                         className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
                       >
@@ -3590,7 +3589,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 territories: []
                               }
                             }
-                          })
+                          });
                         }}
                         className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-colors"
                       >
@@ -3601,12 +3600,12 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     {/* Continent Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {Object.entries(territoryData).map(([continentKey, continent]) => {
-                        const dspTerritories = productMetadata.dspTerritories?.[editingDSP]?.territories || []
-                        const selectedCount = continent.countries.filter(c => dspTerritories.includes(c)).length
-                        const totalCount = continent.countries.length
-                        const isAllSelected = selectedCount === totalCount
+                        const dspTerritories = productMetadata.dspTerritories?.[editingDSP]?.territories || [];
+                        const selectedCount = continent.countries.filter(c => dspTerritories.includes(c)).length;
+                        const totalCount = continent.countries.length;
+                        const isAllSelected = selectedCount === totalCount;
                         // const isPartiallySelected = selectedCount > 0 && selectedCount < totalCount
-                        
+
                         return (
                           <div key={continentKey} className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700 transition-colors">
                             <div className="mb-3">
@@ -3617,14 +3616,14 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const currentTerritories = dspTerritories
-                                    let newTerritories
+                                    const currentTerritories = dspTerritories;
+                                    let newTerritories;
                                     if (isAllSelected) {
-                                      newTerritories = currentTerritories.filter((c: string) => !continent.countries.includes(c))
+                                      newTerritories = currentTerritories.filter((c: string) => !continent.countries.includes(c));
                                     } else {
-                                      newTerritories = [...new Set([...currentTerritories, ...continent.countries])]
+                                      newTerritories = [...new Set([...currentTerritories, ...continent.countries])];
                                     }
-                                    
+
                                     setProductMetadata({
                                       ...productMetadata,
                                       dspTerritories: {
@@ -3634,11 +3633,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                           territories: newTerritories
                                         }
                                       }
-                                    })
+                                    });
                                   }}
                                   className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                                    isAllSelected 
-                                      ? 'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900 dark:text-purple-300' 
+                                    isAllSelected
+                                      ? 'bg-purple-100 text-purple-700 hover:bg-purple-200 dark:bg-purple-900 dark:text-purple-300'
                                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
                                   }`}
                                 >
@@ -3647,7 +3646,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               </div>
                               <div className="flex items-center gap-2">
                                 <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                  <div 
+                                  <div
                                     className={`h-2 rounded-full transition-all ${
                                       selectedCount === 0 ? 'bg-gray-300 dark:bg-gray-600' : 'bg-purple-600'
                                     }`}
@@ -3659,7 +3658,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 </span>
                               </div>
                             </div>
-                            
+
                             {/* Expandable Country List */}
                             <details className="group" id={`continent-${continentKey}`}>
                               <summary className="cursor-pointer text-sm text-purple-600 hover:text-purple-700 font-medium list-none flex items-center gap-1">
@@ -3668,26 +3667,26 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               </summary>
                               <div className="mt-3 space-y-1 max-h-48 overflow-y-auto">
                                 {continent.countries.map(countryCode => (
-                                  <label 
-                                    key={countryCode} 
+                                  <label
+                                    key={countryCode}
                                     className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors text-sm
-                                      ${dspTerritories.includes(countryCode) 
-                                        ? 'bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30' 
-                                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                                      }`}
+                                      ${dspTerritories.includes(countryCode)
+                                    ? 'bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30'
+                                    : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                                  }`}
                                   >
                                     <input
                                       type="checkbox"
                                       value={countryCode}
                                       checked={dspTerritories.includes(countryCode)}
                                       onChange={(e) => {
-                                        let newTerritories
+                                        let newTerritories;
                                         if (e.target.checked) {
-                                          newTerritories = [...dspTerritories, countryCode]
+                                          newTerritories = [...dspTerritories, countryCode];
                                         } else {
-                                          newTerritories = dspTerritories.filter((c: string) => c !== countryCode)
+                                          newTerritories = dspTerritories.filter((c: string) => c !== countryCode);
                                         }
-                                        
+
                                         setProductMetadata({
                                           ...productMetadata,
                                           dspTerritories: {
@@ -3697,7 +3696,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                               territories: newTerritories
                                             }
                                           }
-                                        })
+                                        });
                                       }}
                                       className="rounded text-purple-600 focus:ring-purple-500"
                                     />
@@ -3716,19 +3715,19 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               </div>
                             </details>
                           </div>
-                        )
+                        );
                       })}
                     </div>
 
                     {/* Selected Countries Summary */}
                     <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4">
                       <h5 className="font-medium text-purple-900 dark:text-purple-100 mb-2">
-                        {language === 'ko' ? '선택된 국가' : 'Selected Countries'} 
+                        {language === 'ko' ? '선택된 국가' : 'Selected Countries'}
                         ({productMetadata.dspTerritories?.[editingDSP!]?.territories?.length || 0})
                       </h5>
                       <div className="flex flex-wrap gap-2">
                         {(productMetadata.dspTerritories?.[editingDSP!]?.territories || []).map((countryCode: string) => (
-                          <span 
+                          <span
                             key={countryCode}
                             className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-200 rounded-full text-xs"
                           >
@@ -3737,7 +3736,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               type="button"
                               onClick={() => {
                                 const newTerritories = (productMetadata.dspTerritories?.[editingDSP!]?.territories || [])
-                                  .filter((c: string) => c !== countryCode)
+                                  .filter((c: string) => c !== countryCode);
                                 setProductMetadata({
                                   ...productMetadata,
                                   dspTerritories: {
@@ -3747,7 +3746,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                       territories: newTerritories
                                     }
                                   }
-                                })
+                                });
                               }}
                               className="ml-1 hover:text-purple-900 dark:hover:text-purple-100"
                             >
@@ -3765,8 +3764,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
             <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
               <button
                 onClick={() => {
-                  setShowDSPModal(false)
-                  setEditingDSP(null)
+                  setShowDSPModal(false);
+                  setEditingDSP(null);
                 }}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
               >
@@ -3774,8 +3773,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
               </button>
               <button
                 onClick={() => {
-                  setShowDSPModal(false)
-                  setEditingDSP(null)
+                  setShowDSPModal(false);
+                  setEditingDSP(null);
                 }}
                 className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
               >
@@ -3790,13 +3789,13 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
       <ArtistModal
         isOpen={showArtistModal}
         onClose={() => {
-          setShowArtistModal(false)
-          setEditingArtist(null)
+          setShowArtistModal(false);
+          setEditingArtist(null);
         }}
         onSave={addArtistToTrack}
         role={artistModalType}
         editingArtist={editingArtist}
       />
     </form>
-  )
+  );
 }

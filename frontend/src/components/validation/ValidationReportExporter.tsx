@@ -1,11 +1,11 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   Download, FileText, CheckSquare, AlertTriangle, AlertCircle,
   Star, Calendar, Clock, BarChart3, Target, Award, Mail
-} from 'lucide-react'
-import { DSPReadinessReport, ValidationSummary } from '@/types/validationAdvanced'
-import { ValidationWarning } from '@/components/ValidationWarning'
+} from 'lucide-react';
+import { DSPReadinessReport, ValidationSummary } from '@/types/validationAdvanced';
+import { ValidationWarning } from '@/components/ValidationWarning';
 
 interface ValidationReportExporterProps {
   warnings: ValidationWarning[]
@@ -27,7 +27,7 @@ const mockDSPPlatforms = [
   { name: 'YouTube Music', criticalWeight: 0.15, warningWeight: 0.1 },
   { name: 'Amazon Music', criticalWeight: 0.1, warningWeight: 0.05 },
   { name: 'Deezer', criticalWeight: 0.05, warningWeight: 0.05 }
-]
+];
 
 export default function ValidationReportExporter({
   warnings,
@@ -36,47 +36,47 @@ export default function ValidationReportExporter({
   language = 'en',
   onExport
 }: ValidationReportExporterProps) {
-  const [selectedFormat, setSelectedFormat] = useState<'pdf' | 'email' | null>(null)
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [selectedFormat, setSelectedFormat] = useState<'pdf' | 'email' | null>(null);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   // Generate DSP-specific readiness report
   const generateDSPReport = (): DSPReadinessReport => {
     const platformScores = mockDSPPlatforms.map(platform => {
-      let score = 100
-      let criticalIssues: string[] = []
-      let warningIssues: string[] = []
+      let score = 100;
+      const criticalIssues: string[] = [];
+      const warningIssues: string[] = [];
 
       warnings.forEach(warning => {
         if (warning.type === 'error') {
-          score -= platform.criticalWeight * 100
-          criticalIssues.push(warning.message)
+          score -= platform.criticalWeight * 100;
+          criticalIssues.push(warning.message);
         } else if (warning.type === 'warning') {
-          score -= platform.warningWeight * 100
-          warningIssues.push(warning.message)
+          score -= platform.warningWeight * 100;
+          warningIssues.push(warning.message);
         }
-      })
+      });
 
       return {
         platform: platform.name,
         score: Math.max(0, Math.round(score)),
         criticalIssues: [...new Set(criticalIssues)],
         warnings: [...new Set(warningIssues)]
-      }
-    })
+      };
+    });
 
     const overallScore = Math.round(
       platformScores.reduce((sum, p) => sum + p.score, 0) / platformScores.length
-    )
+    );
 
-    const submissionReadiness: 'ready' | 'needs_work' | 'not_ready' = 
+    const submissionReadiness: 'ready' | 'needs_work' | 'not_ready' =
       summary.errors > 0 ? 'not_ready' :
-      summary.warnings > 3 ? 'needs_work' : 'ready'
+        summary.warnings > 3 ? 'needs_work' : 'ready';
 
-    const estimatedRejectionRisk = Math.max(0, Math.min(100, 
+    const estimatedRejectionRisk = Math.max(0, Math.min(100,
       (summary.errors * 25) + (summary.warnings * 10) + (summary.suggestions * 2)
-    ))
+    ));
 
     const recommendedActions = [
       ...(summary.errors > 0 ? [{
@@ -100,7 +100,7 @@ export default function ValidationReportExporter({
         timeEstimate: t('3-5분', '3-5 minutes'),
         platforms: ['All platforms']
       }] : [])
-    ]
+    ];
 
     const complianceChecklist = [
       {
@@ -108,20 +108,20 @@ export default function ValidationReportExporter({
         checks: [
           {
             item: t('앨범 제목 형식', 'Album title format'),
-            status: warnings.some(w => w.field.includes('album') && w.type === 'error') ? 'fail' : 
-                   warnings.some(w => w.field.includes('album') && w.type === 'warning') ? 'warning' : 'pass',
+            status: warnings.some(w => w.field.includes('album') && w.type === 'error') ? 'fail' :
+              warnings.some(w => w.field.includes('album') && w.type === 'warning') ? 'warning' : 'pass',
             requirement: t('특수문자 제한, 길이 제한 준수', 'Special character limits, length compliance')
           } as const,
           {
             item: t('아티스트명 일관성', 'Artist name consistency'),
-            status: warnings.some(w => w.field.includes('artist') && w.type === 'error') ? 'fail' : 
-                   warnings.some(w => w.field.includes('artist') && w.type === 'warning') ? 'warning' : 'pass',
+            status: warnings.some(w => w.field.includes('artist') && w.type === 'error') ? 'fail' :
+              warnings.some(w => w.field.includes('artist') && w.type === 'warning') ? 'warning' : 'pass',
             requirement: t('전체 트랙에서 동일한 표기', 'Consistent across all tracks')
           } as const,
           {
             item: t('트랙 제목 형식', 'Track title format'),
-            status: warnings.some(w => w.field.includes('track') && w.type === 'error') ? 'fail' : 
-                   warnings.some(w => w.field.includes('track') && w.type === 'warning') ? 'warning' : 'pass',
+            status: warnings.some(w => w.field.includes('track') && w.type === 'error') ? 'fail' :
+              warnings.some(w => w.field.includes('track') && w.type === 'warning') ? 'warning' : 'pass',
             requirement: t('피처링 형식, 버전 표기 규칙', 'Featuring format, version notation rules')
           } as const
         ]
@@ -146,7 +146,7 @@ export default function ValidationReportExporter({
           }
         ]
       }
-    ]
+    ];
 
     return {
       overallScore,
@@ -155,45 +155,45 @@ export default function ValidationReportExporter({
       estimatedRejectionRisk,
       recommendedActions,
       complianceChecklist
-    }
-  }
+    };
+  };
 
-  const dspReport = generateDSPReport()
+  const dspReport = generateDSPReport();
 
   const handleExport = async (format: 'pdf' | 'email') => {
-    setIsGenerating(true)
-    setSelectedFormat(format)
+    setIsGenerating(true);
+    setSelectedFormat(format);
 
     // Simulate report generation
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
-    onExport(format)
-    setIsGenerating(false)
-    setSelectedFormat(null)
-  }
+    onExport(format);
+    setIsGenerating(false);
+    setSelectedFormat(null);
+  };
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 dark:text-green-400'
-    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400'
-    return 'text-red-600 dark:text-red-400'
-  }
+    if (score >= 80) return 'text-green-600 dark:text-green-400';
+    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
+  };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'bg-green-500'
-    if (score >= 60) return 'bg-yellow-500'
-    return 'bg-red-500'
-  }
+    if (score >= 80) return 'bg-green-500';
+    if (score >= 60) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
 
   const getStatusIcon = (status: 'pass' | 'warning' | 'fail') => {
     switch (status) {
       case 'pass':
-        return <CheckSquare className="w-4 h-4 text-green-500" />
+        return <CheckSquare className="w-4 h-4 text-green-500" />;
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />
+        return <AlertTriangle className="w-4 h-4 text-yellow-500" />;
       case 'fail':
-        return <AlertCircle className="w-4 h-4 text-red-500" />
+        return <AlertCircle className="w-4 h-4 text-red-500" />;
     }
-  }
+  };
 
   return (
     <motion.div
@@ -227,7 +227,7 @@ export default function ValidationReportExporter({
               {dspReport.overallScore}/100
             </div>
           </div>
-          
+
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3 mb-2">
             <motion.div
               initial={{ width: 0 }}
@@ -236,16 +236,16 @@ export default function ValidationReportExporter({
               className={`h-3 rounded-full ${getScoreBgColor(dspReport.overallScore)}`}
             />
           </div>
-          
+
           <div className="flex items-center justify-between text-sm">
             <span className={`font-medium ${
               dspReport.submissionReadiness === 'ready' ? 'text-green-600 dark:text-green-400' :
-              dspReport.submissionReadiness === 'needs_work' ? 'text-yellow-600 dark:text-yellow-400' :
-              'text-red-600 dark:text-red-400'
+                dspReport.submissionReadiness === 'needs_work' ? 'text-yellow-600 dark:text-yellow-400' :
+                  'text-red-600 dark:text-red-400'
             }`}>
               {dspReport.submissionReadiness === 'ready' ? t('제출 준비 완료', 'Ready to submit') :
-               dspReport.submissionReadiness === 'needs_work' ? t('추가 작업 필요', 'Needs work') :
-               t('제출 불가', 'Not ready')}
+                dspReport.submissionReadiness === 'needs_work' ? t('추가 작업 필요', 'Needs work') :
+                  t('제출 불가', 'Not ready')}
             </span>
             <span className="text-gray-500 dark:text-gray-400">
               {t('예상 거절률:', 'Est. rejection risk:')} {dspReport.estimatedRejectionRisk}%
@@ -276,7 +276,7 @@ export default function ValidationReportExporter({
                   </span>
                 </div>
                 <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2">
-                  <div 
+                  <div
                     className={`h-2 rounded-full ${getScoreBgColor(platform.score)}`}
                     style={{ width: `${platform.score}%` }}
                   />
@@ -306,20 +306,20 @@ export default function ValidationReportExporter({
                   transition={{ delay: index * 0.1 }}
                   className={`p-4 rounded-lg border-l-4 ${
                     action.priority === 'critical' ? 'border-l-red-500 bg-red-50 dark:bg-red-900/20' :
-                    action.priority === 'high' ? 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' :
-                    'border-l-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      action.priority === 'high' ? 'border-l-yellow-500 bg-yellow-50 dark:bg-yellow-900/20' :
+                        'border-l-blue-500 bg-blue-50 dark:bg-blue-900/20'
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <div className={`p-1 rounded ${
                       action.priority === 'critical' ? 'bg-red-100 dark:bg-red-900/30' :
-                      action.priority === 'high' ? 'bg-yellow-100 dark:bg-yellow-900/30' :
-                      'bg-blue-100 dark:bg-blue-900/30'
+                        action.priority === 'high' ? 'bg-yellow-100 dark:bg-yellow-900/30' :
+                          'bg-blue-100 dark:bg-blue-900/30'
                     }`}>
                       <Target className={`w-4 h-4 ${
                         action.priority === 'critical' ? 'text-red-600 dark:text-red-400' :
-                        action.priority === 'high' ? 'text-yellow-600 dark:text-yellow-400' :
-                        'text-blue-600 dark:text-blue-400'
+                          action.priority === 'high' ? 'text-yellow-600 dark:text-yellow-400' :
+                            'text-blue-600 dark:text-blue-400'
                       }`} />
                     </div>
                     <div className="flex-1">
@@ -329,8 +329,8 @@ export default function ValidationReportExporter({
                         </h4>
                         <span className={`px-2 py-1 text-xs rounded-full ${
                           action.priority === 'critical' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300' :
-                          action.priority === 'high' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                          'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                            action.priority === 'high' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                              'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
                         }`}>
                           {action.priority}
                         </span>
@@ -383,8 +383,8 @@ export default function ValidationReportExporter({
                       </div>
                       <div className={`text-xs px-2 py-1 rounded-full ${
                         check.status === 'pass' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' :
-                        check.status === 'warning' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
-                        'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
+                          check.status === 'warning' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                            'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'
                       }`}>
                         {check.status}
                       </div>
@@ -459,5 +459,5 @@ export default function ValidationReportExporter({
         </div>
       </div>
     </motion.div>
-  )
+  );
 }

@@ -1,12 +1,12 @@
-import { useState, useEffect, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   BarChart3, CheckCircle2, AlertTriangle, AlertCircle,
   ChevronDown, ChevronUp, Target, TrendingUp, Clock,
   Download, X, Zap, ArrowRight, Eye, EyeOff
-} from 'lucide-react'
-import { ValidationSummary, ValidationProgress } from '@/types/validationAdvanced'
-import { useValidationContext } from '@/contexts/ValidationContext'
+} from 'lucide-react';
+import { ValidationSummary, ValidationProgress } from '@/types/validationAdvanced';
+import { useValidationContext } from '@/contexts/ValidationContext';
 
 interface ValidationSummaryPanelProps {
   isVisible: boolean
@@ -23,7 +23,7 @@ export default function ValidationSummaryPanel({
   onExportReport,
   language = 'en'
 }: ValidationSummaryPanelProps) {
-  const [isExpanded, setIsExpanded] = useState(true)
+  const [isExpanded, setIsExpanded] = useState(true);
   const [sessionProgress, setSessionProgress] = useState<ValidationProgress>({
     sessionStart: new Date(),
     initialIssueCount: 0,
@@ -32,42 +32,42 @@ export default function ValidationSummaryPanel({
     timeSpent: 0,
     velocity: 0,
     milestones: []
-  })
+  });
 
-  const { getAllWarnings, getSummary } = useValidationContext()
-  const warnings = getAllWarnings()
-  const summary = getSummary()
+  const { getAllWarnings, getSummary } = useValidationContext();
+  const warnings = getAllWarnings();
+  const summary = getSummary();
 
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   // Calculate enhanced summary metrics
   const enhancedSummary = useMemo<ValidationSummary>(() => {
-    const totalFieldsEstimate = 25 // Estimate based on typical form
-    const validatedFields = Math.max(1, totalFieldsEstimate - warnings.length)
-    const completionPercentage = Math.round((validatedFields / totalFieldsEstimate) * 100)
-    
+    const totalFieldsEstimate = 25; // Estimate based on typical form
+    const validatedFields = Math.max(1, totalFieldsEstimate - warnings.length);
+    const completionPercentage = Math.round((validatedFields / totalFieldsEstimate) * 100);
+
     // DSP readiness score calculation
-    const errorPenalty = summary.errors * 25
-    const warningPenalty = summary.warnings * 10
-    const suggestionBonus = summary.suggestions * 5
-    const dspReadinessScore = Math.max(0, Math.min(100, 
+    const errorPenalty = summary.errors * 25;
+    const warningPenalty = summary.warnings * 10;
+    const suggestionBonus = summary.suggestions * 5;
+    const dspReadinessScore = Math.max(0, Math.min(100,
       100 - errorPenalty - warningPenalty + suggestionBonus
-    ))
+    ));
 
     // Estimated approval chance
-    const estimatedApprovalChance = summary.errors === 0 
+    const estimatedApprovalChance = summary.errors === 0
       ? Math.max(70, dspReadinessScore)
-      : Math.max(20, dspReadinessScore - 30)
+      : Math.max(20, dspReadinessScore - 30);
 
     // Recommended next actions
-    const recommendedNextActions = []
+    const recommendedNextActions = [];
     if (summary.errors > 0) {
       recommendedNextActions.push({
         action: t('모든 오류 수정하기', 'Fix all errors'),
         priority: 'high' as const,
         impact: t('DSP 승인 가능성 크게 향상', 'Significantly improves DSP approval chance'),
         estimatedTime: t('5-10분', '5-10 minutes')
-      })
+      });
     }
     if (summary.warnings > 2) {
       recommendedNextActions.push({
@@ -75,7 +75,7 @@ export default function ValidationSummaryPanel({
         priority: 'medium' as const,
         impact: t('거절 위험 감소', 'Reduces rejection risk'),
         estimatedTime: t('3-5분', '3-5 minutes')
-      })
+      });
     }
     if (summary.suggestions > 0) {
       recommendedNextActions.push({
@@ -83,7 +83,7 @@ export default function ValidationSummaryPanel({
         priority: 'low' as const,
         impact: t('전반적인 품질 향상', 'Improves overall quality'),
         estimatedTime: t('2-3분', '2-3 minutes')
-      })
+      });
     }
 
     return {
@@ -100,8 +100,8 @@ export default function ValidationSummaryPanel({
       },
       recommendedNextActions,
       progressTrend: sessionProgress.issuesFixed > 0 ? 'improving' : 'stable'
-    }
-  }, [warnings, summary, sessionProgress, t])
+    };
+  }, [warnings, summary, sessionProgress, t]);
 
   // Update session progress
   useEffect(() => {
@@ -111,11 +111,11 @@ export default function ValidationSummaryPanel({
         currentIssueCount: warnings.length,
         timeSpent: Math.floor((Date.now() - prev.sessionStart.getTime()) / 1000),
         velocity: prev.timeSpent > 0 ? (prev.issuesFixed / (prev.timeSpent / 60)) : 0
-      }))
-    }, 1000)
+      }));
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [warnings.length])
+    return () => clearInterval(interval);
+  }, [warnings.length]);
 
   // Initialize session
   useEffect(() => {
@@ -124,21 +124,21 @@ export default function ValidationSummaryPanel({
         ...prev,
         initialIssueCount: warnings.length,
         currentIssueCount: warnings.length
-      }))
+      }));
     }
-  }, [warnings.length, sessionProgress.initialIssueCount])
+  }, [warnings.length, sessionProgress.initialIssueCount]);
 
   const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 dark:text-green-400'
-    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400'
-    return 'text-red-600 dark:text-red-400'
-  }
+    if (score >= 80) return 'text-green-600 dark:text-green-400';
+    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
+    return 'text-red-600 dark:text-red-400';
+  };
 
   const getScoreBgColor = (score: number) => {
-    if (score >= 80) return 'bg-green-500'
-    if (score >= 60) return 'bg-yellow-500'
-    return 'bg-red-500'
-  }
+    if (score >= 80) return 'bg-green-500';
+    if (score >= 60) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
 
   if (!isVisible) {
     return (
@@ -163,7 +163,7 @@ export default function ValidationSummaryPanel({
           )}
         </div>
       </motion.button>
-    )
+    );
   }
 
   return (
@@ -342,7 +342,7 @@ export default function ValidationSummaryPanel({
                     <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700 rounded-lg">
                       <div className={`w-2 h-2 rounded-full ${
                         action.priority === 'high' ? 'bg-red-500' :
-                        action.priority === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
+                          action.priority === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
                       }`} />
                       <div className="flex-1 min-w-0">
                         <div className="text-xs font-medium text-gray-900 dark:text-gray-100">
@@ -368,13 +368,13 @@ export default function ValidationSummaryPanel({
                 <Download className="w-4 h-4" />
                 {t('검증 리포트 내보내기', 'Export Validation Report')}
               </button>
-              
+
               {warnings.length > 0 && (
                 <button
                   onClick={() => {
-                    const firstWarning = warnings[0]
+                    const firstWarning = warnings[0];
                     if (firstWarning) {
-                      onNavigateToField(firstWarning.field)
+                      onNavigateToField(firstWarning.field);
                     }
                   }}
                   className="w-full flex items-center justify-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-sm font-medium"
@@ -388,5 +388,5 @@ export default function ValidationSummaryPanel({
         )}
       </AnimatePresence>
     </motion.div>
-  )
+  );
 }

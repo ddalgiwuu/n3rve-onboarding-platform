@@ -1,30 +1,30 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useLanguageStore } from '@/store/language.store'
-import { 
-  Upload, Music, Image, CheckCircle, X, Plus, Trash2, 
-  Globe, Users, Disc, 
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useLanguageStore } from '@/store/language.store';
+import {
+  Upload, Music, Image, CheckCircle, X, Plus, Trash2,
+  Globe, Users, Disc,
   ChevronRight, ChevronLeft, Info,
   GripVertical,
   HelpCircle, AlertTriangle, Star,
   ExternalLink,
   ChevronUp, ChevronDown
-} from 'lucide-react'
-import toast from 'react-hot-toast'
-import { submissionService } from '@/services/submission.service'
-import { useAuthStore } from '@/store/auth.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation'
-import QCWarnings from '@/components/submission/QCWarnings'
-import DatePicker from '@/components/DatePicker'
-import { v4 as uuidv4 } from 'uuid'
-import RegionSelector from '@/components/RegionSelector'
-import MultiSelect from '@/components/ui/MultiSelect'
-import { genreList, subgenreList } from '@/constants/genres'
-import { countries } from '@/constants/countries'
-import { timezones, convertToUTC } from '@/constants/timezones'
-import { generateUPC, generateEAN, validateUPC, validateEAN } from '@/utils/identifiers'
-import { dspList } from '@/constants/dspList'
+} from 'lucide-react';
+import toast from 'react-hot-toast';
+import { submissionService } from '@/services/submission.service';
+import { useAuthStore } from '@/store/auth.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation';
+import QCWarnings from '@/components/submission/QCWarnings';
+import DatePicker from '@/components/DatePicker';
+import { v4 as uuidv4 } from 'uuid';
+import RegionSelector from '@/components/RegionSelector';
+import MultiSelect from '@/components/ui/MultiSelect';
+import { genreList, subgenreList } from '@/constants/genres';
+import { countries } from '@/constants/countries';
+import { timezones, convertToUTC } from '@/constants/timezones';
+import { generateUPC, generateEAN, validateUPC, validateEAN } from '@/utils/identifiers';
+import { dspList } from '@/constants/dspList';
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -64,8 +64,8 @@ const Toggle: React.FC<{
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 // Radio Group Component
 const RadioGroup: React.FC<{
@@ -102,15 +102,15 @@ const RadioGroup: React.FC<{
         </label>
       ))}
     </div>
-  )
-}
+  );
+};
 
 // Tooltip Component
 const Tooltip: React.FC<{
   content: string
   children: React.ReactNode
 }> = ({ content, children }) => {
-  const [show, setShow] = useState(false)
+  const [show, setShow] = useState(false);
 
   return (
     <div className="relative inline-block">
@@ -127,19 +127,19 @@ const Tooltip: React.FC<{
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
 // Main component
 export default function ImprovedReleaseSubmissionSimple() {
-  const navigate = useNavigate()
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const user = useSafeStore(useAuthStore, state => state.user)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const navigate = useNavigate();
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const user = useSafeStore(useAuthStore, state => state.user);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [currentStep, setCurrentStep] = useState(1)
-  const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [currentStep, setCurrentStep] = useState(1);
+  const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     // Artist Information
     artistName: '',
@@ -150,7 +150,7 @@ export default function ImprovedReleaseSubmissionSimple() {
     labelName: '',
     artistCountry: 'KR',
     dspProfiles: [] as { dspId: string; profileUrl: string }[],
-    
+
     // Album Information
     albumTitle: '',
     albumTitleEn: '',
@@ -168,7 +168,7 @@ export default function ImprovedReleaseSubmissionSimple() {
     upc: '',
     ean: '',
     albumNotes: '',
-    
+
     // Track Information
     tracks: [
       {
@@ -193,21 +193,21 @@ export default function ImprovedReleaseSubmissionSimple() {
       }
     ],
     focusTrackId: '',
-    
+
     // Files
     coverImage: null,
     audioFiles: [] as File[],
-    
+
     // Distribution
     territories: [] as string[],
     excludedTerritories: [] as string[],
     territoryType: 'worldwide' as 'worldwide' | 'select' | 'exclude',
     selectedDSPs: [] as string[],
     priceType: 'paid' as 'paid' | 'free',
-    
+
     // Additional
     qcReport: null
-  })
+  });
 
   // Step definitions
   const steps = [
@@ -217,33 +217,33 @@ export default function ImprovedReleaseSubmissionSimple() {
     { number: 4, title: t('파일 업로드', 'File Upload'), icon: Upload },
     { number: 5, title: t('배포 설정', 'Distribution Settings'), icon: Globe },
     { number: 6, title: t('검토 및 제출', 'Review & Submit'), icon: CheckCircle }
-  ]
+  ];
 
   // Validate on form change
   useEffect(() => {
-    const results = validateSubmission(formData)
-    setValidationResults(results)
-  }, [formData])
+    const results = validateSubmission(formData);
+    setValidationResults(results);
+  }, [formData]);
 
   const handleNext = () => {
     if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1)
+      setCurrentStep(currentStep + 1);
     }
-  }
+  };
 
   const handlePrevious = () => {
     if (currentStep > 1) {
-      setCurrentStep(currentStep - 1)
+      setCurrentStep(currentStep - 1);
     }
-  }
+  };
 
   const handleSubmit = async () => {
     try {
-      setIsSubmitting(true)
+      setIsSubmitting(true);
 
       if (validationResults && validationResults.errors && validationResults.errors.length > 0) {
-        toast.error(t('QC 검증을 통과하지 못했습니다', 'QC validation failed'))
-        return
+        toast.error(t('QC 검증을 통과하지 못했습니다', 'QC validation failed'));
+        return;
       }
 
       // Convert form data to submission format
@@ -290,39 +290,39 @@ export default function ImprovedReleaseSubmissionSimple() {
           audioFiles: formData.audioFiles
         },
         qcReport: validationResults
-      }
+      };
 
       // Submit using the submission service
-      await submissionService.createSubmission(submissionData as any)
+      await submissionService.createSubmission(submissionData as any);
 
-      toast.success(t('제출이 완료되었습니다!', 'Submission completed!'))
-      navigate('/submission-success')
+      toast.success(t('제출이 완료되었습니다!', 'Submission completed!'));
+      navigate('/submission-success');
     } catch (error) {
-      console.error('Submission error:', error)
-      toast.error(t('제출 중 오류가 발생했습니다', 'Error during submission'))
+      console.error('Submission error:', error);
+      toast.error(t('제출 중 오류가 발생했습니다', 'Error during submission'));
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const renderStepContent = () => {
     switch (currentStep) {
       case 1:
-        return <ArtistStep formData={formData} setFormData={setFormData} />
+        return <ArtistStep formData={formData} setFormData={setFormData} />;
       case 2:
-        return <AlbumStep formData={formData} setFormData={setFormData} />
+        return <AlbumStep formData={formData} setFormData={setFormData} />;
       case 3:
-        return <TrackStep formData={formData} setFormData={setFormData} />
+        return <TrackStep formData={formData} setFormData={setFormData} />;
       case 4:
-        return <FileUploadStep formData={formData} setFormData={setFormData} />
+        return <FileUploadStep formData={formData} setFormData={setFormData} />;
       case 5:
-        return <DistributionStep formData={formData} setFormData={setFormData} />
+        return <DistributionStep formData={formData} setFormData={setFormData} />;
       case 6:
-        return <ReviewStep formData={formData} validationResults={validationResults} />
+        return <ReviewStep formData={formData} validationResults={validationResults} />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 py-6 px-4">
@@ -331,10 +331,10 @@ export default function ImprovedReleaseSubmissionSimple() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             {steps.map((step, index) => {
-              const Icon = step.icon
-              const isActive = step.number === currentStep
-              const isCompleted = step.number < currentStep
-              
+              const Icon = step.icon;
+              const isActive = step.number === currentStep;
+              const isCompleted = step.number < currentStep;
+
               return (
                 <div key={step.number} className="flex items-center">
                   <div
@@ -342,8 +342,8 @@ export default function ImprovedReleaseSubmissionSimple() {
                       isActive
                         ? 'border-purple-600 bg-purple-600 text-white shadow-lg scale-110'
                         : isCompleted
-                        ? 'border-green-500 bg-green-500 text-white'
-                        : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-400'
+                          ? 'border-green-500 bg-green-500 text-white'
+                          : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-400'
                     }`}
                   >
                     {isCompleted ? (
@@ -360,7 +360,7 @@ export default function ImprovedReleaseSubmissionSimple() {
                     />
                   )}
                 </div>
-              )
+              );
             })}
           </div>
           <div className="mt-4 text-center">
@@ -430,19 +430,19 @@ export default function ImprovedReleaseSubmissionSimple() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Step 1: Artist Information
 function ArtistStep({ formData, setFormData }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const artistTypes = [
     { value: 'individual', label: t('개인', 'Individual'), description: t('솔로 아티스트', 'Solo artist') },
     { value: 'group', label: t('그룹', 'Group'), description: t('밴드 또는 그룹', 'Band or group') },
     { value: 'various', label: t('다양한 아티스트', 'Various Artists'), description: t('컴필레이션 앨범', 'Compilation album') }
-  ]
+  ];
 
   const addTranslation = () => {
     setFormData({
@@ -451,15 +451,15 @@ function ArtistStep({ formData, setFormData }: any) {
         ...formData.artistTranslations,
         { id: uuidv4(), language: '', value: '' }
       ]
-    })
-  }
+    });
+  };
 
   const removeTranslation = (id: string) => {
     setFormData({
       ...formData,
       artistTranslations: formData.artistTranslations.filter((t: any) => t.id !== id)
-    })
-  }
+    });
+  };
 
   const updateTranslation = (id: string, field: 'language' | 'value', value: string) => {
     setFormData({
@@ -467,8 +467,8 @@ function ArtistStep({ formData, setFormData }: any) {
       artistTranslations: formData.artistTranslations.map((t: any) =>
         t.id === id ? { ...t, [field]: value } : t
       )
-    })
-  }
+    });
+  };
 
   const addDSPProfile = () => {
     setFormData({
@@ -477,15 +477,15 @@ function ArtistStep({ formData, setFormData }: any) {
         ...formData.dspProfiles,
         { dspId: '', profileUrl: '' }
       ]
-    })
-  }
+    });
+  };
 
   const removeDSPProfile = (index: number) => {
     setFormData({
       ...formData,
       dspProfiles: formData.dspProfiles.filter((_: any, i: number) => i !== index)
-    })
-  }
+    });
+  };
 
   const updateDSPProfile = (index: number, field: 'dspId' | 'profileUrl', value: string) => {
     setFormData({
@@ -493,8 +493,8 @@ function ArtistStep({ formData, setFormData }: any) {
       dspProfiles: formData.dspProfiles.map((p: any, i: number) =>
         i === index ? { ...p, [field]: value } : p
       )
-    })
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -671,20 +671,20 @@ function ArtistStep({ formData, setFormData }: any) {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 // Step 2: Album Information
 function AlbumStep({ formData, setFormData }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const albumTypes = [
     { value: 'single', label: t('싱글', 'Single'), description: t('1-3곡', '1-3 tracks') },
     { value: 'ep', label: t('EP', 'EP'), description: t('4-6곡', '4-6 tracks') },
     { value: 'album', label: t('정규 앨범', 'Full Album'), description: t('7곡 이상', '7+ tracks') },
     { value: 'compilation', label: t('컴필레이션', 'Compilation'), description: t('여러 아티스트의 곡', 'Multiple artists') }
-  ]
+  ];
 
   return (
     <div className="space-y-6">
@@ -928,16 +928,16 @@ function AlbumStep({ formData, setFormData }: any) {
         />
       </div>
     </div>
-  )
+  );
 }
 
 // Step 3: Track Information with Native Drag and Drop
 function TrackStep({ formData, setFormData }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   const addTrack = () => {
     const newTrack = {
@@ -959,9 +959,9 @@ function TrackStep({ formData, setFormData }: any) {
       audioFile: null,
       artistName: formData.artistName,
       displayArtistName: formData.displayArtistName
-    }
-    setFormData({ ...formData, tracks: [...formData.tracks, newTrack] })
-  }
+    };
+    setFormData({ ...formData, tracks: [...formData.tracks, newTrack] });
+  };
 
   const updateTrack = (trackId: string, field: string, value: any) => {
     setFormData({
@@ -969,73 +969,73 @@ function TrackStep({ formData, setFormData }: any) {
       tracks: formData.tracks.map((track: any) =>
         track.id === trackId ? { ...track, [field]: value } : track
       )
-    })
-  }
+    });
+  };
 
   const removeTrack = (trackId: string) => {
     setFormData({
       ...formData,
       tracks: formData.tracks.filter((track: any) => track.id !== trackId)
-    })
-  }
+    });
+  };
 
   const setFocusTrack = (trackId: string) => {
-    setFormData({ ...formData, focusTrackId: trackId })
-  }
+    setFormData({ ...formData, focusTrackId: trackId });
+  };
 
   const moveTrack = (index: number, direction: 'up' | 'down') => {
-    const newTracks = [...formData.tracks]
-    const newIndex = direction === 'up' ? index - 1 : index + 1
-    
+    const newTracks = [...formData.tracks];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+
     if (newIndex >= 0 && newIndex < newTracks.length) {
-      [newTracks[index], newTracks[newIndex]] = [newTracks[newIndex], newTracks[index]]
-      setFormData({ ...formData, tracks: newTracks })
+      [newTracks[index], newTracks[newIndex]] = [newTracks[newIndex], newTracks[index]];
+      setFormData({ ...formData, tracks: newTracks });
     }
-  }
+  };
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
-    setDraggedIndex(index)
-    e.dataTransfer.effectAllowed = 'move'
-  }
+    setDraggedIndex(index);
+    e.dataTransfer.effectAllowed = 'move';
+  };
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    setDragOverIndex(index)
-  }
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
 
   const handleDragLeave = () => {
-    setDragOverIndex(null)
-  }
+    setDragOverIndex(null);
+  };
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (draggedIndex === null || draggedIndex === dropIndex) {
-      setDraggedIndex(null)
-      setDragOverIndex(null)
-      return
+      setDraggedIndex(null);
+      setDragOverIndex(null);
+      return;
     }
 
-    const newTracks = [...formData.tracks]
-    const draggedTrack = newTracks[draggedIndex]
-    
+    const newTracks = [...formData.tracks];
+    const draggedTrack = newTracks[draggedIndex];
+
     // Remove the dragged track
-    newTracks.splice(draggedIndex, 1)
-    
+    newTracks.splice(draggedIndex, 1);
+
     // Insert at new position
-    const insertIndex = dropIndex > draggedIndex ? dropIndex - 1 : dropIndex
-    newTracks.splice(insertIndex, 0, draggedTrack)
-    
-    setFormData({ ...formData, tracks: newTracks })
-    setDraggedIndex(null)
-    setDragOverIndex(null)
-  }
+    const insertIndex = dropIndex > draggedIndex ? dropIndex - 1 : dropIndex;
+    newTracks.splice(insertIndex, 0, draggedTrack);
+
+    setFormData({ ...formData, tracks: newTracks });
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
 
   const handleDragEnd = () => {
-    setDraggedIndex(null)
-    setDragOverIndex(null)
-  }
+    setDraggedIndex(null);
+    setDragOverIndex(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -1104,20 +1104,20 @@ function TrackStep({ formData, setFormData }: any) {
         )}
       </div>
     </div>
-  )
+  );
 }
 
 // Track Item Component (without drag-and-drop)
 function TrackItem({ track, index, updateTrack, removeTrack, setFocusTrack, isFocusTrack, canRemove, moveTrack, totalTracks }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  const [isExpanded, setIsExpanded] = useState(false)
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div
       className={`border rounded-lg ${
-        isFocusTrack 
-          ? 'border-purple-500 dark:border-purple-400 shadow-lg' 
+        isFocusTrack
+          ? 'border-purple-500 dark:border-purple-400 shadow-lg'
           : 'border-gray-200 dark:border-gray-700'
       } bg-white dark:bg-gray-800`}
     >
@@ -1130,8 +1130,8 @@ function TrackItem({ track, index, updateTrack, removeTrack, setFocusTrack, isFo
               onClick={() => moveTrack(index, 'up')}
               disabled={index === 0}
               className={`p-1 rounded ${
-                index === 0 
-                  ? 'text-gray-300 cursor-not-allowed' 
+                index === 0
+                  ? 'text-gray-300 cursor-not-allowed'
                   : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
             >
@@ -1144,7 +1144,7 @@ function TrackItem({ track, index, updateTrack, removeTrack, setFocusTrack, isFo
               disabled={index === totalTracks - 1}
               className={`p-1 rounded ${
                 index === totalTracks - 1
-                  ? 'text-gray-300 cursor-not-allowed' 
+                  ? 'text-gray-300 cursor-not-allowed'
                   : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
             >
@@ -1369,25 +1369,25 @@ function TrackItem({ track, index, updateTrack, removeTrack, setFocusTrack, isFo
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Step 4: File Upload
 function FileUploadStep({ formData, setFormData }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const handleCoverImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setFormData({ ...formData, coverImage: file })
+      setFormData({ ...formData, coverImage: file });
     }
-  }
+  };
 
   const handleAudioFilesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || [])
-    setFormData({ ...formData, audioFiles: files })
-  }
+    const files = Array.from(e.target.files || []);
+    setFormData({ ...formData, audioFiles: files });
+  };
 
   return (
     <div className="space-y-6">
@@ -1443,7 +1443,7 @@ function FileUploadStep({ formData, setFormData }: any) {
             <div className="mt-4">
               <label htmlFor="audio-upload" className="cursor-pointer">
                 <span className="mt-2 block text-sm font-medium text-gray-900 dark:text-white">
-                  {formData.audioFiles.length > 0 
+                  {formData.audioFiles.length > 0
                     ? t(`${formData.audioFiles.length}개 파일 선택됨`, `${formData.audioFiles.length} files selected`)
                     : t('오디오 파일을 선택하거나 드래그하세요', 'Select or drag audio files')
                   }
@@ -1495,38 +1495,38 @@ function FileUploadStep({ formData, setFormData }: any) {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Step 5: Distribution Settings
 function DistributionStep({ formData, setFormData }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const territoryTypes = [
     { value: 'worldwide', label: t('전 세계', 'Worldwide'), description: t('모든 지역에 배포', 'Distribute to all territories') },
     { value: 'select', label: t('선택 지역', 'Select Territories'), description: t('특정 지역만 선택', 'Select specific territories') },
     { value: 'exclude', label: t('제외 지역', 'Exclude Territories'), description: t('특정 지역 제외', 'Exclude specific territories') }
-  ]
+  ];
 
   const priceTypes = [
     { value: 'paid', label: t('유료', 'Paid'), description: t('일반 유료 스트리밍/다운로드', 'Regular paid streaming/download') },
     { value: 'free', label: t('무료', 'Free'), description: t('무료 스트리밍 전용', 'Free streaming only') }
-  ]
+  ];
 
   const toggleDSP = (dspId: string) => {
     if (formData.selectedDSPs.includes(dspId)) {
       setFormData({
         ...formData,
         selectedDSPs: formData.selectedDSPs.filter((id: string) => id !== dspId)
-      })
+      });
     } else {
       setFormData({
         ...formData,
         selectedDSPs: [...formData.selectedDSPs, dspId]
-      })
+      });
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -1569,7 +1569,7 @@ function DistributionStep({ formData, setFormData }: any) {
             <HelpCircle className="inline w-4 h-4 ml-2 text-gray-400" />
           </Tooltip>
         </h3>
-        
+
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {dspList.map(dsp => (
             <label
@@ -1577,9 +1577,9 @@ function DistributionStep({ formData, setFormData }: any) {
               className={`
                 flex items-center gap-3 p-3 border rounded-lg cursor-pointer transition-all
                 ${formData.selectedDSPs.includes(dsp.id)
-                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
-                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                }
+              ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+            }
               `}
             >
               <input
@@ -1614,13 +1614,13 @@ function DistributionStep({ formData, setFormData }: any) {
         />
       </div>
     </div>
-  )
+  );
 }
 
 // Step 6: Review & Submit
 function ReviewStep({ formData, validationResults }: any) {
-  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko'
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, state => state.language) || 'ko';
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const sections = [
     {
@@ -1660,7 +1660,7 @@ function ReviewStep({ formData, validationResults }: any) {
         { label: t('가격 유형', 'Price Type'), value: formData.priceType }
       ]
     }
-  ]
+  ];
 
   return (
     <div className="space-y-6">
@@ -1725,5 +1725,5 @@ function ReviewStep({ formData, validationResults }: any) {
         </div>
       </div>
     </div>
-  )
+  );
 }

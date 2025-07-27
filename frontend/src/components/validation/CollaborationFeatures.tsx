@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, TrendingUp, Award, Clock, CheckCircle2,
   Star, Zap, ArrowRight, BarChart3, Globe, Music
-} from 'lucide-react'
-import { IndustryCollaborationData } from '@/types/validationAdvanced'
+} from 'lucide-react';
+import { IndustryCollaborationData } from '@/types/validationAdvanced';
 
 interface CollaborationFeaturesProps {
   currentField?: string
@@ -73,7 +73,7 @@ const mockIndustryData: IndustryCollaborationData = {
     { fix: 'Use standard featuring format', popularity: 85, recentSuccessRate: 94 },
     { fix: 'Apply title case to album names', popularity: 78, recentSuccessRate: 96 }
   ]
-}
+};
 
 export default function CollaborationFeatures({
   currentField,
@@ -81,33 +81,33 @@ export default function CollaborationFeatures({
   warningType,
   language = 'en'
 }: CollaborationFeaturesProps) {
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const [showBenchmarks, setShowBenchmarks] = useState(false)
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [showBenchmarks, setShowBenchmarks] = useState(false);
 
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   // Get relevant data for current context
   const relevantData = useMemo(() => {
     const popularChoice = mockIndustryData.popularChoices.find(
       choice => currentField?.includes(choice.field.toLowerCase())
-    )
-    
+    );
+
     const relevantTemplates = mockIndustryData.quickFixTemplates.filter(
       template => warningType && template.applicableWarnings.some(
         warning => currentValue?.toLowerCase().includes(warning)
       )
-    )
+    );
 
     const trendingFix = mockIndustryData.trendingFixes.find(
       fix => currentValue && fix.fix.toLowerCase().includes(currentField?.toLowerCase() || '')
-    )
+    );
 
     return {
       popularChoice,
       relevantTemplates,
       trendingFix
-    }
-  }, [currentField, currentValue, warningType])
+    };
+  }, [currentField, currentValue, warningType]);
 
   return (
     <div className="space-y-6">
@@ -150,7 +150,7 @@ export default function CollaborationFeatures({
                   {relevantData.popularChoice.percentage}% {t('가 선택', 'choose this')}
                 </span>
                 <div className="w-16 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                  <div 
+                  <div
                     className="bg-blue-500 h-2 rounded-full"
                     style={{ width: `${relevantData.popularChoice.percentage}%` }}
                   />
@@ -210,7 +210,7 @@ export default function CollaborationFeatures({
           className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
         >
           <BarChart3 className="w-4 h-4" />
-          {showBenchmarks 
+          {showBenchmarks
             ? t('벤치마크 숨기기', 'Hide Benchmarks')
             : t('업계 벤치마크 보기', 'Show Industry Benchmarks')
           }
@@ -312,7 +312,7 @@ export default function CollaborationFeatures({
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
                       {template.description}
                     </p>
-                    
+
                     <AnimatePresence>
                       {selectedTemplate === template.id && (
                         <motion.div
@@ -406,5 +406,5 @@ export default function CollaborationFeatures({
         </div>
       </motion.div>
     </div>
-  )
+  );
 }

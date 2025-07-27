@@ -1,24 +1,24 @@
-import { useLanguageStore } from '@/store/language.store'
-import { cn } from '@/utils/cn'
-import { Languages, ChevronDown } from 'lucide-react'
-import { useState, useRef, useEffect } from 'react'
+import { useLanguageStore } from '@/store/language.store';
+import { cn } from '@/utils/cn';
+import { Languages, ChevronDown } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
 export default function LanguageToggle() {
-  const { language, setLanguage } = useLanguageStore()
-  const [isOpen, setIsOpen] = useState(false)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const { language, setLanguage } = useLanguageStore();
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+        setIsOpen(false);
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -32,14 +32,14 @@ export default function LanguageToggle() {
           <span>{language === 'ko' ? 'KO' : language === 'en' ? 'EN' : 'JA'}</span>
           <ChevronDown className={`w-3 h-3 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
         </button>
-        
+
         {/* Dropdown Menu */}
         {isOpen && (
           <div className="absolute right-0 mt-2 w-32 dropdown-glass rounded-lg z-50 overflow-hidden animate-scale-in">
             <button
               onClick={() => {
-                setLanguage('ko')
-                setIsOpen(false)
+                setLanguage('ko');
+                setIsOpen(false);
               }}
               className={cn(
                 'w-full text-left px-4 py-2 text-sm hover:bg-white/10 dark:hover:bg-white/5 transition-all duration-300',
@@ -50,8 +50,8 @@ export default function LanguageToggle() {
             </button>
             <button
               onClick={() => {
-                setLanguage('en')
-                setIsOpen(false)
+                setLanguage('en');
+                setIsOpen(false);
               }}
               className={cn(
                 'w-full text-left px-4 py-2 text-sm hover:bg-white/10 dark:hover:bg-white/5 transition-all duration-300',
@@ -62,8 +62,8 @@ export default function LanguageToggle() {
             </button>
             <button
               onClick={() => {
-                setLanguage('ja')
-                setIsOpen(false)
+                setLanguage('ja');
+                setIsOpen(false);
               }}
               className={cn(
                 'w-full text-left px-4 py-2 text-sm hover:bg-white/10 dark:hover:bg-white/5 transition-all duration-300',
@@ -113,5 +113,5 @@ export default function LanguageToggle() {
         </button>
       </div>
     </div>
-  )
+  );
 }

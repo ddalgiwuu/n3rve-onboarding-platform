@@ -1,7 +1,7 @@
-import { Album } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import TranslationManager, { Translation } from './TranslationManager'
+import { Album } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import TranslationManager, { Translation } from './TranslationManager';
 
 interface AlbumTranslationFormProps {
   albumTitle: string
@@ -22,8 +22,8 @@ export default function AlbumTranslationForm({
   onTranslationsChange,
   className = ''
 }: AlbumTranslationFormProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   return (
     <div className={`space-y-6 ${className}`}>
@@ -119,5 +119,5 @@ export default function AlbumTranslationForm({
         </div>
       </div>
     </div>
-  )
+  );
 }
