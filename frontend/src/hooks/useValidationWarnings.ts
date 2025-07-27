@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { ValidationWarning, validateAlbumTitle, validateTrackTitle, validateArtistName, validateLabel } from '@/utils/inputValidation';
+import { ValidationWarning, validateAlbumTitle, validateTrackTitle, validateArtistName } from '@/utils/inputValidation';
 import { useLanguageStore } from '@/store/language.store';
 
 interface ValidationState {

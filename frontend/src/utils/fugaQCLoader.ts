@@ -4,6 +4,7 @@
 import validationRulesJSON from '../data/fuga-qc/validation-rules.json';
 import helpContentJSON from '../data/fuga-qc/help-content.json';
 import versionJSON from '../data/fuga-qc/version.json';
+import { logger } from './logger';
 
 export interface QCVersion {
   version: string
@@ -86,19 +87,27 @@ export interface QCValidationRules {
   }
 }
 
+export interface QCHelpSection {
+  title: string
+  description?: string
+  items?: string[]
+  content?: string
+  [key: string]: unknown
+}
+
 export interface QCHelpContent {
-  overview: any
-  process: any
-  commonErrors: any
-  languageRules: any
-  genres: any
-  metadata: any
-  audioSpecs: any
-  albumArt: any
-  timeline: any
-  tips: any
-  resultGuide: any
-  faq: any[]
+  overview: QCHelpSection
+  process: QCHelpSection
+  commonErrors: QCHelpSection
+  languageRules: QCHelpSection
+  genres: QCHelpSection
+  metadata: QCHelpSection
+  audioSpecs: QCHelpSection
+  albumArt: QCHelpSection
+  timeline: QCHelpSection
+  tips: QCHelpSection
+  resultGuide: QCHelpSection
+  faq: Array<{ question: string; answer: string }>
 }
 
 // Singleton instance
@@ -118,9 +127,9 @@ export function loadQCConfig() {
         help: helpContentJSON as QCHelpContent
       };
 
-      console.log(`[QC Config] Loaded version ${qcConfigInstance.version?.version || 'unknown'}`);
+      logger.log(`[QC Config] Loaded version ${qcConfigInstance.version?.version || 'unknown'}`);
     } catch (error) {
-      console.error('[QC Config] Failed to load configuration:', error);
+      logger.error('[QC Config] Failed to load configuration:', error);
       // Fallback configuration to prevent crashes
       qcConfigInstance = {
         version: { version: '1.0.0', lastUpdated: '2025-07-13', updatedBy: 'System', description: 'Fallback config' },
@@ -266,7 +275,7 @@ export function compilePattern(patternKey: string): RegExp {
   const pattern = rules.patterns[patternKey];
 
   if (!pattern) {
-    console.warn(`[QC Config] Pattern not found: ${patternKey}`);
+    logger.warn(`[QC Config] Pattern not found: ${patternKey}`);
     return new RegExp('');
   }
 
@@ -304,5 +313,5 @@ if (process.env.NODE_ENV === 'development') {
   // In development, you could implement hot reloading
   // For now, just log the loaded version
   const config = loadQCConfig();
-  console.log('[QC Config] Development mode - Version:', config?.version);
+  logger.log('[QC Config] Development mode - Version:', config?.version);
 }

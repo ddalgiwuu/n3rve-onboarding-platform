@@ -1,9 +1,9 @@
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { UserCog, Users, ArrowRight, Shield, Globe, Sparkles, Zap } from 'lucide-react';
-import { useEffect, useState, useRef } from 'react';
 import { useAutoAnimate } from '@formkit/auto-animate/react';
 
 // Floating particles component

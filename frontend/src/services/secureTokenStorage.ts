@@ -34,7 +34,7 @@ class SecureTokenStorage {
         true,
         ['encrypt', 'decrypt']
       );
-    } catch (_error) {
+    } catch {
       // Fallback for older browsers
       this.encryptionKey = null;
     }
@@ -161,7 +161,7 @@ class SecureTokenStorage {
         },
         body: JSON.stringify({ refreshToken: token })
       });
-    } catch (_error) {
+    } catch {
       // Fallback to encrypted localStorage
       const encrypted = await this.encrypt(token);
       sessionStorage.setItem('_rt', encrypted);

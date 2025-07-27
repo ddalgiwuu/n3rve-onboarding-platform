@@ -58,9 +58,9 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
       <h3 className="text-lg font-semibold">{fugaQCHelp.process.title}</h3>
 
       {fugaQCHelp.process.steps.map((step: any) => (
-        <div key={step.step} className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+        <div key={step.step} className="glass-effect-light rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0">
+            <div className="glass-blue text-blue-700 dark:text-blue-300 rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-semibold">
               {step.step}
             </div>
             <div className="flex-1">
@@ -84,7 +84,7 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
         <div className="space-y-3">
           {fugaQCHelp.timeline.stages.map((stage: any, index: number) => (
             <div key={index} className="flex items-center gap-4">
-              <div className="bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium min-w-[100px] text-center">
+              <div className="glass-blue text-blue-700 dark:text-blue-300 px-3 py-1 rounded-full text-sm font-medium min-w-[100px] text-center">
                 {stage.time}
               </div>
               <div>
@@ -260,14 +260,14 @@ export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+    <div className="glass-modal-backdrop p-4">
+      <div className="glass-modal max-w-4xl w-full flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-xl font-semibold">{language === 'ko' ? 'FUGA QC 가이드' : 'FUGA QC Guide'}</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+            className="p-2 glass-effect-light hover:glass-effect rounded-lg transition-all duration-300"
           >
             <X className="w-5 h-5" />
           </button>

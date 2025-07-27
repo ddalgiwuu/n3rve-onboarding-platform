@@ -1,9 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Users, TrendingUp, Award, Clock, CheckCircle2,
-  Star, Zap, ArrowRight, BarChart3, Globe, Music
-} from 'lucide-react';
+import { Users, TrendingUp, Globe, Music, Star, CheckCircle2, BarChart3, Zap, ArrowRight, Award, Clock } from 'lucide-react';
 import { IndustryCollaborationData } from '@/types/validationAdvanced';
 
 interface CollaborationFeaturesProps {

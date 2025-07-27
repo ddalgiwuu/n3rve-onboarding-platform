@@ -97,8 +97,6 @@ export function TrackWarningsManager({
                     onClick={() => {
                       const changes = acceptAllInGroup(group);
                       onAcceptAll?.(group);
-                      // Log changes for debugging
-                      console.log('Bulk accepted changes:', changes);
                     }}
                     className="px-3 py-1 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded transition-colors"
                   >

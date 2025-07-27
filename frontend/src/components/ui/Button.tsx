@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'glass' | 'glass-primary'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean
 }
@@ -20,7 +20,9 @@ export default function Button({
     primary: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl',
     secondary: 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600',
     ghost: 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300',
-    danger: 'bg-red-500 text-white hover:bg-red-600'
+    danger: 'bg-red-500 text-white hover:bg-red-600',
+    glass: 'glass-button-secondary',
+    'glass-primary': 'glass-button-primary'
   };
 
   const sizes = {

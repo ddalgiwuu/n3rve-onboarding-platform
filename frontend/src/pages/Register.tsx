@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, User, Mail, Lock, Eye, EyeOff, Check, X, Phone, ArrowRight, Music, Shield, Users, Sparkles, CheckCircle2, AlertCircle, Zap, Globe, Headphones, TrendingUp, Award, Briefcase, ChevronRight } from 'lucide-react';
+import { Building2, User, Mail, Lock, EyeOff, Phone, Music, Shield, Users, Sparkles, AlertCircle, Globe, Headphones, TrendingUp, Briefcase } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';

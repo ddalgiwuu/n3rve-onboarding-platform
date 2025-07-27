@@ -1,10 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  BarChart3, CheckCircle2, AlertTriangle, AlertCircle,
-  ChevronDown, ChevronUp, Target, TrendingUp, Clock,
-  Download, X, Zap, ArrowRight, Eye, EyeOff
-} from 'lucide-react';
+import { AlertTriangle, AlertCircle, ChevronDown, ChevronUp, Target, TrendingUp, Download, EyeOff } from 'lucide-react';
 import { ValidationSummary, ValidationProgress } from '@/types/validationAdvanced';
 import { useValidationContext } from '@/contexts/ValidationContext';
 

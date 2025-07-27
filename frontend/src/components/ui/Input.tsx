@@ -33,17 +33,11 @@ export default function Input({
         )}
         <input
           className={cn(
-            'w-full px-4 py-3.5 sm:py-3 rounded-xl transition-all duration-200 min-h-[48px]',
-            'bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm',
-            'text-gray-900 dark:text-gray-100 font-medium',
-            'border-2 border-gray-200 dark:border-gray-700',
+            'glass-input font-medium',
             'hover:border-gray-300 dark:hover:border-gray-600',
-            'focus:border-transparent focus:ring-4 focus:ring-n3rve-500/20 focus:outline-none',
-            'focus:bg-white dark:focus:bg-gray-900',
-            'focus:shadow-lg focus:shadow-n3rve-500/10',
-            'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-800',
-            'placeholder:text-gray-400 dark:placeholder:text-gray-500 placeholder:font-normal',
-            error && 'border-red-500 dark:border-red-500 hover:border-red-600 dark:hover:border-red-400 focus:ring-red-500/20 bg-red-50 dark:bg-red-900/10',
+            'focus:ring-n3rve-500/20',
+            'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100/50 dark:disabled:bg-gray-800/50',
+            error && 'border-red-500 dark:border-red-500 hover:border-red-600 dark:hover:border-red-400 focus:ring-red-500/20 bg-red-50/50 dark:bg-red-900/10',
             icon && 'pl-12',
             className
           )}

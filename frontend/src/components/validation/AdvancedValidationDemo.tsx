@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Eye, EyeOff, Settings, RefreshCw, Download } from 'lucide-react';
+import { EyeOff, RefreshCw, Download } from 'lucide-react';
 import ValidationSummaryPanel from './ValidationSummaryPanel';
 import IntelligentSuggestionsEngine from './IntelligentSuggestionsEngine';
 import CollaborationFeatures from './CollaborationFeatures';
