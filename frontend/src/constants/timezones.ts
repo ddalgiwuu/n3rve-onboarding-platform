@@ -29,18 +29,18 @@ export const timezones = [
   { value: 'Australia/Melbourne', label: '멜버른 (AEDT/AEST)', offset: '+11:00' },
   { value: 'Australia/Perth', label: '퍼스 (AWST)', offset: '+08:00' },
   { value: 'Pacific/Auckland', label: '오클랜드 (NZDT/NZST)', offset: '+13:00' },
-  { value: 'Pacific/Honolulu', label: '호놀룰루 (HST)', offset: '-10:00' },
-]
+  { value: 'Pacific/Honolulu', label: '호놀룰루 (HST)', offset: '-10:00' }
+];
 
 // Convert local time to UTC
 export function convertToUTC(localDate: string, localTime: string, timezone: string): Date {
   // Parse the input date and time
-  const [year, month, day] = localDate.split('-').map(Number)
-  const [hour, minute] = localTime.split(':').map(Number)
-  
+  const [year, month, day] = localDate.split('-').map(Number);
+  const [hour, minute] = localTime.split(':').map(Number);
+
   // Create date in UTC first (this will interpret the input as UTC)
-  const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute, 0))
-  
+  const utcDate = new Date(Date.UTC(year, month - 1, day, hour, minute, 0));
+
   // Format this UTC date in the target timezone to see what local time it represents
   const formatter = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
@@ -50,33 +50,33 @@ export function convertToUTC(localDate: string, localTime: string, timezone: str
     hour: '2-digit',
     minute: '2-digit',
     hour12: false
-  })
-  
+  });
+
   // Format the date and parse the result
-  const formatted = formatter.format(utcDate)
-  const match = formatted.match(/(\d{2})\/(\d{2})\/(\d{4}),?\s*(\d{2}):(\d{2})/)
-  
+  const formatted = formatter.format(utcDate);
+  const match = formatted.match(/(\d{2})\/(\d{2})\/(\d{4}),?\s*(\d{2}):(\d{2})/);
+
   if (!match) {
-    throw new Error('Failed to parse formatted date')
+    throw new Error('Failed to parse formatted date');
   }
-  
-  const [, formattedMonth, formattedDay, formattedYear, formattedHour, formattedMinute] = match
-  
+
+  const [, formattedMonth, formattedDay, formattedYear, formattedHour, formattedMinute] = match;
+
   // Calculate the difference between what we wanted and what we got
-  const wantedTime = new Date(year, month - 1, day, hour, minute, 0).getTime()
+  const wantedTime = new Date(year, month - 1, day, hour, minute, 0).getTime();
   const gotTime = new Date(
-    parseInt(formattedYear), 
-    parseInt(formattedMonth) - 1, 
-    parseInt(formattedDay), 
-    parseInt(formattedHour), 
-    parseInt(formattedMinute), 
+    parseInt(formattedYear),
+    parseInt(formattedMonth) - 1,
+    parseInt(formattedDay),
+    parseInt(formattedHour),
+    parseInt(formattedMinute),
     0
-  ).getTime()
-  
-  const offset = gotTime - wantedTime
-  
+  ).getTime();
+
+  const offset = gotTime - wantedTime;
+
   // Adjust the UTC date by the offset
-  return new Date(utcDate.getTime() - offset)
+  return new Date(utcDate.getTime() - offset);
 }
 
 // Format UTC time for display in different timezones
@@ -89,17 +89,17 @@ export function formatUTCInTimezone(utcDate: Date, timezone: string): string {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false
-  }
-  
-  return new Intl.DateTimeFormat('ko-KR', options).format(utcDate)
+  };
+
+  return new Intl.DateTimeFormat('ko-KR', options).format(utcDate);
 }
 
 // Get current timezone
 export function getCurrentTimezone(): string {
   try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
   } catch {
-    return 'UTC'
+    return 'UTC';
   }
 }
 
@@ -132,4 +132,4 @@ export const releaseTimeHelp = {
       '글로벌 발매는 각 지역 시간을 고려하세요'
     ]
   }
-}
+};

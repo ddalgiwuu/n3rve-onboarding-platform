@@ -1,5 +1,5 @@
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from './useSafeStore'
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from './useSafeStore';
 
 const translations = {
   ko: {
@@ -17,7 +17,7 @@ const translations = {
     'auth.loginSuccess': '로그인되었습니다',
     'auth.loginProcessError': '로그인 처리 중 오류가 발생했습니다',
     'auth.signingInProgress': '로그인 중...',
-    
+
     // Profile Setup
     'profile.setupTitle': '프로필 설정을 완료하세요',
     'profile.setupSubtitle': '서비스 이용을 위해 추가 정보를 입력해주세요',
@@ -30,13 +30,13 @@ const translations = {
     'profile.helpText': '이 정보는 계정 관리 및 지원을 위해 사용됩니다',
     'profile.setupComplete': '프로필 설정이 완료되었습니다!',
     'profile.setupFailed': '프로필 설정에 실패했습니다. 다시 시도해주세요.',
-    
+
     // Time Picker
     'time.quickSelect': '빠른 선택',
     'time.hours': '시간',
     'time.minutes': '분',
     'time.done': '완료',
-    
+
     // Common UI
     'common.loading': '로딩 중...',
     'common.error': '오류가 발생했습니다',
@@ -44,7 +44,7 @@ const translations = {
     'common.close': '닫기',
     'common.search': '검색...',
     'common.noResults': '검색 결과가 없습니다',
-    
+
     // Settings translations
     'settings.title': '설정',
     'settings.description': '계정 및 앱 설정을 관리하세요',
@@ -79,7 +79,7 @@ const translations = {
     'settings.billingSettings': '결제 설정',
     'settings.currentPlan': '현재 플랜',
     'settings.upgrade': '업그레이드',
-    'settings.paymentMethod': '결제 수단',
+    'settings.paymentMethod': '결제 수단'
   },
   en: {
     // Auth translations
@@ -96,7 +96,7 @@ const translations = {
     'auth.loginSuccess': 'Logged in successfully',
     'auth.loginProcessError': 'An error occurred during login',
     'auth.signingInProgress': 'Signing in...',
-    
+
     // Profile Setup
     'profile.setupTitle': 'Complete Your Profile Setup',
     'profile.setupSubtitle': 'Please provide additional information to continue',
@@ -109,13 +109,13 @@ const translations = {
     'profile.helpText': 'This information is used for account management and support',
     'profile.setupComplete': 'Profile setup completed successfully!',
     'profile.setupFailed': 'Profile setup failed. Please try again.',
-    
+
     // Time Picker
     'time.quickSelect': 'Quick Select',
     'time.hours': 'Hours',
     'time.minutes': 'Minutes',
     'time.done': 'Done',
-    
+
     // Common UI
     'common.loading': 'Loading...',
     'common.error': 'An error occurred',
@@ -123,7 +123,7 @@ const translations = {
     'common.close': 'Close',
     'common.search': 'Search...',
     'common.noResults': 'No results found',
-    
+
     // Settings translations
     'settings.title': 'Settings',
     'settings.description': 'Manage your account and app preferences',
@@ -158,7 +158,7 @@ const translations = {
     'settings.billingSettings': 'Billing Settings',
     'settings.currentPlan': 'Current Plan',
     'settings.upgrade': 'Upgrade',
-    'settings.paymentMethod': 'Payment Method',
+    'settings.paymentMethod': 'Payment Method'
   },
   ja: {
     // Auth translations
@@ -175,7 +175,7 @@ const translations = {
     'auth.loginSuccess': 'ログインしました',
     'auth.loginProcessError': 'ログイン処理中にエラーが発生しました',
     'auth.signingInProgress': 'サインイン中...',
-    
+
     // Profile Setup
     'profile.setupTitle': 'プロフィール設定を完了してください',
     'profile.setupSubtitle': '続行するには追加情報を入力してください',
@@ -188,13 +188,13 @@ const translations = {
     'profile.helpText': 'この情報はアカウント管理とサポートに使用されます',
     'profile.setupComplete': 'プロフィール設定が完了しました！',
     'profile.setupFailed': 'プロフィール設定に失敗しました。もう一度お試しください。',
-    
+
     // Time Picker
     'time.quickSelect': 'クイック選択',
     'time.hours': '時間',
     'time.minutes': '分',
     'time.done': '完了',
-    
+
     // Common UI
     'common.loading': '読み込み中...',
     'common.error': 'エラーが発生しました',
@@ -202,7 +202,7 @@ const translations = {
     'common.close': '閉じる',
     'common.search': '検索...',
     'common.noResults': '検索結果がありません',
-    
+
     // Settings translations
     'settings.title': '設定',
     'settings.description': 'アカウントとアプリの設定を管理します',
@@ -237,35 +237,35 @@ const translations = {
     'settings.billingSettings': '請求設定',
     'settings.currentPlan': '現在のプラン',
     'settings.upgrade': 'アップグレード',
-    'settings.paymentMethod': '支払い方法',
+    'settings.paymentMethod': '支払い方法'
   }
-}
+};
 
 export function useTranslation() {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+
   // Support for direct language strings instead of key-based translations
   const t = (key: string, ko: string, en: string, ja?: string): string => {
     // If using the old format with translations object
     if (arguments.length === 1 || arguments.length === 2) {
-      const fallback = arguments[1]
-      const lang = language as keyof typeof translations
-      const currentTranslations = translations[lang] || translations.en
-      return currentTranslations[key as keyof typeof currentTranslations] || fallback || key
+      const fallback = arguments[1];
+      const lang = language as keyof typeof translations;
+      const currentTranslations = translations[lang] || translations.en;
+      return currentTranslations[key as keyof typeof currentTranslations] || fallback || key;
     }
-    
+
     // New format with direct language strings
     switch (language) {
       case 'ko':
-        return ko
+        return ko;
       case 'en':
-        return en
+        return en;
       case 'ja':
-        return ja || en // Fallback to English if Japanese not provided
+        return ja || en; // Fallback to English if Japanese not provided
       default:
-        return en
+        return en;
     }
-  }
-  
-  return { t, language }
+  };
+
+  return { t, language };
 }

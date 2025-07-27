@@ -1,13 +1,13 @@
-import { useState } from 'react'
-import { ChevronDown, Music, Smartphone, CheckCircle, TrendingUp, Share2, ExternalLink } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+import { useState } from 'react';
+import { ChevronDown, Music, Smartphone, CheckCircle, TrendingUp, Share2, ExternalLink } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
 
 export default function ArtistProfileGuide() {
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [activeTab, setActiveTab] = useState<'spotify' | 'apple'>('spotify')
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [activeTab, setActiveTab] = useState<'spotify' | 'apple'>('spotify');
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   return (
     <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
@@ -21,8 +21,8 @@ export default function ArtistProfileGuide() {
             {t('아티스트 프로필 관리 가이드', 'Artist Profile Management Guide')}
           </h3>
         </div>
-        <ChevronDown 
-          className={`w-5 h-5 text-purple-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`} 
+        <ChevronDown
+          className={`w-5 h-5 text-purple-600 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
         />
       </button>
 
@@ -205,5 +205,5 @@ export default function ArtistProfileGuide() {
         </div>
       )}
     </div>
-  )
+  );
 }

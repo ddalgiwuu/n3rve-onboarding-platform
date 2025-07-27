@@ -1,19 +1,19 @@
-import { useAuthStore } from '@/store/auth.store'
-import { useTranslation } from '@/hooks/useTranslation'
-import { useHydration } from '@/hooks/useHydration'
-import { Music, FileText, Users, Upload, ChevronRight, Calendar, Building2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
-import LoadingSpinner from '@/components/common/LoadingSpinner'
-import useSafeStore from '@/hooks/useSafeStore'
+import { useAuthStore } from '@/store/auth.store';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useHydration } from '@/hooks/useHydration';
+import { Music, FileText, Users, Upload, ChevronRight, Calendar, Building2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import LoadingSpinner from '@/components/common/LoadingSpinner';
+import useSafeStore from '@/hooks/useSafeStore';
 
 export default function Dashboard() {
-  const isHydrated = useHydration()
-  const user = useSafeStore(useAuthStore, (state) => state.user)
-  const { t } = useTranslation()
+  const isHydrated = useHydration();
+  const user = useSafeStore(useAuthStore, (state) => state.user);
+  const { t } = useTranslation();
 
   // Show loading spinner until stores are hydrated
   if (!isHydrated) {
-    return <LoadingSpinner />
+    return <LoadingSpinner />;
   }
 
   const stats = [
@@ -22,43 +22,43 @@ export default function Dashboard() {
       value: '0',
       icon: Music,
       color: 'from-purple-500 to-pink-500',
-      description: t('등록된 앨범', '등록된 앨범', 'Registered Albums', '登録済みアルバム'),
+      description: t('등록된 앨범', '등록된 앨범', 'Registered Albums', '登録済みアルバム')
     },
     {
       label: t('대기 중', '대기 중', 'Pending', '待機中'),
       value: '0',
       icon: FileText,
       color: 'from-blue-500 to-cyan-500',
-      description: t('검토 대기 중', '검토 대기 중', 'Awaiting Review', 'レビュー待ち'),
+      description: t('검토 대기 중', '검토 대기 중', 'Awaiting Review', 'レビュー待ち')
     },
     {
       label: t('아티스트', '아티스트', 'Artists', 'アーティスト'),
       value: '0',
       icon: Users,
       color: 'from-green-500 to-emerald-500',
-      description: t('등록된 아티스트', '등록된 아티스트', 'Registered Artists', '登録済みアーティスト'),
-    },
-  ]
+      description: t('등록된 아티스트', '등록된 아티스트', 'Registered Artists', '登録済みアーティスト')
+    }
+  ];
 
-  const recentSubmissions: any[] = []
+  const recentSubmissions: any[] = [];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30'
-      case 'pending': return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30'
-      case 'review': return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30'
-      default: return 'bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30'
+      case 'approved': return 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30';
+      case 'pending': return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30';
+      case 'review': return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30';
+      default: return 'bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30';
     }
-  }
+  };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'approved': return t('승인됨', '승인됨', 'Approved', '承認済み')
-      case 'pending': return t('대기 중', '대기 중', 'Pending', '待機中')
-      case 'review': return t('검토 중', '검토 중', 'In Review', 'レビュー中')
-      default: return status
+      case 'approved': return t('승인됨', '승인됨', 'Approved', '承認済み');
+      case 'pending': return t('대기 중', '대기 중', 'Pending', '待機中');
+      case 'review': return t('검토 중', '검토 중', 'In Review', 'レビュー中');
+      default: return status;
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
@@ -89,7 +89,7 @@ export default function Dashboard() {
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stats.map((stat, index) => {
-            const Icon = stat.icon
+            const Icon = stat.icon;
             return (
               <div
                 key={index}
@@ -111,7 +111,7 @@ export default function Dashboard() {
                   {stat.description}
                 </p>
               </div>
-            )
+            );
           })}
         </div>
 
@@ -139,31 +139,31 @@ export default function Dashboard() {
               </div>
             ) : (
               recentSubmissions.map((submission, index) => (
-              <div
-                key={submission.id}
-                className="glass-effect p-4 rounded-xl hover:shadow-lg transition-all duration-300 animate-slide-in-left"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 dark:text-white">
-                      {submission.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {submission.artist}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                      <Calendar className="w-4 h-4" />
-                      {submission.date}
+                <div
+                  key={submission.id}
+                  className="glass-effect p-4 rounded-xl hover:shadow-lg transition-all duration-300 animate-slide-in-left"
+                  style={{ animationDelay: `${index * 100}ms` }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-gray-900 dark:text-white">
+                        {submission.title}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {submission.artist}
+                      </p>
                     </div>
-                    <span className={`badge-glass ${getStatusColor(submission.status)} px-3 py-1`}>
-                      {getStatusText(submission.status)}
-                    </span>
+                    <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <Calendar className="w-4 h-4" />
+                        {submission.date}
+                      </div>
+                      <span className={`badge-glass ${getStatusColor(submission.status)} px-3 py-1`}>
+                        {getStatusText(submission.status)}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
               ))
             )}
           </div>
@@ -236,5 +236,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  )
+  );
 }

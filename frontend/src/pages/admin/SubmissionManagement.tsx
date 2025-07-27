@@ -1,18 +1,18 @@
-import { useState, useEffect, useMemo } from 'react'
-import { 
-  Search, Eye, Check, X, Download, ChevronLeft, ChevronRight, 
+import { useState, useEffect, useMemo } from 'react';
+import {
+  Search, Eye, Check, X, Download, ChevronLeft, ChevronRight,
   FileSpreadsheet, Calendar, Clock, CheckSquare, XSquare,
   Music, FileText, Info, History, TrendingUp,
   AlertCircle, Package, Loader2
-} from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { CheckCircle } from 'lucide-react'
-import { cn } from '@/utils/cn'
-import { exportSubmissionsToExcel } from '@/utils/excelExport'
-import { submissionService } from '@/services/submission.service'
-import SubmissionDetailView from '@/components/admin/SubmissionDetailView'
-import toast from 'react-hot-toast'
+} from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { CheckCircle } from 'lucide-react';
+import { cn } from '@/utils/cn';
+import { exportSubmissionsToExcel } from '@/utils/excelExport';
+import { submissionService } from '@/services/submission.service';
+import SubmissionDetailView from '@/components/admin/SubmissionDetailView';
+import toast from 'react-hot-toast';
 
 // Stats Card Component
 const StatsCard: React.FC<{
@@ -30,24 +30,24 @@ const StatsCard: React.FC<{
         {trend !== undefined && (
           <div className="flex items-center mt-2">
             <TrendingUp className={cn(
-              "w-4 h-4 mr-1",
-              trend >= 0 ? "text-green-500" : "text-red-500 rotate-180"
+              'w-4 h-4 mr-1',
+              trend >= 0 ? 'text-green-500' : 'text-red-500 rotate-180'
             )} />
             <span className={cn(
-              "text-sm font-medium",
-              trend >= 0 ? "text-green-600" : "text-red-600"
+              'text-sm font-medium',
+              trend >= 0 ? 'text-green-600' : 'text-red-600'
             )}>
               {Math.abs(trend)}%
             </span>
           </div>
         )}
       </div>
-      <div className={cn("p-3 rounded-full", color)}>
+      <div className={cn('p-3 rounded-full', color)}>
         {icon}
       </div>
     </div>
   </div>
-)
+);
 
 // Tab Component
 const Tab: React.FC<{
@@ -59,128 +59,128 @@ const Tab: React.FC<{
   <button
     onClick={onClick}
     className={cn(
-      "flex items-center gap-2 px-4 py-2 font-medium rounded-lg transition-colors",
+      'flex items-center gap-2 px-4 py-2 font-medium rounded-lg transition-colors',
       active
-        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-        : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
     )}
   >
     {icon}
     {label}
   </button>
-)
+);
 
 const SubmissionManagement: React.FC = () => {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
   // Note: t function is not available from useLanguageStore, need to create local t function
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  const [submissions, setSubmissions] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null)
-  const [showDetailModal, setShowDetailModal] = useState(false)
-  const [adminNotes, setAdminNotes] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(new Set())
-  const [dateRange, setDateRange] = useState({ start: '', end: '' })
-  const [activeTab, setActiveTab] = useState<'details' | 'overview' | 'history'>('details')
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSubmission, setSelectedSubmission] = useState<any | null>(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [adminNotes, setAdminNotes] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(new Set());
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+  const [activeTab, setActiveTab] = useState<'details' | 'overview' | 'history'>('details');
   const [stats, setStats] = useState({
     total: 0,
     pending: 0,
     approved: 0,
     rejected: 0
-  })
-  const itemsPerPage = 10
+  });
+  const itemsPerPage = 10;
 
   // Fetch submissions from API
   useEffect(() => {
-    fetchSubmissions()
-  }, [selectedStatus, searchQuery, dateRange, currentPage])
+    fetchSubmissions();
+  }, [selectedStatus, searchQuery, dateRange, currentPage]);
 
   const fetchSubmissions = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const response = await submissionService.getAllSubmissions({
         status: selectedStatus,
         searchQuery,
         dateRange: dateRange.start && dateRange.end ? dateRange : undefined,
         page: currentPage,
         limit: itemsPerPage
-      })
-      
+      });
+
       // Add defensive programming
       if (!response || !Array.isArray(response.submissions)) {
-        console.error('Invalid response format:', response)
-        setSubmissions([])
+        console.error('Invalid response format:', response);
+        setSubmissions([]);
         setStats({
           total: 0,
           pending: 0,
           approved: 0,
           rejected: 0
-        })
-        return
+        });
+        return;
       }
-      
-      setSubmissions(response.submissions || [])
-      
+
+      setSubmissions(response.submissions || []);
+
       // Update stats
       if (response.stats) {
-        setStats(response.stats)
+        setStats(response.stats);
       }
     } catch (error) {
-      console.error('Failed to fetch submissions:', error)
-      toast.error(t('제출 목록을 불러오는데 실패했습니다', 'Failed to load submission list'))
+      console.error('Failed to fetch submissions:', error);
+      toast.error(t('제출 목록을 불러오는데 실패했습니다', 'Failed to load submission list'));
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Filter submissions
   const filteredSubmissions = useMemo(() => {
     return submissions.filter(submission => {
-      const matchesStatus = selectedStatus === 'all' || submission.status === selectedStatus
-      const matchesSearch = !searchQuery || 
+      const matchesStatus = selectedStatus === 'all' || submission.status === selectedStatus;
+      const matchesSearch = !searchQuery ||
         submission.artist?.primaryName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         submission.album?.titleKo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         submission.album?.titleEn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        submission.id.toLowerCase().includes(searchQuery.toLowerCase())
-      
-      return matchesStatus && matchesSearch
-    })
-  }, [submissions, selectedStatus, searchQuery])
+        submission.id.toLowerCase().includes(searchQuery.toLowerCase());
+
+      return matchesStatus && matchesSearch;
+    });
+  }, [submissions, selectedStatus, searchQuery]);
 
   // Pagination
-  const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredSubmissions.length / itemsPerPage);
   const paginatedSubmissions = filteredSubmissions.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
-  )
+  );
 
   // Handle status update
   const handleStatusUpdate = async (submissionId: string, newStatus: 'approved' | 'rejected') => {
     try {
-      await submissionService.updateSubmissionStatus(submissionId, newStatus, adminNotes)
-      toast.success(t('상태가 업데이트되었습니다', 'Status updated successfully'))
-      
+      await submissionService.updateSubmissionStatus(submissionId, newStatus, adminNotes);
+      toast.success(t('상태가 업데이트되었습니다', 'Status updated successfully'));
+
       // Refresh submissions
-      await fetchSubmissions()
-      
+      await fetchSubmissions();
+
       // Reset
-      setAdminNotes('')
-      setShowDetailModal(false)
-      setSelectedSubmission(null)
+      setAdminNotes('');
+      setShowDetailModal(false);
+      setSelectedSubmission(null);
     } catch (error) {
-      console.error('Failed to update status:', error)
-      toast.error(t('상태 업데이트에 실패했습니다', 'Failed to update status'))
+      console.error('Failed to update status:', error);
+      toast.error(t('상태 업데이트에 실패했습니다', 'Failed to update status'));
     }
-  }
+  };
 
   // Handle bulk actions
   const handleBulkAction = async (action: 'approve' | 'reject') => {
     if (selectedSubmissions.size === 0) {
-      toast.error(t('선택된 제출이 없습니다', 'No submissions selected'))
-      return
+      toast.error(t('선택된 제출이 없습니다', 'No submissions selected'));
+      return;
     }
 
     try {
@@ -188,23 +188,23 @@ const SubmissionManagement: React.FC = () => {
         Array.from(selectedSubmissions),
         action === 'approve' ? 'approved' : 'rejected',
         adminNotes
-      )
-      
+      );
+
       toast.success(
         t(
           `${selectedSubmissions.size}개의 제출이 ${action === 'approve' ? '승인' : '거절'}되었습니다`,
           `${selectedSubmissions.size} submissions ${action === 'approve' ? 'approved' : 'rejected'}`
         )
-      )
-      
+      );
+
       // Reset and refresh
-      setSelectedSubmissions(new Set())
-      await fetchSubmissions()
+      setSelectedSubmissions(new Set());
+      await fetchSubmissions();
     } catch (error) {
-      console.error('Failed to perform bulk action:', error)
-      toast.error(t('일괄 작업에 실패했습니다', 'Failed to perform bulk action'))
+      console.error('Failed to perform bulk action:', error);
+      toast.error(t('일괄 작업에 실패했습니다', 'Failed to perform bulk action'));
     }
-  }
+  };
 
   // Export functions
   const handleExportToExcel = async () => {
@@ -213,42 +213,42 @@ const SubmissionManagement: React.FC = () => {
         status: selectedStatus,
         searchQuery,
         dateRange: dateRange.start && dateRange.end ? dateRange : undefined
-      })
-      toast.success(t('Excel 파일이 다운로드되었습니다', 'Excel file downloaded'))
+      });
+      toast.success(t('Excel 파일이 다운로드되었습니다', 'Excel file downloaded'));
     } catch (error) {
-      console.error('Failed to export:', error)
-      toast.error(t('Excel 내보내기에 실패했습니다', 'Failed to export Excel'))
+      console.error('Failed to export:', error);
+      toast.error(t('Excel 내보내기에 실패했습니다', 'Failed to export Excel'));
     }
-  }
+  };
 
   const handleExportSelected = () => {
     if (selectedSubmissions.size === 0) {
-      toast.error(t('선택된 제출이 없습니다', 'No submissions selected'))
-      return
+      toast.error(t('선택된 제출이 없습니다', 'No submissions selected'));
+      return;
     }
 
-    const selected = submissions.filter(s => selectedSubmissions.has(s.id))
-    exportSubmissionsToExcel({ submissions: selected })
-    toast.success(t('선택된 제출이 내보내기되었습니다', 'Selected submissions exported'))
-  }
+    const selected = submissions.filter(s => selectedSubmissions.has(s.id));
+    exportSubmissionsToExcel({ submissions: selected });
+    toast.success(t('선택된 제출이 내보내기되었습니다', 'Selected submissions exported'));
+  };
 
   const handleSelectAll = () => {
     if (selectedSubmissions.size === paginatedSubmissions.length) {
-      setSelectedSubmissions(new Set())
+      setSelectedSubmissions(new Set());
     } else {
-      setSelectedSubmissions(new Set(paginatedSubmissions.map(s => s.id)))
+      setSelectedSubmissions(new Set(paginatedSubmissions.map(s => s.id)));
     }
-  }
+  };
 
   const toggleSelection = (id: string) => {
-    const newSelection = new Set(selectedSubmissions)
+    const newSelection = new Set(selectedSubmissions);
     if (newSelection.has(id)) {
-      newSelection.delete(id)
+      newSelection.delete(id);
     } else {
-      newSelection.add(id)
+      newSelection.add(id);
     }
-    setSelectedSubmissions(newSelection)
-  }
+    setSelectedSubmissions(newSelection);
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -331,10 +331,10 @@ const SubmissionManagement: React.FC = () => {
             <button
               onClick={() => setSelectedStatus('all')}
               className={cn(
-                "px-4 py-2 rounded-lg font-medium transition-colors",
+                'px-4 py-2 rounded-lg font-medium transition-colors',
                 selectedStatus === 'all'
-                  ? "bg-purple-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  ? 'bg-purple-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               )}
             >
               {t('전체', 'All')}
@@ -342,10 +342,10 @@ const SubmissionManagement: React.FC = () => {
             <button
               onClick={() => setSelectedStatus('pending')}
               className={cn(
-                "px-4 py-2 rounded-lg font-medium transition-colors",
+                'px-4 py-2 rounded-lg font-medium transition-colors',
                 selectedStatus === 'pending'
-                  ? "bg-yellow-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  ? 'bg-yellow-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               )}
             >
               {t('대기중', 'Pending')}
@@ -353,10 +353,10 @@ const SubmissionManagement: React.FC = () => {
             <button
               onClick={() => setSelectedStatus('approved')}
               className={cn(
-                "px-4 py-2 rounded-lg font-medium transition-colors",
+                'px-4 py-2 rounded-lg font-medium transition-colors',
                 selectedStatus === 'approved'
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  ? 'bg-green-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               )}
             >
               {t('승인됨', 'Approved')}
@@ -364,10 +364,10 @@ const SubmissionManagement: React.FC = () => {
             <button
               onClick={() => setSelectedStatus('rejected')}
               className={cn(
-                "px-4 py-2 rounded-lg font-medium transition-colors",
+                'px-4 py-2 rounded-lg font-medium transition-colors',
                 selectedStatus === 'rejected'
-                  ? "bg-red-600 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                  ? 'bg-red-600 text-white'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               )}
             >
               {t('거절됨', 'Rejected')}
@@ -506,10 +506,10 @@ const SubmissionManagement: React.FC = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={cn(
-                          "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
-                          submission.status === 'pending' && "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-                          submission.status === 'approved' && "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-                          submission.status === 'rejected' && "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
+                          'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                          submission.status === 'pending' && 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                          submission.status === 'approved' && 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                          submission.status === 'rejected' && 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                         )}>
                           {submission.status === 'pending' && t('대기중', 'Pending')}
                           {submission.status === 'approved' && t('승인됨', 'Approved')}
@@ -539,8 +539,8 @@ const SubmissionManagement: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => {
-                              setSelectedSubmission(submission)
-                              setShowDetailModal(true)
+                              setSelectedSubmission(submission);
+                              setShowDetailModal(true);
                             }}
                             className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
                           >
@@ -593,10 +593,10 @@ const SubmissionManagement: React.FC = () => {
                         key={page}
                         onClick={() => setCurrentPage(page)}
                         className={cn(
-                          "px-3 py-1 rounded-lg",
+                          'px-3 py-1 rounded-lg',
                           currentPage === page
-                            ? "bg-purple-600 text-white"
-                            : "border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+                            ? 'bg-purple-600 text-white'
+                            : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
                         )}
                       >
                         {page}
@@ -627,8 +627,8 @@ const SubmissionManagement: React.FC = () => {
               </h2>
               <button
                 onClick={() => {
-                  setShowDetailModal(false)
-                  setSelectedSubmission(null)
+                  setShowDetailModal(false);
+                  setSelectedSubmission(null);
                 }}
                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
@@ -754,7 +754,7 @@ const SubmissionManagement: React.FC = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default SubmissionManagement
+export default SubmissionManagement;

@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { 
-  AlertCircle, AlertTriangle, CheckCircle, 
+import { useState } from 'react';
+import {
+  AlertCircle, AlertTriangle, CheckCircle,
   X, ChevronDown, ChevronUp, Lightbulb
-} from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export interface ValidationWarning {
   id: string
@@ -27,33 +27,33 @@ interface ValidationWarningProps {
   language?: 'ko' | 'en'
 }
 
-export default function ValidationWarning({ 
-  warnings, 
-  onAcceptSuggestion, 
+export default function ValidationWarning({
+  warnings,
+  onAcceptSuggestion,
   onDismissWarning,
-  language = 'en' 
+  language = 'en'
 }: ValidationWarningProps) {
-  const [expandedWarnings, setExpandedWarnings] = useState<Set<string>>(new Set())
-  const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(new Set())
+  const [expandedWarnings, setExpandedWarnings] = useState<Set<string>>(new Set());
+  const [dismissedWarnings, setDismissedWarnings] = useState<Set<string>>(new Set());
 
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const toggleExpanded = (warningId: string) => {
     setExpandedWarnings(prev => {
-      const newSet = new Set(prev)
+      const newSet = new Set(prev);
       if (newSet.has(warningId)) {
-        newSet.delete(warningId)
+        newSet.delete(warningId);
       } else {
-        newSet.add(warningId)
+        newSet.add(warningId);
       }
-      return newSet
-    })
-  }
+      return newSet;
+    });
+  };
 
   const handleDismiss = (warning: ValidationWarning) => {
-    setDismissedWarnings(prev => new Set(prev).add(warning.id))
-    onDismissWarning?.(warning)
-  }
+    setDismissedWarnings(prev => new Set(prev).add(warning.id));
+    onDismissWarning?.(warning);
+  };
 
   const getWarningConfig = (type: ValidationWarning['type']) => {
     switch (type) {
@@ -71,7 +71,7 @@ export default function ValidationWarning({
           darkTitleColor: 'dark:text-red-100',
           darkTextColor: 'dark:text-red-300',
           title: t('오류', 'Error')
-        }
+        };
       case 'warning':
         return {
           icon: AlertTriangle,
@@ -86,7 +86,7 @@ export default function ValidationWarning({
           darkTitleColor: 'dark:text-amber-100',
           darkTextColor: 'dark:text-amber-300',
           title: t('경고', 'Warning')
-        }
+        };
       case 'suggestion':
         return {
           icon: Lightbulb,
@@ -101,13 +101,13 @@ export default function ValidationWarning({
           darkTitleColor: 'dark:text-blue-100',
           darkTextColor: 'dark:text-blue-300',
           title: t('제안', 'Suggestion')
-        }
+        };
     }
-  }
+  };
 
-  const activeWarnings = warnings.filter(w => !dismissedWarnings.has(w.id))
+  const activeWarnings = warnings.filter(w => !dismissedWarnings.has(w.id));
 
-  if (activeWarnings.length === 0) return null
+  if (activeWarnings.length === 0) return null;
 
   return (
     <AnimatePresence>
@@ -119,9 +119,9 @@ export default function ValidationWarning({
         className="space-y-2 mt-2"
       >
         {activeWarnings.map((warning) => {
-          const config = getWarningConfig(warning.type)
-          const Icon = config.icon
-          const isExpanded = expandedWarnings.has(warning.id)
+          const config = getWarningConfig(warning.type);
+          const Icon = config.icon;
+          const isExpanded = expandedWarnings.has(warning.id);
 
           return (
             <motion.div
@@ -141,7 +141,7 @@ export default function ValidationWarning({
                 {/* Header */}
                 <div className="flex items-start gap-3">
                   <Icon className={`w-5 h-5 mt-0.5 flex-shrink-0 ${config.iconColor} ${config.darkIconColor}`} />
-                  
+
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className={`text-xs font-medium ${config.titleColor} ${config.darkTitleColor}`}>
@@ -153,7 +153,7 @@ export default function ValidationWarning({
                         </span>
                       )}
                     </div>
-                    
+
                     <p className={`text-sm ${config.textColor} ${config.darkTextColor}`}>
                       {warning.message}
                     </p>
@@ -274,9 +274,9 @@ export default function ValidationWarning({
                 </div>
               </div>
             </motion.div>
-          )
+          );
         })}
       </motion.div>
     </AnimatePresence>
-  )
+  );
 }

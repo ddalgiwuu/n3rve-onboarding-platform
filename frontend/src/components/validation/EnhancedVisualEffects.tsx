@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, AlertTriangle, AlertCircle, Lightbulb } from 'lucide-react'
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { CheckCircle2, AlertTriangle, AlertCircle, Lightbulb } from 'lucide-react';
 
 interface EnhancedVisualEffectsProps {
   fieldId: string
@@ -19,30 +19,30 @@ export function EnhancedVisualEffects({
   showStatusIcon = true,
   enableSuccessAnimation = true
 }: EnhancedVisualEffectsProps) {
-  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false)
-  const [previousState, setPreviousState] = useState(validationState)
+  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
+  const [previousState, setPreviousState] = useState(validationState);
 
   // Trigger success animation when validation state improves
   useEffect(() => {
-    if (enableSuccessAnimation && 
-        previousState !== 'none' && 
-        previousState !== 'success' && 
+    if (enableSuccessAnimation &&
+        previousState !== 'none' &&
+        previousState !== 'success' &&
         validationState === 'success') {
-      setShowSuccessAnimation(true)
-      setTimeout(() => setShowSuccessAnimation(false), 2000)
+      setShowSuccessAnimation(true);
+      setTimeout(() => setShowSuccessAnimation(false), 2000);
     }
-    setPreviousState(validationState)
-  }, [validationState, previousState, enableSuccessAnimation])
+    setPreviousState(validationState);
+  }, [validationState, previousState, enableSuccessAnimation]);
 
   const getPulseAnimation = () => {
-    if (validationState === 'none' || validationState === 'success') return {}
-    
+    if (validationState === 'none' || validationState === 'success') return {};
+
     const intensityMap = {
       subtle: { scale: [1, 1.01, 1], opacity: [1, 0.95, 1] },
       medium: { scale: [1, 1.02, 1], opacity: [1, 0.9, 1] },
       strong: { scale: [1, 1.03, 1], opacity: [1, 0.85, 1] }
-    }
-    
+    };
+
     return {
       animate: intensityMap[pulseIntensity],
       transition: {
@@ -50,38 +50,38 @@ export function EnhancedVisualEffects({
         repeat: Infinity,
         ease: 'easeInOut'
       }
-    }
-  }
+    };
+  };
 
   const getBorderStyle = () => {
     switch (validationState) {
       case 'error':
-        return 'border-red-500 focus-within:border-red-500 shadow-red-100 dark:shadow-red-900/20'
+        return 'border-red-500 focus-within:border-red-500 shadow-red-100 dark:shadow-red-900/20';
       case 'warning':
-        return 'border-amber-500 focus-within:border-amber-500 shadow-amber-100 dark:shadow-amber-900/20'
+        return 'border-amber-500 focus-within:border-amber-500 shadow-amber-100 dark:shadow-amber-900/20';
       case 'suggestion':
-        return 'border-blue-500 focus-within:border-blue-500 shadow-blue-100 dark:shadow-blue-900/20'
+        return 'border-blue-500 focus-within:border-blue-500 shadow-blue-100 dark:shadow-blue-900/20';
       case 'success':
-        return 'border-green-500 focus-within:border-green-500 shadow-green-100 dark:shadow-green-900/20'
+        return 'border-green-500 focus-within:border-green-500 shadow-green-100 dark:shadow-green-900/20';
       default:
-        return ''
+        return '';
     }
-  }
+  };
 
   const getStatusIcon = () => {
     switch (validationState) {
       case 'error':
-        return <AlertCircle className="w-4 h-4 text-red-500" />
+        return <AlertCircle className="w-4 h-4 text-red-500" />;
       case 'warning':
-        return <AlertTriangle className="w-4 h-4 text-amber-500" />
+        return <AlertTriangle className="w-4 h-4 text-amber-500" />;
       case 'suggestion':
-        return <Lightbulb className="w-4 h-4 text-blue-500" />
+        return <Lightbulb className="w-4 h-4 text-blue-500" />;
       case 'success':
-        return <CheckCircle2 className="w-4 h-4 text-green-500" />
+        return <CheckCircle2 className="w-4 h-4 text-green-500" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <motion.div
@@ -89,7 +89,7 @@ export function EnhancedVisualEffects({
       {...getPulseAnimation()}
     >
       {children}
-      
+
       {/* Status Icon */}
       <AnimatePresence>
         {showStatusIcon && validationState !== 'none' && (
@@ -122,7 +122,7 @@ export function EnhancedVisualEffects({
         )}
       </AnimatePresence>
     </motion.div>
-  )
+  );
 }
 
 interface SectionHeaderEffectsProps {
@@ -140,33 +140,33 @@ export function SectionHeaderEffects({
   onNavigateToFirstIssue,
   language = 'en'
 }: SectionHeaderEffectsProps) {
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const getHeaderStyle = () => {
     switch (validationStatus) {
       case 'has_errors':
-        return 'bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-l-4 border-l-red-500'
+        return 'bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 border-l-4 border-l-red-500';
       case 'has_warnings':
-        return 'bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-l-4 border-l-amber-500'
+        return 'bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 border-l-4 border-l-amber-500';
       case 'clean':
-        return 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-l-4 border-l-green-500'
+        return 'bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-l-4 border-l-green-500';
       default:
-        return 'bg-gray-50 dark:bg-gray-800'
+        return 'bg-gray-50 dark:bg-gray-800';
     }
-  }
+  };
 
   const getStatusIcon = () => {
     switch (validationStatus) {
       case 'has_errors':
-        return <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+        return <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />;
       case 'has_warnings':
-        return <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+        return <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />;
       case 'clean':
-        return <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+        return <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <motion.div
@@ -200,7 +200,7 @@ export function SectionHeaderEffects({
             )}
           </div>
         </div>
-        
+
         {issueCount > 0 && onNavigateToFirstIssue && (
           <motion.button
             initial={{ opacity: 0, x: 20 }}
@@ -215,7 +215,7 @@ export function SectionHeaderEffects({
         )}
       </div>
     </motion.div>
-  )
+  );
 }
 
 interface ProgressBarProps {
@@ -237,21 +237,21 @@ export function AnimatedProgressBar({
   animated = true,
   language = 'en'
 }: ProgressBarProps) {
-  const percentage = total > 0 ? Math.round((current / total) * 100) : 0
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const getColorClasses = () => {
     switch (colorScheme) {
       case 'green':
-        return 'bg-green-500'
+        return 'bg-green-500';
       case 'red':
-        return 'bg-red-500'
+        return 'bg-red-500';
       case 'amber':
-        return 'bg-amber-500'
+        return 'bg-amber-500';
       default:
-        return 'bg-blue-500'
+        return 'bg-blue-500';
     }
-  }
+  };
 
   return (
     <div className="w-full">
@@ -269,7 +269,7 @@ export function AnimatedProgressBar({
           )}
         </div>
       )}
-      
+
       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
         <motion.div
           initial={animated ? { width: 0 } : { width: `${percentage}%` }}
@@ -278,13 +278,13 @@ export function AnimatedProgressBar({
           className={`h-2 rounded-full ${getColorClasses()}`}
         />
       </div>
-      
+
       <div className="flex justify-between mt-1 text-xs text-gray-500 dark:text-gray-400">
         <span>{current}</span>
         <span>{total}</span>
       </div>
     </div>
-  )
+  );
 }
 
 interface ValidationBadgeProps {
@@ -294,49 +294,49 @@ interface ValidationBadgeProps {
   size?: 'sm' | 'md' | 'lg'
 }
 
-export function ValidationBadge({ 
-  type, 
-  count, 
-  animated = true, 
-  size = 'md' 
+export function ValidationBadge({
+  type,
+  count,
+  animated = true,
+  size = 'md'
 }: ValidationBadgeProps) {
   const sizeClasses = {
     sm: 'text-xs px-2 py-1',
     md: 'text-sm px-3 py-1',
     lg: 'text-base px-4 py-2'
-  }
+  };
 
   const getTypeClasses = () => {
     switch (type) {
       case 'error':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
+        return 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
       case 'warning':
-        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300'
+        return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
       case 'suggestion':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300';
       case 'success':
-        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+        return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
       default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300'
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-300';
     }
-  }
+  };
 
   const getIcon = () => {
     switch (type) {
       case 'error':
-        return <AlertCircle className="w-3 h-3" />
+        return <AlertCircle className="w-3 h-3" />;
       case 'warning':
-        return <AlertTriangle className="w-3 h-3" />
+        return <AlertTriangle className="w-3 h-3" />;
       case 'suggestion':
-        return <Lightbulb className="w-3 h-3" />
+        return <Lightbulb className="w-3 h-3" />;
       case 'success':
-        return <CheckCircle2 className="w-3 h-3" />
+        return <CheckCircle2 className="w-3 h-3" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
-  if (count === 0) return null
+  if (count === 0) return null;
 
   return (
     <motion.div
@@ -355,5 +355,5 @@ export function ValidationBadge({
         {count}
       </motion.span>
     </motion.div>
-  )
+  );
 }

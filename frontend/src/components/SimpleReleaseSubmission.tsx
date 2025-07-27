@@ -1,24 +1,24 @@
-import { useState } from 'react'
-import { FileText } from 'lucide-react'
-import Button from '@/components/ui/Button'
-import Input from '@/components/ui/Input'
-import Textarea from '@/components/ui/Textarea'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+import { useState } from 'react';
+import { FileText } from 'lucide-react';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import Textarea from '@/components/ui/Textarea';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
 
 /**
  * Simplified release submission form as a fallback
  * This prevents any complex .map() operations that might cause errors
  */
 export default function SimpleReleaseSubmission() {
-  const language = useSafeStore(useLanguageStore, (state) => state.language) || 'ko'
+  const language = useSafeStore(useLanguageStore, (state) => state.language) || 'ko';
   const [formData, setFormData] = useState({
     albumTitle: '',
     artistName: '',
     description: ''
-  })
+  });
 
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -47,7 +47,7 @@ export default function SimpleReleaseSubmission() {
                 required
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 {t('아티스트명', 'Artist Name')}
@@ -96,11 +96,11 @@ export default function SimpleReleaseSubmission() {
 
         {/* Submit Button */}
         <div className="mt-8 flex justify-center">
-          <Button 
+          <Button
             size="lg"
             onClick={() => {
-              console.log('Form submitted:', formData)
-              alert(t('양식이 제출되었습니다!', 'Form submitted!'))
+              console.log('Form submitted:', formData);
+              alert(t('양식이 제출되었습니다!', 'Form submitted!'));
             }}
           >
             {t('제출하기', 'Submit')}
@@ -108,5 +108,5 @@ export default function SimpleReleaseSubmission() {
         </div>
       </div>
     </div>
-  )
+  );
 }

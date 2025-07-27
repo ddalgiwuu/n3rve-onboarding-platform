@@ -1,18 +1,18 @@
-import { useState } from 'react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { ValidationProvider } from '@/contexts/ValidationContext'
-import ValidatedInput from '@/components/ValidatedInput'
-import FugaQCHelpModal from '@/components/modals/FugaQCHelpModal'
-import { CheckCircle, AlertCircle, HelpCircle, Globe } from 'lucide-react'
+import { useState } from 'react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { ValidationProvider } from '@/contexts/ValidationContext';
+import ValidatedInput from '@/components/ValidatedInput';
+import FugaQCHelpModal from '@/components/modals/FugaQCHelpModal';
+import { CheckCircle, AlertCircle, HelpCircle, Globe } from 'lucide-react';
 
 function RealtimeQCTestContent() {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const setLanguage = useLanguageStore((state) => state.setLanguage)
-  const [albumTitle, setAlbumTitle] = useState('')
-  const [trackTitle, setTrackTitle] = useState('')
-  const [artistName, setArtistName] = useState('')
-  const [showQCHelp, setShowQCHelp] = useState(false)
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const setLanguage = useLanguageStore((state) => state.setLanguage);
+  const [albumTitle, setAlbumTitle] = useState('');
+  const [trackTitle, setTrackTitle] = useState('');
+  const [artistName, setArtistName] = useState('');
+  const [showQCHelp, setShowQCHelp] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-8">
@@ -25,8 +25,8 @@ function RealtimeQCTestContent() {
                 {language === 'ko' ? '실시간 QC 검증 테스트' : 'Real-time QC Validation Test'}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                {language === 'ko' 
-                  ? '입력하면서 실시간으로 QC 검증이 작동하는지 확인하세요' 
+                {language === 'ko'
+                  ? '입력하면서 실시간으로 QC 검증이 작동하는지 확인하세요'
                   : 'Check if QC validation works in real-time as you type'
                 }
               </p>
@@ -69,8 +69,8 @@ function RealtimeQCTestContent() {
                 language={language}
                 label={language === 'ko' ? '앨범 제목' : 'Album Title'}
                 placeholder={language === 'ko' ? '앨범 제목을 입력하세요' : 'Enter album title'}
-                helpText={language === 'ko' 
-                  ? '특수문자 (!@#등), 모두 대문자, 중복 공백 등을 입력해보세요' 
+                helpText={language === 'ko'
+                  ? '특수문자 (!@#등), 모두 대문자, 중복 공백 등을 입력해보세요'
                   : 'Try special characters (!@#), ALL CAPS, double spaces, etc.'
                 }
                 className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-500 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
@@ -96,8 +96,8 @@ function RealtimeQCTestContent() {
                 language={language}
                 label={language === 'ko' ? '트랙 제목' : 'Track Title'}
                 placeholder={language === 'ko' ? '트랙 제목을 입력하세요' : 'Enter track title'}
-                helpText={language === 'ko' 
-                  ? 'Remix, Edit, Version 등의 키워드를 입력해보세요' 
+                helpText={language === 'ko'
+                  ? 'Remix, Edit, Version 등의 키워드를 입력해보세요'
                   : 'Try keywords like Remix, Edit, Version, etc.'
                 }
                 className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-500 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
@@ -122,8 +122,8 @@ function RealtimeQCTestContent() {
                 language={language}
                 label={language === 'ko' ? '아티스트 이름' : 'Artist Name'}
                 placeholder={language === 'ko' ? '아티스트 이름을 입력하세요' : 'Enter artist name'}
-                helpText={language === 'ko' 
-                  ? 'Unknown, TBD, 숫자만 등을 입력해보세요' 
+                helpText={language === 'ko'
+                  ? 'Unknown, TBD, 숫자만 등을 입력해보세요'
                   : 'Try Unknown, TBD, numbers only, etc.'
                 }
                 className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-500 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
@@ -152,14 +152,14 @@ function RealtimeQCTestContent() {
           </div>
         </div>
       </div>
-      
+
       {/* QC Help Modal */}
-      <FugaQCHelpModal 
-        isOpen={showQCHelp} 
-        onClose={() => setShowQCHelp(false)} 
+      <FugaQCHelpModal
+        isOpen={showQCHelp}
+        onClose={() => setShowQCHelp(false)}
       />
     </div>
-  )
+  );
 }
 
 export default function RealtimeQCTest() {
@@ -167,5 +167,5 @@ export default function RealtimeQCTest() {
     <ValidationProvider>
       <RealtimeQCTestContent />
     </ValidationProvider>
-  )
+  );
 }

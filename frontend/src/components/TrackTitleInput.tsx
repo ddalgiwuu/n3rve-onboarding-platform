@@ -1,8 +1,8 @@
-import ValidatedInput from './ValidatedInput'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { useValidationContext } from '@/contexts/ValidationContext'
-import { ValidationWarning } from '@/utils/inputValidation'
+import ValidatedInput from './ValidatedInput';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { useValidationContext } from '@/contexts/ValidationContext';
+import { ValidationWarning } from '@/utils/inputValidation';
 
 interface TrackTitleInputProps {
   trackId: string
@@ -19,8 +19,8 @@ export default function TrackTitleInput({
   onChange,
   placeholder
 }: TrackTitleInputProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   return (
     <ValidatedInput
@@ -33,7 +33,7 @@ export default function TrackTitleInput({
       language={language === 'ja' ? 'en' : language}
       showInlineWarnings={true}
     />
-  )
+  );
 }
 
 // Bulk warning manager for multiple tracks
@@ -50,36 +50,36 @@ export function TrackWarningsManager({
   onDismissAll,
   language = 'en'
 }: TrackWarningsManagerProps) {
-  const { getAllWarnings, acceptAllInGroup, dismissWarningGroup } = useValidationContext()
-  
+  const { getAllWarnings, acceptAllInGroup, dismissWarningGroup } = useValidationContext();
+
   // Filter warnings for only the specified tracks
-  const trackWarnings = getAllWarnings().filter(w => 
+  const trackWarnings = getAllWarnings().filter(w =>
     trackIds.some(id => w.field === `track-title-${id}`)
-  )
+  );
 
   // Group warnings by type
   const warningGroups = trackWarnings.reduce((acc, warning) => {
-    const group = warning.warningGroup || warning.type
-    if (!acc[group]) acc[group] = []
-    acc[group].push(warning)
-    return acc
-  }, {} as Record<string, ValidationWarning[]>)
+    const group = warning.warningGroup || warning.type;
+    if (!acc[group]) acc[group] = [];
+    acc[group].push(warning);
+    return acc;
+  }, {} as Record<string, ValidationWarning[]>);
 
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  if (Object.keys(warningGroups).length === 0) return null
+  if (Object.keys(warningGroups).length === 0) return null;
 
   return (
     <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
       <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
         {t('트랙 제목 일괄 수정', 'Bulk Track Title Fixes')}
       </h4>
-      
+
       <div className="space-y-2">
         {Object.entries(warningGroups).map(([group, warnings]) => {
-          const canFixAll = warnings.some(w => w.suggestedValue)
-          const canDismissAll = warnings.some(w => w.canIgnore)
-          
+          const canFixAll = warnings.some(w => w.suggestedValue);
+          const canDismissAll = warnings.some(w => w.canIgnore);
+
           return (
             <div key={group} className="flex items-center justify-between p-3 bg-white dark:bg-gray-700 rounded-lg">
               <div>
@@ -90,15 +90,15 @@ export function TrackWarningsManager({
                   {warnings.length} {t('개 트랙', warnings.length === 1 ? 'track' : 'tracks')}
                 </p>
               </div>
-              
+
               <div className="flex items-center gap-2">
                 {canFixAll && (
                   <button
                     onClick={() => {
-                      const changes = acceptAllInGroup(group)
-                      onAcceptAll?.(group)
+                      const changes = acceptAllInGroup(group);
+                      onAcceptAll?.(group);
                       // Log changes for debugging
-                      console.log('Bulk accepted changes:', changes)
+                      console.log('Bulk accepted changes:', changes);
                     }}
                     className="px-3 py-1 text-xs font-medium text-white bg-green-600 hover:bg-green-700 rounded transition-colors"
                   >
@@ -108,8 +108,8 @@ export function TrackWarningsManager({
                 {canDismissAll && (
                   <button
                     onClick={() => {
-                      dismissWarningGroup(group)
-                      onDismissAll?.(group)
+                      dismissWarningGroup(group);
+                      onDismissAll?.(group);
                     }}
                     className="px-3 py-1 text-xs font-medium text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200 border border-gray-300 dark:border-gray-600 rounded transition-colors"
                   >
@@ -118,11 +118,11 @@ export function TrackWarningsManager({
                 )}
               </div>
             </div>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }
 
 function getGroupTitle(group: string, t: (ko: string, en: string) => string): string {
@@ -136,6 +136,6 @@ function getGroupTitle(group: string, t: (ko: string, en: string) => string): st
     'error': t('오류', 'Errors'),
     'warning': t('경고', 'Warnings'),
     'suggestion': t('제안사항', 'Suggestions')
-  }
-  return groupTitles[group] || group
+  };
+  return groupTitles[group] || group;
 }

@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { Menu, X, Check } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+import { useState } from 'react';
+import { Menu, X, Check } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
 
 interface MobileFormNavProps {
   sections: Array<{
@@ -14,14 +14,14 @@ interface MobileFormNavProps {
   onSectionChange: (index: number) => void
 }
 
-export default function MobileFormNav({ 
-  sections, 
-  currentSection, 
-  completedSections, 
-  onSectionChange 
+export default function MobileFormNav({
+  sections,
+  currentSection,
+  completedSections,
+  onSectionChange
 }: MobileFormNavProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
+  const [isOpen, setIsOpen] = useState(false);
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
 
   return (
     <>
@@ -38,7 +38,7 @@ export default function MobileFormNav({
         isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
       }`}>
         {/* Backdrop */}
-        <div 
+        <div
           className="absolute inset-0 bg-black/50 transition-opacity"
           onClick={() => setIsOpen(false)}
         />
@@ -62,17 +62,17 @@ export default function MobileFormNav({
 
             <div className="space-y-2">
               {sections.map((section, idx) => {
-                const isCompleted = completedSections.includes(idx)
-                const isCurrent = idx === currentSection
-                const isAccessible = idx <= Math.max(...completedSections, currentSection)
+                const isCompleted = completedSections.includes(idx);
+                const isCurrent = idx === currentSection;
+                const isAccessible = idx <= Math.max(...completedSections, currentSection);
 
                 return (
                   <button
                     key={section.id}
                     onClick={() => {
                       if (isAccessible) {
-                        onSectionChange(idx)
-                        setIsOpen(false)
+                        onSectionChange(idx);
+                        setIsOpen(false);
                       }
                     }}
                     disabled={!isAccessible}
@@ -80,18 +80,18 @@ export default function MobileFormNav({
                       isCurrent
                         ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
                         : isCompleted
-                        ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30'
-                        : isAccessible
-                        ? 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                        : 'opacity-50 cursor-not-allowed'
+                          ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-900/30'
+                          : isAccessible
+                            ? 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                            : 'opacity-50 cursor-not-allowed'
                     }`}
                   >
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
                       isCompleted
                         ? 'bg-green-500 text-white'
                         : isCurrent
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-200 dark:bg-gray-700'
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-200 dark:bg-gray-700'
                     }`}>
                       {isCompleted ? <Check className="w-5 h-5" /> : section.icon}
                     </div>
@@ -100,16 +100,16 @@ export default function MobileFormNav({
                         {section.title[language as 'ko' | 'en']}
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
-                        {isCompleted 
+                        {isCompleted
                           ? (language === 'ko' ? '완료됨' : 'Completed')
                           : isCurrent
-                          ? (language === 'ko' ? '진행 중' : 'In Progress')
-                          : (language === 'ko' ? '대기 중' : 'Pending')
+                            ? (language === 'ko' ? '진행 중' : 'In Progress')
+                            : (language === 'ko' ? '대기 중' : 'Pending')
                         }
                       </p>
                     </div>
                   </button>
-                )
+                );
               })}
             </div>
 
@@ -124,7 +124,7 @@ export default function MobileFormNav({
                 </span>
               </div>
               <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                <div 
+                <div
                   className="h-full bg-purple-600 transition-all duration-300"
                   style={{ width: `${(completedSections.length / sections.length) * 100}%` }}
                 />
@@ -134,5 +134,5 @@ export default function MobileFormNav({
         </div>
       </div>
     </>
-  )
+  );
 }

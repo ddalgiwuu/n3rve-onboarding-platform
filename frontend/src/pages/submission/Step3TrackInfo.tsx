@@ -1,15 +1,15 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react'
-import { Plus, X, Music, Star, User, Edit3, Users, ChevronRight, ChevronDown, List, AlertTriangle, Info, Languages, AlertCircle, Volume2, BookOpen, Megaphone, CheckCircle, FileText, Tag, Target, Disc, Music2, Mic, UserCheck, Calendar, Search, GripVertical, Database, Share2, Heart, Link as LinkIcon, MapPin, Upload, Video } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { v4 as uuidv4 } from 'uuid'
-import { validateField, type QCValidationResult } from '@/utils/fugaQCValidation'
-import QCWarnings from '@/components/submission/QCWarnings'
-import EnhancedArtistModal from '@/components/submission/EnhancedArtistModal'
-import { DatePicker } from '@/components/DatePicker'
-import TranslationInput from '@/components/TranslationInput'
-import { instrumentList, searchInstruments, getInstrumentsByCategory, getInstrumentLabel } from '@/constants/instruments'
-import ValidatedInput from '@/components/ValidatedInput'
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { Plus, X, Music, Star, User, Edit3, Users, ChevronRight, ChevronDown, List, AlertTriangle, Info, Languages, AlertCircle, Volume2, BookOpen, Megaphone, CheckCircle, FileText, Tag, Target, Disc, Music2, Mic, UserCheck, Calendar, Search, GripVertical, Database, Share2, Heart, Link as LinkIcon, MapPin, Upload, Video } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { v4 as uuidv4 } from 'uuid';
+import { validateField, type QCValidationResult } from '@/utils/fugaQCValidation';
+import QCWarnings from '@/components/submission/QCWarnings';
+import EnhancedArtistModal from '@/components/submission/EnhancedArtistModal';
+import { DatePicker } from '@/components/DatePicker';
+import TranslationInput from '@/components/TranslationInput';
+import { instrumentList, searchInstruments, getInstrumentsByCategory, getInstrumentLabel } from '@/constants/instruments';
+import ValidatedInput from '@/components/ValidatedInput';
 
 interface ArtistIdentifier {
   type: string
@@ -30,23 +30,23 @@ interface Artist {
   youtubeChannelId?: string
 }
 
-type ContributorRole = 
-  | 'a&r_administrator' | 'a&r_manager' | 'actor' | 'adapter' | 'agent' | 'arranger' | 'art_direction' 
-  | 'artist_management' | 'assistant_composer' | 'assistant_conductor' | 'assistant_director' 
-  | 'assistant_mastering_engineer' | 'assistant_mixing_engineer' | 'assistant_producer' 
-  | 'assistant_recording_engineer' | 'assistant_sound_engineer' | 'author' | 'band' 
-  | 'camera_operator' | 'choir' | 'choir_conductor' | 'choreographer' | 'chorus' | 'chorus_master' 
-  | 'cinematographer' | 'co_producer' | 'composer' | 'computer_graphic_creator' | 'conductor' 
-  | 'contributing_artist' | 'costume_designer' | 'creative_director' | 'dancer' | 'director' 
-  | 'dj' | 'editor' | 'engineer' | 'ensemble' | 'executive_producer' | 'featuring' | 'gaffer' 
-  | 'guest_vocals' | 'immersive_audio_engineer' | 'immersive_mastering_engineer' 
-  | 'immersive_mixing_engineer' | 'key_grip' | 'librettist' | 'lighting_director' | 'liner_notes' 
-  | 'lyricist' | 'mastering_engineer' | 'mc' | 'mixer' | 'mixing_engineer' | 'musical_director' 
-  | 'narrator' | 'orchestra' | 'orchestrator' | 'performer' | 'playwright' | 'post_producer' 
-  | 'producer' | 'production_assistant' | 'programmer' | 'rap' | 'recording_engineer' | 'remixer' 
-  | 'sampled_artist' | 'set_designer' | 'soloist' | 'sound_editor' | 'sound_effects' 
-  | 'sound_engineer' | 'special_effects' | 'spoken_word' | 'strings_conductor' | 'studio_musician' 
-  | 'studio_personnel' | 'tape' | 'tonmeister' | 'translator' | 'video_director' | 'video_producer' 
+type ContributorRole =
+  | 'a&r_administrator' | 'a&r_manager' | 'actor' | 'adapter' | 'agent' | 'arranger' | 'art_direction'
+  | 'artist_management' | 'assistant_composer' | 'assistant_conductor' | 'assistant_director'
+  | 'assistant_mastering_engineer' | 'assistant_mixing_engineer' | 'assistant_producer'
+  | 'assistant_recording_engineer' | 'assistant_sound_engineer' | 'author' | 'band'
+  | 'camera_operator' | 'choir' | 'choir_conductor' | 'choreographer' | 'chorus' | 'chorus_master'
+  | 'cinematographer' | 'co_producer' | 'composer' | 'computer_graphic_creator' | 'conductor'
+  | 'contributing_artist' | 'costume_designer' | 'creative_director' | 'dancer' | 'director'
+  | 'dj' | 'editor' | 'engineer' | 'ensemble' | 'executive_producer' | 'featuring' | 'gaffer'
+  | 'guest_vocals' | 'immersive_audio_engineer' | 'immersive_mastering_engineer'
+  | 'immersive_mixing_engineer' | 'key_grip' | 'librettist' | 'lighting_director' | 'liner_notes'
+  | 'lyricist' | 'mastering_engineer' | 'mc' | 'mixer' | 'mixing_engineer' | 'musical_director'
+  | 'narrator' | 'orchestra' | 'orchestrator' | 'performer' | 'playwright' | 'post_producer'
+  | 'producer' | 'production_assistant' | 'programmer' | 'rap' | 'recording_engineer' | 'remixer'
+  | 'sampled_artist' | 'set_designer' | 'soloist' | 'sound_editor' | 'sound_effects'
+  | 'sound_engineer' | 'special_effects' | 'spoken_word' | 'strings_conductor' | 'studio_musician'
+  | 'studio_personnel' | 'tape' | 'tonmeister' | 'translator' | 'video_director' | 'video_producer'
   | 'visual_effects_technician' | 'vocal_effects' | 'vocal_engineer' | 'vocal_producer' | 'writer'
 
 interface ContributorTranslation {
@@ -162,7 +162,7 @@ const languageOptions = [
   { value: 'pt', label: 'Português (Portuguese)' },
   { value: 'pt-BR', label: 'Português Brasileiro (Brazilian Portuguese)' },
   { value: 'ru', label: 'Русский (Russian)' },
-  
+
   // Asian Languages
   { value: 'th', label: 'ไทย (Thai)' },
   { value: 'vi', label: 'Tiếng Việt (Vietnamese)' },
@@ -178,7 +178,7 @@ const languageOptions = [
   { value: 'he', label: 'עברית (Hebrew)' },
   { value: 'fa', label: 'فارسی (Persian)' },
   { value: 'tr', label: 'Türkçe (Turkish)' },
-  
+
   // European Languages
   { value: 'nl', label: 'Nederlands (Dutch)' },
   { value: 'pl', label: 'Polski (Polish)' },
@@ -199,7 +199,7 @@ const languageOptions = [
   { value: 'et', label: 'Eesti (Estonian)' },
   { value: 'lv', label: 'Latviešu (Latvian)' },
   { value: 'lt', label: 'Lietuvių (Lithuanian)' },
-  
+
   // Other Languages
   { value: 'ca', label: 'Català (Catalan)' },
   { value: 'eu', label: 'Euskera (Basque)' },
@@ -229,7 +229,7 @@ const languageOptions = [
   { value: 'mk', label: 'Македонски (Macedonian)' },
   { value: 'mt', label: 'Malti (Maltese)' },
   { value: 'lb', label: 'Lëtzebuergesch (Luxembourgish)' }
-]
+];
 
 const dspList = [
   '7Digital (via IIP-DDS)',
@@ -297,7 +297,7 @@ const dspList = [
   'レコチョク [HD] (Recochoku) (A)',
   'レコチョク [SD/MV] (Recochoku) (A)',
   '楽天 (Rakuten) (A)'
-]
+];
 
 const countryOptions = [
   { value: 'KR', label: '한국' },
@@ -312,7 +312,7 @@ const countryOptions = [
   { value: 'CA', label: '캐나다' },
   { value: 'AU', label: '호주' },
   { value: 'other', label: '기타' }
-]
+];
 
 const territoryData = {
   africa: {
@@ -345,7 +345,7 @@ const territoryData = {
       'AS', 'AQ', 'AU', 'BV', 'IO', 'CX', 'CC', 'CK', 'FJ', 'PF', 'TF', 'GU', 'HM', 'KI', 'MH', 'FM', 'NR', 'NC', 'NZ', 'NU', 'NF', 'MP', 'PW', 'PG', 'PN', 'WS', 'SB', 'GS', 'TK', 'TO', 'TV', 'UM', 'VU', 'WF'
     ]
   }
-}
+};
 
 const countryNames: { [key: string]: { en: string; ko: string } } = {
   // Africa
@@ -514,7 +514,7 @@ const countryNames: { [key: string]: { en: string; ko: string } } = {
   'UZ': { en: 'Uzbekistan', ko: '우즈베키스탄' },
   'VN': { en: 'Vietnam', ko: '베트남' },
   'YE': { en: 'Yemen', ko: '예멘' },
-  // Europe  
+  // Europe
   'AX': { en: 'Aland Islands', ko: '올란드 제도' },
   'AL': { en: 'Albania', ko: '알바니아' },
   'AD': { en: 'Andorra', ko: '안도라' },
@@ -602,91 +602,91 @@ const countryNames: { [key: string]: { en: string; ko: string } } = {
   'UM': { en: 'U.S. Minor Outlying Islands', ko: '미국령 군소 제도' },
   'VU': { en: 'Vanuatu', ko: '바누아투' },
   'WF': { en: 'Wallis and Futuna', ko: '왈리스 푸투나' }
-}
+};
 
 // Contributor Modal Component
-function ContributorModal({ 
-  isOpen, 
-  onClose, 
-  onSave 
-}: { 
+function ContributorModal({
+  isOpen,
+  onClose,
+  onSave
+}: {
   isOpen: boolean
   onClose: () => void
   onSave: (contributor: Contributor) => void
 }) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const [name, setName] = useState('')
-  const [translations, setTranslations] = useState<ContributorTranslation[]>([])
-  const [selectedRoles, setSelectedRoles] = useState<ContributorRole[]>([])
-  const [selectedInstruments, setSelectedInstruments] = useState<string[]>([])
-  const [instrumentSearch, setInstrumentSearch] = useState('')
-  const [roleSearch, setRoleSearch] = useState('')
-  const [appleMusicUrl, setAppleMusicUrl] = useState('')
-  const [spotifyUrl, setSpotifyUrl] = useState('')
-  const [showRoleSelector, setShowRoleSelector] = useState(false)
-  const [showInstrumentSelector, setShowInstrumentSelector] = useState(false)
-  const roleButtonRef = useRef<HTMLButtonElement>(null)
-  const instrumentButtonRef = useRef<HTMLButtonElement>(null)
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const [name, setName] = useState('');
+  const [translations, setTranslations] = useState<ContributorTranslation[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<ContributorRole[]>([]);
+  const [selectedInstruments, setSelectedInstruments] = useState<string[]>([]);
+  const [instrumentSearch, setInstrumentSearch] = useState('');
+  const [roleSearch, setRoleSearch] = useState('');
+  const [appleMusicUrl, setAppleMusicUrl] = useState('');
+  const [spotifyUrl, setSpotifyUrl] = useState('');
+  const [showRoleSelector, setShowRoleSelector] = useState(false);
+  const [showInstrumentSelector, setShowInstrumentSelector] = useState(false);
+  const roleButtonRef = useRef<HTMLButtonElement>(null);
+  const instrumentButtonRef = useRef<HTMLButtonElement>(null);
 
   // Check if the role requires instrument information
   const instrumentRoles: ContributorRole[] = [
-    'performer', 'studio_musician', 'soloist', 'orchestra', 'ensemble', 
+    'performer', 'studio_musician', 'soloist', 'orchestra', 'ensemble',
     'band', 'guest_vocals', 'contributing_artist'
-  ]
-  
-  const showInstrumentField = selectedRoles.some(role => instrumentRoles.includes(role))
-  
+  ];
+
+  const showInstrumentField = selectedRoles.some(role => instrumentRoles.includes(role));
+
   // Filter instruments based on search
   const filteredInstruments = useMemo(() => {
-    if (!instrumentSearch) return instrumentList
-    return searchInstruments(instrumentSearch)
-  }, [instrumentSearch])
-  
+    if (!instrumentSearch) return instrumentList;
+    return searchInstruments(instrumentSearch);
+  }, [instrumentSearch]);
+
   // Filter roles based on search
   const filteredRoles = useMemo(() => {
-    if (!roleSearch) return roleOptions
-    const searchLower = roleSearch.toLowerCase()
-    return roleOptions.filter(role => 
-      role.label.toLowerCase().includes(searchLower) || 
+    if (!roleSearch) return roleOptions;
+    const searchLower = roleSearch.toLowerCase();
+    return roleOptions.filter(role =>
+      role.label.toLowerCase().includes(searchLower) ||
       role.labelEn.toLowerCase().includes(searchLower) ||
       role.value.toLowerCase().includes(searchLower)
-    )
-  }, [roleSearch])
-  
+    );
+  }, [roleSearch]);
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (roleButtonRef.current && !roleButtonRef.current.contains(event.target as Node)) {
-        setShowRoleSelector(false)
+        setShowRoleSelector(false);
       }
       if (instrumentButtonRef.current && !instrumentButtonRef.current.contains(event.target as Node)) {
-        setShowInstrumentSelector(false)
+        setShowInstrumentSelector(false);
       }
-    }
-    
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleRoleToggle = (role: ContributorRole) => {
     if (selectedRoles.includes(role)) {
-      setSelectedRoles(selectedRoles.filter(r => r !== role))
+      setSelectedRoles(selectedRoles.filter(r => r !== role));
     } else {
-      setSelectedRoles([...selectedRoles, role])
+      setSelectedRoles([...selectedRoles, role]);
     }
-  }
+  };
 
   const handleInstrumentToggle = (instrument: string) => {
     if (selectedInstruments.includes(instrument)) {
-      setSelectedInstruments(selectedInstruments.filter(i => i !== instrument))
+      setSelectedInstruments(selectedInstruments.filter(i => i !== instrument));
     } else {
-      setSelectedInstruments([...selectedInstruments, instrument])
+      setSelectedInstruments([...selectedInstruments, instrument]);
     }
-  }
+  };
 
   const handleSave = () => {
-    if (!name.trim() || selectedRoles.length === 0) return
-    
+    if (!name.trim() || selectedRoles.length === 0) return;
+
     const contributor: Contributor = {
       id: uuidv4(),
       name: name.trim(),
@@ -695,19 +695,19 @@ function ContributorModal({
       instruments: selectedInstruments.length > 0 ? selectedInstruments : undefined,
       appleMusicUrl: appleMusicUrl.trim() || undefined,
       spotifyUrl: spotifyUrl.trim() || undefined
-    }
-    
-    onSave(contributor)
-    setName('')
-    setTranslations([])
-    setSelectedRoles([])
-    setSelectedInstruments([])
-    setAppleMusicUrl('')
-    setSpotifyUrl('')
-    onClose()
-  }
+    };
 
-  if (!isOpen) return null
+    onSave(contributor);
+    setName('');
+    setTranslations([]);
+    setSelectedRoles([]);
+    setSelectedInstruments([]);
+    setAppleMusicUrl('');
+    setSpotifyUrl('');
+    onClose();
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -725,7 +725,7 @@ function ContributorModal({
                 {language === 'ko' ? 'Spotify 정책 안내' : 'Spotify Policy Notice'}
               </p>
               <p className="text-xs text-yellow-700 dark:text-yellow-300">
-                {language === 'ko' 
+                {language === 'ko'
                   ? '작곡가와 작사가는 반드시 "이름 성" 형식으로 작성해야 합니다. (예: John Smith, 홍 길동)'
                   : 'Composers and Lyricists must be written in "First Last" format (e.g., John Smith)'
                 }
@@ -743,7 +743,7 @@ function ContributorModal({
                 {language === 'ko' ? '필수 기여자' : 'Required Contributors'}
               </p>
               <p className="text-xs text-blue-700 dark:text-blue-300">
-                {language === 'ko' 
+                {language === 'ko'
                   ? '작곡가(Composer), 작사가(Lyricist), 실연자(Performing Artist)는 반드시 등록해야 합니다.'
                   : 'Composer, Lyricist, and Performing Artist must be registered.'
                 }
@@ -763,13 +763,13 @@ function ContributorModal({
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              placeholder={language === 'ko' 
-                ? 'John Smith 또는 길동 홍' 
+              placeholder={language === 'ko'
+                ? 'John Smith 또는 길동 홍'
                 : 'John Smith or Gildong Hong'
               }
             />
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              {language === 'ko' 
+              {language === 'ko'
                 ? '* 작곡가/작사가는 "이름 성" 형식을 지켜주세요'
                 : '* Composers/Lyricists must use "First Last" format'
               }
@@ -785,7 +785,7 @@ function ContributorModal({
               <button
                 type="button"
                 onClick={() => {
-                  setTranslations([...translations, { language: '', name: '' }])
+                  setTranslations([...translations, { language: '', name: '' }]);
                 }}
                 className="text-sm text-n3rve-main hover:text-n3rve-700 dark:text-n3rve-accent2 dark:hover:text-n3rve-300"
               >
@@ -800,9 +800,9 @@ function ContributorModal({
                     <select
                       value={translation.language}
                       onChange={(e) => {
-                        const newTranslations = [...translations]
-                        newTranslations[index] = { ...translation, language: e.target.value }
-                        setTranslations(newTranslations)
+                        const newTranslations = [...translations];
+                        newTranslations[index] = { ...translation, language: e.target.value };
+                        setTranslations(newTranslations);
                       }}
                       className="w-1/3 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
                     >
@@ -832,9 +832,9 @@ function ContributorModal({
                       type="text"
                       value={translation.name}
                       onChange={(e) => {
-                        const newTranslations = [...translations]
-                        newTranslations[index] = { ...translation, name: e.target.value }
-                        setTranslations(newTranslations)
+                        const newTranslations = [...translations];
+                        newTranslations[index] = { ...translation, name: e.target.value };
+                        setTranslations(newTranslations);
                       }}
                       placeholder={language === 'ko' ? '번역된 이름' : 'Translated Name'}
                       className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
@@ -843,7 +843,7 @@ function ContributorModal({
                     <button
                       type="button"
                       onClick={() => {
-                        setTranslations(translations.filter((_, i) => i !== index))
+                        setTranslations(translations.filter((_, i) => i !== index));
                       }}
                       className="p-2 text-red-500 hover:text-red-700"
                     >
@@ -854,7 +854,7 @@ function ContributorModal({
               </div>
             ) : (
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                {language === 'ko' 
+                {language === 'ko'
                   ? '다양한 언어로 기여자 이름을 번역할 수 있습니다'
                   : 'You can translate contributor names into multiple languages'
                 }
@@ -874,14 +874,14 @@ function ContributorModal({
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-left flex items-center justify-between"
               >
                 <span>
-                  {selectedRoles.length === 0 
+                  {selectedRoles.length === 0
                     ? (language === 'ko' ? '역할을 선택하세요' : 'Select roles')
                     : `${selectedRoles.length}개 선택됨`
                   }
                 </span>
                 <ChevronRight className={`w-5 h-5 transition-transform ${showRoleSelector ? 'rotate-90' : ''}`} />
               </button>
-              
+
               {showRoleSelector && (
                 <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-96 overflow-hidden">
                   {/* Search Input */}
@@ -900,8 +900,8 @@ function ContributorModal({
                         <button
                           type="button"
                           onClick={(e) => {
-                            e.stopPropagation()
-                            setRoleSearch('')
+                            e.stopPropagation();
+                            setRoleSearch('');
                           }}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                         >
@@ -910,11 +910,11 @@ function ContributorModal({
                       )}
                     </div>
                     <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      {filteredRoles.length} {language === 'ko' ? '개 역할' : 'roles'} 
+                      {filteredRoles.length} {language === 'ko' ? '개 역할' : 'roles'}
                       {roleSearch && (language === 'ko' ? ' 검색됨' : ' found')}
                     </div>
                   </div>
-                  
+
                   <div className="p-4 space-y-4 overflow-y-auto max-h-80">
                     {filteredRoles.length === 0 ? (
                       <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
@@ -944,216 +944,216 @@ function ContributorModal({
                           </h4>
                           <div className="grid grid-cols-2 gap-2">
                             {roleOptions.filter(r => [
-                          'composer', 'lyricist', 'arranger', 'producer', 'co_producer', 
-                          'executive_producer', 'assistant_producer', 'post_producer', 'vocal_producer'
-                        ].includes(r.value)).map(role => (
-                          <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={selectedRoles.includes(role.value)}
-                              onChange={() => handleRoleToggle(role.value)}
-                              className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
-                            />
-                            <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+                              'composer', 'lyricist', 'arranger', 'producer', 'co_producer',
+                              'executive_producer', 'assistant_producer', 'post_producer', 'vocal_producer'
+                            ].includes(r.value)).map(role => (
+                              <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRoles.includes(role.value)}
+                                  onChange={() => handleRoleToggle(role.value)}
+                                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
+                                />
+                                <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
 
-                    {/* Engineering Roles */}
-                    <div>
-                      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
-                        {language === 'ko' ? '엔지니어링' : 'Engineering'}
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {roleOptions.filter(r => r.value.includes('engineer') || r.value === 'tonmeister').map(role => (
-                          <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={selectedRoles.includes(role.value)}
-                              onChange={() => handleRoleToggle(role.value)}
-                              className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
-                            />
-                            <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+                        {/* Engineering Roles */}
+                        <div>
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                            {language === 'ko' ? '엔지니어링' : 'Engineering'}
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {roleOptions.filter(r => r.value.includes('engineer') || r.value === 'tonmeister').map(role => (
+                              <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRoles.includes(role.value)}
+                                  onChange={() => handleRoleToggle(role.value)}
+                                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
+                                />
+                                <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
 
-                    {/* Performance Roles */}
-                    <div>
-                      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
-                        {language === 'ko' ? '연주/공연' : 'Performance'}
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {roleOptions.filter(r => [
-                          'performer', 'studio_musician', 'soloist', 'conductor', 'orchestra',
-                          'choir', 'chorus', 'ensemble', 'band', 'featuring', 'guest_vocals', 
-                          'contributing_artist', 'assistant_conductor', 'strings_conductor',
-                          'choir_conductor', 'chorus_master', 'musical_director'
-                        ].includes(r.value)).map(role => (
-                          <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={selectedRoles.includes(role.value)}
-                              onChange={() => handleRoleToggle(role.value)}
-                              className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
-                            />
-                            <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* Vocal Roles */}
-                    <div>
-                      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
-                        {language === 'ko' ? '보컬' : 'Vocals'}
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {roleOptions.filter(r => [
-                          'rap', 'mc', 'spoken_word', 'narrator', 'vocal_effects'
-                        ].includes(r.value)).map(role => (
-                          <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={selectedRoles.includes(role.value)}
-                              onChange={() => handleRoleToggle(role.value)}
-                              className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
-                            />
-                            <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* Writing Roles */}
-                    <div>
-                      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
-                        {language === 'ko' ? '작가/저자' : 'Writing'}
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {roleOptions.filter(r => [
-                          'orchestrator', 'adapter', 'writer', 'author', 'playwright', 
-                          'librettist', 'translator', 'liner_notes'
-                        ].includes(r.value)).map(role => (
-                          <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={selectedRoles.includes(role.value)}
-                              onChange={() => handleRoleToggle(role.value)}
-                              className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
-                            />
-                            <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* Technical Roles */}
-                    <div>
-                      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
-                        {language === 'ko' ? '기술' : 'Technical'}
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {roleOptions.filter(r => [
-                          'programmer', 'dj', 'remixer', 'sampled_artist', 'mixer', 'editor',
-                          'sound_editor', 'sound_effects', 'special_effects', 'computer_graphic_creator',
-                          'visual_effects_technician'
-                        ].includes(r.value)).map(role => (
-                          <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={selectedRoles.includes(role.value)}
-                              onChange={() => handleRoleToggle(role.value)}
-                              className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
-                            />
-                            <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* Video/Film Roles */}
-                    <div>
-                      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
-                        {language === 'ko' ? '비디오/영화' : 'Video/Film'}
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {roleOptions.filter(r => [
-                          'director', 'assistant_director', 'creative_director', 'art_direction',
-                          'video_director', 'video_producer', 'cinematographer', 'camera_operator',
-                          'lighting_director', 'gaffer', 'key_grip'
-                        ].includes(r.value)).map(role => (
-                          <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={selectedRoles.includes(role.value)}
-                              onChange={() => handleRoleToggle(role.value)}
-                              className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
-                            />
-                            <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* Other Creative Roles */}
-                    <div>
-                      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
-                        {language === 'ko' ? '기타 창작' : 'Other Creative'}
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {roleOptions.filter(r => [
-                          'choreographer', 'dancer', 'actor', 'costume_designer', 'set_designer'
-                        ].includes(r.value)).map(role => (
-                          <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={selectedRoles.includes(role.value)}
-                              onChange={() => handleRoleToggle(role.value)}
-                              className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
-                            />
-                            <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* Management/Admin Roles */}
-                    <div>
-                      <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
-                        {language === 'ko' ? '관리/행정' : 'Management/Admin'}
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {roleOptions.filter(r => [
-                          'a&r_administrator', 'a&r_manager', 'artist_management', 'agent',
-                          'production_assistant', 'studio_personnel'
-                        ].includes(r.value)).map(role => (
-                          <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={selectedRoles.includes(role.value)}
-                              onChange={() => handleRoleToggle(role.value)}
-                              className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
-                            />
-                            <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
+                        {/* Performance Roles */}
+                        <div>
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                            {language === 'ko' ? '연주/공연' : 'Performance'}
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {roleOptions.filter(r => [
+                              'performer', 'studio_musician', 'soloist', 'conductor', 'orchestra',
+                              'choir', 'chorus', 'ensemble', 'band', 'featuring', 'guest_vocals',
+                              'contributing_artist', 'assistant_conductor', 'strings_conductor',
+                              'choir_conductor', 'chorus_master', 'musical_director'
+                            ].includes(r.value)).map(role => (
+                              <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRoles.includes(role.value)}
+                                  onChange={() => handleRoleToggle(role.value)}
+                                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
+                                />
+                                <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Vocal Roles */}
+                        <div>
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                            {language === 'ko' ? '보컬' : 'Vocals'}
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {roleOptions.filter(r => [
+                              'rap', 'mc', 'spoken_word', 'narrator', 'vocal_effects'
+                            ].includes(r.value)).map(role => (
+                              <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRoles.includes(role.value)}
+                                  onChange={() => handleRoleToggle(role.value)}
+                                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
+                                />
+                                <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Writing Roles */}
+                        <div>
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                            {language === 'ko' ? '작가/저자' : 'Writing'}
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {roleOptions.filter(r => [
+                              'orchestrator', 'adapter', 'writer', 'author', 'playwright',
+                              'librettist', 'translator', 'liner_notes'
+                            ].includes(r.value)).map(role => (
+                              <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRoles.includes(role.value)}
+                                  onChange={() => handleRoleToggle(role.value)}
+                                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
+                                />
+                                <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Technical Roles */}
+                        <div>
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                            {language === 'ko' ? '기술' : 'Technical'}
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {roleOptions.filter(r => [
+                              'programmer', 'dj', 'remixer', 'sampled_artist', 'mixer', 'editor',
+                              'sound_editor', 'sound_effects', 'special_effects', 'computer_graphic_creator',
+                              'visual_effects_technician'
+                            ].includes(r.value)).map(role => (
+                              <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRoles.includes(role.value)}
+                                  onChange={() => handleRoleToggle(role.value)}
+                                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
+                                />
+                                <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Video/Film Roles */}
+                        <div>
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                            {language === 'ko' ? '비디오/영화' : 'Video/Film'}
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {roleOptions.filter(r => [
+                              'director', 'assistant_director', 'creative_director', 'art_direction',
+                              'video_director', 'video_producer', 'cinematographer', 'camera_operator',
+                              'lighting_director', 'gaffer', 'key_grip'
+                            ].includes(r.value)).map(role => (
+                              <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRoles.includes(role.value)}
+                                  onChange={() => handleRoleToggle(role.value)}
+                                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
+                                />
+                                <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Other Creative Roles */}
+                        <div>
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                            {language === 'ko' ? '기타 창작' : 'Other Creative'}
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {roleOptions.filter(r => [
+                              'choreographer', 'dancer', 'actor', 'costume_designer', 'set_designer'
+                            ].includes(r.value)).map(role => (
+                              <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRoles.includes(role.value)}
+                                  onChange={() => handleRoleToggle(role.value)}
+                                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
+                                />
+                                <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Management/Admin Roles */}
+                        <div>
+                          <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">
+                            {language === 'ko' ? '관리/행정' : 'Management/Admin'}
+                          </h4>
+                          <div className="grid grid-cols-2 gap-2">
+                            {roleOptions.filter(r => [
+                              'a&r_administrator', 'a&r_manager', 'artist_management', 'agent',
+                              'production_assistant', 'studio_personnel'
+                            ].includes(r.value)).map(role => (
+                              <label key={role.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedRoles.includes(role.value)}
+                                  onChange={() => handleRoleToggle(role.value)}
+                                  className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
+                                />
+                                <span className="text-sm">{language === 'ko' ? role.label : role.labelEn}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
                       </>
                     )}
                   </div>
                 </div>
               )}
             </div>
-            
+
             {/* Selected Roles Display */}
             {selectedRoles.length > 0 && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {selectedRoles.map(role => {
-                  const roleOption = roleOptions.find(r => r.value === role)
+                  const roleOption = roleOptions.find(r => r.value === role);
                   return (
                     <span key={role} className="inline-flex items-center gap-1 px-3 py-1 bg-n3rve-100 dark:bg-n3rve-900/30 text-n3rve-800 dark:text-n3rve-200 rounded-full text-sm">
                       {language === 'ko' ? roleOption?.label : roleOption?.labelEn}
@@ -1164,7 +1164,7 @@ function ContributorModal({
                         <X className="w-3 h-3" />
                       </button>
                     </span>
-                  )
+                  );
                 })}
               </div>
             )}
@@ -1172,83 +1172,83 @@ function ContributorModal({
 
           {/* Instruments Selection */}
           <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {language === 'ko' ? '악기' : 'Instruments'}
-              </label>
-              <div className="relative" ref={instrumentButtonRef}>
-                <button
-                  type="button"
-                  onClick={() => setShowInstrumentSelector(!showInstrumentSelector)}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-left flex items-center justify-between"
-                >
-                  <span>
-                    {selectedInstruments.length === 0 
-                      ? (language === 'ko' ? '악기를 선택하세요' : 'Select instruments')
-                      : `${selectedInstruments.length}개 선택됨`
-                    }
-                  </span>
-                  <ChevronRight className={`w-5 h-5 transition-transform ${showInstrumentSelector ? 'rotate-90' : ''}`} />
-                </button>
-                
-                {showInstrumentSelector && (
-                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-96 overflow-y-auto">
-                    <div className="p-3">
-                      {/* Search */}
-                      <div className="relative mb-3">
-                        <input
-                          type="text"
-                          value={instrumentSearch}
-                          onChange={(e) => setInstrumentSearch(e.target.value)}
-                          className="w-full px-3 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
-                          placeholder={language === 'ko' ? '악기 검색...' : 'Search instruments...'}
-                        />
-                        <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
-                      </div>
-                      
-                      {/* Instrument List */}
-                      <div className="grid grid-cols-2 gap-1 max-h-80 overflow-y-auto">
-                        {filteredInstruments.map((instrument) => (
-                          <label key={instrument.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
-                            <input
-                              type="checkbox"
-                              checked={selectedInstruments.includes(instrument.value)}
-                              onChange={() => handleInstrumentToggle(instrument.value)}
-                              className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
-                            />
-                            <span className="text-sm">{language === 'ko' ? instrument.label : instrument.labelEn}</span>
-                          </label>
-                        ))}
-                      </div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              {language === 'ko' ? '악기' : 'Instruments'}
+            </label>
+            <div className="relative" ref={instrumentButtonRef}>
+              <button
+                type="button"
+                onClick={() => setShowInstrumentSelector(!showInstrumentSelector)}
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-left flex items-center justify-between"
+              >
+                <span>
+                  {selectedInstruments.length === 0
+                    ? (language === 'ko' ? '악기를 선택하세요' : 'Select instruments')
+                    : `${selectedInstruments.length}개 선택됨`
+                  }
+                </span>
+                <ChevronRight className={`w-5 h-5 transition-transform ${showInstrumentSelector ? 'rotate-90' : ''}`} />
+              </button>
+
+              {showInstrumentSelector && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-96 overflow-y-auto">
+                  <div className="p-3">
+                    {/* Search */}
+                    <div className="relative mb-3">
+                      <input
+                        type="text"
+                        value={instrumentSearch}
+                        onChange={(e) => setInstrumentSearch(e.target.value)}
+                        className="w-full px-3 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm"
+                        placeholder={language === 'ko' ? '악기 검색...' : 'Search instruments...'}
+                      />
+                      <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+                    </div>
+
+                    {/* Instrument List */}
+                    <div className="grid grid-cols-2 gap-1 max-h-80 overflow-y-auto">
+                      {filteredInstruments.map((instrument) => (
+                        <label key={instrument.value} className="flex items-center gap-2 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 p-2 rounded">
+                          <input
+                            type="checkbox"
+                            checked={selectedInstruments.includes(instrument.value)}
+                            onChange={() => handleInstrumentToggle(instrument.value)}
+                            className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500"
+                          />
+                          <span className="text-sm">{language === 'ko' ? instrument.label : instrument.labelEn}</span>
+                        </label>
+                      ))}
                     </div>
                   </div>
-                )}
-              </div>
-              
-              {/* Selected Instruments Display */}
-              {selectedInstruments.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {selectedInstruments.map(instrumentValue => (
-                    <span key={instrumentValue} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-sm">
-                      <Music2 className="w-3 h-3" />
-                      {getInstrumentLabel(instrumentValue, language)}
-                      <button
-                        onClick={() => handleInstrumentToggle(instrumentValue)}
-                        className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
                 </div>
               )}
             </div>
+
+            {/* Selected Instruments Display */}
+            {selectedInstruments.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {selectedInstruments.map(instrumentValue => (
+                  <span key={instrumentValue} className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200 rounded-full text-sm">
+                    <Music2 className="w-3 h-3" />
+                    {getInstrumentLabel(instrumentValue, language)}
+                    <button
+                      onClick={() => handleInstrumentToggle(instrumentValue)}
+                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Platform Links */}
           <div className="space-y-4">
             <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">
               {language === 'ko' ? '플랫폼 링크 (선택사항)' : 'Platform Links (Optional)'}
             </h4>
-            
+
             {/* Apple Music Link */}
             <div>
               <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
@@ -1269,7 +1269,7 @@ function ContributorModal({
                 />
               </div>
             </div>
-            
+
             {/* Spotify Link */}
             <div>
               <label className="block text-sm text-gray-600 dark:text-gray-400 mb-1">
@@ -1313,12 +1313,12 @@ function ContributorModal({
         <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={() => {
-              setName('')
-              setSelectedRoles([])
-              setSelectedInstruments([])
-              setAppleMusicUrl('')
-              setSpotifyUrl('')
-              onClose()
+              setName('');
+              setSelectedRoles([]);
+              setSelectedInstruments([]);
+              setAppleMusicUrl('');
+              setSpotifyUrl('');
+              onClose();
             }}
             className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
           >
@@ -1334,7 +1334,7 @@ function ContributorModal({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Instrument list
@@ -1397,7 +1397,7 @@ const instrumentList = [
   'Viol', 'Viola', 'Viola D\'Amore', 'Viola Da Gamba', 'Violin', 'Violoncello',
   'Violone', 'Vocals', 'Vocoder', 'Washboard', 'Whistle', 'Wood Block', 'Wood Flute',
   'Wurlitzer', 'Xylophone', 'Xyloimba', 'Zarb', 'Zither'
-].sort()
+].sort();
 
 // Role options definition
 const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] = [
@@ -1411,7 +1411,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'assistant_producer', label: '어시스턴트 프로듀서', labelEn: 'Assistant Producer' },
   { value: 'post_producer', label: '포스트 프로듀서', labelEn: 'Post-Producer' },
   { value: 'vocal_producer', label: '보컬 프로듀서', labelEn: 'Vocal Producer' },
-  
+
   // Engineering Roles
   { value: 'recording_engineer', label: '레코딩 엔지니어', labelEn: 'Recording Engineer' },
   { value: 'mixing_engineer', label: '믹싱 엔지니어', labelEn: 'Mixing Engineer' },
@@ -1427,7 +1427,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'immersive_mixing_engineer', label: '입체음향 믹싱 엔지니어', labelEn: 'Immersive Mixing Engineer' },
   { value: 'immersive_mastering_engineer', label: '입체음향 마스터링 엔지니어', labelEn: 'Immersive Mastering Engineer' },
   { value: 'tonmeister', label: '톤마이스터', labelEn: 'Tonmeister' },
-  
+
   // Performance Roles
   { value: 'performer', label: '연주자', labelEn: 'Performer' },
   { value: 'studio_musician', label: '스튜디오 뮤지션', labelEn: 'Studio Musician' },
@@ -1441,14 +1441,14 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'featuring', label: '피처링', labelEn: 'Featuring' },
   { value: 'guest_vocals', label: '객원 보컬', labelEn: 'Guest Vocals' },
   { value: 'contributing_artist', label: '참여 아티스트', labelEn: 'Contributing Artist' },
-  
+
   // Vocal/Rap Roles
   { value: 'rap', label: '랩', labelEn: 'Rap' },
   { value: 'mc', label: 'MC', labelEn: 'MC' },
   { value: 'narrator', label: '내레이터', labelEn: 'Narrator' },
   { value: 'spoken_word', label: '스포큰 워드', labelEn: 'Spoken Word' },
   { value: 'vocal_effects', label: '보컬 이펙트', labelEn: 'Vocal Effects' },
-  
+
   // Direction Roles
   { value: 'director', label: '디렉터', labelEn: 'Director' },
   { value: 'assistant_director', label: '어시스턴트 디렉터', labelEn: 'Assistant Director' },
@@ -1459,7 +1459,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'chorus_master', label: '합창 지휘자', labelEn: 'Chorus Master' },
   { value: 'strings_conductor', label: '현악 지휘자', labelEn: 'Strings Conductor' },
   { value: 'assistant_conductor', label: '어시스턴트 지휘자', labelEn: 'Assistant Conductor' },
-  
+
   // Composition/Arrangement Roles
   { value: 'assistant_composer', label: '어시스턴트 작곡가', labelEn: 'Assistant Composer' },
   { value: 'orchestrator', label: '오케스트레이터', labelEn: 'Orchestrator' },
@@ -1470,7 +1470,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'librettist', label: '대본 작가', labelEn: 'Librettist' },
   { value: 'translator', label: '번역가', labelEn: 'Translator' },
   { value: 'liner_notes', label: '라이너 노트', labelEn: 'Liner Notes' },
-  
+
   // Technical Roles
   { value: 'programmer', label: '프로그래머', labelEn: 'Programmer' },
   { value: 'dj', label: 'DJ', labelEn: 'DJ' },
@@ -1483,7 +1483,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'special_effects', label: '특수 효과', labelEn: 'Special Effects' },
   { value: 'computer_graphic_creator', label: '컴퓨터 그래픽 크리에이터', labelEn: 'Computer Graphic Creator' },
   { value: 'visual_effects_technician', label: '시각 효과 기술자', labelEn: 'Visual Effects Technician' },
-  
+
   // Video/Film Roles
   { value: 'video_director', label: '비디오 디렉터', labelEn: 'Video Director' },
   { value: 'video_producer', label: '비디오 프로듀서', labelEn: 'Video Producer' },
@@ -1492,14 +1492,14 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'lighting_director', label: '조명 감독', labelEn: 'Lighting Director' },
   { value: 'gaffer', label: '조명 기사', labelEn: 'Gaffer' },
   { value: 'key_grip', label: '키 그립', labelEn: 'Key Grip' },
-  
+
   // Other Creative Roles
   { value: 'choreographer', label: '안무가', labelEn: 'Choreographer' },
   { value: 'dancer', label: '댄서', labelEn: 'Dancer' },
   { value: 'actor', label: '배우', labelEn: 'Actor' },
   { value: 'costume_designer', label: '의상 디자이너', labelEn: 'Costume Designer' },
   { value: 'set_designer', label: '세트 디자이너', labelEn: 'Set Designer' },
-  
+
   // Management/Admin Roles
   { value: 'a&r_administrator', label: 'A&R 관리자', labelEn: 'A&R Administrator' },
   { value: 'a&r_manager', label: 'A&R 매니저', labelEn: 'A&R Manager' },
@@ -1507,25 +1507,25 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
   { value: 'agent', label: '에이전트', labelEn: 'Agent' },
   { value: 'production_assistant', label: '프로덕션 어시스턴트', labelEn: 'Production Assistant' },
   { value: 'studio_personnel', label: '스튜디오 스태프', labelEn: 'Studio Personnel' },
-  
+
   // Legacy
   { value: 'tape', label: '테이프', labelEn: 'Tape' }
-]
+];
 
 // Common timezones for music release
 export default function Step3TrackInfo({ data, onNext }: Props) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  
-  console.log('Step3TrackInfo mounted, data:', data)
-  
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+
+  console.log('Step3TrackInfo mounted, data:', data);
+
   // Get initial tracks from previous data
   const getInitialTracks = (): Track[] => {
     // If Step3 data exists (returning to this step), use it
     if (data?.tracks?.tracks && data.tracks.tracks.length > 0) {
-      return data.tracks.tracks
+      return data.tracks.tracks;
     }
-    
+
     // Otherwise create initial track without artists
     // Always return at least one track
     return [{
@@ -1536,19 +1536,19 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
       featuringArtists: [],
       contributors: [],
       isTitle: true
-    }]
-  }
+    }];
+  };
 
-  const [tracks, setTracks] = useState<Track[]>(getInitialTracks)
-  const [selectedTrackId, setSelectedTrackId] = useState<string>(data?.tracks?.selectedTrackId || tracks[0]?.id || '')
-  const [activeTab, setActiveTab] = useState<'metadata' | 'marketing'>(data?.tracks?.activeTab || 'metadata')
-  const [metadataSubTab, setMetadataSubTab] = useState<'product' | 'asset'>(data?.tracks?.metadataSubTab || 'product')
-  const [showArtistModal, setShowArtistModal] = useState(false)
-  const [showContributorModal, setShowContributorModal] = useState(false)
-  const [artistModalType, setArtistModalType] = useState<'main' | 'featuring'>('main')
-  const [editingArtist, setEditingArtist] = useState<Artist | null>(null)
-  const [editingContributor, setEditingContributor] = useState<Contributor | null>(null)
-  const [keywordInput, setKeywordInput] = useState('')
+  const [tracks, setTracks] = useState<Track[]>(getInitialTracks);
+  const [selectedTrackId, setSelectedTrackId] = useState<string>(data?.tracks?.selectedTrackId || tracks[0]?.id || '');
+  const [activeTab, setActiveTab] = useState<'metadata' | 'marketing'>(data?.tracks?.activeTab || 'metadata');
+  const [metadataSubTab, setMetadataSubTab] = useState<'product' | 'asset'>(data?.tracks?.metadataSubTab || 'product');
+  const [showArtistModal, setShowArtistModal] = useState(false);
+  const [showContributorModal, setShowContributorModal] = useState(false);
+  const [artistModalType, setArtistModalType] = useState<'main' | 'featuring'>('main');
+  const [editingArtist, setEditingArtist] = useState<Artist | null>(null);
+  const [editingContributor, setEditingContributor] = useState<Contributor | null>(null);
+  const [keywordInput, setKeywordInput] = useState('');
 
   // Initialize product metadata
   const [productMetadata, setProductMetadata] = useState({
@@ -1582,14 +1582,14 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
     additionalNotes: data?.tracks?.productMetadata?.additionalNotes || data?.productMetadata?.additionalNotes || '',
     // UPC
     upc: data?.tracks?.productMetadata?.upc || data?.productMetadata?.upc || ''
-  })
+  });
 
-  const [showDSPModal, setShowDSPModal] = useState(false)
-  const [editingDSP, setEditingDSP] = useState<string | null>(null)
-  const [showDspTerritoryModal, setShowDspTerritoryModal] = useState(false)
-  const [selectedDsps, setSelectedDsps] = useState<string[]>([])
-  const [dspSearchQuery, setDspSearchQuery] = useState('')
-  const [tempDspTerritories, setTempDspTerritories] = useState<Record<string, string[]>>({})
+  const [showDSPModal, setShowDSPModal] = useState(false);
+  const [editingDSP, setEditingDSP] = useState<string | null>(null);
+  const [showDspTerritoryModal, setShowDspTerritoryModal] = useState(false);
+  const [selectedDsps, setSelectedDsps] = useState<string[]>([]);
+  const [dspSearchQuery, setDspSearchQuery] = useState('');
+  const [tempDspTerritories, setTempDspTerritories] = useState<Record<string, string[]>>({});
 
   const [marketing, setMarketing] = useState({
     albumDescription: data?.tracks?.marketing?.albumDescription || data?.marketing?.albumDescription || '',
@@ -1646,27 +1646,27 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
     twitterUrl: data?.tracks?.marketing?.twitterUrl || data?.marketing?.twitterUrl || '',
     websiteUrl: data?.tracks?.marketing?.websiteUrl || data?.marketing?.websiteUrl || '',
     youtubeChannelId: data?.tracks?.marketing?.youtubeChannelId || data?.marketing?.youtubeChannelId || ''
-  })
+  });
 
   // Drag and drop state
-  const [draggedTrackId, setDraggedTrackId] = useState<string | null>(null)
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
-  
-  // Artist drag and drop state
-  const [draggedArtist, setDraggedArtist] = useState<{ artist: Artist; type: 'main' | 'featuring' } | null>(null)
-  const [dragOverArtistType, setDragOverArtistType] = useState<'main' | 'featuring' | null>(null)
-  
-  // Instrument search state
-  const [instrumentSearch, setInstrumentSearch] = useState('')
+  const [draggedTrackId, setDraggedTrackId] = useState<string | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
-  const selectedTrack = tracks.find(t => t.id === selectedTrackId)
+  // Artist drag and drop state
+  const [draggedArtist, setDraggedArtist] = useState<{ artist: Artist; type: 'main' | 'featuring' } | null>(null);
+  const [dragOverArtistType, setDragOverArtistType] = useState<'main' | 'featuring' | null>(null);
+
+  // Instrument search state
+  const [instrumentSearch, setInstrumentSearch] = useState('');
+
+  const selectedTrack = tracks.find(t => t.id === selectedTrackId);
 
   // Ensure selected track ID is valid
   useEffect(() => {
     if (!tracks.find(t => t.id === selectedTrackId) && tracks.length > 0) {
-      setSelectedTrackId(tracks[0].id)
+      setSelectedTrackId(tracks[0].id);
     }
-  }, [tracks, selectedTrackId])
+  }, [tracks, selectedTrackId]);
 
   // Track management functions
   const addTrack = () => {
@@ -1678,303 +1678,303 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
       featuringArtists: [],
       contributors: [],
       isTitle: false
-    }
-    setTracks([...tracks, newTrack])
-    setSelectedTrackId(newTrack.id)
-  }
+    };
+    setTracks([...tracks, newTrack]);
+    setSelectedTrackId(newTrack.id);
+  };
 
   const removeTrack = (trackId: string) => {
     if (tracks.length > 1) {
-      const updatedTracks = tracks.filter(t => t.id !== trackId)
+      const updatedTracks = tracks.filter(t => t.id !== trackId);
       // 타이틀곡을 삭제해도 자동으로 다른 트랙을 타이틀곡으로 설정하지 않음
-      setTracks(updatedTracks)
+      setTracks(updatedTracks);
       if (selectedTrackId === trackId) {
-        setSelectedTrackId(updatedTracks[0].id)
+        setSelectedTrackId(updatedTracks[0].id);
       }
     }
-  }
+  };
 
   const updateTrack = (trackId: string, updates: Partial<Track>) => {
-    setTracks(tracks.map(t => t.id === trackId ? { ...t, ...updates } : t))
-  }
+    setTracks(tracks.map(t => t.id === trackId ? { ...t, ...updates } : t));
+  };
 
   const setTitleTrack = (trackId: string) => {
-    setTracks(tracks.map(t => ({ ...t, isTitle: t.id === trackId })))
-  }
+    setTracks(tracks.map(t => ({ ...t, isTitle: t.id === trackId })));
+  };
 
   // Drag and drop handlers
   const handleDragStart = (e: React.DragEvent, trackId: string) => {
-    setDraggedTrackId(trackId)
-    e.dataTransfer.effectAllowed = 'move'
-  }
+    setDraggedTrackId(trackId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
 
   const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    setDragOverIndex(index)
-  }
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverIndex(index);
+  };
 
   const handleDragLeave = () => {
-    setDragOverIndex(null)
-  }
+    setDragOverIndex(null);
+  };
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
-    e.preventDefault()
-    
-    if (!draggedTrackId) return
-    
-    const draggedIndex = tracks.findIndex(t => t.id === draggedTrackId)
+    e.preventDefault();
+
+    if (!draggedTrackId) return;
+
+    const draggedIndex = tracks.findIndex(t => t.id === draggedTrackId);
     if (draggedIndex === -1 || draggedIndex === dropIndex) {
-      setDraggedTrackId(null)
-      setDragOverIndex(null)
-      return
+      setDraggedTrackId(null);
+      setDragOverIndex(null);
+      return;
     }
-    
+
     // Reorder tracks
-    const newTracks = [...tracks]
-    const [draggedTrack] = newTracks.splice(draggedIndex, 1)
-    newTracks.splice(dropIndex, 0, draggedTrack)
-    
-    setTracks(newTracks)
-    setDraggedTrackId(null)
-    setDragOverIndex(null)
-  }
+    const newTracks = [...tracks];
+    const [draggedTrack] = newTracks.splice(draggedIndex, 1);
+    newTracks.splice(dropIndex, 0, draggedTrack);
+
+    setTracks(newTracks);
+    setDraggedTrackId(null);
+    setDragOverIndex(null);
+  };
 
   const handleDragEnd = () => {
-    setDraggedTrackId(null)
-    setDragOverIndex(null)
-  }
+    setDraggedTrackId(null);
+    setDragOverIndex(null);
+  };
 
   // Artist drag and drop handlers
   const handleArtistDragStart = (e: React.DragEvent, artist: Artist, type: 'main' | 'featuring') => {
-    setDraggedArtist({ artist, type })
-    e.dataTransfer.effectAllowed = 'move'
-  }
+    setDraggedArtist({ artist, type });
+    e.dataTransfer.effectAllowed = 'move';
+  };
 
   const handleArtistDragOver = (e: React.DragEvent, type: 'main' | 'featuring') => {
-    e.preventDefault()
-    e.dataTransfer.dropEffect = 'move'
-    setDragOverArtistType(type)
-  }
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setDragOverArtistType(type);
+  };
 
   const handleArtistDragLeave = () => {
-    setDragOverArtistType(null)
-  }
+    setDragOverArtistType(null);
+  };
 
   const handleArtistDrop = (e: React.DragEvent, dropType: 'main' | 'featuring') => {
-    e.preventDefault()
-    
-    if (!draggedArtist || !selectedTrack) return
-    
-    const { artist, type: dragType } = draggedArtist
-    
+    e.preventDefault();
+
+    if (!draggedArtist || !selectedTrack) return;
+
+    const { artist, type: dragType } = draggedArtist;
+
     // If dropping on the same type, do nothing
     if (dragType === dropType) {
-      setDraggedArtist(null)
-      setDragOverArtistType(null)
-      return
+      setDraggedArtist(null);
+      setDragOverArtistType(null);
+      return;
     }
-    
+
     // Remove from original location
     if (dragType === 'main') {
       updateTrack(selectedTrack.id, {
         artists: selectedTrack.artists.filter(a => a.id !== artist.id)
-      })
+      });
     } else {
       updateTrack(selectedTrack.id, {
         featuringArtists: selectedTrack.featuringArtists.filter(a => a.id !== artist.id)
-      })
+      });
     }
-    
+
     // Add to new location
     if (dropType === 'main') {
       updateTrack(selectedTrack.id, {
         artists: [...selectedTrack.artists, artist]
-      })
+      });
     } else {
       updateTrack(selectedTrack.id, {
         featuringArtists: [...selectedTrack.featuringArtists, artist]
-      })
+      });
     }
-    
-    setDraggedArtist(null)
-    setDragOverArtistType(null)
-  }
+
+    setDraggedArtist(null);
+    setDragOverArtistType(null);
+  };
 
   const handleArtistDragEnd = () => {
-    setDraggedArtist(null)
-    setDragOverArtistType(null)
-  }
+    setDraggedArtist(null);
+    setDragOverArtistType(null);
+  };
 
   // Artist management
   const addArtistToTrack = (artist: Artist) => {
-    if (!selectedTrack) return
+    if (!selectedTrack) return;
 
     if (artistModalType === 'main') {
       updateTrack(selectedTrack.id, {
         artists: [...selectedTrack.artists, artist]
-      })
+      });
     } else {
       updateTrack(selectedTrack.id, {
         featuringArtists: [...selectedTrack.featuringArtists, artist]
-      })
+      });
     }
-  }
+  };
 
   const removeArtistFromTrack = (artistId: string, type: 'main' | 'featuring') => {
-    if (!selectedTrack) return
+    if (!selectedTrack) return;
 
     if (type === 'main') {
       updateTrack(selectedTrack.id, {
         artists: selectedTrack.artists.filter(a => a.id !== artistId)
-      })
+      });
     } else {
       updateTrack(selectedTrack.id, {
         featuringArtists: selectedTrack.featuringArtists.filter(a => a.id !== artistId)
-      })
+      });
     }
-  }
+  };
 
   // Contributor management
   const addContributorToTrack = (contributor: Contributor) => {
-    if (!selectedTrack) return
+    if (!selectedTrack) return;
 
     updateTrack(selectedTrack.id, {
       contributors: [...selectedTrack.contributors, contributor]
-    })
-  }
+    });
+  };
 
   const removeContributorFromTrack = (contributorId: string) => {
-    if (!selectedTrack) return
+    if (!selectedTrack) return;
 
     updateTrack(selectedTrack.id, {
       contributors: selectedTrack.contributors.filter(c => c.id !== contributorId)
-    })
-  }
+    });
+  };
 
   // QC Validation
   const qcValidationResults = useMemo(() => {
-    const results: QCValidationResult[] = []
-    
+    const results: QCValidationResult[] = [];
+
     tracks.forEach(track => {
       if (track.titleKo) {
-        results.push(...validateField('trackTitleKo', track.titleKo))
+        results.push(...validateField('trackTitleKo', track.titleKo));
       }
       if (track.titleEn) {
-        results.push(...validateField('trackTitleEn', track.titleEn))
+        results.push(...validateField('trackTitleEn', track.titleEn));
       }
-      
+
       track.artists.forEach(artist => {
         if (artist.primaryName) {
-          results.push(...validateField('artistNameKo', artist.primaryName))
+          results.push(...validateField('artistNameKo', artist.primaryName));
         }
         if (artist.translatedName) {
-          results.push(...validateField('artistNameEn', artist.translatedName))
+          results.push(...validateField('artistNameEn', artist.translatedName));
         }
-      })
-    })
-    
-    return results
-  }, [tracks])
+      });
+    });
+
+    return results;
+  }, [tracks]);
 
   const validateAndHandleSubmit = () => {
-    console.log('validateAndHandleSubmit called')
-    console.log('tracks:', tracks)
-    console.log('productMetadata:', productMetadata)
-    
+    console.log('validateAndHandleSubmit called');
+    console.log('tracks:', tracks);
+    console.log('productMetadata:', productMetadata);
+
     // Required field validation
-    const errors: string[] = []
-    let firstErrorElement: { ref: string; message: string } | null = null
-    
+    const errors: string[] = [];
+    const firstErrorElement: { ref: string; message: string } | null = null;
+
     // Check each track
     tracks.forEach((track, index) => {
       if (!track.titleKo && !track.titleEn) {
-        errors.push(`트랙 ${index + 1}: 제목을 입력해주세요`)
+        errors.push(`트랙 ${index + 1}: 제목을 입력해주세요`);
         if (!firstErrorElement) {
           // Focus on the track list
-          const trackElement = document.getElementById(`track-${track.id}`)
+          const trackElement = document.getElementById(`track-${track.id}`);
           if (trackElement) {
-            trackElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-            trackElement.classList.add('ring-2', 'ring-red-500', 'ring-offset-2')
+            trackElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            trackElement.classList.add('ring-2', 'ring-red-500', 'ring-offset-2');
             setTimeout(() => {
-              trackElement.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2')
-            }, 3000)
+              trackElement.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2');
+            }, 3000);
           }
         }
       }
-      
+
       if (track.artists.length === 0) {
-        errors.push(`트랙 ${index + 1}: 메인 아티스트를 추가해주세요`)
+        errors.push(`트랙 ${index + 1}: 메인 아티스트를 추가해주세요`);
       }
-    })
-    
+    });
+
     // Check product metadata required fields
     if (!productMetadata.consumerReleaseDate) {
-      errors.push('Consumer Release Date를 입력해주세요')
+      errors.push('Consumer Release Date를 입력해주세요');
       if (!firstErrorElement) {
-        const element = document.getElementById('consumer-release-date')
+        const element = document.getElementById('consumer-release-date');
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          element.classList.add('ring-2', 'ring-red-500')
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-2', 'ring-red-500');
           setTimeout(() => {
-            element.classList.remove('ring-2', 'ring-red-500')
-          }, 3000)
+            element.classList.remove('ring-2', 'ring-red-500');
+          }, 3000);
         }
       }
     }
-    
+
     if (!productMetadata.displayArtists) {
-      errors.push('Display Artists를 입력해주세요')
+      errors.push('Display Artists를 입력해주세요');
       if (!firstErrorElement) {
-        const element = document.getElementById('display-artists')
+        const element = document.getElementById('display-artists');
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          element.classList.add('ring-2', 'ring-red-500')
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-2', 'ring-red-500');
           setTimeout(() => {
-            element.classList.remove('ring-2', 'ring-red-500')
-          }, 3000)
+            element.classList.remove('ring-2', 'ring-red-500');
+          }, 3000);
         }
       }
     }
-    
+
     if (!productMetadata.copyrightYear || !productMetadata.copyrightText) {
-      errors.push('ⓒ Copyright 정보를 입력해주세요')
+      errors.push('ⓒ Copyright 정보를 입력해주세요');
       if (!firstErrorElement) {
-        const element = document.getElementById('copyright-section')
+        const element = document.getElementById('copyright-section');
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          element.classList.add('ring-2', 'ring-red-500')
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-2', 'ring-red-500');
           setTimeout(() => {
-            element.classList.remove('ring-2', 'ring-red-500')
-          }, 3000)
+            element.classList.remove('ring-2', 'ring-red-500');
+          }, 3000);
         }
       }
     }
-    
+
     if (!productMetadata.phonogramCopyrightYear || !productMetadata.phonogramCopyrightText) {
-      errors.push('℗ Copyright 정보를 입력해주세요')
+      errors.push('℗ Copyright 정보를 입력해주세요');
       if (!firstErrorElement) {
-        const element = document.getElementById('phonogram-section')
+        const element = document.getElementById('phonogram-section');
         if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          element.classList.add('ring-2', 'ring-red-500')
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          element.classList.add('ring-2', 'ring-red-500');
           setTimeout(() => {
-            element.classList.remove('ring-2', 'ring-red-500')
-          }, 3000)
+            element.classList.remove('ring-2', 'ring-red-500');
+          }, 3000);
         }
       }
     }
-    
+
     // Show error toast if validation fails
     if (errors.length > 0) {
-      console.log('Validation errors:', errors)
-      const errorMessage = language === 'ko' 
+      console.log('Validation errors:', errors);
+      const errorMessage = language === 'ko'
         ? `필수 입력 항목을 확인해주세요:\n${errors.join('\n')}`
-        : `Please fill in required fields:\n${errors.join('\n')}`
-      
+        : `Please fill in required fields:\n${errors.join('\n')}`;
+
       // Show error in a prominent way
-      const errorDiv = document.createElement('div')
-      errorDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg max-w-md'
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg max-w-md';
       errorDiv.innerHTML = `
         <div class="flex items-start gap-3">
           <svg class="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1985,17 +1985,17 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
             <div class="text-sm">${errors[0]}</div>
           </div>
         </div>
-      `
-      document.body.appendChild(errorDiv)
+      `;
+      document.body.appendChild(errorDiv);
       setTimeout(() => {
-        errorDiv.remove()
-      }, 5000)
-      
-      return
+        errorDiv.remove();
+      }, 5000);
+
+      return;
     }
-    
-    console.log('Validation passed, calling onNext')
-    
+
+    console.log('Validation passed, calling onNext');
+
     // If validation passes, proceed
     onNext({
       tracks,
@@ -2004,17 +2004,17 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
       selectedTrackId,
       activeTab,
       metadataSubTab
-    })
-  }
-  
+    });
+  };
+
   const handleSubmit = () => {
-    validateAndHandleSubmit()
-  }
+    validateAndHandleSubmit();
+  };
 
   return (
     <form onSubmit={(e) => {
-      e.preventDefault()
-      handleSubmit()
+      e.preventDefault();
+      handleSubmit();
     }} className="h-full">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
@@ -2025,7 +2025,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
             {language === 'ko' ? '앨범에 포함될 트랙 정보를 입력해주세요' : 'Enter information for tracks in your album'}
           </p>
         </div>
-        
+
         <div className="space-y-6">
 
           {/* Track List Section */}
@@ -2043,15 +2043,15 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 </p>
               </div>
             </div>
-            
+
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
               <div className="flex items-center justify-between mb-6">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <Star className="w-4 h-4 text-yellow-500" />
                     <span>
-                      {language === 'ko' 
-                        ? '클릭하여 타이틀곡 설정' 
+                      {language === 'ko'
+                        ? '클릭하여 타이틀곡 설정'
                         : 'Click to set title track'
                       }
                     </span>
@@ -2059,8 +2059,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                     <GripVertical className="w-4 h-4" />
                     <span>
-                      {language === 'ko' 
-                        ? '드래그하여 순서 변경' 
+                      {language === 'ko'
+                        ? '드래그하여 순서 변경'
                         : 'Drag to reorder'
                       }
                     </span>
@@ -2088,10 +2088,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     onDrop={(e) => handleDrop(e, index)}
                     onDragEnd={handleDragEnd}
                     onClick={() => {
-                      setSelectedTrackId(track.id)
+                      setSelectedTrackId(track.id);
                       // 트랙 클릭 시 Asset Level 탭으로 전환
-                      setActiveTab('metadata')
-                      setMetadataSubTab('asset')
+                      setActiveTab('metadata');
+                      setMetadataSubTab('asset');
                     }}
                     className={`group relative flex items-center gap-4 p-4 rounded-xl cursor-pointer transition-all ${
                       selectedTrackId === track.id
@@ -2110,12 +2110,12 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     {selectedTrackId === track.id && (
                       <div className="absolute inset-0 bg-gradient-to-r from-n3rve-500/5 to-n3rve-accent/5 rounded-xl" />
                     )}
-                    
+
                     <div className="relative flex items-center gap-3 flex-1">
                       <div className="cursor-move text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
                         <GripVertical className="w-5 h-5" />
                       </div>
-                      
+
                       <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold ${
                         track.trackType === 'music_video'
                           ? 'bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 text-purple-600 dark:text-purple-400'
@@ -2127,27 +2127,27 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                           String(index + 1).padStart(2, '0')
                         )}
                       </div>
-                      
+
                       <button
                         type="button"
                         onClick={(e) => {
-                          e.stopPropagation()
+                          e.stopPropagation();
                           const updatedTracks = tracks.map(t => ({
                             ...t,
                             isTitle: t.id === track.id
-                          }))
-                          setTracks(updatedTracks)
+                          }));
+                          setTracks(updatedTracks);
                         }}
                         className={`p-2 rounded-lg transition-all ${
-                          track.isTitle 
-                            ? 'text-yellow-500 bg-yellow-100 dark:bg-yellow-900/30 shadow-sm' 
+                          track.isTitle
+                            ? 'text-yellow-500 bg-yellow-100 dark:bg-yellow-900/30 shadow-sm'
                             : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-50 dark:hover:bg-yellow-900/20'
                         }`}
                         title={language === 'ko' ? '타이틀곡으로 설정' : 'Set as title track'}
                       >
                         <Star className={`w-5 h-5 ${track.isTitle ? 'fill-current drop-shadow-sm' : ''}`} />
                       </button>
-                      
+
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <div className="font-semibold text-gray-900 dark:text-white truncate">
@@ -2166,12 +2166,12 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         </div>
                       </div>
                     </div>
-                    
+
                     {tracks.length > 1 && (
                       <button
                         onClick={(e) => {
-                          e.stopPropagation()
-                          removeTrack(track.id)
+                          e.stopPropagation();
+                          removeTrack(track.id);
                         }}
                         className="opacity-0 group-hover:opacity-100 p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
                       >
@@ -2252,1338 +2252,114 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     <div className="flex items-center justify-center gap-2">
                       <Music2 className="w-4 h-4" />
                       {language === 'ko' ? '에셋 레벨' : 'Asset Level'}
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Product Level Content */}
-          {metadataSubTab === 'product' && (
-            <div className="space-y-6">
-              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                <div className="flex items-start gap-2">
-                  <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-blue-800 dark:text-blue-200">
-                    <p className="font-medium mb-1">{t('프로덕트 레벨 설정에 대한 설명', 'Product level configuration description')}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Release Information */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-n3rve-main" />
-                  {t('릴리즈 정보', 'Release Information')}
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Consumer Release Date <span className="text-red-500">*</span>
-                    </label>
-                    <DatePicker
-                      id="consumer-release-date"
-                      value={productMetadata.consumerReleaseDate}
-                      onChange={(newDate) => {
-                        setProductMetadata({ 
-                          ...productMetadata, 
-                          consumerReleaseDate: newDate,
-                          // Auto-sync original release date for new releases
-                          originalReleaseDate: productMetadata.originalReleaseDate || newDate
-                        })
-                      }}
-                      placeholder="Select release date"
-                    />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {language === 'ko' 
-                        ? '소비자에게 공개되는 발매일 (신곡의 경우 실제 발매일)'
-                        : 'Release date visible to consumers (actual release date for new music)'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('원본 발매일', 'Original Release Date')}
-                    </label>
-                    <DatePicker
-                      value={productMetadata.originalReleaseDate}
-                      onChange={(newDate) => setProductMetadata({ ...productMetadata, originalReleaseDate: newDate })}
-                      placeholder="Select original release date"
-                      maxDate={productMetadata.consumerReleaseDate || undefined}
-                    />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {language === 'ko' 
-                        ? '최초 발매된 날짜 (재발매/리마스터의 경우 과거 발매일)'
-                        : 'Original recording/release date (past date for re-releases/remasters)'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('발매 시간대', 'Release Timezone')}
-                    </label>
-                    <select
-                      value={productMetadata.selectedTimezone || 'Asia/Seoul'}
-                      onChange={(e) => setProductMetadata({ ...productMetadata, selectedTimezone: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    >
-                      <option value="Pacific/Auckland">{t('뉴질랜드', 'New Zealand')} (UTC+12/+13)</option>
-                      <option value="Asia/Seoul">{t('서울', 'Seoul')} (UTC+9)</option>
-                      <option value="Asia/Tokyo">{t('도쿄', 'Tokyo')} (UTC+9)</option>
-                      <option value="Asia/Shanghai">{t('베이징', 'Beijing')} (UTC+8)</option>
-                      <option value="Asia/Singapore">{t('싱가포르', 'Singapore')} (UTC+8)</option>
-                      <option value="Europe/London">{t('런던', 'London')} (UTC+0/+1)</option>
-                      <option value="Europe/Paris">{t('파리', 'Paris')} (UTC+1/+2)</option>
-                      <option value="Europe/Berlin">{t('베를린', 'Berlin')} (UTC+1/+2)</option>
-                      <option value="America/New_York">{t('뉴욕', 'New York')} (UTC-5/-4)</option>
-                      <option value="America/Chicago">{t('시카고', 'Chicago')} (UTC-6/-5)</option>
-                      <option value="America/Denver">{t('덴버', 'Denver')} (UTC-7/-6)</option>
-                      <option value="America/Los_Angeles">{t('로스앤젤레스', 'Los Angeles')} (UTC-8/-7)</option>
-                    </select>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {language === 'ko' 
-                        ? '발매 시간대를 선택하세요. 선택한 시간대의 0시에 음원이 공개됩니다.'
-                        : 'Select the timezone for release. Music will be available at midnight in the selected timezone.'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('발매 시간', 'Release Time')} ({productMetadata.selectedTimezone === 'Asia/Seoul' ? 'KST' : 
-                        productMetadata.selectedTimezone === 'Asia/Tokyo' ? 'JST' :
-                        productMetadata.selectedTimezone === 'America/New_York' ? 'EST' :
-                        productMetadata.selectedTimezone === 'America/Los_Angeles' ? 'PST' :
-                        productMetadata.selectedTimezone === 'Europe/London' ? 'GMT' :
-                        productMetadata.selectedTimezone === 'Europe/Paris' ? 'CET' :
-                        'Local'})
-                    </label>
-                    <div className="space-y-3">
-                      {!productMetadata.releaseTime ? (
-                        <div 
-                          onClick={() => setProductMetadata({ ...productMetadata, releaseTime: '12:00 AM' })}
-                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-n3rve-accent2 dark:hover:border-n3rve-500 transition-colors"
-                        >
-                          {language === 'ko' ? '시간을 입력해주세요' : 'Please enter time'}
-                        </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <select
-                            value={productMetadata.releaseTime.split(':')[0]}
-                            onChange={(e) => {
-                              const hour = e.target.value
-                              const minute = productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00'
-                              const period = productMetadata.releaseTime.split(' ')[1] || 'AM'
-                              const newTime = `${hour}:${minute} ${period}`
-                              setProductMetadata({ ...productMetadata, releaseTime: newTime })
-                            }}
-                            className="flex-1 px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                          >
-                            {[...Array(12)].map((_, i) => {
-                              const hour = i + 1
-                              return (
-                                <option key={hour} value={hour.toString().padStart(2, '0')}>
-                                  {hour}
-                                </option>
-                              )
-                            })}
-                          </select>
-                          <span className="flex items-center text-gray-500 dark:text-gray-400">:</span>
-                          <select
-                            value={productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00'}
-                            onChange={(e) => {
-                              const hour = productMetadata.releaseTime.split(':')[0]
-                              const minute = e.target.value
-                              const period = productMetadata.releaseTime.split(' ')[1] || 'AM'
-                              const newTime = `${hour}:${minute} ${period}`
-                              setProductMetadata({ ...productMetadata, releaseTime: newTime })
-                            }}
-                            className="flex-1 px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                          >
-                            {[...Array(12)].map((_, i) => {
-                              const minute = i * 5
-                              return (
-                                <option key={minute} value={minute.toString().padStart(2, '0')}>
-                                  {minute.toString().padStart(2, '0')}
-                                </option>
-                              )
-                            })}
-                          </select>
-                          <select
-                            value={productMetadata.releaseTime.split(' ')[1] || 'AM'}
-                            onChange={(e) => {
-                              const hour = productMetadata.releaseTime.split(':')[0]
-                              const minute = productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00'
-                              const period = e.target.value
-                              const newTime = `${hour}:${minute} ${period}`
-                              setProductMetadata({ ...productMetadata, releaseTime: newTime })
-                            }}
-                            className="px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                          >
-                            <option value="AM">AM</option>
-                            <option value="PM">PM</option>
-                          </select>
-                          <button
-                            type="button"
-                            onClick={() => setProductMetadata({ ...productMetadata, releaseTime: '' })}
-                            className="px-3 py-3 text-gray-500 hover:text-red-500 transition-colors"
-                            title={language === 'ko' ? '시간 지우기' : 'Clear time'}
-                          >
-                            <X className="w-5 h-5" />
-                          </button>
-                        </div>
-                      )}
-                      
-                      {/* Time conversion and display */}
-                      {productMetadata.releaseTime && productMetadata.consumerReleaseDate && (
-                        <div className="bg-gradient-to-r from-n3rve-50 to-blue-50 dark:from-n3rve-900/20 dark:to-blue-900/20 border border-n3rve-200 dark:border-n3rve-700 rounded-xl p-4">
-                          <div className="text-center space-y-3">
-                            <div className="text-sm font-semibold text-n3rve-800 dark:text-n3rve-200 mb-3">
-                              {language === 'ko' ? '🚀 발매 예정 시간' : '🚀 Scheduled Release Time'}
-                            </div>
-                            
-                            {/* Selected Timezone Display */}
-                            <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
-                                {(() => {
-                                  const timezone = productMetadata.selectedTimezone || 'Asia/Seoul'
-                                  const timezoneLabels = {
-                                    'Pacific/Auckland': language === 'ko' ? '뉴질랜드 시간' : 'New Zealand Time',
-                                    'Asia/Seoul': language === 'ko' ? '한국 시간 (KST)' : 'Korea Standard Time (KST)',
-                                    'Asia/Tokyo': language === 'ko' ? '일본 시간 (JST)' : 'Japan Standard Time (JST)',
-                                    'Asia/Shanghai': language === 'ko' ? '베이징 시간 (CST)' : 'Beijing Time (CST)',
-                                    'Asia/Singapore': language === 'ko' ? '싱가포르 시간 (SGT)' : 'Singapore Time (SGT)',
-                                    'Europe/London': language === 'ko' ? '런던 시간 (GMT)' : 'London Time (GMT)',
-                                    'Europe/Paris': language === 'ko' ? '파리 시간 (CET)' : 'Paris Time (CET)',
-                                    'Europe/Berlin': language === 'ko' ? '베를린 시간 (CET)' : 'Berlin Time (CET)',
-                                    'America/New_York': language === 'ko' ? '뉴욕 시간 (EST)' : 'New York Time (EST)',
-                                    'America/Chicago': language === 'ko' ? '시카고 시간 (CST)' : 'Chicago Time (CST)',
-                                    'America/Denver': language === 'ko' ? '덴버 시간 (MST)' : 'Denver Time (MST)',
-                                    'America/Los_Angeles': language === 'ko' ? '로스앤젤레스 시간 (PST)' : 'Los Angeles Time (PST)'
-                                  }
-                                  return timezoneLabels[timezone] || timezone
-                                })()}
-                              </div>
-                              <div className="text-lg font-bold text-gray-900 dark:text-white">
-                                {(() => {
-                                  const date = new Date(productMetadata.consumerReleaseDate)
-                                  const options: Intl.DateTimeFormatOptions = { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: 'numeric',
-                                    weekday: 'long'
-                                  }
-                                  const dateStr = language === 'ko' 
-                                    ? date.toLocaleDateString('ko-KR', options)
-                                    : date.toLocaleDateString('en-US', options)
-                                  
-                                  // Convert AM/PM to Korean if needed
-                                  const timeStr = language === 'ko' 
-                                    ? productMetadata.releaseTime.replace('AM', '오전').replace('PM', '오후')
-                                    : productMetadata.releaseTime
-                                    
-                                  return `${dateStr} ${timeStr}`
-                                })()}
-                              </div>
-                            </div>
-
-                            {/* Arrow */}
-                            <div className="flex justify-center">
-                              <div className="text-n3rve-500 dark:text-n3rve-accent2">
-                                ↓
-                              </div>
-                            </div>
-
-                            {/* UTC Display */}
-                            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-                              <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
-                                {language === 'ko' ? '국제 표준시 (UTC)' : 'Coordinated Universal Time (UTC)'}
-                              </div>
-                              <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
-                                {(() => {
-                                  try {
-                                    const [hour12, minute] = productMetadata.releaseTime.split(':')
-                                    const period = productMetadata.releaseTime.split(' ')[1]
-                                    let hour24 = parseInt(hour12)
-                                    if (period === 'PM' && hour24 !== 12) hour24 += 12
-                                    if (period === 'AM' && hour24 === 12) hour24 = 0
-                                    
-                                    // Get timezone offset based on selected timezone
-                                    const timezone = productMetadata.selectedTimezone || 'Asia/Seoul'
-                                    const timezoneOffsets: Record<string, number> = {
-                                      'Pacific/Auckland': 12, // UTC+12 (standard), +13 (daylight)
-                                      'Asia/Seoul': 9,        // UTC+9
-                                      'Asia/Tokyo': 9,        // UTC+9
-                                      'Asia/Shanghai': 8,     // UTC+8
-                                      'Asia/Singapore': 8,    // UTC+8
-                                      'Europe/London': 0,     // UTC+0 (standard), +1 (daylight)
-                                      'Europe/Paris': 1,      // UTC+1 (standard), +2 (daylight)
-                                      'Europe/Berlin': 1,     // UTC+1 (standard), +2 (daylight)
-                                      'America/New_York': -5, // UTC-5 (standard), -4 (daylight)
-                                      'America/Chicago': -6,  // UTC-6 (standard), -5 (daylight)
-                                      'America/Denver': -7,   // UTC-7 (standard), -6 (daylight)
-                                      'America/Los_Angeles': -8 // UTC-8 (standard), -7 (daylight)
-                                    }
-                                    
-                                    const offset = timezoneOffsets[timezone] || 9 // Default to KST
-                                    const localDate = new Date(`${productMetadata.consumerReleaseDate}T${hour24.toString().padStart(2, '0')}:${minute.split(' ')[0]}:00`)
-                                    const utcDate = new Date(localDate.getTime() - (offset * 60 * 60 * 1000))
-                                    
-                                    if (language === 'ko') {
-                                      const dateOptions = { 
-                                        year: 'numeric', 
-                                        month: 'long', 
-                                        day: 'numeric',
-                                        weekday: 'long',
-                                        timeZone: 'UTC'
-                                      }
-                                      const timeOptions = {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true,
-                                        timeZone: 'UTC'
-                                      }
-                                      const dateStr = utcDate.toLocaleDateString('ko-KR', dateOptions)
-                                      const timeStr = utcDate.toLocaleTimeString('en-US', timeOptions)
-                                      const timeKor = timeStr.replace('AM', '오전').replace('PM', '오후')
-                                      return `${dateStr} ${timeKor} UTC`
-                                    } else {
-                                      const options = { 
-                                        year: 'numeric', 
-                                        month: 'long', 
-                                        day: 'numeric',
-                                        weekday: 'long',
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        hour12: true,
-                                        timeZone: 'UTC'
-                                      }
-                                      return utcDate.toLocaleDateString('en-US', options) + ' UTC'
-                                    }
-                                  } catch {
-                                    return 'Invalid time'
-                                  }
-                                })()}
-                              </div>
-                            </div>
-
-                            <div className="text-xs text-n3rve-main dark:text-n3rve-300 mt-2">
-                              {language === 'ko' 
-                                ? '💡 전 세계 음원 플랫폼에서 동시 발매됩니다'
-                                : '💡 Will be released simultaneously on all global platforms'
-                              }
-                            </div>
-                            
-                            {/* Timed Release Warning */}
-                            <div className="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3">
-                              <div className="flex items-start gap-2">
-                                <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                                <div className="text-xs text-amber-800 dark:text-amber-200 flex-1">
-                                  <div className="font-semibold mb-1 text-left">
-                                    {language === 'ko' 
-                                      ? '⚠️ Timed Release 미지원 플랫폼 안내'
-                                      : '⚠️ Timed Release Limitations'
-                                    }
-                                  </div>
-                                  <div className="space-y-1 text-left">
-                                    <p>
-                                      {language === 'ko' 
-                                        ? '일부 음원 플랫폼 (예: Apple Music)은 시간 설정 기능을 지원하지 않습니다.'
-                                        : 'Some DSPs (e.g., Apple Music) don\'t support timed release feature.'
-                                      }
-                                    </p>
-                                    <p>
-                                      {language === 'ko' 
-                                        ? '이러한 플랫폼에서는 발매일 각 지역 시간대의 자정(00:00)에 공개됩니다.'
-                                        : 'On these platforms, your release will go live at midnight (00:00) in each local timezone on the release date.'
-                                      }
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )}
                     </div>
-                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                      {language === 'ko' 
-                        ? '한국 표준시(KST) 기준으로 발매 시간을 설정하세요 (선택사항)'
-                        : 'Set release time in Korea Standard Time (KST) - optional'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Display Artists <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="display-artists"
-                      value={productMetadata.displayArtists || ''}
-                      onChange={(e) => setProductMetadata({ ...productMetadata, displayArtists: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'ko' ? "표시될 아티스트명" : "Display artist names"}
-                    />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {language === 'ko' 
-                        ? '음원 플랫폼에서 표시될 아티스트명'
-                        : 'Artist name to be displayed on streaming platforms'
-                      }
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      UPC {language === 'ko' ? '(선택사항)' : '(Optional)'}
-                    </label>
-                    <input
-                      type="text"
-                      value={productMetadata.upc || ''}
-                      onChange={(e) => setProductMetadata({ ...productMetadata, upc: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'ko' ? "UPC 코드 (12자리 숫자)" : "UPC code (12-digit number)"}
-                    />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {language === 'ko' 
-                        ? '이미 발매된 앨범의 UPC가 있는 경우 입력하세요'
-                        : 'Enter if you have a UPC for an already released album'
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Explicit Content */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <AlertCircle className="w-5 h-5 text-n3rve-main" />
-                  {language === 'ko' ? '음원 내용 등급' : 'Explicit Content'}
-                </h4>
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="explicitContent"
-                      value="false"
-                      checked={!productMetadata.explicitContent}
-                      onChange={() => setProductMetadata({ ...productMetadata, explicitContent: false })}
-                      className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
-                    />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {language === 'ko' ? '전체 이용가' : 'Not Explicit'}
-                    </span>
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="explicitContent"
-                      value="true"
-                      checked={productMetadata.explicitContent === true}
-                      onChange={() => setProductMetadata({ ...productMetadata, explicitContent: true })}
-                      className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
-                    />
-                    <span className="text-gray-700 dark:text-gray-300">
-                      {language === 'ko' ? '19세 이용가' : 'Explicit'}
-                    </span>
-                  </label>
-                </div>
-                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  {language === 'ko' 
-                    ? '욕설, 성적 내용 등 19세 미만 부적절한 내용 포함 여부'
-                    : 'Contains profanity, sexual content, or other inappropriate content for minors'
-                  }
-                </p>
-              </div>
-
-              {/* Copyrights */}
-              <div id="copyright-section" className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  {language === 'en' ? 'Copyrights' : '저작권 (Copyrights)'}
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'en' ? 'ⓒ Copyright Year' : 'ⓒ 저작권 연도'} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={productMetadata.copyrightYear}
-                      onChange={(e) => setProductMetadata({ ...productMetadata, copyrightYear: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'en' ? 'e.g., 2025' : '예: 2025'}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'en' ? 'ⓒ Copyright Text' : 'ⓒ 저작권 텍스트'} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={productMetadata.copyrightText}
-                      onChange={(e) => setProductMetadata({ ...productMetadata, copyrightText: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'en' ? 'e.g., Label Name' : '예: Label Name'}
-                    />
-                  </div>
-                  <div id="phonogram-section">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'en' ? '℗ Copyright Year' : '℗ 저작권 연도'} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={productMetadata.phonogramCopyrightYear}
-                      onChange={(e) => setProductMetadata({ ...productMetadata, phonogramCopyrightYear: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'en' ? 'e.g., 2025' : '예: 2025'}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'en' ? '℗ Copyright Text' : '℗ 저작권 텍스트'} <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={productMetadata.phonogramCopyrightText}
-                      onChange={(e) => setProductMetadata({ ...productMetadata, phonogramCopyrightText: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'en' ? 'e.g., Label Name' : '예: Label Name'}
-                    />
-                  </div>
-                </div>
-              </div>
-
-
-              {/* Metadata Language */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Languages className="w-5 h-5 text-n3rve-main" />
-                  {t('메타데이터 언어', 'Metadata Language')}
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {t('음원 정보를 입력할 언어를 선택하세요', 'Select the language for entering music metadata')}
-                </p>
-                <select
-                  value={productMetadata.metadataLanguage || ''}
-                  onChange={(e) => setProductMetadata({ ...productMetadata, metadataLanguage: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                >
-                  <option value="">{t('언어 선택', 'Select Language')}</option>
-                  {languageOptions.map(option => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Territory Settings */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Target className="w-5 h-5 text-n3rve-main" />
-                  {t('유통 지역', 'Territory')}
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {t('음원이 유통될 지역을 선택하세요', 'Select the territories where your music will be distributed')}
-                </p>
-                
-                {/* Territory Type Selection */}
-                <div className="space-y-4">
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        value="world"
-                        checked={(productMetadata.territoryType || 'world') === 'world'}
-                        onChange={(e) => setProductMetadata({ 
-                          ...productMetadata, 
-                          territoryType: 'world' as const,
-                          territories: []
-                        })}
-                        className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
-                      />
-                      <span className="text-gray-700 dark:text-gray-300">{t('전 세계', 'Worldwide')}</span>
-                    </label>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="radio"
-                        value="selected"
-                        checked={productMetadata.territoryType === 'selected'}
-                        onChange={(e) => setProductMetadata({ 
-                          ...productMetadata, 
-                          territoryType: 'selected' as const
-                        })}
-                        className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
-                      />
-                      <span className="text-gray-700 dark:text-gray-300">{t('선택한 지역', 'Selected Territories')}</span>
-                    </label>
-                  </div>
-
-                  {/* Territory Selection */}
-                  {productMetadata.territoryType === 'selected' && (
-                    <div className="space-y-6 mt-4">
-                      {/* Quick Actions */}
-                      <div className="flex flex-wrap gap-2">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const allCountries = Object.values(territoryData).flatMap(c => c.countries)
-                            setProductMetadata({
-                              ...productMetadata,
-                              territories: allCountries
-                            })
-                          }}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
-                        >
-                          {language === 'ko' ? '전 세계 선택' : 'Select All Countries'}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setProductMetadata({
-                              ...productMetadata,
-                              territories: []
-                            })
-                          }}
-                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-colors"
-                        >
-                          {language === 'ko' ? '모두 해제' : 'Deselect All'}
-                        </button>
-                      </div>
-
-                      {/* Continent Cards */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {Object.entries(territoryData).map(([continentKey, continent]) => {
-                          const selectedCount = continent.countries.filter(c => 
-                            productMetadata.territories?.includes(c)
-                          ).length
-                          const totalCount = continent.countries.length
-                          const isAllSelected = selectedCount === totalCount
-                          
-                          return (
-                            <div key={continentKey} className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700 hover:border-n3rve-300 dark:hover:border-n3rve-700 transition-colors">
-                              <div className="mb-3">
-                                <div className="flex items-center justify-between mb-2">
-                                  <h5 className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    {t(`track.territory.${continentKey}`, continentKey.charAt(0).toUpperCase() + continentKey.slice(1))}
-                                  </h5>
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const currentTerritories = productMetadata.territories || []
-                                      
-                                      if (isAllSelected) {
-                                        const newTerritories = currentTerritories.filter(
-                                          (c: string) => !continent.countries.includes(c)
-                                        )
-                                        setProductMetadata({
-                                          ...productMetadata,
-                                          territories: newTerritories
-                                        })
-                                      } else {
-                                        const newTerritories = [...new Set([
-                                          ...currentTerritories,
-                                          ...continent.countries
-                                        ])]
-                                        setProductMetadata({
-                                          ...productMetadata,
-                                          territories: newTerritories
-                                        })
-                                      }
-                                    }}
-                                    className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                                      isAllSelected 
-                                        ? 'bg-n3rve-100 text-n3rve-700 hover:bg-n3rve-200 dark:bg-n3rve-900 dark:text-n3rve-300' 
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
-                                    }`}
-                                  >
-                                    {isAllSelected ? '✓ ' : ''}{language === 'ko' ? '전체' : 'All'}
-                                  </button>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                    <div 
-                                      className={`h-2 rounded-full transition-all ${
-                                        selectedCount === 0 ? 'bg-gray-300 dark:bg-gray-600' : 'bg-n3rve-main'
-                                      }`}
-                                      style={{ width: `${(selectedCount / totalCount) * 100}%` }}
-                                    />
-                                  </div>
-                                  <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[60px] text-right">
-                                    {selectedCount}/{totalCount}
-                                  </span>
-                                </div>
-                              </div>
-                              
-                              {/* Expandable Country List */}
-                              <details className="group" id={`territory-${continentKey}`}>
-                                <summary className="cursor-pointer text-sm text-n3rve-main hover:text-n3rve-700 font-medium list-none flex items-center gap-1">
-                                  <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90" />
-                                  {language === 'ko' ? '국가 목록' : 'Countries'}
-                                </summary>
-                                <div className="mt-3 space-y-1 max-h-48 overflow-y-auto">
-                                  {continent.countries.map(countryCode => (
-                                    <label 
-                                      key={countryCode} 
-                                      className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors text-sm
-                                        ${productMetadata.territories?.includes(countryCode)
-                                          ? 'bg-n3rve-50 dark:bg-n3rve-900/20 hover:bg-n3rve-100 dark:hover:bg-n3rve-900/30' 
-                                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                                        }`}
-                                    >
-                                      <input
-                                        type="checkbox"
-                                        value={countryCode}
-                                        checked={productMetadata.territories?.includes(countryCode) || false}
-                                        onChange={(e) => {
-                                          const currentTerritories = productMetadata.territories || []
-                                          const newTerritories = e.target.checked
-                                            ? [...currentTerritories, countryCode]
-                                            : currentTerritories.filter((c: string) => c !== countryCode)
-                                          setProductMetadata({
-                                            ...productMetadata,
-                                            territories: newTerritories
-                                          })
-                                        }}
-                                        className="rounded text-n3rve-main focus:ring-n3rve-500"
-                                      />
-                                      <span className={`flex-1 ${
-                                        productMetadata.territories?.includes(countryCode)
-                                          ? 'text-n3rve-900 dark:text-n3rve-100 font-medium'
-                                          : 'text-gray-700 dark:text-gray-300'
-                                      }`}>
-                                        {countryNames[countryCode]?.[language] || countryNames[countryCode]?.en || countryCode}
-                                      </span>
-                                      <span className="text-xs text-gray-400">
-                                        {countryCode}
-                                      </span>
-                                    </label>
-                                  ))}
-                                </div>
-                              </details>
-                            </div>
-                          )
-                        })}
-                      </div>
-
-                      {/* Selected Countries Summary */}
-                      <div className="bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg p-4">
-                        <h5 className="font-medium text-n3rve-900 dark:text-n3rve-100 mb-2">
-                          {language === 'ko' ? '선택된 국가' : 'Selected Countries'} 
-                          ({productMetadata.territories?.length || 0})
-                        </h5>
-                        <div className="flex flex-wrap gap-2">
-                          {(productMetadata.territories || []).map((countryCode: string) => (
-                            <span 
-                              key={countryCode}
-                              className="inline-flex items-center gap-1 px-2 py-1 bg-n3rve-100 dark:bg-n3rve-800 text-n3rve-700 dark:text-n3rve-200 rounded-full text-xs"
-                            >
-                              {countryNames[countryCode]?.[language] || countryNames[countryCode]?.en || countryCode}
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const newTerritories = (productMetadata.territories || [])
-                                    .filter((c: string) => c !== countryCode)
-                                  setProductMetadata({
-                                    ...productMetadata,
-                                    territories: newTerritories
-                                  })
-                                }}
-                                className="ml-1 hover:text-n3rve-900 dark:hover:text-n3rve-100"
-                              >
-                                ×
-                              </button>
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* DSP Territory Settings */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Disc className="w-5 h-5 text-n3rve-main" />
-                  {t('DSP별 지역 설정', 'DSP Territory Settings')}
-                </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {t('사용자 지역 설정을 사용하여 각 DSP별로 다른 지역을 설정할 수 있습니다', 'You can set different territories for each DSP using custom territory settings')}
-                </p>
-                
-                {/* Summary of DSP Settings */}
-                <div className="mb-4 p-4 bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-n3rve-900 dark:text-n3rve-100">
-                        {Object.keys(productMetadata.dspTerritories || {}).filter(
-                          dsp => productMetadata.dspTerritories?.[dsp]?.territoryType === 'custom'
-                        ).length} {language === 'ko' ? '개 DSP 커스텀 설정' : 'DSPs with custom settings'}
-                      </p>
-                      <p className="text-xs text-n3rve-700 dark:text-n3rve-300 mt-1">
-                        {language === 'ko' 
-                          ? '나머지는 기본 지역 설정을 사용합니다'
-                          : 'Others use default territory settings'
-                        }
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowDspTerritoryModal(true)
-                      }}
-                      className="px-4 py-2 bg-n3rve-main hover:bg-n3rve-700 text-white rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      <Edit3 className="w-4 h-4" />
-                      {language === 'ko' ? 'DSP 설정 관리' : 'Manage DSP Settings'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Quick Preview of Custom DSPs */}
-                {Object.entries(productMetadata.dspTerritories || {})
-                  .filter(([_, config]: [string, any]) => config.territoryType === 'custom')
-                  .length > 0 && (
-                  <div className="space-y-2">
-                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {language === 'ko' ? '커스텀 설정된 DSP' : 'DSPs with custom settings'}
-                    </h5>
-                    <div className="flex flex-wrap gap-2">
-                      {Object.entries(productMetadata.dspTerritories || {})
-                        .filter(([_, config]: [string, any]) => config.territoryType === 'custom')
-                        .map(([dsp, config]: [string, any]) => (
-                          <span 
-                            key={dsp}
-                            className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs"
-                          >
-                            {dsp.split(' ')[0]}
-                            <span className="text-n3rve-main dark:text-n3rve-accent2 font-medium">
-                              ({(config as any).territories?.length || 0})
-                            </span>
-                          </span>
-                        ))
-                      }
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Asset Level Content */}
-          {metadataSubTab === 'asset' && selectedTrack && (
-            <div className="space-y-6">
-              <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
-                <div className="flex items-start gap-2">
-                  <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                    <p className="font-medium mb-1">
-                      {language === 'en' 
-                        ? `Currently selected track: ${selectedTrack.titleKo || selectedTrack.titleEn || '(No title)'}`
-                        : `현재 선택된 트랙: ${selectedTrack.titleKo || selectedTrack.titleEn || '(제목 없음)'}`
-                      }
-                    </p>
-                    <p>
-                      {language === 'en' 
-                        ? 'You can configure settings individually for each track.'
-                        : '각 트랙별로 개별 설정할 수 있습니다.'
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Track Basic Info */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-                  <Music className="w-5 h-5 text-n3rve-main" />
-                  {language === 'ko' ? '트랙 기본 정보' : 'Track Basic Info'}
-                </h4>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <ValidatedInput
-                        fieldId={`track-${selectedTrack.id}-title-ko`}
-                        validationType="track"
-                        validationOptions={{ trackNumber: tracks.findIndex(t => t.id === selectedTrack.id) + 1 }}
-                        value={selectedTrack.titleKo}
-                        onValueChange={(value) => updateTrack(selectedTrack.id, { titleKo: value })}
-                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                        placeholder={language === 'ko' ? '한글 제목을 입력하세요' : 'Enter Korean title'}
-                        showInlineWarnings={true}
-                        language={language}
-                        label={
-                          <span>
-                            {language === 'ko' ? '트랙 제목 (한글)' : 'Track Title (Korean)'} <span className="text-red-500">*</span>
-                          </span>
-                        }
-                      />
-                    </div>
-                    <div>
-                      <ValidatedInput
-                        fieldId={`track-${selectedTrack.id}-title-en`}
-                        validationType="track"
-                        validationOptions={{ trackNumber: tracks.findIndex(t => t.id === selectedTrack.id) + 1 }}
-                        value={selectedTrack.titleEn}
-                        onValueChange={(value) => updateTrack(selectedTrack.id, { titleEn: value })}
-                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                        placeholder={language === 'ko' ? '영문 제목을 입력하세요' : 'Enter English title'}
-                        showInlineWarnings={true}
-                        language={language}
-                        label={language === 'ko' ? '트랙 제목 (영문)' : 'Track Title (English)'}
-                      />
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        ISRC {language === 'ko' ? '(선택사항)' : '(Optional)'}
-                      </label>
-                      <input
-                        type="text"
-                        value={selectedTrack.isrc || ''}
-                        onChange={(e) => updateTrack(selectedTrack.id, { isrc: e.target.value })}
-                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                        placeholder={language === 'ko' ? 'ISRC 코드 (예: KRXXX1234567)' : 'ISRC code (e.g., USXXX1234567)'}
-                      />
-                      <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        {language === 'ko' 
-                          ? '이미 발매된 트랙의 ISRC가 있는 경우 입력하세요'
-                          : 'Enter if you have an ISRC for an already released track'
-                        }
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'ko' ? '트랙 유형' : 'Track Type'}
-                      </label>
-                      <select
-                        value={selectedTrack.trackType || 'audio'}
-                        onChange={(e) => updateTrack(selectedTrack.id, { trackType: e.target.value as 'audio' | 'music_video' })}
-                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      >
-                        <option value="audio">{language === 'ko' ? '오디오' : 'Audio'}</option>
-                        <option value="music_video">{language === 'ko' ? '뮤직비디오' : 'Music Video'}</option>
-                      </select>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={() => setTitleTrack(selectedTrack.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                        selectedTrack.isTitle
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
-                      }`}
-                    >
-                      <Star className={`w-4 h-4 ${selectedTrack.isTitle ? 'fill-current' : ''}`} />
-                      {language === 'ko' ? '타이틀 트랙' : 'Title Track'}
-                    </button>
-                  </div>
-
-                  {/* Track Translations */}
-                  <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-                    <TranslationInput
-                      translations={selectedTrack.translations || []}
-                      onTranslationsChange={(translations) => {
-                        updateTrack(selectedTrack.id, { translations })
-                      }}
-                      language={language}
-                      placeholder={language === 'ko' ? '선택한 언어로 번역된 제목' : 'Title in selected language'}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Artists Section */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
-                  <p className="text-sm text-blue-800 dark:text-blue-200 flex items-center gap-2">
-                    <Info className="w-4 h-4" />
-                    {language === 'ko' 
-                      ? '≡ 아이콘을 드래그하여 메인 아티스트와 피처링 아티스트 간 이동할 수 있습니다' 
-                      : '≡ Drag artists between Main and Featuring sections'
-                    }
-                  </p>
-                </div>
-                <div className="space-y-6">
-                  {/* Main Artists */}
-                  <div
-                    onDragOver={(e) => handleArtistDragOver(e, 'main')}
-                    onDragLeave={handleArtistDragLeave}
-                    onDrop={(e) => handleArtistDrop(e, 'main')}
-                    className={`transition-all ${
-                      dragOverArtistType === 'main' 
-                        ? 'ring-2 ring-n3rve-500 ring-offset-2 rounded-lg' 
-                        : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                        <User className="w-5 h-5 text-n3rve-main" />
-                        {t('메인 아티스트', 'Main Artists')}
-                      </h4>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setArtistModalType('main')
-                          setEditingArtist(null)
-                          setShowArtistModal(true)
-                        }}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-n3rve-main hover:bg-n3rve-700 text-white text-sm rounded-lg transition-colors"
-                      >
-                        <Plus className="w-4 h-4" />
-                        {t('추가', 'Add')}
-                      </button>
-                    </div>
-                    {selectedTrack.artists.length > 0 ? (
-                      <div className="space-y-2">
-                        {selectedTrack.artists.map((artist) => (
-                          <div 
-                            key={artist.id} 
-                            draggable
-                            onDragStart={(e) => handleArtistDragStart(e, artist, 'main')}
-                            onDragEnd={handleArtistDragEnd}
-                            className={`flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-move transition-all hover:shadow-md ${
-                              draggedArtist?.artist.id === artist.id ? 'opacity-50' : ''
-                            }`}
-                          >
-                            <div className="flex items-center gap-3 flex-1">
-                              <GripVertical className="w-4 h-4 text-gray-400" />
-                              <div>
-                                <div className="font-medium text-gray-900 dark:text-white">
-                                  {artist.primaryName}
-                                  {artist.translatedName && (
-                                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                                      ({artist.translatedName})
-                                    </span>
-                                  )}
-                                </div>
-                                {artist.customIdentifiers.length > 0 && (
-                                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    {artist.customIdentifiers.map(id => `${id.type}: ${id.value}`).join(' | ')}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeArtistFromTrack(artist.id, 'main')}
-                              className="text-red-500 hover:text-red-700 p-1"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
-                        {t('메인 아티스트가 없습니다', 'No main artists added')}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Featuring Artists */}
-                  <div
-                    onDragOver={(e) => handleArtistDragOver(e, 'featuring')}
-                    onDragLeave={handleArtistDragLeave}
-                    onDrop={(e) => handleArtistDrop(e, 'featuring')}
-                    className={`transition-all ${
-                      dragOverArtistType === 'featuring' 
-                        ? 'ring-2 ring-pink-500 ring-offset-2 rounded-lg' 
-                        : ''
-                    }`}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                        <Mic className="w-5 h-5 text-pink-600" />
-                        {t('피처링 아티스트', 'Featuring Artists')}
-                      </h4>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setArtistModalType('featuring')
-                          setEditingArtist(null)
-                          setShowArtistModal(true)
-                        }}
-                        className="flex items-center gap-1 px-3 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-sm rounded-lg transition-colors"
-                      >
-                        <Plus className="w-4 h-4" />
-                        {t('추가', 'Add')}
-                      </button>
-                    </div>
-                    {selectedTrack.featuringArtists.length > 0 ? (
-                      <div className="space-y-2">
-                        {selectedTrack.featuringArtists.map((artist) => (
-                          <div 
-                            key={artist.id} 
-                            draggable
-                            onDragStart={(e) => handleArtistDragStart(e, artist, 'featuring')}
-                            onDragEnd={handleArtistDragEnd}
-                            className={`flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-move transition-all hover:shadow-md ${
-                              draggedArtist?.artist.id === artist.id ? 'opacity-50' : ''
-                            }`}
-                          >
-                            <div className="flex items-center gap-3 flex-1">
-                              <GripVertical className="w-4 h-4 text-gray-400" />
-                              <div>
-                                <div className="font-medium text-gray-900 dark:text-white">
-                                  {artist.primaryName}
-                                  {artist.translatedName && (
-                                    <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                                      ({artist.translatedName})
-                                    </span>
-                                  )}
-                                </div>
-                                {artist.customIdentifiers.length > 0 && (
-                                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    {artist.customIdentifiers.map(id => `${id.type}: ${id.value}`).join(' | ')}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeArtistFromTrack(artist.id, 'featuring')}
-                              className="text-red-500 hover:text-red-700 p-1"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
-                        {t('피처링 아티스트가 없습니다', 'No featuring artists added')}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Contributors Section */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <UserCheck className="w-5 h-5 text-n3rve-main" />
-                    {t('기여자 정보', 'Contributor Information')}
-                  </h4>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditingContributor(null)
-                      setShowContributorModal(true)
-                    }}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-n3rve-main hover:bg-n3rve-700 text-white text-sm rounded-lg transition-colors"
-                  >
-                    <Plus className="w-4 h-4" />
-                    추가
                   </button>
                 </div>
-                {selectedTrack.contributors.length > 0 ? (
-                  <div className="space-y-3">
-                    {selectedTrack.contributors.map((contributor) => {
-                      return (
-                        <div key={contributor.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-3 mb-2">
-                                <span className="font-semibold text-gray-900 dark:text-white text-lg">
-                                  {contributor.name}
-                                </span>
-                                {contributor.translations && contributor.translations.length > 0 && (
-                                  <div className="flex items-center gap-1">
-                                    <Languages className="w-3 h-3 text-gray-400" />
-                                    <span className="text-xs text-gray-500 dark:text-gray-400">
-                                      {contributor.translations.length} {language === 'ko' ? '개 언어' : 'languages'}
-                                    </span>
-                                  </div>
-                                )}
-                                {(contributor.appleMusicUrl || contributor.spotifyUrl) && (
-                                  <div className="flex items-center gap-2">
-                                    {contributor.appleMusicUrl && (
-                                      <a
-                                        href={contributor.appleMusicUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                        title="Apple Music"
-                                      >
-                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                          <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043-1.054-.69-2.317-.905-3.614-.937-2.139-.05-4.288-.017-6.426-.017h-1.3c-1.866 0-3.739-.003-5.606.006-1.36.009-2.667.195-3.89.776C.196 1.113-.26 1.872.08 3.184c.066.257.135.515.227.763.51 1.378 1.47 2.335 2.83 2.785.912.3 1.872.423 2.832.449 1.665.045 3.33.018 4.995.018h1.662c1.962 0 3.924.006 5.886-.004 1.375-.007 2.696-.189 3.918-.772 1.558-.745 2.408-1.982 2.501-3.633.025-.44.026-.88-.009-1.32l.002.002zm-3.205 2.76c-.316.51-.788.849-1.405 1.016-.619.167-1.269.205-1.909.212-1.963.021-3.926.009-5.889.009h-1.618c-1.87 0-3.74.012-5.61-.006-.967-.009-1.925-.106-2.837-.4-.914-.295-1.59-.844-1.962-1.754-.247-.603-.166-1.226.144-1.793.324-.596.827-.976 1.508-1.19.679-.213 1.39-.27 2.095-.277 1.968-.021 3.936-.009 5.903-.009h1.584c1.952 0 3.904-.011 5.856.004.996.008 1.983.108 2.9.413.922.306 1.603.87 1.961 1.79.24.616.156 1.244-.162 1.821l.002.002zm-1.504-1.377c-.143-.357-.432-.613-.82-.713a3.104 3.104 0 00-.986-.065v5.817c0 .457-.066.892-.345 1.24-.278.35-.657.55-1.09.584-.79.061-1.407-.373-1.557-1.149a2.301 2.301 0 01-.033-.545V6.915a.664.664 0 00-.002-.05c-.225.006-.45.003-.674.012a2.552 2.552 0 00-.49.06c-.503.122-.836.5-.978.99a2.167 2.167 0 00-.065.615v3.896c0 .692.058 1.373.434 1.967.376.595.932.966 1.606 1.131.849.208 1.68.106 2.378-.437.703-.547 1.087-1.3 1.179-2.194.048-.462.037-.927.037-1.392V8.564c0-.761-.062-1.503-.62-2.07v.001z"/>
-                                        </svg>
-                                      </a>
-                                    )}
-                                    {contributor.spotifyUrl && (
-                                      <a
-                                        href={contributor.spotifyUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                                        title="Spotify"
-                                      >
-                                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                                          <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
-                                        </svg>
-                                      </a>
-                                    )}
-                                  </div>
-                                )}
-                              </div>
-                              
-                              {/* Translations */}
-                              {contributor.translations && contributor.translations.length > 0 && (
-                                <div className="mb-2">
-                                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                    {language === 'ko' ? '번역' : 'Translations'}:
-                                  </span>
-                                  <div className="flex flex-wrap gap-2 mt-1">
-                                    {contributor.translations.map((translation, idx) => {
-                                      const langOption = languageOptions.find(l => l.value === translation.language)
-                                      return (
-                                        <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-xs">
-                                          <span className="font-medium text-gray-600 dark:text-gray-300">
-                                            {langOption?.label || translation.language}:
-                                          </span>
-                                          <span className="text-gray-800 dark:text-gray-200">
-                                            {translation.name}
-                                          </span>
-                                        </span>
-                                      )
-                                    })}
-                                  </div>
-                                </div>
-                              )}
-                              
-                              {/* Roles */}
-                              <div className="mb-2">
-                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                  {language === 'ko' ? '역할' : 'Roles'}:
-                                </span>
-                                <div className="flex flex-wrap gap-1.5 mt-1">
-                                  {contributor.roles.map(role => {
-                                    const roleOption = roleOptions.find(r => r.value === role)
-                                    const roleLabel = roleOption 
-                                      ? (language === 'ko' ? roleOption.label : roleOption.labelEn)
-                                      : role
-                                    
-                                    // Determine color based on role type
-                                    let colorClass = 'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-200'
-                                    if (['composer', 'lyricist', 'arranger'].includes(role)) {
-                                      colorClass = 'bg-n3rve-100 text-n3rve-800 dark:bg-n3rve-900/30 dark:text-n3rve-200'
-                                    } else if (role.includes('producer')) {
-                                      colorClass = 'bg-n3rve-100 text-purple-800 dark:bg-n3rve-900/30 dark:text-purple-200'
-                                    } else if (role.includes('engineer')) {
-                                      colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200'
-                                    } else if (['performer', 'studio_musician', 'soloist'].includes(role)) {
-                                      colorClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200'
-                                    }
-                                    
-                                    return (
-                                      <span key={role} className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}>
-                                        {roleLabel}
-                                      </span>
-                                    )
-                                  })}
-                                </div>
-                              </div>
-                              
-                              {/* Instruments */}
-                              {contributor.instruments && contributor.instruments.length > 0 && (
-                                <div>
-                                  <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
-                                    {language === 'ko' ? '악기' : 'Instruments'}:
-                                  </span>
-                                  <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {contributor.instruments.map(instrumentValue => (
-                                      <span key={instrumentValue} className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 rounded-full text-xs font-medium">
-                                        <Music2 className="w-3 h-3" />
-                                        {getInstrumentLabel(instrumentValue, language)}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                            <button
-                              onClick={() => removeContributorFromTrack(contributor.id)}
-                              className="text-red-500 hover:text-red-700 ml-2 p-1"
-                              title={language === 'ko' ? '삭제' : 'Remove'}
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('기여자 정보가 없습니다', 'No contributor information added')}
-                  </p>
-                )}
               </div>
 
-              {/* Individual Track Release Date */}
-              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between mb-4">
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                    <Calendar className="w-5 h-5 text-n3rve-main" />
-                    {language === 'ko' ? '개별 트랙 발매일' : 'Individual Track Release Date'}
-                  </h4>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="checkbox"
-                      id={`custom-release-${selectedTrack.id}`}
-                      checked={selectedTrack.hasCustomReleaseDate || false}
-                      onChange={(e) => {
-                        updateTrack(selectedTrack.id, { 
-                          hasCustomReleaseDate: e.target.checked,
-                          consumerReleaseDate: e.target.checked ? selectedTrack.consumerReleaseDate || productMetadata.consumerReleaseDate : '',
-                          releaseTime: e.target.checked ? selectedTrack.releaseTime || productMetadata.releaseTime : ''
-                        })
-                      }}
-                      className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500 focus:ring-2"
-                    />
-                    <label htmlFor={`custom-release-${selectedTrack.id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                      {language === 'ko' ? '이 트랙은 다른 발매일 사용' : 'Use different release date for this track'}
-                    </label>
-                  </div>
-                </div>
-                
-                {selectedTrack.hasCustomReleaseDate && (
-                  <div className="space-y-4 mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
-                        <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                          {language === 'ko' 
-                            ? '개별 트랙 발매일은 일부 DSP에서만 지원됩니다. 지원하지 않는 DSP에서는 앨범 발매일이 적용됩니다.'
-                            : 'Individual track release dates are only supported by some DSPs. Unsupported DSPs will use the album release date.'
-                          }
-                        </p>
+              {/* Product Level Content */}
+              {metadataSubTab === 'product' && (
+                <div className="space-y-6">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                    <div className="flex items-start gap-2">
+                      <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm text-blue-800 dark:text-blue-200">
+                        <p className="font-medium mb-1">{t('프로덕트 레벨 설정에 대한 설명', 'Product level configuration description')}</p>
                       </div>
                     </div>
-                    
+                  </div>
+
+                  {/* Release Information */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Calendar className="w-5 h-5 text-n3rve-main" />
+                      {t('릴리즈 정보', 'Release Information')}
+                    </h4>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'ko' ? '트랙 발매일' : 'Track Release Date'} <span className="text-red-500">*</span>
+                      Consumer Release Date <span className="text-red-500">*</span>
                         </label>
                         <DatePicker
-                          value={selectedTrack.consumerReleaseDate || ''}
-                          onChange={(newDate: any) => updateTrack(selectedTrack.id, { consumerReleaseDate: newDate })}
-                          placeholder="Select track release date"
+                          id="consumer-release-date"
+                          value={productMetadata.consumerReleaseDate}
+                          onChange={(newDate) => {
+                            setProductMetadata({
+                              ...productMetadata,
+                              consumerReleaseDate: newDate,
+                              // Auto-sync original release date for new releases
+                              originalReleaseDate: productMetadata.originalReleaseDate || newDate
+                            });
+                          }}
+                          placeholder="Select release date"
                         />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {language === 'ko'
+                            ? '소비자에게 공개되는 발매일 (신곡의 경우 실제 발매일)'
+                            : 'Release date visible to consumers (actual release date for new music)'
+                          }
+                        </p>
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'ko' ? '발매 시간 (KST)' : 'Release Time (KST)'}
+                          {t('원본 발매일', 'Original Release Date')}
+                        </label>
+                        <DatePicker
+                          value={productMetadata.originalReleaseDate}
+                          onChange={(newDate) => setProductMetadata({ ...productMetadata, originalReleaseDate: newDate })}
+                          placeholder="Select original release date"
+                          maxDate={productMetadata.consumerReleaseDate || undefined}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {language === 'ko'
+                            ? '최초 발매된 날짜 (재발매/리마스터의 경우 과거 발매일)'
+                            : 'Original recording/release date (past date for re-releases/remasters)'
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('발매 시간대', 'Release Timezone')}
+                        </label>
+                        <select
+                          value={productMetadata.selectedTimezone || 'Asia/Seoul'}
+                          onChange={(e) => setProductMetadata({ ...productMetadata, selectedTimezone: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                        >
+                          <option value="Pacific/Auckland">{t('뉴질랜드', 'New Zealand')} (UTC+12/+13)</option>
+                          <option value="Asia/Seoul">{t('서울', 'Seoul')} (UTC+9)</option>
+                          <option value="Asia/Tokyo">{t('도쿄', 'Tokyo')} (UTC+9)</option>
+                          <option value="Asia/Shanghai">{t('베이징', 'Beijing')} (UTC+8)</option>
+                          <option value="Asia/Singapore">{t('싱가포르', 'Singapore')} (UTC+8)</option>
+                          <option value="Europe/London">{t('런던', 'London')} (UTC+0/+1)</option>
+                          <option value="Europe/Paris">{t('파리', 'Paris')} (UTC+1/+2)</option>
+                          <option value="Europe/Berlin">{t('베를린', 'Berlin')} (UTC+1/+2)</option>
+                          <option value="America/New_York">{t('뉴욕', 'New York')} (UTC-5/-4)</option>
+                          <option value="America/Chicago">{t('시카고', 'Chicago')} (UTC-6/-5)</option>
+                          <option value="America/Denver">{t('덴버', 'Denver')} (UTC-7/-6)</option>
+                          <option value="America/Los_Angeles">{t('로스앤젤레스', 'Los Angeles')} (UTC-8/-7)</option>
+                        </select>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {language === 'ko'
+                            ? '발매 시간대를 선택하세요. 선택한 시간대의 0시에 음원이 공개됩니다.'
+                            : 'Select the timezone for release. Music will be available at midnight in the selected timezone.'
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('발매 시간', 'Release Time')} ({productMetadata.selectedTimezone === 'Asia/Seoul' ? 'KST' :
+                            productMetadata.selectedTimezone === 'Asia/Tokyo' ? 'JST' :
+                              productMetadata.selectedTimezone === 'America/New_York' ? 'EST' :
+                                productMetadata.selectedTimezone === 'America/Los_Angeles' ? 'PST' :
+                                  productMetadata.selectedTimezone === 'Europe/London' ? 'GMT' :
+                                    productMetadata.selectedTimezone === 'Europe/Paris' ? 'CET' :
+                                      'Local'})
                         </label>
                         <div className="space-y-3">
-                          {!selectedTrack.releaseTime ? (
-                            <div 
-                              onClick={() => updateTrack(selectedTrack.id, { releaseTime: '12:00 AM' })}
+                          {!productMetadata.releaseTime ? (
+                            <div
+                              onClick={() => setProductMetadata({ ...productMetadata, releaseTime: '12:00 AM' })}
                               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-n3rve-accent2 dark:hover:border-n3rve-500 transition-colors"
                             >
                               {language === 'ko' ? '시간을 입력해주세요' : 'Please enter time'}
@@ -3591,54 +2367,54 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                           ) : (
                             <div className="flex gap-2">
                               <select
-                                value={selectedTrack.releaseTime.split(':')[0]}
+                                value={productMetadata.releaseTime.split(':')[0]}
                                 onChange={(e) => {
-                                  const hour = e.target.value
-                                  const minute = selectedTrack.releaseTime!.split(':')[1]?.split(' ')[0] || '00'
-                                  const period = selectedTrack.releaseTime!.split(' ')[1] || 'AM'
-                                  const newTime = `${hour}:${minute} ${period}`
-                                  updateTrack(selectedTrack.id, { releaseTime: newTime })
+                                  const hour = e.target.value;
+                                  const minute = productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00';
+                                  const period = productMetadata.releaseTime.split(' ')[1] || 'AM';
+                                  const newTime = `${hour}:${minute} ${period}`;
+                                  setProductMetadata({ ...productMetadata, releaseTime: newTime });
                                 }}
                                 className="flex-1 px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
                                 {[...Array(12)].map((_, i) => {
-                                  const hour = i + 1
+                                  const hour = i + 1;
                                   return (
                                     <option key={hour} value={hour.toString().padStart(2, '0')}>
                                       {hour}
                                     </option>
-                                  )
+                                  );
                                 })}
                               </select>
                               <span className="flex items-center text-gray-500 dark:text-gray-400">:</span>
                               <select
-                                value={selectedTrack.releaseTime.split(':')[1]?.split(' ')[0] || '00'}
+                                value={productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00'}
                                 onChange={(e) => {
-                                  const hour = selectedTrack.releaseTime!.split(':')[0]
-                                  const minute = e.target.value
-                                  const period = selectedTrack.releaseTime!.split(' ')[1] || 'AM'
-                                  const newTime = `${hour}:${minute} ${period}`
-                                  updateTrack(selectedTrack.id, { releaseTime: newTime })
+                                  const hour = productMetadata.releaseTime.split(':')[0];
+                                  const minute = e.target.value;
+                                  const period = productMetadata.releaseTime.split(' ')[1] || 'AM';
+                                  const newTime = `${hour}:${minute} ${period}`;
+                                  setProductMetadata({ ...productMetadata, releaseTime: newTime });
                                 }}
                                 className="flex-1 px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
                                 {[...Array(12)].map((_, i) => {
-                                  const minute = i * 5
+                                  const minute = i * 5;
                                   return (
                                     <option key={minute} value={minute.toString().padStart(2, '0')}>
                                       {minute.toString().padStart(2, '0')}
                                     </option>
-                                  )
+                                  );
                                 })}
                               </select>
                               <select
-                                value={selectedTrack.releaseTime.split(' ')[1] || 'AM'}
+                                value={productMetadata.releaseTime.split(' ')[1] || 'AM'}
                                 onChange={(e) => {
-                                  const hour = selectedTrack.releaseTime!.split(':')[0]
-                                  const minute = selectedTrack.releaseTime!.split(':')[1]?.split(' ')[0] || '00'
-                                  const period = e.target.value
-                                  const newTime = `${hour}:${minute} ${period}`
-                                  updateTrack(selectedTrack.id, { releaseTime: newTime })
+                                  const hour = productMetadata.releaseTime.split(':')[0];
+                                  const minute = productMetadata.releaseTime.split(':')[1]?.split(' ')[0] || '00';
+                                  const period = e.target.value;
+                                  const newTime = `${hour}:${minute} ${period}`;
+                                  setProductMetadata({ ...productMetadata, releaseTime: newTime });
                                 }}
                                 className="px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                               >
@@ -3647,7 +2423,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               </select>
                               <button
                                 type="button"
-                                onClick={() => updateTrack(selectedTrack.id, { releaseTime: '' })}
+                                onClick={() => setProductMetadata({ ...productMetadata, releaseTime: '' })}
                                 className="px-3 py-3 text-gray-500 hover:text-red-500 transition-colors"
                                 title={language === 'ko' ? '시간 지우기' : 'Clear time'}
                               >
@@ -3655,1802 +2431,3023 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               </button>
                             </div>
                           )}
+
+                          {/* Time conversion and display */}
+                          {productMetadata.releaseTime && productMetadata.consumerReleaseDate && (
+                            <div className="bg-gradient-to-r from-n3rve-50 to-blue-50 dark:from-n3rve-900/20 dark:to-blue-900/20 border border-n3rve-200 dark:border-n3rve-700 rounded-xl p-4">
+                              <div className="text-center space-y-3">
+                                <div className="text-sm font-semibold text-n3rve-800 dark:text-n3rve-200 mb-3">
+                                  {language === 'ko' ? '🚀 발매 예정 시간' : '🚀 Scheduled Release Time'}
+                                </div>
+
+                                {/* Selected Timezone Display */}
+                                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
+                                    {(() => {
+                                      const timezone = productMetadata.selectedTimezone || 'Asia/Seoul';
+                                      const timezoneLabels = {
+                                        'Pacific/Auckland': language === 'ko' ? '뉴질랜드 시간' : 'New Zealand Time',
+                                        'Asia/Seoul': language === 'ko' ? '한국 시간 (KST)' : 'Korea Standard Time (KST)',
+                                        'Asia/Tokyo': language === 'ko' ? '일본 시간 (JST)' : 'Japan Standard Time (JST)',
+                                        'Asia/Shanghai': language === 'ko' ? '베이징 시간 (CST)' : 'Beijing Time (CST)',
+                                        'Asia/Singapore': language === 'ko' ? '싱가포르 시간 (SGT)' : 'Singapore Time (SGT)',
+                                        'Europe/London': language === 'ko' ? '런던 시간 (GMT)' : 'London Time (GMT)',
+                                        'Europe/Paris': language === 'ko' ? '파리 시간 (CET)' : 'Paris Time (CET)',
+                                        'Europe/Berlin': language === 'ko' ? '베를린 시간 (CET)' : 'Berlin Time (CET)',
+                                        'America/New_York': language === 'ko' ? '뉴욕 시간 (EST)' : 'New York Time (EST)',
+                                        'America/Chicago': language === 'ko' ? '시카고 시간 (CST)' : 'Chicago Time (CST)',
+                                        'America/Denver': language === 'ko' ? '덴버 시간 (MST)' : 'Denver Time (MST)',
+                                        'America/Los_Angeles': language === 'ko' ? '로스앤젤레스 시간 (PST)' : 'Los Angeles Time (PST)'
+                                      };
+                                      return timezoneLabels[timezone] || timezone;
+                                    })()}
+                                  </div>
+                                  <div className="text-lg font-bold text-gray-900 dark:text-white">
+                                    {(() => {
+                                      const date = new Date(productMetadata.consumerReleaseDate);
+                                      const options: Intl.DateTimeFormatOptions = {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        weekday: 'long'
+                                      };
+                                      const dateStr = language === 'ko'
+                                        ? date.toLocaleDateString('ko-KR', options)
+                                        : date.toLocaleDateString('en-US', options);
+
+                                      // Convert AM/PM to Korean if needed
+                                      const timeStr = language === 'ko'
+                                        ? productMetadata.releaseTime.replace('AM', '오전').replace('PM', '오후')
+                                        : productMetadata.releaseTime;
+
+                                      return `${dateStr} ${timeStr}`;
+                                    })()}
+                                  </div>
+                                </div>
+
+                                {/* Arrow */}
+                                <div className="flex justify-center">
+                                  <div className="text-n3rve-500 dark:text-n3rve-accent2">
+                                ↓
+                                  </div>
+                                </div>
+
+                                {/* UTC Display */}
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                  <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
+                                    {language === 'ko' ? '국제 표준시 (UTC)' : 'Coordinated Universal Time (UTC)'}
+                                  </div>
+                                  <div className="text-lg font-bold text-gray-700 dark:text-gray-300">
+                                    {(() => {
+                                      try {
+                                        const [hour12, minute] = productMetadata.releaseTime.split(':');
+                                        const period = productMetadata.releaseTime.split(' ')[1];
+                                        let hour24 = parseInt(hour12);
+                                        if (period === 'PM' && hour24 !== 12) hour24 += 12;
+                                        if (period === 'AM' && hour24 === 12) hour24 = 0;
+
+                                        // Get timezone offset based on selected timezone
+                                        const timezone = productMetadata.selectedTimezone || 'Asia/Seoul';
+                                        const timezoneOffsets: Record<string, number> = {
+                                          'Pacific/Auckland': 12, // UTC+12 (standard), +13 (daylight)
+                                          'Asia/Seoul': 9,        // UTC+9
+                                          'Asia/Tokyo': 9,        // UTC+9
+                                          'Asia/Shanghai': 8,     // UTC+8
+                                          'Asia/Singapore': 8,    // UTC+8
+                                          'Europe/London': 0,     // UTC+0 (standard), +1 (daylight)
+                                          'Europe/Paris': 1,      // UTC+1 (standard), +2 (daylight)
+                                          'Europe/Berlin': 1,     // UTC+1 (standard), +2 (daylight)
+                                          'America/New_York': -5, // UTC-5 (standard), -4 (daylight)
+                                          'America/Chicago': -6,  // UTC-6 (standard), -5 (daylight)
+                                          'America/Denver': -7,   // UTC-7 (standard), -6 (daylight)
+                                          'America/Los_Angeles': -8 // UTC-8 (standard), -7 (daylight)
+                                        };
+
+                                        const offset = timezoneOffsets[timezone] || 9; // Default to KST
+                                        const localDate = new Date(`${productMetadata.consumerReleaseDate}T${hour24.toString().padStart(2, '0')}:${minute.split(' ')[0]}:00`);
+                                        const utcDate = new Date(localDate.getTime() - (offset * 60 * 60 * 1000));
+
+                                        if (language === 'ko') {
+                                          const dateOptions = {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            weekday: 'long',
+                                            timeZone: 'UTC'
+                                          };
+                                          const timeOptions = {
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: true,
+                                            timeZone: 'UTC'
+                                          };
+                                          const dateStr = utcDate.toLocaleDateString('ko-KR', dateOptions);
+                                          const timeStr = utcDate.toLocaleTimeString('en-US', timeOptions);
+                                          const timeKor = timeStr.replace('AM', '오전').replace('PM', '오후');
+                                          return `${dateStr} ${timeKor} UTC`;
+                                        } else {
+                                          const options = {
+                                            year: 'numeric',
+                                            month: 'long',
+                                            day: 'numeric',
+                                            weekday: 'long',
+                                            hour: '2-digit',
+                                            minute: '2-digit',
+                                            hour12: true,
+                                            timeZone: 'UTC'
+                                          };
+                                          return utcDate.toLocaleDateString('en-US', options) + ' UTC';
+                                        }
+                                      } catch {
+                                        return 'Invalid time';
+                                      }
+                                    })()}
+                                  </div>
+                                </div>
+
+                                <div className="text-xs text-n3rve-main dark:text-n3rve-300 mt-2">
+                                  {language === 'ko'
+                                    ? '💡 전 세계 음원 플랫폼에서 동시 발매됩니다'
+                                    : '💡 Will be released simultaneously on all global platforms'
+                                  }
+                                </div>
+
+                                {/* Timed Release Warning */}
+                                <div className="mt-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-3">
+                                  <div className="flex items-start gap-2">
+                                    <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                                    <div className="text-xs text-amber-800 dark:text-amber-200 flex-1">
+                                      <div className="font-semibold mb-1 text-left">
+                                        {language === 'ko'
+                                          ? '⚠️ Timed Release 미지원 플랫폼 안내'
+                                          : '⚠️ Timed Release Limitations'
+                                        }
+                                      </div>
+                                      <div className="space-y-1 text-left">
+                                        <p>
+                                          {language === 'ko'
+                                            ? '일부 음원 플랫폼 (예: Apple Music)은 시간 설정 기능을 지원하지 않습니다.'
+                                            : 'Some DSPs (e.g., Apple Music) don\'t support timed release feature.'
+                                          }
+                                        </p>
+                                        <p>
+                                          {language === 'ko'
+                                            ? '이러한 플랫폼에서는 발매일 각 지역 시간대의 자정(00:00)에 공개됩니다.'
+                                            : 'On these platforms, your release will go live at midnight (00:00) in each local timezone on the release date.'
+                                          }
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
+                        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                          {language === 'ko'
+                            ? '한국 표준시(KST) 기준으로 발매 시간을 설정하세요 (선택사항)'
+                            : 'Set release time in Korea Standard Time (KST) - optional'
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Display Artists <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          id="display-artists"
+                          value={productMetadata.displayArtists || ''}
+                          onChange={(e) => setProductMetadata({ ...productMetadata, displayArtists: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          placeholder={language === 'ko' ? '표시될 아티스트명' : 'Display artist names'}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {language === 'ko'
+                            ? '음원 플랫폼에서 표시될 아티스트명'
+                            : 'Artist name to be displayed on streaming platforms'
+                          }
+                        </p>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      UPC {language === 'ko' ? '(선택사항)' : '(Optional)'}
+                        </label>
+                        <input
+                          type="text"
+                          value={productMetadata.upc || ''}
+                          onChange={(e) => setProductMetadata({ ...productMetadata, upc: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          placeholder={language === 'ko' ? 'UPC 코드 (12자리 숫자)' : 'UPC code (12-digit number)'}
+                        />
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          {language === 'ko'
+                            ? '이미 발매된 앨범의 UPC가 있는 경우 입력하세요'
+                            : 'Enter if you have a UPC for an already released album'
+                          }
+                        </p>
                       </div>
                     </div>
-                    
-                    {/* Time conversion display for individual track */}
-                    {selectedTrack.releaseTime && selectedTrack.consumerReleaseDate && (
-                      <div className="mt-4 bg-gradient-to-r from-n3rve-50 to-blue-50 dark:from-n3rve-900/20 dark:to-blue-900/20 border border-n3rve-200 dark:border-n3rve-700 rounded-xl p-4">
-                        <div className="text-center space-y-3">
-                          <div className="text-sm font-semibold text-n3rve-800 dark:text-n3rve-200">
-                            {language === 'ko' ? '🚀 트랙 발매 예정 시간' : '🚀 Track Release Time'}
+                  </div>
+
+                  {/* Explicit Content */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <AlertCircle className="w-5 h-5 text-n3rve-main" />
+                      {language === 'ko' ? '음원 내용 등급' : 'Explicit Content'}
+                    </h4>
+                    <div className="flex items-center gap-4">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="explicitContent"
+                          value="false"
+                          checked={!productMetadata.explicitContent}
+                          onChange={() => setProductMetadata({ ...productMetadata, explicitContent: false })}
+                          className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
+                        />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {language === 'ko' ? '전체 이용가' : 'Not Explicit'}
+                        </span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="explicitContent"
+                          value="true"
+                          checked={productMetadata.explicitContent === true}
+                          onChange={() => setProductMetadata({ ...productMetadata, explicitContent: true })}
+                          className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
+                        />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {language === 'ko' ? '19세 이용가' : 'Explicit'}
+                        </span>
+                      </label>
+                    </div>
+                    <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                      {language === 'ko'
+                        ? '욕설, 성적 내용 등 19세 미만 부적절한 내용 포함 여부'
+                        : 'Contains profanity, sexual content, or other inappropriate content for minors'
+                      }
+                    </p>
+                  </div>
+
+                  {/* Copyrights */}
+                  <div id="copyright-section" className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                      {language === 'en' ? 'Copyrights' : '저작권 (Copyrights)'}
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'en' ? 'ⓒ Copyright Year' : 'ⓒ 저작권 연도'} <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={productMetadata.copyrightYear}
+                          onChange={(e) => setProductMetadata({ ...productMetadata, copyrightYear: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          placeholder={language === 'en' ? 'e.g., 2025' : '예: 2025'}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'en' ? 'ⓒ Copyright Text' : 'ⓒ 저작권 텍스트'} <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={productMetadata.copyrightText}
+                          onChange={(e) => setProductMetadata({ ...productMetadata, copyrightText: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          placeholder={language === 'en' ? 'e.g., Label Name' : '예: Label Name'}
+                        />
+                      </div>
+                      <div id="phonogram-section">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'en' ? '℗ Copyright Year' : '℗ 저작권 연도'} <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={productMetadata.phonogramCopyrightYear}
+                          onChange={(e) => setProductMetadata({ ...productMetadata, phonogramCopyrightYear: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          placeholder={language === 'en' ? 'e.g., 2025' : '예: 2025'}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {language === 'en' ? '℗ Copyright Text' : '℗ 저작권 텍스트'} <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={productMetadata.phonogramCopyrightText}
+                          onChange={(e) => setProductMetadata({ ...productMetadata, phonogramCopyrightText: e.target.value })}
+                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          placeholder={language === 'en' ? 'e.g., Label Name' : '예: Label Name'}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Metadata Language */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Languages className="w-5 h-5 text-n3rve-main" />
+                      {t('메타데이터 언어', 'Metadata Language')}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      {t('음원 정보를 입력할 언어를 선택하세요', 'Select the language for entering music metadata')}
+                    </p>
+                    <select
+                      value={productMetadata.metadataLanguage || ''}
+                      onChange={(e) => setProductMetadata({ ...productMetadata, metadataLanguage: e.target.value })}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                    >
+                      <option value="">{t('언어 선택', 'Select Language')}</option>
+                      {languageOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Territory Settings */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Target className="w-5 h-5 text-n3rve-main" />
+                      {t('유통 지역', 'Territory')}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      {t('음원이 유통될 지역을 선택하세요', 'Select the territories where your music will be distributed')}
+                    </p>
+
+                    {/* Territory Type Selection */}
+                    <div className="space-y-4">
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            value="world"
+                            checked={(productMetadata.territoryType || 'world') === 'world'}
+                            onChange={(e) => setProductMetadata({
+                              ...productMetadata,
+                              territoryType: 'world' as const,
+                              territories: []
+                            })}
+                            className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
+                          />
+                          <span className="text-gray-700 dark:text-gray-300">{t('전 세계', 'Worldwide')}</span>
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            value="selected"
+                            checked={productMetadata.territoryType === 'selected'}
+                            onChange={(e) => setProductMetadata({
+                              ...productMetadata,
+                              territoryType: 'selected' as const
+                            })}
+                            className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
+                          />
+                          <span className="text-gray-700 dark:text-gray-300">{t('선택한 지역', 'Selected Territories')}</span>
+                        </label>
+                      </div>
+
+                      {/* Territory Selection */}
+                      {productMetadata.territoryType === 'selected' && (
+                        <div className="space-y-6 mt-4">
+                          {/* Quick Actions */}
+                          <div className="flex flex-wrap gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const allCountries = Object.values(territoryData).flatMap(c => c.countries);
+                                setProductMetadata({
+                                  ...productMetadata,
+                                  territories: allCountries
+                                });
+                              }}
+                              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
+                            >
+                              {language === 'ko' ? '전 세계 선택' : 'Select All Countries'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setProductMetadata({
+                                  ...productMetadata,
+                                  territories: []
+                                });
+                              }}
+                              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-colors"
+                            >
+                              {language === 'ko' ? '모두 해제' : 'Deselect All'}
+                            </button>
                           </div>
-                          
-                          {/* KST Display */}
-                          <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
-                              {language === 'ko' ? '한국 시간 (KST)' : 'Korea Standard Time (KST)'}
-                            </div>
-                            <div className="text-lg font-bold text-gray-900 dark:text-white">
-                              {(() => {
-                                const date = new Date(selectedTrack.consumerReleaseDate)
-                                const options: Intl.DateTimeFormatOptions = { 
-                                  year: 'numeric', 
-                                  month: 'long', 
-                                  day: 'numeric',
-                                  weekday: 'long'
-                                }
-                                const dateStr = language === 'ko' 
-                                  ? date.toLocaleDateString('ko-KR', options)
-                                  : date.toLocaleDateString('en-US', options)
-                                
-                                const timeStr = language === 'ko' 
-                                  ? selectedTrack.releaseTime.replace('AM', '오전').replace('PM', '오후')
-                                  : selectedTrack.releaseTime
-                                
-                                return `${dateStr} ${timeStr}`
-                              })()}
+
+                          {/* Continent Cards */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {Object.entries(territoryData).map(([continentKey, continent]) => {
+                              const selectedCount = continent.countries.filter(c =>
+                                productMetadata.territories?.includes(c)
+                              ).length;
+                              const totalCount = continent.countries.length;
+                              const isAllSelected = selectedCount === totalCount;
+
+                              return (
+                                <div key={continentKey} className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700 hover:border-n3rve-300 dark:hover:border-n3rve-700 transition-colors">
+                                  <div className="mb-3">
+                                    <div className="flex items-center justify-between mb-2">
+                                      <h5 className="text-lg font-semibold text-gray-900 dark:text-white">
+                                        {t(`track.territory.${continentKey}`, continentKey.charAt(0).toUpperCase() + continentKey.slice(1))}
+                                      </h5>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          const currentTerritories = productMetadata.territories || [];
+
+                                          if (isAllSelected) {
+                                            const newTerritories = currentTerritories.filter(
+                                              (c: string) => !continent.countries.includes(c)
+                                            );
+                                            setProductMetadata({
+                                              ...productMetadata,
+                                              territories: newTerritories
+                                            });
+                                          } else {
+                                            const newTerritories = [...new Set([
+                                              ...currentTerritories,
+                                              ...continent.countries
+                                            ])];
+                                            setProductMetadata({
+                                              ...productMetadata,
+                                              territories: newTerritories
+                                            });
+                                          }
+                                        }}
+                                        className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                                          isAllSelected
+                                            ? 'bg-n3rve-100 text-n3rve-700 hover:bg-n3rve-200 dark:bg-n3rve-900 dark:text-n3rve-300'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
+                                        }`}
+                                      >
+                                        {isAllSelected ? '✓ ' : ''}{language === 'ko' ? '전체' : 'All'}
+                                      </button>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                        <div
+                                          className={`h-2 rounded-full transition-all ${
+                                            selectedCount === 0 ? 'bg-gray-300 dark:bg-gray-600' : 'bg-n3rve-main'
+                                          }`}
+                                          style={{ width: `${(selectedCount / totalCount) * 100}%` }}
+                                        />
+                                      </div>
+                                      <span className="text-sm text-gray-600 dark:text-gray-400 min-w-[60px] text-right">
+                                        {selectedCount}/{totalCount}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Expandable Country List */}
+                                  <details className="group" id={`territory-${continentKey}`}>
+                                    <summary className="cursor-pointer text-sm text-n3rve-main hover:text-n3rve-700 font-medium list-none flex items-center gap-1">
+                                      <ChevronRight className="w-4 h-4 transition-transform group-open:rotate-90" />
+                                      {language === 'ko' ? '국가 목록' : 'Countries'}
+                                    </summary>
+                                    <div className="mt-3 space-y-1 max-h-48 overflow-y-auto">
+                                      {continent.countries.map(countryCode => (
+                                        <label
+                                          key={countryCode}
+                                          className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors text-sm
+                                        ${productMetadata.territories?.includes(countryCode)
+                                          ? 'bg-n3rve-50 dark:bg-n3rve-900/20 hover:bg-n3rve-100 dark:hover:bg-n3rve-900/30'
+                                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                                        }`}
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            value={countryCode}
+                                            checked={productMetadata.territories?.includes(countryCode) || false}
+                                            onChange={(e) => {
+                                              const currentTerritories = productMetadata.territories || [];
+                                              const newTerritories = e.target.checked
+                                                ? [...currentTerritories, countryCode]
+                                                : currentTerritories.filter((c: string) => c !== countryCode);
+                                              setProductMetadata({
+                                                ...productMetadata,
+                                                territories: newTerritories
+                                              });
+                                            }}
+                                            className="rounded text-n3rve-main focus:ring-n3rve-500"
+                                          />
+                                          <span className={`flex-1 ${
+                                            productMetadata.territories?.includes(countryCode)
+                                              ? 'text-n3rve-900 dark:text-n3rve-100 font-medium'
+                                              : 'text-gray-700 dark:text-gray-300'
+                                          }`}>
+                                            {countryNames[countryCode]?.[language] || countryNames[countryCode]?.en || countryCode}
+                                          </span>
+                                          <span className="text-xs text-gray-400">
+                                            {countryCode}
+                                          </span>
+                                        </label>
+                                      ))}
+                                    </div>
+                                  </details>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                          {/* Selected Countries Summary */}
+                          <div className="bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg p-4">
+                            <h5 className="font-medium text-n3rve-900 dark:text-n3rve-100 mb-2">
+                              {language === 'ko' ? '선택된 국가' : 'Selected Countries'}
+                          ({productMetadata.territories?.length || 0})
+                            </h5>
+                            <div className="flex flex-wrap gap-2">
+                              {(productMetadata.territories || []).map((countryCode: string) => (
+                                <span
+                                  key={countryCode}
+                                  className="inline-flex items-center gap-1 px-2 py-1 bg-n3rve-100 dark:bg-n3rve-800 text-n3rve-700 dark:text-n3rve-200 rounded-full text-xs"
+                                >
+                                  {countryNames[countryCode]?.[language] || countryNames[countryCode]?.en || countryCode}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newTerritories = (productMetadata.territories || [])
+                                        .filter((c: string) => c !== countryCode);
+                                      setProductMetadata({
+                                        ...productMetadata,
+                                        territories: newTerritories
+                                      });
+                                    }}
+                                    className="ml-1 hover:text-n3rve-900 dark:hover:text-n3rve-100"
+                                  >
+                                ×
+                                  </button>
+                                </span>
+                              ))}
                             </div>
                           </div>
-                          
-                          {/* UTC Display */}
-                          <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-                            <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
-                              UTC (Coordinated Universal Time)
-                            </div>
-                            <div className="text-lg font-bold text-gray-900 dark:text-white">
-                              {(() => {
-                                const [time, period] = selectedTrack.releaseTime.split(' ')
-                                const [hours, minutes] = time.split(':')
-                                let hour = parseInt(hours)
-                                
-                                if (period === 'PM' && hour !== 12) hour += 12
-                                if (period === 'AM' && hour === 12) hour = 0
-                                
-                                const kstDate = new Date(selectedTrack.consumerReleaseDate)
-                                kstDate.setHours(hour, parseInt(minutes), 0, 0)
-                                
-                                const utcDate = new Date(kstDate.getTime() - (9 * 60 * 60 * 1000))
-                                
-                                const utcDateStr = utcDate.toLocaleDateString('en-US', {
-                                  year: 'numeric',
-                                  month: 'long',
-                                  day: 'numeric',
-                                  weekday: 'long'
-                                })
-                                
-                                const utcTimeStr = utcDate.toLocaleTimeString('en-US', {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                  hour12: true
-                                })
-                                
-                                return `${utcDateStr} ${utcTimeStr}`
-                              })()}
-                            </div>
-                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* DSP Territory Settings */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Disc className="w-5 h-5 text-n3rve-main" />
+                      {t('DSP별 지역 설정', 'DSP Territory Settings')}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                      {t('사용자 지역 설정을 사용하여 각 DSP별로 다른 지역을 설정할 수 있습니다', 'You can set different territories for each DSP using custom territory settings')}
+                    </p>
+
+                    {/* Summary of DSP Settings */}
+                    <div className="mb-4 p-4 bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-n3rve-900 dark:text-n3rve-100">
+                            {Object.keys(productMetadata.dspTerritories || {}).filter(
+                              dsp => productMetadata.dspTerritories?.[dsp]?.territoryType === 'custom'
+                            ).length} {language === 'ko' ? '개 DSP 커스텀 설정' : 'DSPs with custom settings'}
+                          </p>
+                          <p className="text-xs text-n3rve-700 dark:text-n3rve-300 mt-1">
+                            {language === 'ko'
+                              ? '나머지는 기본 지역 설정을 사용합니다'
+                              : 'Others use default territory settings'
+                            }
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowDspTerritoryModal(true);
+                          }}
+                          className="px-4 py-2 bg-n3rve-main hover:bg-n3rve-700 text-white rounded-lg transition-colors flex items-center gap-2"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                          {language === 'ko' ? 'DSP 설정 관리' : 'Manage DSP Settings'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Quick Preview of Custom DSPs */}
+                    {Object.entries(productMetadata.dspTerritories || {})
+                      .filter(([_, config]: [string, any]) => config.territoryType === 'custom')
+                      .length > 0 && (
+                      <div className="space-y-2">
+                        <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {language === 'ko' ? '커스텀 설정된 DSP' : 'DSPs with custom settings'}
+                        </h5>
+                        <div className="flex flex-wrap gap-2">
+                          {Object.entries(productMetadata.dspTerritories || {})
+                            .filter(([_, config]: [string, any]) => config.territoryType === 'custom')
+                            .map(([dsp, config]: [string, any]) => (
+                              <span
+                                key={dsp}
+                                className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-xs"
+                              >
+                                {dsp.split(' ')[0]}
+                                <span className="text-n3rve-main dark:text-n3rve-accent2 font-medium">
+                              ({(config as any).territories?.length || 0})
+                                </span>
+                              </span>
+                            ))
+                          }
                         </div>
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-
-              {/* Audio Specifications */}
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg flex items-center justify-center">
-                    <Volume2 className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {language === 'ko' ? '오디오 사양' : 'Audio Specifications'}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {language === 'ko' ? '오디오 포맷을 선택하세요' : 'Select audio formats'}
-                    </p>
-                  </div>
                 </div>
-                
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-                <div className="space-y-4">
-                  {/* Dolby Atmos */}
-                  <div 
-                    onClick={() => updateTrack(selectedTrack.id, { dolbyAtmos: !selectedTrack.dolbyAtmos })}
-                    className={`
-                      relative p-4 rounded-xl border-2 cursor-pointer transition-all
-                      ${selectedTrack.dolbyAtmos 
-                        ? 'bg-n3rve-50 dark:bg-n3rve-900/20 border-n3rve-main' 
-                        : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'
-                      }
-                    `}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        <div className={`
-                          flex items-center justify-center w-5 h-5 rounded mt-0.5 transition-all
-                          ${selectedTrack.dolbyAtmos 
-                            ? 'bg-n3rve-main' 
-                            : 'bg-gray-200 dark:bg-gray-700'
-                          }
-                        `}>
-                          {selectedTrack.dolbyAtmos && (
-                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-900 dark:text-white">Dolby Atmos</span>
-                            <span className="px-2 py-0.5 bg-n3rve-100 dark:bg-n3rve-900/30 text-n3rve-700 dark:text-n3rve-300 text-xs rounded-full font-medium">
-                              3D Audio
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            {language === 'ko' 
-                              ? '공간 음향 기술로 더욱 입체적인 사운드 제공'
-                              : 'Immersive spatial audio experience'
-                            }
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Stereo */}
-                  <div 
-                    onClick={() => updateTrack(selectedTrack.id, { stereo: selectedTrack.stereo === false })}
-                    className={`
-                      relative p-4 rounded-xl border-2 cursor-pointer transition-all
-                      ${selectedTrack.stereo !== false
-                        ? 'bg-n3rve-50 dark:bg-n3rve-900/20 border-n3rve-main' 
-                        : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'
-                      }
-                    `}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        <div className={`
-                          flex items-center justify-center w-5 h-5 rounded mt-0.5 transition-all
-                          ${selectedTrack.stereo !== false
-                            ? 'bg-n3rve-main' 
-                            : 'bg-gray-200 dark:bg-gray-700'
-                          }
-                        `}>
-                          {selectedTrack.stereo !== false && (
-                            <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-gray-900 dark:text-white">Stereo</span>
-                            <span className="px-2 py-0.5 bg-n3rve-100 dark:bg-n3rve-900/30 text-n3rve-700 dark:text-n3rve-300 text-xs rounded-full font-medium">
-                              Standard
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            {language === 'ko' 
-                              ? '표준 스테레오 오디오 (좌/우 채널)'
-                              : 'Standard stereo audio (L/R channels)'
-                            }
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Info Note */}
-                  <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              )}
+
+              {/* Asset Level Content */}
+              {metadataSubTab === 'asset' && selectedTrack && (
+                <div className="space-y-6">
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
                     <div className="flex items-start gap-2">
-                      <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                      <p className="text-xs text-blue-800 dark:text-blue-200">
-                        {language === 'ko' 
-                          ? '최소 하나 이상의 오디오 포맷을 선택해야 합니다. 두 가지 모두 선택 가능합니다.'
-                          : 'At least one audio format must be selected. You can select both formats.'
+                      <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm text-yellow-800 dark:text-yellow-200">
+                        <p className="font-medium mb-1">
+                          {language === 'en'
+                            ? `Currently selected track: ${selectedTrack.titleKo || selectedTrack.titleEn || '(No title)'}`
+                            : `현재 선택된 트랙: ${selectedTrack.titleKo || selectedTrack.titleEn || '(제목 없음)'}`
+                          }
+                        </p>
+                        <p>
+                          {language === 'en'
+                            ? 'You can configure settings individually for each track.'
+                            : '각 트랙별로 개별 설정할 수 있습니다.'
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Track Basic Info */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                      <Music className="w-5 h-5 text-n3rve-main" />
+                      {language === 'ko' ? '트랙 기본 정보' : 'Track Basic Info'}
+                    </h4>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <ValidatedInput
+                            fieldId={`track-${selectedTrack.id}-title-ko`}
+                            validationType="track"
+                            validationOptions={{ trackNumber: tracks.findIndex(t => t.id === selectedTrack.id) + 1 }}
+                            value={selectedTrack.titleKo}
+                            onValueChange={(value) => updateTrack(selectedTrack.id, { titleKo: value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                            placeholder={language === 'ko' ? '한글 제목을 입력하세요' : 'Enter Korean title'}
+                            showInlineWarnings={true}
+                            language={language}
+                            label={
+                              <span>
+                                {language === 'ko' ? '트랙 제목 (한글)' : 'Track Title (Korean)'} <span className="text-red-500">*</span>
+                              </span>
+                            }
+                          />
+                        </div>
+                        <div>
+                          <ValidatedInput
+                            fieldId={`track-${selectedTrack.id}-title-en`}
+                            validationType="track"
+                            validationOptions={{ trackNumber: tracks.findIndex(t => t.id === selectedTrack.id) + 1 }}
+                            value={selectedTrack.titleEn}
+                            onValueChange={(value) => updateTrack(selectedTrack.id, { titleEn: value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                            placeholder={language === 'ko' ? '영문 제목을 입력하세요' : 'Enter English title'}
+                            showInlineWarnings={true}
+                            language={language}
+                            label={language === 'ko' ? '트랙 제목 (영문)' : 'Track Title (English)'}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        ISRC {language === 'ko' ? '(선택사항)' : '(Optional)'}
+                          </label>
+                          <input
+                            type="text"
+                            value={selectedTrack.isrc || ''}
+                            onChange={(e) => updateTrack(selectedTrack.id, { isrc: e.target.value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                            placeholder={language === 'ko' ? 'ISRC 코드 (예: KRXXX1234567)' : 'ISRC code (e.g., USXXX1234567)'}
+                          />
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {language === 'ko'
+                              ? '이미 발매된 트랙의 ISRC가 있는 경우 입력하세요'
+                              : 'Enter if you have an ISRC for an already released track'
+                            }
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ko' ? '트랙 유형' : 'Track Type'}
+                          </label>
+                          <select
+                            value={selectedTrack.trackType || 'audio'}
+                            onChange={(e) => updateTrack(selectedTrack.id, { trackType: e.target.value as 'audio' | 'music_video' })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          >
+                            <option value="audio">{language === 'ko' ? '오디오' : 'Audio'}</option>
+                            <option value="music_video">{language === 'ko' ? '뮤직비디오' : 'Music Video'}</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <button
+                          onClick={() => setTitleTrack(selectedTrack.id)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                            selectedTrack.isTitle
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
+                          }`}
+                        >
+                          <Star className={`w-4 h-4 ${selectedTrack.isTitle ? 'fill-current' : ''}`} />
+                          {language === 'ko' ? '타이틀 트랙' : 'Title Track'}
+                        </button>
+                      </div>
+
+                      {/* Track Translations */}
+                      <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                        <TranslationInput
+                          translations={selectedTrack.translations || []}
+                          onTranslationsChange={(translations) => {
+                            updateTrack(selectedTrack.id, { translations });
+                          }}
+                          language={language}
+                          placeholder={language === 'ko' ? '선택한 언어로 번역된 제목' : 'Title in selected language'}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Artists Section */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                      <p className="text-sm text-blue-800 dark:text-blue-200 flex items-center gap-2">
+                        <Info className="w-4 h-4" />
+                        {language === 'ko'
+                          ? '≡ 아이콘을 드래그하여 메인 아티스트와 피처링 아티스트 간 이동할 수 있습니다'
+                          : '≡ Drag artists between Main and Featuring sections'
                         }
                       </p>
                     </div>
-                  </div>
-                </div>
-                </div>
-              </div>
-
-              {/* Genre Section */}
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg flex items-center justify-center">
-                    <Tag className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {language === 'ko' ? '장르 선택' : 'Genre Selection'}
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {language === 'ko' ? '트랙의 장르를 선택하세요' : 'Select genres for your track'}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'ko' ? '메인 장르' : 'Main Genre'} <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={selectedTrack.genre || ''}
-                      onChange={(e) => updateTrack(selectedTrack.id, { genre: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    >
-                      <option value="">{language === 'ko' ? '장르를 선택하세요' : 'Select a genre'}</option>
-                      <option value="Alternative">Alternative</option>
-                      <option value="Audiobooks">Audiobooks</option>
-                      <option value="Blues">Blues</option>
-                      <option value="Children's Music">Children's Music</option>
-                      <option value="Classical">Classical</option>
-                      <option value="Comedy">Comedy</option>
-                      <option value="Country">Country</option>
-                      <option value="Dance">Dance</option>
-                      <option value="Electronic">Electronic</option>
-                      <option value="Folk">Folk</option>
-                      <option value="Hip Hop/Rap">Hip Hop/Rap</option>
-                      <option value="Holiday">Holiday</option>
-                      <option value="Inspirational">Inspirational</option>
-                      <option value="Jazz">Jazz</option>
-                      <option value="K-Pop">K-Pop</option>
-                      <option value="Latin">Latin</option>
-                      <option value="New Age">New Age</option>
-                      <option value="Opera">Opera</option>
-                      <option value="Pop">Pop</option>
-                      <option value="R&B/Soul">R&B/Soul</option>
-                      <option value="Reggae">Reggae</option>
-                      <option value="Rock">Rock</option>
-                      <option value="Soundtrack">Soundtrack</option>
-                      <option value="World">World</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'ko' ? '서브장르' : 'Subgenre'}
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedTrack.subgenre || ''}
-                      onChange={(e) => updateTrack(selectedTrack.id, { subgenre: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'ko' ? '예: Dance Pop' : 'e.g., Dance Pop'}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'ko' ? '대체 장르' : 'Alternate Genre'}
-                    </label>
-                    <select
-                      value={selectedTrack.alternateGenre || ''}
-                      onChange={(e) => updateTrack(selectedTrack.id, { alternateGenre: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    >
-                      <option value="">{language === 'ko' ? '대체 장르를 선택하세요' : 'Select alternate genre'}</option>
-                      <option value="Alternative">Alternative</option>
-                      <option value="Audiobooks">Audiobooks</option>
-                      <option value="Blues">Blues</option>
-                      <option value="Children's Music">Children's Music</option>
-                      <option value="Classical">Classical</option>
-                      <option value="Comedy">Comedy</option>
-                      <option value="Country">Country</option>
-                      <option value="Dance">Dance</option>
-                      <option value="Electronic">Electronic</option>
-                      <option value="Folk">Folk</option>
-                      <option value="Hip Hop/Rap">Hip Hop/Rap</option>
-                      <option value="Holiday">Holiday</option>
-                      <option value="Inspirational">Inspirational</option>
-                      <option value="Jazz">Jazz</option>
-                      <option value="K-Pop">K-Pop</option>
-                      <option value="Latin">Latin</option>
-                      <option value="New Age">New Age</option>
-                      <option value="Opera">Opera</option>
-                      <option value="Pop">Pop</option>
-                      <option value="R&B/Soul">R&B/Soul</option>
-                      <option value="Reggae">Reggae</option>
-                      <option value="Rock">Rock</option>
-                      <option value="Soundtrack">Soundtrack</option>
-                      <option value="World">World</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'ko' ? '대체 서브장르' : 'Alternate Subgenre'}
-                    </label>
-                    <input
-                      type="text"
-                      value={selectedTrack.alternateSubgenre || ''}
-                      onChange={(e) => updateTrack(selectedTrack.id, { alternateSubgenre: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'ko' ? '대체 서브장르' : 'Alternate subgenre'}
-                    />
-                  </div>
-                </div>
-                </div>
-              </div>
-
-              {/* Language & Content Section */}
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg flex items-center justify-center">
-                    <Languages className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {language === 'ko' ? '언어 및 콘텐츠' : 'Language & Content'}
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {language === 'ko' ? '트랙의 언어와 콘텐츠 설정' : 'Set language and content settings'}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('메타데이터 언어', 'Metadata Language')}
-                    </label>
-                    <select
-                      value={selectedTrack.metadataLanguage || 'en'}
-                      onChange={(e) => updateTrack(selectedTrack.id, { metadataLanguage: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    >
-                      {languageOptions.map(lang => (
-                        <option key={lang.value} value={lang.value}>{lang.label}</option>
-                      ))}
-                    </select>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {t('음원 정보를 입력할 언어를 선택하세요', 'Select the language for entering music metadata')}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('선정적 콘텐츠', 'Explicit Content')}
-                    </label>
-                    <select
-                      value={selectedTrack.explicitContent ? 'explicit' : 'not-explicit'}
-                      onChange={(e) => updateTrack(selectedTrack.id, { explicitContent: e.target.value === 'explicit' })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    >
-                      <option value="not-explicit">{t('비선정적', 'Not Explicit')}</option>
-                      <option value="explicit">{t('선정적', 'Explicit')}</option>
-                    </select>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {t('선정적 콘텐츠 여부를 설정하세요', 'Set whether the content is explicit')}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('가사 언어', 'Lyrics Language')} <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={selectedTrack.lyricsLanguage || ''}
-                      onChange={(e) => updateTrack(selectedTrack.id, { lyricsLanguage: e.target.value })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    >
-                      <option value="">{t('언어 선택', 'Select Language')}</option>
-                      {languageOptions.map(lang => (
-                        <option key={lang.value} value={lang.value}>{lang.label}</option>
-                      ))}
-                      <option value="instrumental">{t('연주곡', 'Instrumental')}</option>
-                    </select>
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      {t('가사에 사용된 주요 언어를 선택하세요', 'Select the main language used in the lyrics')}
-                    </p>
-                  </div>
-                  <div>
-                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
-                      <div className="flex items-start gap-4">
-                        <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg shadow-md">
-                          <Volume2 className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                            {t('오디오 언어', 'Audio Language')} <span className="text-red-500 text-sm">*</span>
+                    <div className="space-y-6">
+                      {/* Main Artists */}
+                      <div
+                        onDragOver={(e) => handleArtistDragOver(e, 'main')}
+                        onDragLeave={handleArtistDragLeave}
+                        onDrop={(e) => handleArtistDrop(e, 'main')}
+                        className={`transition-all ${
+                          dragOverArtistType === 'main'
+                            ? 'ring-2 ring-n3rve-500 ring-offset-2 rounded-lg'
+                            : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <User className="w-5 h-5 text-n3rve-main" />
+                            {t('메인 아티스트', 'Main Artists')}
                           </h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
-                            {t('트랙의 음성 또는 보컬에 사용된 주요 언어를 선택해주세요', 'Select the primary language used in the track\'s audio or vocals')}
-                          </p>
-                          
-                          <div className="relative">
-                            <select
-                              value={selectedTrack.audioLanguage || ''}
-                              onChange={(e) => updateTrack(selectedTrack.id, { audioLanguage: e.target.value })}
-                              className="w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm appearance-none cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
-                            >
-                              <option value="">{t('언어를 선택하세요', 'Select a language')}</option>
-                              
-                              <optgroup label={t('주요 언어', 'Major Languages')}>
-                                {languageOptions.slice(0, 12).map(lang => (
-                                  <option key={lang.value} value={lang.value}>{lang.label}</option>
-                                ))}
-                              </optgroup>
-                              
-                              <optgroup label={t('아시아 언어', 'Asian Languages')}>
-                                {languageOptions.slice(12, 26).map(lang => (
-                                  <option key={lang.value} value={lang.value}>{lang.label}</option>
-                                ))}
-                              </optgroup>
-                              
-                              <optgroup label={t('유럽 언어', 'European Languages')}>
-                                {languageOptions.slice(26, 45).map(lang => (
-                                  <option key={lang.value} value={lang.value}>{lang.label}</option>
-                                ))}
-                              </optgroup>
-                              
-                              <optgroup label={t('기타 언어', 'Other Languages')}>
-                                {languageOptions.slice(45).map(lang => (
-                                  <option key={lang.value} value={lang.value}>{lang.label}</option>
-                                ))}
-                              </optgroup>
-                              
-                              <optgroup label={t('특수', 'Special')}>
-                                <option value="instrumental">{t('연주곡 (가사 없음)', 'Instrumental (No Lyrics)')}</option>
-                                <option value="multiple">{t('다중 언어', 'Multiple Languages')}</option>
-                              </optgroup>
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setArtistModalType('main');
+                              setEditingArtist(null);
+                              setShowArtistModal(true);
+                            }}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-n3rve-main hover:bg-n3rve-700 text-white text-sm rounded-lg transition-colors"
+                          >
+                            <Plus className="w-4 h-4" />
+                            {t('추가', 'Add')}
+                          </button>
+                        </div>
+                        {selectedTrack.artists.length > 0 ? (
+                          <div className="space-y-2">
+                            {selectedTrack.artists.map((artist) => (
+                              <div
+                                key={artist.id}
+                                draggable
+                                onDragStart={(e) => handleArtistDragStart(e, artist, 'main')}
+                                onDragEnd={handleArtistDragEnd}
+                                className={`flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-move transition-all hover:shadow-md ${
+                                  draggedArtist?.artist.id === artist.id ? 'opacity-50' : ''
+                                }`}
+                              >
+                                <div className="flex items-center gap-3 flex-1">
+                                  <GripVertical className="w-4 h-4 text-gray-400" />
+                                  <div>
+                                    <div className="font-medium text-gray-900 dark:text-white">
+                                      {artist.primaryName}
+                                      {artist.translatedName && (
+                                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                                      ({artist.translatedName})
+                                        </span>
+                                      )}
+                                    </div>
+                                    {artist.customIdentifiers.length > 0 && (
+                                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        {artist.customIdentifiers.map(id => `${id.type}: ${id.value}`).join(' | ')}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeArtistFromTrack(artist.id, 'main')}
+                                  className="text-red-500 hover:text-red-700 p-1"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
                           </div>
-                          
-                          {selectedTrack.audioLanguage && (
-                            <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 rounded-full text-sm">
-                              <CheckCircle className="w-4 h-4" />
-                              <span className="font-medium">
-                                {selectedTrack.audioLanguage === 'instrumental' 
-                                  ? t('연주곡', 'Instrumental')
-                                  : languageOptions.find(l => l.value === selectedTrack.audioLanguage)?.label || selectedTrack.audioLanguage
-                                }
-                              </span>
+                        ) : (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
+                            {t('메인 아티스트가 없습니다', 'No main artists added')}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Featuring Artists */}
+                      <div
+                        onDragOver={(e) => handleArtistDragOver(e, 'featuring')}
+                        onDragLeave={handleArtistDragLeave}
+                        onDrop={(e) => handleArtistDrop(e, 'featuring')}
+                        className={`transition-all ${
+                          dragOverArtistType === 'featuring'
+                            ? 'ring-2 ring-pink-500 ring-offset-2 rounded-lg'
+                            : ''
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-4">
+                          <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                            <Mic className="w-5 h-5 text-pink-600" />
+                            {t('피처링 아티스트', 'Featuring Artists')}
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setArtistModalType('featuring');
+                              setEditingArtist(null);
+                              setShowArtistModal(true);
+                            }}
+                            className="flex items-center gap-1 px-3 py-1.5 bg-pink-600 hover:bg-pink-700 text-white text-sm rounded-lg transition-colors"
+                          >
+                            <Plus className="w-4 h-4" />
+                            {t('추가', 'Add')}
+                          </button>
+                        </div>
+                        {selectedTrack.featuringArtists.length > 0 ? (
+                          <div className="space-y-2">
+                            {selectedTrack.featuringArtists.map((artist) => (
+                              <div
+                                key={artist.id}
+                                draggable
+                                onDragStart={(e) => handleArtistDragStart(e, artist, 'featuring')}
+                                onDragEnd={handleArtistDragEnd}
+                                className={`flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg cursor-move transition-all hover:shadow-md ${
+                                  draggedArtist?.artist.id === artist.id ? 'opacity-50' : ''
+                                }`}
+                              >
+                                <div className="flex items-center gap-3 flex-1">
+                                  <GripVertical className="w-4 h-4 text-gray-400" />
+                                  <div>
+                                    <div className="font-medium text-gray-900 dark:text-white">
+                                      {artist.primaryName}
+                                      {artist.translatedName && (
+                                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                                      ({artist.translatedName})
+                                        </span>
+                                      )}
+                                    </div>
+                                    {artist.customIdentifiers.length > 0 && (
+                                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                        {artist.customIdentifiers.map(id => `${id.type}: ${id.value}`).join(' | ')}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => removeArtistFromTrack(artist.id, 'featuring')}
+                                  className="text-red-500 hover:text-red-700 p-1"
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 py-8 text-center">
+                            {t('피처링 아티스트가 없습니다', 'No featuring artists added')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Contributors Section */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <UserCheck className="w-5 h-5 text-n3rve-main" />
+                        {t('기여자 정보', 'Contributor Information')}
+                      </h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingContributor(null);
+                          setShowContributorModal(true);
+                        }}
+                        className="flex items-center gap-1 px-3 py-1.5 bg-n3rve-main hover:bg-n3rve-700 text-white text-sm rounded-lg transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                    추가
+                      </button>
+                    </div>
+                    {selectedTrack.contributors.length > 0 ? (
+                      <div className="space-y-3">
+                        {selectedTrack.contributors.map((contributor) => {
+                          return (
+                            <div key={contributor.id} className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <span className="font-semibold text-gray-900 dark:text-white text-lg">
+                                      {contributor.name}
+                                    </span>
+                                    {contributor.translations && contributor.translations.length > 0 && (
+                                      <div className="flex items-center gap-1">
+                                        <Languages className="w-3 h-3 text-gray-400" />
+                                        <span className="text-xs text-gray-500 dark:text-gray-400">
+                                          {contributor.translations.length} {language === 'ko' ? '개 언어' : 'languages'}
+                                        </span>
+                                      </div>
+                                    )}
+                                    {(contributor.appleMusicUrl || contributor.spotifyUrl) && (
+                                      <div className="flex items-center gap-2">
+                                        {contributor.appleMusicUrl && (
+                                          <a
+                                            href={contributor.appleMusicUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                            title="Apple Music"
+                                          >
+                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                              <path d="M23.994 6.124a9.23 9.23 0 00-.24-2.19c-.317-1.31-1.062-2.31-2.18-3.043-1.054-.69-2.317-.905-3.614-.937-2.139-.05-4.288-.017-6.426-.017h-1.3c-1.866 0-3.739-.003-5.606.006-1.36.009-2.667.195-3.89.776C.196 1.113-.26 1.872.08 3.184c.066.257.135.515.227.763.51 1.378 1.47 2.335 2.83 2.785.912.3 1.872.423 2.832.449 1.665.045 3.33.018 4.995.018h1.662c1.962 0 3.924.006 5.886-.004 1.375-.007 2.696-.189 3.918-.772 1.558-.745 2.408-1.982 2.501-3.633.025-.44.026-.88-.009-1.32l.002.002zm-3.205 2.76c-.316.51-.788.849-1.405 1.016-.619.167-1.269.205-1.909.212-1.963.021-3.926.009-5.889.009h-1.618c-1.87 0-3.74.012-5.61-.006-.967-.009-1.925-.106-2.837-.4-.914-.295-1.59-.844-1.962-1.754-.247-.603-.166-1.226.144-1.793.324-.596.827-.976 1.508-1.19.679-.213 1.39-.27 2.095-.277 1.968-.021 3.936-.009 5.903-.009h1.584c1.952 0 3.904-.011 5.856.004.996.008 1.983.108 2.9.413.922.306 1.603.87 1.961 1.79.24.616.156 1.244-.162 1.821l.002.002zm-1.504-1.377c-.143-.357-.432-.613-.82-.713a3.104 3.104 0 00-.986-.065v5.817c0 .457-.066.892-.345 1.24-.278.35-.657.55-1.09.584-.79.061-1.407-.373-1.557-1.149a2.301 2.301 0 01-.033-.545V6.915a.664.664 0 00-.002-.05c-.225.006-.45.003-.674.012a2.552 2.552 0 00-.49.06c-.503.122-.836.5-.978.99a2.167 2.167 0 00-.065.615v3.896c0 .692.058 1.373.434 1.967.376.595.932.966 1.606 1.131.849.208 1.68.106 2.378-.437.703-.547 1.087-1.3 1.179-2.194.048-.462.037-.927.037-1.392V8.564c0-.761-.062-1.503-.62-2.07v.001z"/>
+                                            </svg>
+                                          </a>
+                                        )}
+                                        {contributor.spotifyUrl && (
+                                          <a
+                                            href={contributor.spotifyUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                            title="Spotify"
+                                          >
+                                            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                                              <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                                            </svg>
+                                          </a>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Translations */}
+                                  {contributor.translations && contributor.translations.length > 0 && (
+                                    <div className="mb-2">
+                                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                        {language === 'ko' ? '번역' : 'Translations'}:
+                                      </span>
+                                      <div className="flex flex-wrap gap-2 mt-1">
+                                        {contributor.translations.map((translation, idx) => {
+                                          const langOption = languageOptions.find(l => l.value === translation.language);
+                                          return (
+                                            <span key={idx} className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-600 rounded text-xs">
+                                              <span className="font-medium text-gray-600 dark:text-gray-300">
+                                                {langOption?.label || translation.language}:
+                                              </span>
+                                              <span className="text-gray-800 dark:text-gray-200">
+                                                {translation.name}
+                                              </span>
+                                            </span>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Roles */}
+                                  <div className="mb-2">
+                                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                      {language === 'ko' ? '역할' : 'Roles'}:
+                                    </span>
+                                    <div className="flex flex-wrap gap-1.5 mt-1">
+                                      {contributor.roles.map(role => {
+                                        const roleOption = roleOptions.find(r => r.value === role);
+                                        const roleLabel = roleOption
+                                          ? (language === 'ko' ? roleOption.label : roleOption.labelEn)
+                                          : role;
+
+                                        // Determine color based on role type
+                                        let colorClass = 'bg-gray-100 text-gray-700 dark:bg-gray-600 dark:text-gray-200';
+                                        if (['composer', 'lyricist', 'arranger'].includes(role)) {
+                                          colorClass = 'bg-n3rve-100 text-n3rve-800 dark:bg-n3rve-900/30 dark:text-n3rve-200';
+                                        } else if (role.includes('producer')) {
+                                          colorClass = 'bg-n3rve-100 text-purple-800 dark:bg-n3rve-900/30 dark:text-purple-200';
+                                        } else if (role.includes('engineer')) {
+                                          colorClass = 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200';
+                                        } else if (['performer', 'studio_musician', 'soloist'].includes(role)) {
+                                          colorClass = 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-200';
+                                        }
+
+                                        return (
+                                          <span key={role} className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${colorClass}`}>
+                                            {roleLabel}
+                                          </span>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+
+                                  {/* Instruments */}
+                                  {contributor.instruments && contributor.instruments.length > 0 && (
+                                    <div>
+                                      <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">
+                                        {language === 'ko' ? '악기' : 'Instruments'}:
+                                      </span>
+                                      <div className="flex flex-wrap gap-1.5 mt-1">
+                                        {contributor.instruments.map(instrumentValue => (
+                                          <span key={instrumentValue} className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 rounded-full text-xs font-medium">
+                                            <Music2 className="w-3 h-3" />
+                                            {getInstrumentLabel(instrumentValue, language)}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <button
+                                  onClick={() => removeContributorFromTrack(contributor.id)}
+                                  className="text-red-500 hover:text-red-700 ml-2 p-1"
+                                  title={language === 'ko' ? '삭제' : 'Remove'}
+                                >
+                                  <X className="w-4 h-4" />
+                                </button>
+                              </div>
                             </div>
-                          )}
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        {t('기여자 정보가 없습니다', 'No contributor information added')}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Individual Track Release Date */}
+                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-n3rve-main" />
+                        {language === 'ko' ? '개별 트랙 발매일' : 'Individual Track Release Date'}
+                      </h4>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          id={`custom-release-${selectedTrack.id}`}
+                          checked={selectedTrack.hasCustomReleaseDate || false}
+                          onChange={(e) => {
+                            updateTrack(selectedTrack.id, {
+                              hasCustomReleaseDate: e.target.checked,
+                              consumerReleaseDate: e.target.checked ? selectedTrack.consumerReleaseDate || productMetadata.consumerReleaseDate : '',
+                              releaseTime: e.target.checked ? selectedTrack.releaseTime || productMetadata.releaseTime : ''
+                            });
+                          }}
+                          className="w-4 h-4 text-n3rve-main bg-gray-100 border-gray-300 rounded focus:ring-n3rve-500 focus:ring-2"
+                        />
+                        <label htmlFor={`custom-release-${selectedTrack.id}`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                          {language === 'ko' ? '이 트랙은 다른 발매일 사용' : 'Use different release date for this track'}
+                        </label>
+                      </div>
+                    </div>
+
+                    {selectedTrack.hasCustomReleaseDate && (
+                      <div className="space-y-4 mt-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
+                          <div className="flex items-start gap-2">
+                            <AlertCircle className="w-5 h-5 text-yellow-600 dark:text-yellow-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                              {language === 'ko'
+                                ? '개별 트랙 발매일은 일부 DSP에서만 지원됩니다. 지원하지 않는 DSP에서는 앨범 발매일이 적용됩니다.'
+                                : 'Individual track release dates are only supported by some DSPs. Unsupported DSPs will use the album release date.'
+                              }
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              {language === 'ko' ? '트랙 발매일' : 'Track Release Date'} <span className="text-red-500">*</span>
+                            </label>
+                            <DatePicker
+                              value={selectedTrack.consumerReleaseDate || ''}
+                              onChange={(newDate: any) => updateTrack(selectedTrack.id, { consumerReleaseDate: newDate })}
+                              placeholder="Select track release date"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              {language === 'ko' ? '발매 시간 (KST)' : 'Release Time (KST)'}
+                            </label>
+                            <div className="space-y-3">
+                              {!selectedTrack.releaseTime ? (
+                                <div
+                                  onClick={() => updateTrack(selectedTrack.id, { releaseTime: '12:00 AM' })}
+                                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 cursor-pointer hover:border-n3rve-accent2 dark:hover:border-n3rve-500 transition-colors"
+                                >
+                                  {language === 'ko' ? '시간을 입력해주세요' : 'Please enter time'}
+                                </div>
+                              ) : (
+                                <div className="flex gap-2">
+                                  <select
+                                    value={selectedTrack.releaseTime.split(':')[0]}
+                                    onChange={(e) => {
+                                      const hour = e.target.value;
+                                      const minute = selectedTrack.releaseTime!.split(':')[1]?.split(' ')[0] || '00';
+                                      const period = selectedTrack.releaseTime!.split(' ')[1] || 'AM';
+                                      const newTime = `${hour}:${minute} ${period}`;
+                                      updateTrack(selectedTrack.id, { releaseTime: newTime });
+                                    }}
+                                    className="flex-1 px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                  >
+                                    {[...Array(12)].map((_, i) => {
+                                      const hour = i + 1;
+                                      return (
+                                        <option key={hour} value={hour.toString().padStart(2, '0')}>
+                                          {hour}
+                                        </option>
+                                      );
+                                    })}
+                                  </select>
+                                  <span className="flex items-center text-gray-500 dark:text-gray-400">:</span>
+                                  <select
+                                    value={selectedTrack.releaseTime.split(':')[1]?.split(' ')[0] || '00'}
+                                    onChange={(e) => {
+                                      const hour = selectedTrack.releaseTime!.split(':')[0];
+                                      const minute = e.target.value;
+                                      const period = selectedTrack.releaseTime!.split(' ')[1] || 'AM';
+                                      const newTime = `${hour}:${minute} ${period}`;
+                                      updateTrack(selectedTrack.id, { releaseTime: newTime });
+                                    }}
+                                    className="flex-1 px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                  >
+                                    {[...Array(12)].map((_, i) => {
+                                      const minute = i * 5;
+                                      return (
+                                        <option key={minute} value={minute.toString().padStart(2, '0')}>
+                                          {minute.toString().padStart(2, '0')}
+                                        </option>
+                                      );
+                                    })}
+                                  </select>
+                                  <select
+                                    value={selectedTrack.releaseTime.split(' ')[1] || 'AM'}
+                                    onChange={(e) => {
+                                      const hour = selectedTrack.releaseTime!.split(':')[0];
+                                      const minute = selectedTrack.releaseTime!.split(':')[1]?.split(' ')[0] || '00';
+                                      const period = e.target.value;
+                                      const newTime = `${hour}:${minute} ${period}`;
+                                      updateTrack(selectedTrack.id, { releaseTime: newTime });
+                                    }}
+                                    className="px-3 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                                  >
+                                    <option value="AM">AM</option>
+                                    <option value="PM">PM</option>
+                                  </select>
+                                  <button
+                                    type="button"
+                                    onClick={() => updateTrack(selectedTrack.id, { releaseTime: '' })}
+                                    className="px-3 py-3 text-gray-500 hover:text-red-500 transition-colors"
+                                    title={language === 'ko' ? '시간 지우기' : 'Clear time'}
+                                  >
+                                    <X className="w-5 h-5" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Time conversion display for individual track */}
+                        {selectedTrack.releaseTime && selectedTrack.consumerReleaseDate && (
+                          <div className="mt-4 bg-gradient-to-r from-n3rve-50 to-blue-50 dark:from-n3rve-900/20 dark:to-blue-900/20 border border-n3rve-200 dark:border-n3rve-700 rounded-xl p-4">
+                            <div className="text-center space-y-3">
+                              <div className="text-sm font-semibold text-n3rve-800 dark:text-n3rve-200">
+                                {language === 'ko' ? '🚀 트랙 발매 예정 시간' : '🚀 Track Release Time'}
+                              </div>
+
+                              {/* KST Display */}
+                              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
+                                  {language === 'ko' ? '한국 시간 (KST)' : 'Korea Standard Time (KST)'}
+                                </div>
+                                <div className="text-lg font-bold text-gray-900 dark:text-white">
+                                  {(() => {
+                                    const date = new Date(selectedTrack.consumerReleaseDate);
+                                    const options: Intl.DateTimeFormatOptions = {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                      weekday: 'long'
+                                    };
+                                    const dateStr = language === 'ko'
+                                      ? date.toLocaleDateString('ko-KR', options)
+                                      : date.toLocaleDateString('en-US', options);
+
+                                    const timeStr = language === 'ko'
+                                      ? selectedTrack.releaseTime.replace('AM', '오전').replace('PM', '오후')
+                                      : selectedTrack.releaseTime;
+
+                                    return `${dateStr} ${timeStr}`;
+                                  })()}
+                                </div>
+                              </div>
+
+                              {/* UTC Display */}
+                              <div className="bg-white dark:bg-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mb-1 font-medium">
+                              UTC (Coordinated Universal Time)
+                                </div>
+                                <div className="text-lg font-bold text-gray-900 dark:text-white">
+                                  {(() => {
+                                    const [time, period] = selectedTrack.releaseTime.split(' ');
+                                    const [hours, minutes] = time.split(':');
+                                    let hour = parseInt(hours);
+
+                                    if (period === 'PM' && hour !== 12) hour += 12;
+                                    if (period === 'AM' && hour === 12) hour = 0;
+
+                                    const kstDate = new Date(selectedTrack.consumerReleaseDate);
+                                    kstDate.setHours(hour, parseInt(minutes), 0, 0);
+
+                                    const utcDate = new Date(kstDate.getTime() - (9 * 60 * 60 * 1000));
+
+                                    const utcDateStr = utcDate.toLocaleDateString('en-US', {
+                                      year: 'numeric',
+                                      month: 'long',
+                                      day: 'numeric',
+                                      weekday: 'long'
+                                    });
+
+                                    const utcTimeStr = utcDate.toLocaleTimeString('en-US', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                      hour12: true
+                                    });
+
+                                    return `${utcDateStr} ${utcTimeStr}`;
+                                  })()}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Audio Specifications */}
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-6">
+                      <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg flex items-center justify-center">
+                        <Volume2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {language === 'ko' ? '오디오 사양' : 'Audio Specifications'}
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {language === 'ko' ? '오디오 포맷을 선택하세요' : 'Select audio formats'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+                      <div className="space-y-4">
+                        {/* Dolby Atmos */}
+                        <div
+                          onClick={() => updateTrack(selectedTrack.id, { dolbyAtmos: !selectedTrack.dolbyAtmos })}
+                          className={`
+                      relative p-4 rounded-xl border-2 cursor-pointer transition-all
+                      ${selectedTrack.dolbyAtmos
+                  ? 'bg-n3rve-50 dark:bg-n3rve-900/20 border-n3rve-main'
+                  : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'
+                }
+                    `}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start gap-3">
+                              <div className={`
+                          flex items-center justify-center w-5 h-5 rounded mt-0.5 transition-all
+                          ${selectedTrack.dolbyAtmos
+                  ? 'bg-n3rve-main'
+                  : 'bg-gray-200 dark:bg-gray-700'
+                }
+                        `}>
+                                {selectedTrack.dolbyAtmos && (
+                                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-gray-900 dark:text-white">Dolby Atmos</span>
+                                  <span className="px-2 py-0.5 bg-n3rve-100 dark:bg-n3rve-900/30 text-n3rve-700 dark:text-n3rve-300 text-xs rounded-full font-medium">
+                              3D Audio
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                  {language === 'ko'
+                                    ? '공간 음향 기술로 더욱 입체적인 사운드 제공'
+                                    : 'Immersive spatial audio experience'
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Stereo */}
+                        <div
+                          onClick={() => updateTrack(selectedTrack.id, { stereo: selectedTrack.stereo === false })}
+                          className={`
+                      relative p-4 rounded-xl border-2 cursor-pointer transition-all
+                      ${selectedTrack.stereo !== false
+                  ? 'bg-n3rve-50 dark:bg-n3rve-900/20 border-n3rve-main'
+                  : 'bg-gray-50 dark:bg-gray-900 border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-700'
+                }
+                    `}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start gap-3">
+                              <div className={`
+                          flex items-center justify-center w-5 h-5 rounded mt-0.5 transition-all
+                          ${selectedTrack.stereo !== false
+                  ? 'bg-n3rve-main'
+                  : 'bg-gray-200 dark:bg-gray-700'
+                }
+                        `}>
+                                {selectedTrack.stereo !== false && (
+                                  <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                                  </svg>
+                                )}
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium text-gray-900 dark:text-white">Stereo</span>
+                                  <span className="px-2 py-0.5 bg-n3rve-100 dark:bg-n3rve-900/30 text-n3rve-700 dark:text-n3rve-300 text-xs rounded-full font-medium">
+                              Standard
+                                  </span>
+                                </div>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                  {language === 'ko'
+                                    ? '표준 스테레오 오디오 (좌/우 채널)'
+                                    : 'Standard stereo audio (L/R channels)'
+                                  }
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Info Note */}
+                        <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div className="flex items-start gap-2">
+                            <Info className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-xs text-blue-800 dark:text-blue-200">
+                              {language === 'ko'
+                                ? '최소 하나 이상의 오디오 포맷을 선택해야 합니다. 두 가지 모두 선택 가능합니다.'
+                                : 'At least one audio format must be selected. You can select both formats.'
+                              }
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Genre Section */}
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg flex items-center justify-center">
+                        <Tag className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {language === 'ko' ? '장르 선택' : 'Genre Selection'}
+                        </h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {language === 'ko' ? '트랙의 장르를 선택하세요' : 'Select genres for your track'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ko' ? '메인 장르' : 'Main Genre'} <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            value={selectedTrack.genre || ''}
+                            onChange={(e) => updateTrack(selectedTrack.id, { genre: e.target.value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          >
+                            <option value="">{language === 'ko' ? '장르를 선택하세요' : 'Select a genre'}</option>
+                            <option value="Alternative">Alternative</option>
+                            <option value="Audiobooks">Audiobooks</option>
+                            <option value="Blues">Blues</option>
+                            <option value="Children's Music">Children's Music</option>
+                            <option value="Classical">Classical</option>
+                            <option value="Comedy">Comedy</option>
+                            <option value="Country">Country</option>
+                            <option value="Dance">Dance</option>
+                            <option value="Electronic">Electronic</option>
+                            <option value="Folk">Folk</option>
+                            <option value="Hip Hop/Rap">Hip Hop/Rap</option>
+                            <option value="Holiday">Holiday</option>
+                            <option value="Inspirational">Inspirational</option>
+                            <option value="Jazz">Jazz</option>
+                            <option value="K-Pop">K-Pop</option>
+                            <option value="Latin">Latin</option>
+                            <option value="New Age">New Age</option>
+                            <option value="Opera">Opera</option>
+                            <option value="Pop">Pop</option>
+                            <option value="R&B/Soul">R&B/Soul</option>
+                            <option value="Reggae">Reggae</option>
+                            <option value="Rock">Rock</option>
+                            <option value="Soundtrack">Soundtrack</option>
+                            <option value="World">World</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ko' ? '서브장르' : 'Subgenre'}
+                          </label>
+                          <input
+                            type="text"
+                            value={selectedTrack.subgenre || ''}
+                            onChange={(e) => updateTrack(selectedTrack.id, { subgenre: e.target.value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                            placeholder={language === 'ko' ? '예: Dance Pop' : 'e.g., Dance Pop'}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ko' ? '대체 장르' : 'Alternate Genre'}
+                          </label>
+                          <select
+                            value={selectedTrack.alternateGenre || ''}
+                            onChange={(e) => updateTrack(selectedTrack.id, { alternateGenre: e.target.value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          >
+                            <option value="">{language === 'ko' ? '대체 장르를 선택하세요' : 'Select alternate genre'}</option>
+                            <option value="Alternative">Alternative</option>
+                            <option value="Audiobooks">Audiobooks</option>
+                            <option value="Blues">Blues</option>
+                            <option value="Children's Music">Children's Music</option>
+                            <option value="Classical">Classical</option>
+                            <option value="Comedy">Comedy</option>
+                            <option value="Country">Country</option>
+                            <option value="Dance">Dance</option>
+                            <option value="Electronic">Electronic</option>
+                            <option value="Folk">Folk</option>
+                            <option value="Hip Hop/Rap">Hip Hop/Rap</option>
+                            <option value="Holiday">Holiday</option>
+                            <option value="Inspirational">Inspirational</option>
+                            <option value="Jazz">Jazz</option>
+                            <option value="K-Pop">K-Pop</option>
+                            <option value="Latin">Latin</option>
+                            <option value="New Age">New Age</option>
+                            <option value="Opera">Opera</option>
+                            <option value="Pop">Pop</option>
+                            <option value="R&B/Soul">R&B/Soul</option>
+                            <option value="Reggae">Reggae</option>
+                            <option value="Rock">Rock</option>
+                            <option value="Soundtrack">Soundtrack</option>
+                            <option value="World">World</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ko' ? '대체 서브장르' : 'Alternate Subgenre'}
+                          </label>
+                          <input
+                            type="text"
+                            value={selectedTrack.alternateSubgenre || ''}
+                            onChange={(e) => updateTrack(selectedTrack.id, { alternateSubgenre: e.target.value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                            placeholder={language === 'ko' ? '대체 서브장르' : 'Alternate subgenre'}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Language & Content Section */}
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg flex items-center justify-center">
+                        <Languages className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {language === 'ko' ? '언어 및 콘텐츠' : 'Language & Content'}
+                        </h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {language === 'ko' ? '트랙의 언어와 콘텐츠 설정' : 'Set language and content settings'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('메타데이터 언어', 'Metadata Language')}
+                          </label>
+                          <select
+                            value={selectedTrack.metadataLanguage || 'en'}
+                            onChange={(e) => updateTrack(selectedTrack.id, { metadataLanguage: e.target.value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          >
+                            {languageOptions.map(lang => (
+                              <option key={lang.value} value={lang.value}>{lang.label}</option>
+                            ))}
+                          </select>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {t('음원 정보를 입력할 언어를 선택하세요', 'Select the language for entering music metadata')}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('선정적 콘텐츠', 'Explicit Content')}
+                          </label>
+                          <select
+                            value={selectedTrack.explicitContent ? 'explicit' : 'not-explicit'}
+                            onChange={(e) => updateTrack(selectedTrack.id, { explicitContent: e.target.value === 'explicit' })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          >
+                            <option value="not-explicit">{t('비선정적', 'Not Explicit')}</option>
+                            <option value="explicit">{t('선정적', 'Explicit')}</option>
+                          </select>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {t('선정적 콘텐츠 여부를 설정하세요', 'Set whether the content is explicit')}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {t('가사 언어', 'Lyrics Language')} <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            value={selectedTrack.lyricsLanguage || ''}
+                            onChange={(e) => updateTrack(selectedTrack.id, { lyricsLanguage: e.target.value })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          >
+                            <option value="">{t('언어 선택', 'Select Language')}</option>
+                            {languageOptions.map(lang => (
+                              <option key={lang.value} value={lang.value}>{lang.label}</option>
+                            ))}
+                            <option value="instrumental">{t('연주곡', 'Instrumental')}</option>
+                          </select>
+                          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                            {t('가사에 사용된 주요 언어를 선택하세요', 'Select the main language used in the lyrics')}
+                          </p>
+                        </div>
+                        <div>
+                          <div className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 rounded-xl p-6 border border-purple-100 dark:border-purple-800">
+                            <div className="flex items-start gap-4">
+                              <div className="p-2 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg shadow-md">
+                                <Volume2 className="w-5 h-5 text-white" />
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+                                  {t('오디오 언어', 'Audio Language')} <span className="text-red-500 text-sm">*</span>
+                                </h4>
+                                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">
+                                  {t('트랙의 음성 또는 보컬에 사용된 주요 언어를 선택해주세요', 'Select the primary language used in the track\'s audio or vocals')}
+                                </p>
+
+                                <div className="relative">
+                                  <select
+                                    value={selectedTrack.audioLanguage || ''}
+                                    onChange={(e) => updateTrack(selectedTrack.id, { audioLanguage: e.target.value })}
+                                    className="w-full px-4 py-3 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-sm appearance-none cursor-pointer hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
+                                  >
+                                    <option value="">{t('언어를 선택하세요', 'Select a language')}</option>
+
+                                    <optgroup label={t('주요 언어', 'Major Languages')}>
+                                      {languageOptions.slice(0, 12).map(lang => (
+                                        <option key={lang.value} value={lang.value}>{lang.label}</option>
+                                      ))}
+                                    </optgroup>
+
+                                    <optgroup label={t('아시아 언어', 'Asian Languages')}>
+                                      {languageOptions.slice(12, 26).map(lang => (
+                                        <option key={lang.value} value={lang.value}>{lang.label}</option>
+                                      ))}
+                                    </optgroup>
+
+                                    <optgroup label={t('유럽 언어', 'European Languages')}>
+                                      {languageOptions.slice(26, 45).map(lang => (
+                                        <option key={lang.value} value={lang.value}>{lang.label}</option>
+                                      ))}
+                                    </optgroup>
+
+                                    <optgroup label={t('기타 언어', 'Other Languages')}>
+                                      {languageOptions.slice(45).map(lang => (
+                                        <option key={lang.value} value={lang.value}>{lang.label}</option>
+                                      ))}
+                                    </optgroup>
+
+                                    <optgroup label={t('특수', 'Special')}>
+                                      <option value="instrumental">{t('연주곡 (가사 없음)', 'Instrumental (No Lyrics)')}</option>
+                                      <option value="multiple">{t('다중 언어', 'Multiple Languages')}</option>
+                                    </optgroup>
+                                  </select>
+                                  <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                                </div>
+
+                                {selectedTrack.audioLanguage && (
+                                  <div className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-200 rounded-full text-sm">
+                                    <CheckCircle className="w-4 h-4" />
+                                    <span className="font-medium">
+                                      {selectedTrack.audioLanguage === 'instrumental'
+                                        ? t('연주곡', 'Instrumental')
+                                        : languageOptions.find(l => l.value === selectedTrack.audioLanguage)?.label || selectedTrack.audioLanguage
+                                      }
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Lyrics Upload Section */}
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                        <BookOpen className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {language === 'ko' ? '가사 업로드' : 'Lyrics Upload'}
+                        </h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {language === 'ko' ? '가사 파일을 업로드하세요 (txt, doc, hwp)' : 'Upload lyrics files (txt, doc, hwp)'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'ko' ? '가사 파일 업로드' : 'Upload Lyrics Files'}
+                          </label>
+                          <input
+                            type="file"
+                            multiple
+                            accept=".txt,.doc,.docx,.hwp"
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              updateTrack(selectedTrack.id, { lyricsFiles: files });
+                            }}
+                            className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                          />
+                          <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                            {language === 'ko'
+                              ? '지원 형식: .txt, .doc, .docx, .hwp - 여러 파일 선택 가능'
+                              : 'Supported formats: .txt, .doc, .docx, .hwp - Multiple files allowed'
+                            }
+                          </p>
+                        </div>
+
+                        {selectedTrack.lyricsFiles && selectedTrack.lyricsFiles.length > 0 && (
+                          <div className="space-y-2">
+                            <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                              {language === 'ko' ? '업로드된 파일:' : 'Uploaded files:'}
+                            </h5>
+                            <div className="space-y-1">
+                              {selectedTrack.lyricsFiles.map((file, index) => (
+                                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded-lg">
+                                  <span className="text-sm text-gray-700 dark:text-gray-300">{file.name}</span>
+                                  <button
+                                    onClick={() => {
+                                      const newFiles = selectedTrack.lyricsFiles?.filter((_, i) => i !== index) || [];
+                                      updateTrack(selectedTrack.id, { lyricsFiles: newFiles });
+                                    }}
+                                    className="text-red-500 hover:text-red-700"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
+                          <div className="flex items-start gap-3">
+                            <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                            <div className="text-sm text-blue-700 dark:text-blue-300">
+                              <p className="font-medium mb-1">
+                                {language === 'ko' ? '가사 파일 업로드 가이드' : 'Lyrics Upload Guide'}
+                              </p>
+                              <ul className="space-y-1 text-xs text-blue-600 dark:text-blue-400">
+                                <li>• {language === 'ko' ? 'TXT: 일반 텍스트 파일' : 'TXT: Plain text files'}</li>
+                                <li>• {language === 'ko' ? 'DOC/DOCX: Microsoft Word 문서' : 'DOC/DOCX: Microsoft Word documents'}</li>
+                                <li>• {language === 'ko' ? 'HWP: 한글 워드프로세서 파일' : 'HWP: Hangul Word Processor files'}</li>
+                                <li>• {language === 'ko' ? '여러 언어 가사는 별도 파일로 업로드' : 'Upload separate files for different language lyrics'}</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Preview Section */}
+                  <div className="relative">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg flex items-center justify-center">
+                        <Volume2 className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          {language === 'ko' ? '미리듣기 설정' : 'Preview Settings'}
+                        </h4>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          {language === 'ko' ? '스트리밍 서비스의 미리듣기 구간 설정' : 'Set preview section for streaming services'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'en' ? 'Playtime Start (Short Clip)' : '재생 시작 시간 (짧은 클립)'}
+                          </label>
+                          <input
+                            type="number"
+                            value={selectedTrack.playtimeStartShortClip || ''}
+                            onChange={(e) => updateTrack(selectedTrack.id, { playtimeStartShortClip: parseInt(e.target.value) })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                            placeholder={language === 'en' ? 'Start time (seconds)' : '시작 시간 (초)'}
+                            min="0"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            {language === 'en' ? 'Preview Length' : '미리듣기 길이'}
+                          </label>
+                          <input
+                            type="number"
+                            value={selectedTrack.previewLength || '30'}
+                            onChange={(e) => updateTrack(selectedTrack.id, { previewLength: parseInt(e.target.value) })}
+                            className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                            placeholder={language === 'en' ? 'Preview length (seconds)' : '미리듣기 길이 (초)'}
+                            min="15"
+                            max="90"
+                          />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                </div>
-              </div>
+              )}
+            </div>
+          )}
 
-              {/* Lyrics Upload Section */}
-              <div className="relative">
-                <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-                    <BookOpen className="w-5 h-5 text-white" />
+          {/* Marketing Tab Content */}
+          {activeTab === 'marketing' && (
+            <div className="space-y-6">
+              {/* Artist Information & Profile - Merged Section */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 rounded-xl p-6 border border-green-200 dark:border-green-800">
+                <h4 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-6">
+                  <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
+                    <User className="w-5 h-5 text-white" />
                   </div>
+                  {language === 'ko' ? '아티스트 정보' : 'Artist Information'}
+                </h4>
+
+                <div className="space-y-6">
+                  {/* Artist Name */}
                   <div>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {language === 'ko' ? '가사 업로드' : 'Lyrics Upload'}
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {language === 'ko' ? '가사 파일을 업로드하세요 (txt, doc, hwp)' : 'Upload lyrics files (txt, doc, hwp)'}
-                    </p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '아티스트 이름' : 'Artist Name'} <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={marketing.artistName || ''}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, artistName: e.target.value }))}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
+                      placeholder={language === 'ko' ? '예: testusername' : 'e.g., testusername'}
+                    />
                   </div>
-                </div>
-                
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
+
+                  {/* Location Info */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '아티스트의 국가' : "Artist's Country"} <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={marketing.artistCountry || ''}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, artistCountry: e.target.value }))}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
+                    >
+                      <option value="">{language === 'ko' ? '국가 선택' : 'Select Country'}</option>
+                      <option value="KR">{language === 'ko' ? '대한민국' : 'South Korea'}</option>
+                      <option value="US">{language === 'ko' ? '미국' : 'United States'}</option>
+                      <option value="JP">{language === 'ko' ? '일본' : 'Japan'}</option>
+                      <option value="CN">{language === 'ko' ? '중국' : 'China'}</option>
+                      <option value="GB">{language === 'ko' ? '영국' : 'United Kingdom'}</option>
+                      <option value="DE">{language === 'ko' ? '독일' : 'Germany'}</option>
+                      <option value="FR">{language === 'ko' ? '프랑스' : 'France'}</option>
+                      <option value="IT">{language === 'ko' ? '이탈리아' : 'Italy'}</option>
+                      <option value="ES">{language === 'ko' ? '스페인' : 'Spain'}</option>
+                      <option value="CA">{language === 'ko' ? '캐나다' : 'Canada'}</option>
+                      <option value="AU">{language === 'ko' ? '호주' : 'Australia'}</option>
+                      <option value="BR">{language === 'ko' ? '브라질' : 'Brazil'}</option>
+                      <option value="IN">{language === 'ko' ? '인도' : 'India'}</option>
+                      <option value="MX">{language === 'ko' ? '멕시코' : 'Mexico'}</option>
+                      <option value="RU">{language === 'ko' ? '러시아' : 'Russia'}</option>
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {language === 'ko' ? '아티스트의 현재 도시' : "Artist's Current City"} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={marketing.artistCurrentCity || ''}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, artistCurrentCity: e.target.value }))}
+                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
+                        placeholder={language === 'ko' ? '예: 서울' : 'e.g., Seoul'}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {language === 'ko' ? '아티스트의 고향' : "Artist's Hometown"} <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={marketing.artistHometown || ''}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, artistHometown: e.target.value }))}
+                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
+                        placeholder={language === 'ko' ? '예: 부산' : 'e.g., Busan'}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Artist Images */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {language === 'ko' ? '아티스트 이미지 업로드 (아바타)' : 'Upload Artist Image (Avatar)'}
+                      </label>
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-n3rve-main transition-colors bg-white dark:bg-gray-800">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file && file.size <= 3 * 1024 * 1024) {
+                              setMarketing(prev => ({ ...prev, artistAvatar: file }));
+                            } else {
+                              alert(language === 'ko' ? '파일 크기는 3MB 이하여야 합니다.' : 'File size must be less than 3MB');
+                            }
+                          }}
+                          className="hidden"
+                          id="artist-avatar-upload"
+                        />
+                        <label htmlFor="artist-avatar-upload" className="cursor-pointer">
+                          <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {language === 'ko' ? '파일을 드래그 앤 드롭하거나 ' : 'Drag & drop a file or '}
+                            <span className="text-n3rve-main hover:text-n3rve-700 underline">browse</span>
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {language === 'ko' ? '최대 파일 크기: 3 MB' : 'Max file size is 3 MB'}
+                          </p>
+                        </label>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {language === 'ko' ? '아티스트 로고 업로드' : 'Upload Artist Logo'}
+                      </label>
+                      <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-n3rve-main transition-colors bg-white dark:bg-gray-800">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file && file.size <= 3 * 1024 * 1024) {
+                              setMarketing(prev => ({ ...prev, artistLogo: file }));
+                            } else {
+                              alert(language === 'ko' ? '파일 크기는 3MB 이하여야 합니다.' : 'File size must be less than 3MB');
+                            }
+                          }}
+                          className="hidden"
+                          id="artist-logo-upload"
+                        />
+                        <label htmlFor="artist-logo-upload" className="cursor-pointer">
+                          <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {language === 'ko' ? '파일을 드래그 앤 드롭하거나 ' : 'Drag & drop a file or '}
+                            <span className="text-n3rve-main hover:text-n3rve-700 underline">browse</span>
+                          </p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {language === 'ko' ? '최대 파일 크기: 3 MB' : 'Max file size is 3 MB'}
+                          </p>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Press Shot Info */}
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {language === 'ko' ? '가사 파일 업로드' : 'Upload Lyrics Files'}
+                        {language === 'ko' ? '프레스 샷 / 아티스트 이미지 URL' : 'Press Shot / Artist Image URL'} <span className="text-red-500">*</span>
                       </label>
+                      <p className="text-xs text-gray-500 mb-2">
+                        {language === 'ko'
+                          ? '고해상도 아티스트 프레스 사진 링크를 공유해주세요. 이 링크는 (음악) 플랫폼의 파트너와만 공유됩니다.'
+                          : 'Please share a link to high resolution artist press-pictures. The link will be ONLY shared with partners at (music) platforms.'
+                        }
+                      </p>
+                      <div className="relative">
+                        <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                        <input
+                          type="url"
+                          value={marketing.pressShotUrl || ''}
+                          onChange={(e) => setMarketing(prev => ({ ...prev, pressShotUrl: e.target.value }))}
+                          className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
+                          placeholder="https://example.com/press-shot.jpg"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {language === 'ko' ? '프레스 샷 크레딧' : 'Press Shot Credits'}
+                      </label>
+                      <p className="text-xs text-gray-500 mb-2">
+                        {language === 'ko'
+                          ? '사진을 찍은 사진작가의 이름을 제공해주세요.'
+                          : 'Please provide the name of the photographer who took the photo.'
+                        }
+                      </p>
                       <input
-                        type="file"
-                        multiple
-                        accept=".txt,.doc,.docx,.hwp"
-                        onChange={(e) => {
-                          const files = Array.from(e.target.files || [])
-                          updateTrack(selectedTrack.id, { lyricsFiles: files })
-                        }}
-                        className="w-full px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                        type="text"
+                        value={marketing.pressShotCredits || ''}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, pressShotCredits: e.target.value }))}
+                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
+                        placeholder={language === 'ko' ? '예: 김철수' : 'e.g., John Doe'}
                       />
-                      <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                        {language === 'ko' 
-                          ? '지원 형식: .txt, .doc, .docx, .hwp - 여러 파일 선택 가능'
-                          : 'Supported formats: .txt, .doc, .docx, .hwp - Multiple files allowed'
+                    </div>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+                    <h5 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
+                      {language === 'ko' ? '아티스트 프로필' : 'Artist Profile'}
+                    </h5>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Toundates URL
+                    </label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                      <input
+                        type="url"
+                        value={marketing.toundatesUrl}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, toundatesUrl: e.target.value }))}
+                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                        placeholder="https://toundates.com/artist"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '아티스트 성별' : 'Artist Gender'}
+                    </label>
+                    <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                      <p className="text-xs text-blue-800 dark:text-blue-200 italic">
+                        {language === 'ko'
+                          ? "아티스트 성별: 플레이리스트와 아티스트 마케팅 캠페인의 성별 균형을 개선하기 위한 노력으로, 여러 DSP가 모든 새로운 음원의 아티스트 성별을 추적하고 있습니다. 왼쪽에 제공된 옵션에 해당하는 성별 옵션은 DSP에 음원을 제출할 때 사용됩니다. DSP에 아티스트의 성별 정체성을 알리기 위해 '기타' 필드를 사용하십시오. 이 목록에 옵션이 없는 경우."
+                          : "Artist Gender: In an effort to improve gender balance in playlists and artist marketing campaigns, a number of DSPs are tracking artist gender for all new pitches. The gender options on the left correspond with the options we're given when pitching your content to the DSPs. Please use the \"Other\" field to inform us of your Artist's Gender identity, if this is not an option on this list."
                         }
                       </p>
                     </div>
-                    
-                    {selectedTrack.lyricsFiles && selectedTrack.lyricsFiles.length > 0 && (
+                    <select
+                      value={marketing.artistGender}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, artistGender: e.target.value }))}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                    >
+                      <option value="">{language === 'ko' ? '선택하세요' : 'Select'}</option>
+                      <option value="male">{language === 'ko' ? '남성' : 'Male'}</option>
+                      <option value="female">{language === 'ko' ? '여성' : 'Female'}</option>
+                      <option value="non-binary">{language === 'ko' ? '논바이너리' : 'Non-binary'}</option>
+                      <option value="other">{language === 'ko' ? '기타' : 'Other'}</option>
+                      <option value="prefer-not-to-say">{language === 'ko' ? '밝히고 싶지 않음' : 'Prefer not to say'}</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '사회 운동 / 인식 제고' : 'Social Movements / Awareness-Raising'}
+                    </label>
+                    <div className="mb-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                      <p className="text-xs text-green-800 dark:text-green-200 italic">
+                        {language === 'ko'
+                          ? '우리는 다양한 배경과 문화를 가진 아티스트들과 함께 일하는 것을 자랑스럽게 생각하며, 사회적 또는 윤리적 행동을 위해 변화를 추진하는 아티스트들과 함께 일합니다. 연중 내내 우리는 인식 제고 활동에 참여하여 아티스트들의 음악과 메시지를 대표하고 존중합니다.\n\n왼쪽에서 아티스트 신원과 강하게 연결된 사회 운동/인식 제고 활동을 선택할 수 있습니다.'
+                          : "We're proud to work with artists from many different backgrounds and cultures and to work with artists that push for change for good, in either social or ethical behaviour. Throughout the year, we will engage in awareness-raising activities that represent, highlight and honour the music and messages of our artists.\n\nOn the left, you'll be able to select the social movements/awareness-raising activities that your artist identifies strongly with."
+                        }
+                      </p>
+                    </div>
+                    <textarea
+                      value={marketing.socialMovements}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, socialMovements: e.target.value }))}
+                      rows={4}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                      placeholder={language === 'ko' ? '아티스트가 지지하는 사회 운동이나 캠페인을 설명해주세요' : 'Describe social movements or campaigns the artist supports'}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '아티스트 바이오' : 'Artist Bio'}
+                    </label>
+                    <textarea
+                      value={marketing.artistBio}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, artistBio: e.target.value }))}
+                      rows={6}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                      placeholder={language === 'ko' ? '아티스트의 배경, 스타일, 메시지 등을 포함한 상세한 바이오그래피를 작성해주세요' : 'Write a detailed biography including background, style, and message'}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* DSP Profile IDs */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
+                    <Database className="w-5 h-5 text-white" />
+                  </div>
+                  {language === 'ko' ? 'DSP 프로필 ID' : 'DSP Profile IDs'}
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Spotify Artist ID
+                    </label>
+                    <input
+                      type="text"
+                      value={marketing.spotifyArtistId || ''}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, spotifyArtistId: e.target.value }))}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                      placeholder="spotify:artist:3WrFJ7ztbogyGnTHbHJFl2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Apple Music Artist ID
+                    </label>
+                    <input
+                      type="text"
+                      value={marketing.appleMusicArtistId || ''}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, appleMusicArtistId: e.target.value }))}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                      placeholder="1234567890"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  SoundCloud Artist ID
+                    </label>
+                    <input
+                      type="text"
+                      value={marketing.soundcloudArtistId || ''}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, soundcloudArtistId: e.target.value }))}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                      placeholder="soundcloud-artist-id"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  YouTube Channel ID
+                    </label>
+                    <input
+                      type="text"
+                      value={marketing.youtubeChannelId || ''}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, youtubeChannelId: e.target.value }))}
+                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                      placeholder="UCxxxxxxxxxxxxxx"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Social Media URLs */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
+                    <Share2 className="w-5 h-5 text-white" />
+                  </div>
+                  {language === 'ko' ? '소셜 미디어 URL' : 'Social Media URLs'}
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Instagram
+                    </label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                      <input
+                        type="url"
+                        value={marketing.instagramUrl || ''}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, instagramUrl: e.target.value }))}
+                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                        placeholder="https://instagram.com/username"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Twitter
+                    </label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                      <input
+                        type="url"
+                        value={marketing.twitterUrl || ''}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, twitterUrl: e.target.value }))}
+                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                        placeholder="https://twitter.com/username"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Facebook
+                    </label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                      <input
+                        type="url"
+                        value={marketing.facebookUrl || ''}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, facebookUrl: e.target.value }))}
+                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                        placeholder="https://facebook.com/page"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  TikTok
+                    </label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                      <input
+                        type="url"
+                        value={marketing.tiktokUrl || ''}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, tiktokUrl: e.target.value }))}
+                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                        placeholder="https://tiktok.com/@username"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  YouTube
+                    </label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                      <input
+                        type="url"
+                        value={marketing.youtubeUrl || ''}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, youtubeUrl: e.target.value }))}
+                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                        placeholder="https://youtube.com/channel"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Website
+                    </label>
+                    <div className="relative">
+                      <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                      <input
+                        type="url"
+                        value={marketing.websiteUrl || ''}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, websiteUrl: e.target.value }))}
+                        className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                        placeholder="https://example.com"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Similar Artists & Sync History */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
+                    <Music className="w-5 h-5 text-white" />
+                  </div>
+                  {language === 'ko' ? '유사 아티스트 & 싱크 히스토리' : 'Similar Artists & Sync History'}
+                </h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '유사 아티스트 (Sounds Like)' : 'Similar Artists (Sounds Like)'}
+                    </label>
+                    <input
+                      type="text"
+                      value={marketing.similarArtists}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, similarArtists: e.target.value }))}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      placeholder={language === 'ko' ? '비슷한 사운드를 가진 아티스트들을 입력하세요' : 'Enter artists with similar sounds'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '아티스트에게 싱크 히스토리가 있나요?' : 'Does the artist have a sync history?'}
+                    </label>
+                    <div className="flex gap-4 mb-2">
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="hasSyncHistory"
+                          value="yes"
+                          checked={marketing.hasSyncHistory === 'yes'}
+                          onChange={(e) => setMarketing(prev => ({ ...prev, hasSyncHistory: e.target.value }))}
+                          className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
+                        />
+                        <span className="text-gray-700 dark:text-gray-300">{language === 'ko' ? '예' : 'Yes'}</span>
+                      </label>
+                      <label className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="hasSyncHistory"
+                          value="no"
+                          checked={marketing.hasSyncHistory === 'no'}
+                          onChange={(e) => setMarketing(prev => ({ ...prev, hasSyncHistory: e.target.value }))}
+                          className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
+                        />
+                        <span className="text-gray-700 dark:text-gray-300">{language === 'ko' ? '아니오' : 'No'}</span>
+                      </label>
+                    </div>
+                    {marketing.hasSyncHistory === 'yes' && (
+                      <textarea
+                        value={marketing.syncHistory}
+                        onChange={(e) => setMarketing(prev => ({ ...prev, syncHistory: e.target.value }))}
+                        rows={4}
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                        placeholder={language === 'ko' ? '아티스트의 싱크 히스토리를 나열해주세요' : "Please list the Artist's Sync History"}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Moods */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
+                    <Heart className="w-5 h-5 text-white" />
+                  </div>
+                  {language === 'ko' ? '분위기' : 'Mood(s)'} <span className="text-sm font-normal text-gray-500">*</span>
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  {language === 'ko' ? '이 릴리즈를 특징짓는 분위기를 최대 3개까지 선택하세요' : 'Choose up to 3 moods that characterise this release'}
+                  {marketing.moods.length > 0 && (
+                    <span className="ml-2 text-n3rve-main font-medium">
+                  ({marketing.moods.length}/3 {language === 'ko' ? '선택됨' : 'selected'})
+                    </span>
+                  )}
+                </p>
+
+                {/* Selected Moods */}
+                {marketing.moods.length > 0 && (
+                  <div className="mb-4 p-3 bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg">
+                    <div className="flex flex-wrap gap-2">
+                      {marketing.moods.map((mood: string) => (
+                        <span
+                          key={mood}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-n3rve-main text-white rounded-full text-sm font-medium"
+                        >
+                          {mood}
+                          <button
+                            onClick={() => {
+                              setMarketing(prev => ({ ...prev, moods: prev.moods.filter((m: string) => m !== mood) }));
+                            }}
+                            className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mood Options Grid */}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {['Chill', 'Cooking', 'Energetic', 'Feel Good', 'Fierce', 'Fitness', 'Focus', 'Happy',
+                    'Meditative', 'Motivation', 'Party', 'Romantic', 'Sad', 'Sexy', 'Sleep', 'Throwback',
+                    'Feeling Blue', 'Heartbreak'].map((mood) => (
+                    <button
+                      key={mood}
+                      onClick={() => {
+                        if (marketing.moods.includes(mood)) {
+                          setMarketing(prev => ({ ...prev, moods: prev.moods.filter((m: string) => m !== mood) }));
+                        } else if (marketing.moods.length < 3) {
+                          setMarketing(prev => ({ ...prev, moods: [...prev.moods, mood] }));
+                        }
+                      }}
+                      className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
+                        marketing.moods.includes(mood)
+                          ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
+                      } ${marketing.moods.length >= 3 && !marketing.moods.includes(mood) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={marketing.moods.length >= 3 && !marketing.moods.includes(mood)}
+                    >
+                      {mood}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Instruments */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
+                    <Music2 className="w-5 h-5 text-white" />
+                  </div>
+                  {language === 'ko' ? '악기' : 'Instruments'} <span className="text-sm font-normal text-gray-500">*</span>
+                </h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                  {language === 'ko' ? '이 레코드에서 사용된 악기는 무엇입니까?' : 'What instruments are used on this record?'}
+                  {marketing.instruments.length > 0 && (
+                    <span className="ml-2 text-n3rve-main font-medium">
+                  ({marketing.instruments.length} {language === 'ko' ? '선택됨' : 'selected'})
+                    </span>
+                  )}
+                </p>
+
+                {/* Selected Instruments */}
+                {marketing.instruments.length > 0 && (
+                  <div className="mb-4 p-3 bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg">
+                    <div className="flex flex-wrap gap-2">
+                      {marketing.instruments.map((instrument: string) => (
+                        <span
+                          key={instrument}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 bg-n3rve-main text-white rounded-full text-sm font-medium"
+                        >
+                          {instrument}
+                          <button
+                            onClick={() => {
+                              setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }));
+                            }}
+                            className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Search Box */}
+                <div className="mb-4">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder={language === 'ko' ? '악기 검색...' : 'Search instruments...'}
+                      value={instrumentSearch}
+                      onChange={(e) => setInstrumentSearch(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Instrument Categories */}
+                <div className="space-y-4">
+                  {/* String Instruments */}
+                  <div>
+                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '현악기' : 'String Instruments'}
+                    </h5>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {['Acoustic Guitar', 'Electric Guitar', 'Classical Guitar', 'Bass Guitar', 'Violin', 'Cello', 'Double Bass']
+                        .filter(inst => inst.toLowerCase().includes(instrumentSearch.toLowerCase()))
+                        .map((instrument) => (
+                          <button
+                            key={instrument}
+                            onClick={() => {
+                              if (marketing.instruments.includes(instrument)) {
+                                setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }));
+                              } else {
+                                setMarketing(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }));
+                              }
+                            }}
+                            className={`p-2 rounded-lg border text-sm font-medium transition-all ${
+                              marketing.instruments.includes(instrument)
+                                ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {instrument}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Keyboard Instruments */}
+                  <div>
+                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '건반악기' : 'Keyboard Instruments'}
+                    </h5>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {['Piano', 'Keyboard', 'Synthesizer', 'Organ', 'Accordion']
+                        .filter(inst => inst.toLowerCase().includes(instrumentSearch.toLowerCase()))
+                        .map((instrument) => (
+                          <button
+                            key={instrument}
+                            onClick={() => {
+                              if (marketing.instruments.includes(instrument)) {
+                                setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }));
+                              } else {
+                                setMarketing(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }));
+                              }
+                            }}
+                            className={`p-2 rounded-lg border text-sm font-medium transition-all ${
+                              marketing.instruments.includes(instrument)
+                                ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {instrument}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Wind Instruments */}
+                  <div>
+                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '관악기' : 'Wind Instruments'}
+                    </h5>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {['Flute', 'Clarinet', 'Saxophone', 'Trumpet', 'French Horn', 'Trombone', 'Harmonica']
+                        .filter(inst => inst.toLowerCase().includes(instrumentSearch.toLowerCase()))
+                        .map((instrument) => (
+                          <button
+                            key={instrument}
+                            onClick={() => {
+                              if (marketing.instruments.includes(instrument)) {
+                                setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }));
+                              } else {
+                                setMarketing(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }));
+                              }
+                            }}
+                            className={`p-2 rounded-lg border text-sm font-medium transition-all ${
+                              marketing.instruments.includes(instrument)
+                                ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {instrument}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* Percussion */}
+                  <div>
+                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '타악기' : 'Percussion'}
+                    </h5>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {['Drums', 'Drum Kit', 'Djembe', 'Tambourine', 'Cymbals', 'Marimba', 'Xylophone']
+                        .filter(inst => inst.toLowerCase().includes(instrumentSearch.toLowerCase()))
+                        .map((instrument) => (
+                          <button
+                            key={instrument}
+                            onClick={() => {
+                              if (marketing.instruments.includes(instrument)) {
+                                setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }));
+                              } else {
+                                setMarketing(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }));
+                              }
+                            }}
+                            className={`p-2 rounded-lg border text-sm font-medium transition-all ${
+                              marketing.instruments.includes(instrument)
+                                ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {instrument}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+
+                  {/* World/Traditional */}
+                  <div>
+                    <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '전통악기' : 'World/Traditional'}
+                    </h5>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+                      {['Erhu', 'Sitar', 'Koto', 'Didgeridoo', 'Banjo', 'Ukulele', 'Mandolin']
+                        .filter(inst => inst.toLowerCase().includes(instrumentSearch.toLowerCase()))
+                        .map((instrument) => (
+                          <button
+                            key={instrument}
+                            onClick={() => {
+                              if (marketing.instruments.includes(instrument)) {
+                                setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }));
+                              } else {
+                                setMarketing(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }));
+                              }
+                            }}
+                            className={`p-2 rounded-lg border text-sm font-medium transition-all ${
+                              marketing.instruments.includes(instrument)
+                                ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
+                                : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {instrument}
+                          </button>
+                        ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Elevator Pitch */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                    <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
+                      <Megaphone className="w-5 h-5 text-white" />
+                    </div>
+                    {language === 'ko' ? '엘리베이터 피치' : 'Elevator Pitch'}
+                  </h4>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-6">
+                    <div className="flex items-start gap-2 mb-3">
+                      <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                       <div className="space-y-2">
-                        <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          {language === 'ko' ? '업로드된 파일:' : 'Uploaded files:'}
+                        <h5 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                          {language === 'ko' ? '엘리베이터 피치 작성하기' : 'Crafting Your Elevator Pitch'}
                         </h5>
-                        <div className="space-y-1">
-                          {selectedTrack.lyricsFiles.map((file, index) => (
-                            <div key={index} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-900 rounded-lg">
-                              <span className="text-sm text-gray-700 dark:text-gray-300">{file.name}</span>
-                              <button
-                                onClick={() => {
-                                  const newFiles = selectedTrack.lyricsFiles?.filter((_, i) => i !== index) || []
-                                  updateTrack(selectedTrack.id, { lyricsFiles: newFiles })
-                                }}
-                                className="text-red-500 hover:text-red-700"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ))}
+                        <div className="space-y-3 text-sm text-blue-800 dark:text-blue-200">
+                          <div>
+                            <p className="font-medium mb-1">{language === 'ko' ? '엘리베이터 피치 - 베스트 프랙티스' : 'Elevator Pitch - best practices'}</p>
+                            <p className="text-xs">
+                              {language === 'ko'
+                                ? '엘리베이터를 타는 시간 동안 누군가에게 프로젝트를 피칭해야 한다면 - 무엇을 말하시겠습니까?'
+                                : 'If you had the duration of an elevator ride to pitch your project to someone - what would you say?'
+                              }
+                            </p>
+                          </div>
+                          <p className="text-xs">
+                            {language === 'ko'
+                              ? '완벽한 엘리베이터 피치는 최대 500자의 단일 단락으로 작성됩니다. 왜 이 트랙이 중요한지 자세히 설명하는 요약이어야 합니다 - 여기서 명확하고, 설득력 있고, 흥미로운 방식으로 DSP에게 음악에 대해 이야기할 수 있습니다.'
+                              : 'The perfect Elevator Pitch is written in one single paragraph of max 500 characters. It should be a summary of the track that details why it\'s so important - here\'s where you get to talk about your music to the DSPs in a way that should be clear, compelling and interesting.'
+                            }
+                          </p>
+                          <div className="text-xs">
+                            <p className="mb-1">{language === 'ko' ? '다음과 같은 사항을 생각해보면 유용할 수 있습니다:' : 'It can be useful to think about such things as:'}</p>
+                            <ul className="list-disc list-inside space-y-0.5 ml-2">
+                              <li>{language === 'ko' ? '노래의 스토리는 무엇인가?' : 'What\'s the story of the song?'}</li>
+                              <li>{language === 'ko' ? '이 노래를 특별하게 만드는 것은 무엇인가?' : 'What makes this song so special?'}</li>
+                              <li>{language === 'ko' ? '노래를 홍보하기 위해 당신과 아티스트가 하고 있는 흥미로운 일들은 무엇인가 - 마케팅, 투어, 디지털 활성화, 팬 커뮤니티, D2F 전략, 프로모?' : 'What interesting things are you and the artist doing to promote the song - marketing, touring, digital activations, fan communities, D2F strategies, promo?'}</li>
+                            </ul>
+                          </div>
+                          <p className="text-xs font-medium text-red-600 dark:text-red-400">
+                            {language === 'ko'
+                              ? '특정 DSP를 언급하지 말고 폭넓은 어필을 위해 플랫폼에 구애받지 않는 피치를 유지하세요.'
+                              : 'Please avoid mentioning specific DSPs and keep your pitch platform-agnostic to ensure broad appeal.'
+                            }
+                          </p>
+                          <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
+                            <p className="font-medium mb-1">{language === 'ko' ? '훅 - 베스트 프랙티스' : 'Hook - best practices'}</p>
+                            <p className="text-xs">
+                              {language === 'ko'
+                                ? '프로젝트를 판매하는 데 10초밖에 없다면 - 무엇을 말하시겠습니까?'
+                                : 'And if you had only 10 seconds to sell your project - what would you say?'
+                              }
+                            </p>
+                            <p className="text-xs mt-1">
+                              {language === 'ko'
+                                ? '이것은 이 릴리즈를 흥미롭게 만드는 것이 무엇인지 즉시 요약하고 설명하는 최대 175자의 강렬하고 주의를 끄는 단일 문장입니다. 여기서는 가장 설득력 있는 정보만 사용하고 정말로 와닿는 것에 집중하세요.'
+                                : 'This is a punchy, attention grabbing single sentence of max 175 characters that instantly summarises and explains what makes this release exciting. Use only the most compelling info here and focus on what really cuts through.'
+                              }
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    )}
-                    
-                    <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-800">
-                      <div className="flex items-start gap-3">
-                        <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                        <div className="text-sm text-blue-700 dark:text-blue-300">
-                          <p className="font-medium mb-1">
-                            {language === 'ko' ? '가사 파일 업로드 가이드' : 'Lyrics Upload Guide'}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Hook */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '1. 당신의 훅은 무엇입니까?' : "1. What's Your Hook?"} <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {language === 'ko'
+                        ? '주의를 즉시 사로잡는 한두 문장으로 릴리스를 설명하세요. 이 프로젝트를 흥미롭고, 독특하거나, 뉴스거리로 만드는 것은 무엇입니까? (최대 175자)'
+                        : 'Describe your release in one or two sentences that instantly capture attention. What makes this project exciting, unique, or newsworthy? (Max. 175 characters)'
+                      }
+                    </p>
+                    <div className="relative">
+                      <textarea
+                        value={marketing.hook}
+                        onChange={(e) => {
+                          if (e.target.value.length <= 175) {
+                            setMarketing(prev => ({ ...prev, hook: e.target.value }));
+                          }
+                        }}
+                        rows={2}
+                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all resize-none"
+                        placeholder={language === 'ko'
+                          ? '예: 글로벌 히트곡 제작자와 신예 K-pop 아티스트의 획기적인 콜라보레이션'
+                          : 'e.g., A groundbreaking collaboration between a global hitmaker and rising K-pop artist'
+                        }
+                      />
+                      <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+                        {marketing.hook.length} / 175
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Main Pitch */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {language === 'ko' ? '2. 메인 피치' : '2. The Main Pitch'} <span className="text-red-500">*</span>
+                    </label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      {language === 'ko'
+                        ? '프로젝트의 본질—스토리, 영향력, 비전—을 500자 이내로 포착하는 간결하고 설득력 있는 요약을 전달하세요.\n\n폭넓은 어필을 위해 피치를 플랫폼에 구애받지 않게 유지하고 특정 DSP를 언급하지 마세요.'
+                        : 'Deliver a concise and compelling summary that captures the essence of your project—its story, impact, and vision—all within 500 characters.\n\nBe sure to keep your pitch platform-agnostic and avoid mentioning specific DSPs to ensure broad appeal.'
+                      }
+                    </p>
+                    <div className="relative">
+                      <textarea
+                        value={marketing.mainPitch}
+                        onChange={(e) => {
+                          if (e.target.value.length <= 500) {
+                            setMarketing(prev => ({ ...prev, mainPitch: e.target.value }));
+                          }
+                        }}
+                        rows={5}
+                        className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all resize-none"
+                        placeholder={language === 'ko'
+                          ? '프로젝트의 스토리, 영향력, 비전을 설명하세요...'
+                          : 'Describe the story, impact, and vision of your project...'
+                        }
+                      />
+                      <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+                        {marketing.mainPitch.length} / 500
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Marketing Drivers */}
+              <div className="bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 rounded-xl p-6 border border-green-200 dark:border-green-800 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start justify-between mb-6">
+                  <div>
+                    <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      {language === 'ko' ? '새 마케팅 드라이버 추가' : 'Add New Marketing Driver'}
+                    </h4>
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2">
+                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                          {language === 'ko' ? '음악을 위한 임팩트 있는 마케팅 드라이버 만들기:' : 'Craft Impactful Marketing Drivers for Your Music:'}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {language === 'ko'
+                          ? '엘리베이터 피치가 음악에 대한 매력적인 이야기를 전달하는 동안, 마케팅 드라이버는 프로젝트를 돋보이게 하는 전략적 요소를 강조하는 명확한 포인트 세트로 작용합니다. 우리는 이러한 드라이버를 불릿 포인트로 포맷하여 엘리베이터 피치의 내러티브를 정확하게 보완합니다.'
+                          : 'While your Elevator Pitch tells a compelling story about your music, the Marketing Drivers serve as a clear set of points highlighting the strategic elements that make your project stand out. We will format these drivers into bullet points, ensuring they complement the narrative of your Elevator Pitch with precision.'
+                        }
+                      </p>
+                      <div className="mt-3">
+                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                          {language === 'ko' ? '새로운 제출 구조: 관련성과 정확성에 초점:' : 'New Submission Structure: Focus on Relevance and Precision:'}
+                        </span>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                          {language === 'ko'
+                            ? '우리의 새로운 라인별 제출 형식을 통해 글로벌하게 호소하고 타겟 지역에 특별히 맞춤화된 전략을 명확히 표현할 수 있습니다. 이 구조화된 접근법은 보다 효과적인 시장 커버리지를 보장하고 지역 참여와 지원을 향상시킵니다.'
+                            : 'Our new line-by-line submission format allows you to articulate strategies that appeal globally and cater specifically to targeted regions. This structured approach ensures more effective market coverage, enhancing local engagement and support.'
+                          }
+                        </p>
+                      </div>
+                      <div className="mt-3">
+                        <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
+                          {language === 'ko' ? '영향력과 비전 입증:' : 'Demonstrate Impact and Vision:'}
+                        </span>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
+                          {language === 'ko'
+                            ? '소셜 미디어 메트릭, 파트너십, 프로모션 노력에 대한 명확한 세부사항을 제출하여 음악의 도달 범위와 잠재력을 보여주세요. 이러한 포인트는 엘리베이터 피치에 소개된 역동적인 이야기를 더욱 풍부하게 하면서 과거의 성과와 미래 지향적인 계획을 모두 강조해야 합니다.'
+                            : "Submit clear details about your social media metrics, partnerships, and promotional efforts to illustrate your music's reach and potential. These points should highlight both your historical achievements and your forward-looking plans, further enriching the dynamic story introduced in your Elevator Pitch."
+                          }
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{language === 'ko' ? '더 많은 정보?' : 'More Info?'}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {marketing.marketingDrivers.length === 0 && (
+                    <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                      <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                        {language === 'ko'
+                          ? '아직 마케팅 드라이버가 없습니다. 아래 버튼을 클릭하여 추가하세요.'
+                          : 'No marketing drivers yet. Click the button below to add one.'}
+                      </p>
+                    </div>
+                  )}
+
+                  {marketing.marketingDrivers.map((driver: any, index: number) => (
+                    <div key={index} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                      <div className="flex items-start gap-4">
+                        <div className="flex-1 space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              {language === 'ko' ? '마케팅 드라이버' : 'Marketing Driver'}
+                            </label>
+                            <textarea
+                              value={driver.content}
+                              onChange={(e) => {
+                                const newDrivers = [...marketing.marketingDrivers];
+                                newDrivers[index] = { ...driver, content: e.target.value };
+                                setMarketing(prev => ({ ...prev, marketingDrivers: newDrivers }));
+                              }}
+                              rows={3}
+                              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                              placeholder={language === 'ko' ? '마케팅 드라이버를 입력하세요' : 'Enter marketing driver'}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                              {language === 'ko' ? '관련 지역' : 'Relevant Territories'}
+                            </label>
+                            <input
+                              type="text"
+                              value={driver.territories?.join(', ') || ''}
+                              onChange={(e) => {
+                                const newDrivers = [...marketing.marketingDrivers];
+                                newDrivers[index] = { ...driver, territories: e.target.value.split(',').map(t => t.trim()).filter(t => t) };
+                                setMarketing(prev => ({ ...prev, marketingDrivers: newDrivers }));
+                              }}
+                              className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
+                              placeholder={language === 'ko' ? '예: 한국, 일본, 미국 (쉼표로 구분)' : 'e.g., Korea, Japan, USA (comma separated)'}
+                            />
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newDrivers = marketing.marketingDrivers.filter((_: any, i: number) => i !== index);
+                            setMarketing(prev => ({ ...prev, marketingDrivers: newDrivers }));
+                          }}
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMarketing(prev => ({
+                        ...prev,
+                        marketingDrivers: [...prev.marketingDrivers, { content: '', territories: [] }]
+                      }));
+                    }}
+                    className="w-full px-6 py-3 bg-n3rve-main hover:bg-n3rve-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" />
+                    {language === 'ko' ? '마케팅 드라이버 추가' : 'Submit'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Social Media Rollout Plan */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                    <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
+                      <Share2 className="w-5 h-5 text-white" />
+                    </div>
+                    {language === 'ko' ? '소셜 미디어 롤아웃 계획' : 'Social Media Rollout Plan'}
+                  </h4>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4">
+                    <div className="flex items-start gap-2">
+                      <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                      <div className="space-y-2">
+                        <h5 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
+                          {language === 'ko' ? '소셜 미디어 롤아웃 계획 팁' : 'Social Media Rollout Plan Tips'}
+                        </h5>
+                        <div className="space-y-2 text-xs text-blue-800 dark:text-blue-200">
+                          <p className="font-medium">
+                            {language === 'ko'
+                              ? '소셜 미디어 롤아웃 계획에서 무엇을 찾고 있나요?'
+                              : 'What are we looking for in a Social Media Rollout Plan?'
+                            }
                           </p>
-                          <ul className="space-y-1 text-xs text-blue-600 dark:text-blue-400">
-                            <li>• {language === 'ko' ? 'TXT: 일반 텍스트 파일' : 'TXT: Plain text files'}</li>
-                            <li>• {language === 'ko' ? 'DOC/DOCX: Microsoft Word 문서' : 'DOC/DOCX: Microsoft Word documents'}</li>
-                            <li>• {language === 'ko' ? 'HWP: 한글 워드프로세서 파일' : 'HWP: Hangul Word Processor files'}</li>
-                            <li>• {language === 'ko' ? '여러 언어 가사는 별도 파일로 업로드' : 'Upload separate files for different language lyrics'}</li>
+                          <ul className="list-disc list-inside space-y-1 ml-2">
+                            <li>
+                              <span className="font-medium">{language === 'ko' ? '게시 일정:' : 'Posting schedule:'}</span>
+                              <span className="ml-1">{language === 'ko' ? '언제, 얼마나 자주 콘텐츠를 게시할 예정인가요?' : 'When and how frequently will you post content?'}</span>
+                            </li>
+                            <li>
+                              <span className="font-medium">{language === 'ko' ? '콘텐츠 유형:' : 'Content types:'}</span>
+                              <span className="ml-1">{language === 'ko' ? '티저 비디오, 이미지, 비하인드 콘텐츠, 프로모션 그래픽을 공유할 예정인가요?' : 'Will you share teaser videos, images, behind-the-scenes content, or promotional graphics?'}</span>
+                            </li>
+                            <li>
+                              <span className="font-medium">{language === 'ko' ? '해시태그 및 키워드:' : 'Hashtags and keywords:'}</span>
+                              <span className="ml-1">{language === 'ko' ? '발견 가능성을 향상시키기 위해 관련 해시태그와 키워드를 선택하세요.' : 'Choose relevant hashtags and keywords to improve discoverability.'}</span>
+                            </li>
+                            <li>
+                              <span className="font-medium">{language === 'ko' ? '타겟 오디언스:' : 'Target audience:'}</span>
+                              <span className="ml-1">{language === 'ko' ? '오디언스의 인구 통계 및 선호도를 정의하세요.' : 'Define your audience demographics and preferences.'}</span>
+                            </li>
+                            <li>
+                              <span className="font-medium">{language === 'ko' ? 'KPI:' : 'KPIs:'}</span>
+                              <span className="ml-1">{language === 'ko' ? '좋아요, 공유, 댓글, 클릭률 또는 전환과 같이 추적할 주요 성과 지표를 지정하세요.' : 'Specify the key performance indicators you\'ll track, such as likes, shares, comments, click-through rates, or conversions.'}</span>
+                            </li>
                           </ul>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {language === 'ko' ? '소셜 미디어 롤아웃 계획' : 'Your Social Media Rollout Plan'} <span className="text-red-500">*</span>
+                  </label>
+                  <p className="text-xs text-gray-500 mb-3">
+                    {language === 'ko'
+                      ? '링크(예: Google 문서 또는 Google 스프레드시트)를 통해 콘텐츠 캘린더를 공유해 주세요. 문서 시스템이 없는 경우 아래 텍스트 상자에 요청된 정보를 제공하세요.'
+                      : 'Please share your content calendar with us through a link (e.g., Google Doc or Google Spreadsheet). If you don\'t have a document system, provide the requested information in the text box below.'
+                    }
+                  </p>
+                  <textarea
+                    value={marketing.socialMediaPlan}
+                    onChange={(e) => setMarketing(prev => ({ ...prev, socialMediaPlan: e.target.value }))}
+                    rows={8}
+                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all resize-none"
+                    placeholder={language === 'ko'
+                      ? '소셜 미디어 롤아웃 계획을 입력하거나 문서 링크를 공유하세요...'
+                      : 'Enter your social media rollout plan or share a document link...'
+                    }
+                  />
+                </div>
               </div>
 
-              {/* Preview Section */}
-              <div className="relative">
+              {/* Album Description & Marketing Strategy */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('앨범 설명', 'Album Description')}</h4>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('앨범 소개', 'Album Introduction')}
+                    </label>
+                    <textarea
+                      value={marketing.albumIntroduction}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, albumIntroduction: e.target.value }))}
+                      rows={4}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      placeholder={t('앨범에 대한 간단한 소개를 작성하세요', 'Write a brief introduction about the album')}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('상세 설명', 'Detailed Description')}
+                    </label>
+                    <textarea
+                      value={marketing.albumDescription}
+                      onChange={(e) => setMarketing(prev => ({ ...prev, albumDescription: e.target.value }))}
+                      rows={6}
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                      placeholder={t('앨범에 대한 상세한 설명을 작성하세요', 'Write a detailed description about the album')}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Album Notes */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-2 mb-4">
-                  <div className="w-10 h-10 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg flex items-center justify-center">
-                    <Volume2 className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {language === 'ko' ? '미리듣기 설정' : 'Preview Settings'}
-                    </h4>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {language === 'ko' ? '스트리밍 서비스의 미리듣기 구간 설정' : 'Set preview section for streaming services'}
-                    </p>
-                  </div>
+                  <FileText className="w-5 h-5 text-n3rve-main" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('앨범 노트', 'Album Notes')}</h3>
                 </div>
-                
-                <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'en' ? 'Playtime Start (Short Clip)' : '재생 시작 시간 (짧은 클립)'}
-                    </label>
-                    <input
-                      type="number"
-                      value={selectedTrack.playtimeStartShortClip || ''}
-                      onChange={(e) => updateTrack(selectedTrack.id, { playtimeStartShortClip: parseInt(e.target.value) })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'en' ? 'Start time (seconds)' : '시작 시간 (초)'}
-                      min="0"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {language === 'en' ? 'Preview Length' : '미리듣기 길이'}
-                    </label>
-                    <input
-                      type="number"
-                      value={selectedTrack.previewLength || '30'}
-                      onChange={(e) => updateTrack(selectedTrack.id, { previewLength: parseInt(e.target.value) })}
-                      className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                      placeholder={language === 'en' ? 'Preview length (seconds)' : '미리듣기 길이 (초)'}
-                      min="15"
-                      max="90"
-                    />
-                  </div>
+
+                <textarea
+                  value={(productMetadata as any).albumNotes || ''}
+                  onChange={(e) => setProductMetadata(prev => ({ ...prev, albumNotes: e.target.value }))}
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  placeholder={t('앨범에 대한 추가 노트나 설명을 입력하세요', 'Enter additional notes or description about the album')}
+                />
+                <p className="mt-1 text-xs text-gray-500">
+                  {language === 'ko' ? '국내 음원사이트에서만 표시됩니다' : 'Only displayed on Korean music sites'}
+                </p>
+              </div>
+
+              {/* Additional Notes */}
+              <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-2 mb-4">
+                  <FileText className="w-5 h-5 text-n3rve-main" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('추가 노트', 'Additional Notes')}</h3>
                 </div>
-                </div>
+
+                <textarea
+                  value={productMetadata.additionalNotes}
+                  onChange={(e) => setProductMetadata(prev => ({ ...prev, additionalNotes: e.target.value }))}
+                  rows={4}
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                  placeholder={language === 'ko' ? '특별한 요청사항이나 주의사항을 입력해주세요' : 'Enter any special requests or important notes'}
+                />
               </div>
             </div>
           )}
+
+          {/* QC Warnings */}
+          {qcValidationResults.length > 0 && (
+            <QCWarnings results={qcValidationResults} />
+          )}
         </div>
-      )}
-
-      {/* Marketing Tab Content */}
-      {activeTab === 'marketing' && (
-        <div className="space-y-6">
-          {/* Artist Information & Profile - Merged Section */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 rounded-xl p-6 border border-green-200 dark:border-green-800">
-            <h4 className="text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2 mb-6">
-              <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
-                <User className="w-5 h-5 text-white" />
-              </div>
-              {language === 'ko' ? '아티스트 정보' : 'Artist Information'}
-            </h4>
-            
-            <div className="space-y-6">
-              {/* Artist Name */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '아티스트 이름' : 'Artist Name'} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  value={marketing.artistName || ''}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, artistName: e.target.value }))}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
-                  placeholder={language === 'ko' ? '예: testusername' : 'e.g., testusername'}
-                />
-              </div>
-
-              {/* Location Info */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '아티스트의 국가' : "Artist's Country"} <span className="text-red-500">*</span>
-                </label>
-                <select
-                  value={marketing.artistCountry || ''}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, artistCountry: e.target.value }))}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
-                >
-                  <option value="">{language === 'ko' ? '국가 선택' : 'Select Country'}</option>
-                  <option value="KR">{language === 'ko' ? '대한민국' : 'South Korea'}</option>
-                  <option value="US">{language === 'ko' ? '미국' : 'United States'}</option>
-                  <option value="JP">{language === 'ko' ? '일본' : 'Japan'}</option>
-                  <option value="CN">{language === 'ko' ? '중국' : 'China'}</option>
-                  <option value="GB">{language === 'ko' ? '영국' : 'United Kingdom'}</option>
-                  <option value="DE">{language === 'ko' ? '독일' : 'Germany'}</option>
-                  <option value="FR">{language === 'ko' ? '프랑스' : 'France'}</option>
-                  <option value="IT">{language === 'ko' ? '이탈리아' : 'Italy'}</option>
-                  <option value="ES">{language === 'ko' ? '스페인' : 'Spain'}</option>
-                  <option value="CA">{language === 'ko' ? '캐나다' : 'Canada'}</option>
-                  <option value="AU">{language === 'ko' ? '호주' : 'Australia'}</option>
-                  <option value="BR">{language === 'ko' ? '브라질' : 'Brazil'}</option>
-                  <option value="IN">{language === 'ko' ? '인도' : 'India'}</option>
-                  <option value="MX">{language === 'ko' ? '멕시코' : 'Mexico'}</option>
-                  <option value="RU">{language === 'ko' ? '러시아' : 'Russia'}</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {language === 'ko' ? '아티스트의 현재 도시' : "Artist's Current City"} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={marketing.artistCurrentCity || ''}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, artistCurrentCity: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
-                    placeholder={language === 'ko' ? '예: 서울' : 'e.g., Seoul'}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {language === 'ko' ? '아티스트의 고향' : "Artist's Hometown"} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={marketing.artistHometown || ''}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, artistHometown: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
-                    placeholder={language === 'ko' ? '예: 부산' : 'e.g., Busan'}
-                  />
-                </div>
-              </div>
-
-              {/* Artist Images */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {language === 'ko' ? '아티스트 이미지 업로드 (아바타)' : 'Upload Artist Image (Avatar)'}
-                  </label>
-                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-n3rve-main transition-colors bg-white dark:bg-gray-800">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file && file.size <= 3 * 1024 * 1024) {
-                          setMarketing(prev => ({ ...prev, artistAvatar: file }))
-                        } else {
-                          alert(language === 'ko' ? '파일 크기는 3MB 이하여야 합니다.' : 'File size must be less than 3MB')
-                        }
-                      }}
-                      className="hidden"
-                      id="artist-avatar-upload"
-                    />
-                    <label htmlFor="artist-avatar-upload" className="cursor-pointer">
-                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {language === 'ko' ? '파일을 드래그 앤 드롭하거나 ' : 'Drag & drop a file or '}
-                        <span className="text-n3rve-main hover:text-n3rve-700 underline">browse</span>
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {language === 'ko' ? '최대 파일 크기: 3 MB' : 'Max file size is 3 MB'}
-                      </p>
-                    </label>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {language === 'ko' ? '아티스트 로고 업로드' : 'Upload Artist Logo'}
-                  </label>
-                  <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center hover:border-n3rve-main transition-colors bg-white dark:bg-gray-800">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0]
-                        if (file && file.size <= 3 * 1024 * 1024) {
-                          setMarketing(prev => ({ ...prev, artistLogo: file }))
-                        } else {
-                          alert(language === 'ko' ? '파일 크기는 3MB 이하여야 합니다.' : 'File size must be less than 3MB')
-                        }
-                      }}
-                      className="hidden"
-                      id="artist-logo-upload"
-                    />
-                    <label htmlFor="artist-logo-upload" className="cursor-pointer">
-                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {language === 'ko' ? '파일을 드래그 앤 드롭하거나 ' : 'Drag & drop a file or '}
-                        <span className="text-n3rve-main hover:text-n3rve-700 underline">browse</span>
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {language === 'ko' ? '최대 파일 크기: 3 MB' : 'Max file size is 3 MB'}
-                      </p>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              {/* Press Shot Info */}
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {language === 'ko' ? '프레스 샷 / 아티스트 이미지 URL' : 'Press Shot / Artist Image URL'} <span className="text-red-500">*</span>
-                  </label>
-                  <p className="text-xs text-gray-500 mb-2">
-                    {language === 'ko' 
-                      ? '고해상도 아티스트 프레스 사진 링크를 공유해주세요. 이 링크는 (음악) 플랫폼의 파트너와만 공유됩니다.'
-                      : 'Please share a link to high resolution artist press-pictures. The link will be ONLY shared with partners at (music) platforms.'
-                    }
-                  </p>
-                  <div className="relative">
-                    <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-                    <input
-                      type="url"
-                      value={marketing.pressShotUrl || ''}
-                      onChange={(e) => setMarketing(prev => ({ ...prev, pressShotUrl: e.target.value }))}
-                      className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
-                      placeholder="https://example.com/press-shot.jpg"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {language === 'ko' ? '프레스 샷 크레딧' : 'Press Shot Credits'}
-                  </label>
-                  <p className="text-xs text-gray-500 mb-2">
-                    {language === 'ko' 
-                      ? '사진을 찍은 사진작가의 이름을 제공해주세요.'
-                      : 'Please provide the name of the photographer who took the photo.'
-                    }
-                  </p>
-                  <input
-                    type="text"
-                    value={marketing.pressShotCredits || ''}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, pressShotCredits: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all"
-                    placeholder={language === 'ko' ? '예: 김철수' : 'e.g., John Doe'}
-                  />
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
-                <h5 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  {language === 'ko' ? '아티스트 프로필' : 'Artist Profile'}
-                </h5>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Toundates URL
-                </label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-                  <input
-                    type="url"
-                    value={marketing.toundatesUrl}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, toundatesUrl: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    placeholder="https://toundates.com/artist"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '아티스트 성별' : 'Artist Gender'}
-                </label>
-                <div className="mb-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                  <p className="text-xs text-blue-800 dark:text-blue-200 italic">
-                    {language === 'ko' 
-                      ? "아티스트 성별: 플레이리스트와 아티스트 마케팅 캠페인의 성별 균형을 개선하기 위한 노력으로, 여러 DSP가 모든 새로운 음원의 아티스트 성별을 추적하고 있습니다. 왼쪽에 제공된 옵션에 해당하는 성별 옵션은 DSP에 음원을 제출할 때 사용됩니다. DSP에 아티스트의 성별 정체성을 알리기 위해 '기타' 필드를 사용하십시오. 이 목록에 옵션이 없는 경우."
-                      : "Artist Gender: In an effort to improve gender balance in playlists and artist marketing campaigns, a number of DSPs are tracking artist gender for all new pitches. The gender options on the left correspond with the options we're given when pitching your content to the DSPs. Please use the \"Other\" field to inform us of your Artist's Gender identity, if this is not an option on this list."
-                    }
-                  </p>
-                </div>
-                <select
-                  value={marketing.artistGender}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, artistGender: e.target.value }))}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                >
-                  <option value="">{language === 'ko' ? '선택하세요' : 'Select'}</option>
-                  <option value="male">{language === 'ko' ? '남성' : 'Male'}</option>
-                  <option value="female">{language === 'ko' ? '여성' : 'Female'}</option>
-                  <option value="non-binary">{language === 'ko' ? '논바이너리' : 'Non-binary'}</option>
-                  <option value="other">{language === 'ko' ? '기타' : 'Other'}</option>
-                  <option value="prefer-not-to-say">{language === 'ko' ? '밝히고 싶지 않음' : 'Prefer not to say'}</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '사회 운동 / 인식 제고' : 'Social Movements / Awareness-Raising'}
-                </label>
-                <div className="mb-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                  <p className="text-xs text-green-800 dark:text-green-200 italic">
-                    {language === 'ko' 
-                      ? "우리는 다양한 배경과 문화를 가진 아티스트들과 함께 일하는 것을 자랑스럽게 생각하며, 사회적 또는 윤리적 행동을 위해 변화를 추진하는 아티스트들과 함께 일합니다. 연중 내내 우리는 인식 제고 활동에 참여하여 아티스트들의 음악과 메시지를 대표하고 존중합니다.\n\n왼쪽에서 아티스트 신원과 강하게 연결된 사회 운동/인식 제고 활동을 선택할 수 있습니다."
-                      : "We're proud to work with artists from many different backgrounds and cultures and to work with artists that push for change for good, in either social or ethical behaviour. Throughout the year, we will engage in awareness-raising activities that represent, highlight and honour the music and messages of our artists.\n\nOn the left, you'll be able to select the social movements/awareness-raising activities that your artist identifies strongly with."
-                    }
-                  </p>
-                </div>
-                <textarea
-                  value={marketing.socialMovements}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, socialMovements: e.target.value }))}
-                  rows={4}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                  placeholder={language === 'ko' ? '아티스트가 지지하는 사회 운동이나 캠페인을 설명해주세요' : 'Describe social movements or campaigns the artist supports'}
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '아티스트 바이오' : 'Artist Bio'}
-                </label>
-                <textarea
-                  value={marketing.artistBio}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, artistBio: e.target.value }))}
-                  rows={6}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                  placeholder={language === 'ko' ? '아티스트의 배경, 스타일, 메시지 등을 포함한 상세한 바이오그래피를 작성해주세요' : 'Write a detailed biography including background, style, and message'}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* DSP Profile IDs */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
-                <Database className="w-5 h-5 text-white" />
-              </div>
-              {language === 'ko' ? 'DSP 프로필 ID' : 'DSP Profile IDs'}
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Spotify Artist ID
-                </label>
-                <input
-                  type="text"
-                  value={marketing.spotifyArtistId || ''}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, spotifyArtistId: e.target.value }))}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                  placeholder="spotify:artist:3WrFJ7ztbogyGnTHbHJFl2"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Apple Music Artist ID
-                </label>
-                <input
-                  type="text"
-                  value={marketing.appleMusicArtistId || ''}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, appleMusicArtistId: e.target.value }))}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                  placeholder="1234567890"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  SoundCloud Artist ID
-                </label>
-                <input
-                  type="text"
-                  value={marketing.soundcloudArtistId || ''}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, soundcloudArtistId: e.target.value }))}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                  placeholder="soundcloud-artist-id"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  YouTube Channel ID
-                </label>
-                <input
-                  type="text"
-                  value={marketing.youtubeChannelId || ''}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, youtubeChannelId: e.target.value }))}
-                  className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                  placeholder="UCxxxxxxxxxxxxxx"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Social Media URLs */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
-                <Share2 className="w-5 h-5 text-white" />
-              </div>
-              {language === 'ko' ? '소셜 미디어 URL' : 'Social Media URLs'}
-            </h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Instagram
-                </label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-                  <input
-                    type="url"
-                    value={marketing.instagramUrl || ''}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, instagramUrl: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    placeholder="https://instagram.com/username"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Twitter
-                </label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-                  <input
-                    type="url"
-                    value={marketing.twitterUrl || ''}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, twitterUrl: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    placeholder="https://twitter.com/username"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Facebook
-                </label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-                  <input
-                    type="url"
-                    value={marketing.facebookUrl || ''}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, facebookUrl: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    placeholder="https://facebook.com/page"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  TikTok
-                </label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-                  <input
-                    type="url"
-                    value={marketing.tiktokUrl || ''}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, tiktokUrl: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    placeholder="https://tiktok.com/@username"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  YouTube
-                </label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-                  <input
-                    type="url"
-                    value={marketing.youtubeUrl || ''}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, youtubeUrl: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    placeholder="https://youtube.com/channel"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Website
-                </label>
-                <div className="relative">
-                  <LinkIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
-                  <input
-                    type="url"
-                    value={marketing.websiteUrl || ''}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, websiteUrl: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                    placeholder="https://example.com"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Similar Artists & Sync History */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
-                <Music className="w-5 h-5 text-white" />
-              </div>
-              {language === 'ko' ? '유사 아티스트 & 싱크 히스토리' : 'Similar Artists & Sync History'}
-            </h4>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '유사 아티스트 (Sounds Like)' : 'Similar Artists (Sounds Like)'}
-                </label>
-                <input
-                  type="text"
-                  value={marketing.similarArtists}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, similarArtists: e.target.value }))}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder={language === 'ko' ? '비슷한 사운드를 가진 아티스트들을 입력하세요' : 'Enter artists with similar sounds'}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '아티스트에게 싱크 히스토리가 있나요?' : 'Does the artist have a sync history?'}
-                </label>
-                <div className="flex gap-4 mb-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="hasSyncHistory"
-                      value="yes"
-                      checked={marketing.hasSyncHistory === 'yes'}
-                      onChange={(e) => setMarketing(prev => ({ ...prev, hasSyncHistory: e.target.value }))}
-                      className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
-                    />
-                    <span className="text-gray-700 dark:text-gray-300">{language === 'ko' ? '예' : 'Yes'}</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="radio"
-                      name="hasSyncHistory"
-                      value="no"
-                      checked={marketing.hasSyncHistory === 'no'}
-                      onChange={(e) => setMarketing(prev => ({ ...prev, hasSyncHistory: e.target.value }))}
-                      className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
-                    />
-                    <span className="text-gray-700 dark:text-gray-300">{language === 'ko' ? '아니오' : 'No'}</span>
-                  </label>
-                </div>
-                {marketing.hasSyncHistory === 'yes' && (
-                  <textarea
-                    value={marketing.syncHistory}
-                    onChange={(e) => setMarketing(prev => ({ ...prev, syncHistory: e.target.value }))}
-                    rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                    placeholder={language === 'ko' ? "아티스트의 싱크 히스토리를 나열해주세요" : "Please list the Artist's Sync History"}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-
-
-          {/* Moods */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
-                <Heart className="w-5 h-5 text-white" />
-              </div>
-              {language === 'ko' ? '분위기' : 'Mood(s)'} <span className="text-sm font-normal text-gray-500">*</span>
-            </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              {language === 'ko' ? '이 릴리즈를 특징짓는 분위기를 최대 3개까지 선택하세요' : 'Choose up to 3 moods that characterise this release'}
-              {marketing.moods.length > 0 && (
-                <span className="ml-2 text-n3rve-main font-medium">
-                  ({marketing.moods.length}/3 {language === 'ko' ? '선택됨' : 'selected'})
-                </span>
-              )}
-            </p>
-            
-            {/* Selected Moods */}
-            {marketing.moods.length > 0 && (
-              <div className="mb-4 p-3 bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg">
-                <div className="flex flex-wrap gap-2">
-                  {marketing.moods.map((mood: string) => (
-                    <span
-                      key={mood}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-n3rve-main text-white rounded-full text-sm font-medium"
-                    >
-                      {mood}
-                      <button
-                        onClick={() => {
-                          setMarketing(prev => ({ ...prev, moods: prev.moods.filter((m: string) => m !== mood) }))
-                        }}
-                        className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Mood Options Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-              {['Chill', 'Cooking', 'Energetic', 'Feel Good', 'Fierce', 'Fitness', 'Focus', 'Happy', 
-                'Meditative', 'Motivation', 'Party', 'Romantic', 'Sad', 'Sexy', 'Sleep', 'Throwback', 
-                'Feeling Blue', 'Heartbreak'].map((mood) => (
-                <button
-                  key={mood}
-                  onClick={() => {
-                    if (marketing.moods.includes(mood)) {
-                      setMarketing(prev => ({ ...prev, moods: prev.moods.filter((m: string) => m !== mood) }))
-                    } else if (marketing.moods.length < 3) {
-                      setMarketing(prev => ({ ...prev, moods: [...prev.moods, mood] }))
-                    }
-                  }}
-                  className={`p-3 rounded-lg border-2 text-sm font-medium transition-all ${
-                    marketing.moods.includes(mood)
-                      ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
-                  } ${marketing.moods.length >= 3 && !marketing.moods.includes(mood) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  disabled={marketing.moods.length >= 3 && !marketing.moods.includes(mood)}
-                >
-                  {mood}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Instruments */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-              <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
-                <Music2 className="w-5 h-5 text-white" />
-              </div>
-              {language === 'ko' ? '악기' : 'Instruments'} <span className="text-sm font-normal text-gray-500">*</span>
-            </h4>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              {language === 'ko' ? '이 레코드에서 사용된 악기는 무엇입니까?' : 'What instruments are used on this record?'}
-              {marketing.instruments.length > 0 && (
-                <span className="ml-2 text-n3rve-main font-medium">
-                  ({marketing.instruments.length} {language === 'ko' ? '선택됨' : 'selected'})
-                </span>
-              )}
-            </p>
-            
-            {/* Selected Instruments */}
-            {marketing.instruments.length > 0 && (
-              <div className="mb-4 p-3 bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg">
-                <div className="flex flex-wrap gap-2">
-                  {marketing.instruments.map((instrument: string) => (
-                    <span
-                      key={instrument}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-n3rve-main text-white rounded-full text-sm font-medium"
-                    >
-                      {instrument}
-                      <button
-                        onClick={() => {
-                          setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }))
-                        }}
-                        className="ml-1 hover:bg-white/20 rounded-full p-0.5 transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Search Box */}
-            <div className="mb-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder={language === 'ko' ? '악기 검색...' : 'Search instruments...'}
-                  value={instrumentSearch}
-                  onChange={(e) => setInstrumentSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                />
-              </div>
-            </div>
-            
-            {/* Instrument Categories */}
-            <div className="space-y-4">
-              {/* String Instruments */}
-              <div>
-                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '현악기' : 'String Instruments'}
-                </h5>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                  {['Acoustic Guitar', 'Electric Guitar', 'Classical Guitar', 'Bass Guitar', 'Violin', 'Cello', 'Double Bass']
-                    .filter(inst => inst.toLowerCase().includes(instrumentSearch.toLowerCase()))
-                    .map((instrument) => (
-                    <button
-                      key={instrument}
-                      onClick={() => {
-                        if (marketing.instruments.includes(instrument)) {
-                          setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }))
-                        } else {
-                          setMarketing(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }))
-                        }
-                      }}
-                      className={`p-2 rounded-lg border text-sm font-medium transition-all ${
-                        marketing.instruments.includes(instrument)
-                          ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {instrument}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Keyboard Instruments */}
-              <div>
-                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '건반악기' : 'Keyboard Instruments'}
-                </h5>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                  {['Piano', 'Keyboard', 'Synthesizer', 'Organ', 'Accordion']
-                    .filter(inst => inst.toLowerCase().includes(instrumentSearch.toLowerCase()))
-                    .map((instrument) => (
-                    <button
-                      key={instrument}
-                      onClick={() => {
-                        if (marketing.instruments.includes(instrument)) {
-                          setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }))
-                        } else {
-                          setMarketing(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }))
-                        }
-                      }}
-                      className={`p-2 rounded-lg border text-sm font-medium transition-all ${
-                        marketing.instruments.includes(instrument)
-                          ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {instrument}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Wind Instruments */}
-              <div>
-                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '관악기' : 'Wind Instruments'}
-                </h5>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                  {['Flute', 'Clarinet', 'Saxophone', 'Trumpet', 'French Horn', 'Trombone', 'Harmonica']
-                    .filter(inst => inst.toLowerCase().includes(instrumentSearch.toLowerCase()))
-                    .map((instrument) => (
-                    <button
-                      key={instrument}
-                      onClick={() => {
-                        if (marketing.instruments.includes(instrument)) {
-                          setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }))
-                        } else {
-                          setMarketing(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }))
-                        }
-                      }}
-                      className={`p-2 rounded-lg border text-sm font-medium transition-all ${
-                        marketing.instruments.includes(instrument)
-                          ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {instrument}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Percussion */}
-              <div>
-                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '타악기' : 'Percussion'}
-                </h5>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                  {['Drums', 'Drum Kit', 'Djembe', 'Tambourine', 'Cymbals', 'Marimba', 'Xylophone']
-                    .filter(inst => inst.toLowerCase().includes(instrumentSearch.toLowerCase()))
-                    .map((instrument) => (
-                    <button
-                      key={instrument}
-                      onClick={() => {
-                        if (marketing.instruments.includes(instrument)) {
-                          setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }))
-                        } else {
-                          setMarketing(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }))
-                        }
-                      }}
-                      className={`p-2 rounded-lg border text-sm font-medium transition-all ${
-                        marketing.instruments.includes(instrument)
-                          ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {instrument}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* World/Traditional */}
-              <div>
-                <h5 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '전통악기' : 'World/Traditional'}
-                </h5>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                  {['Erhu', 'Sitar', 'Koto', 'Didgeridoo', 'Banjo', 'Ukulele', 'Mandolin']
-                    .filter(inst => inst.toLowerCase().includes(instrumentSearch.toLowerCase()))
-                    .map((instrument) => (
-                    <button
-                      key={instrument}
-                      onClick={() => {
-                        if (marketing.instruments.includes(instrument)) {
-                          setMarketing(prev => ({ ...prev, instruments: prev.instruments.filter((i: string) => i !== instrument) }))
-                        } else {
-                          setMarketing(prev => ({ ...prev, instruments: [...prev.instruments, instrument] }))
-                        }
-                      }}
-                      className={`p-2 rounded-lg border text-sm font-medium transition-all ${
-                        marketing.instruments.includes(instrument)
-                          ? 'border-n3rve-main bg-n3rve-50 dark:bg-n3rve-900/30 text-n3rve-900 dark:text-n3rve-100'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-main/50 hover:bg-gray-50 dark:hover:bg-gray-900/50 text-gray-700 dark:text-gray-300'
-                      }`}
-                    >
-                      {instrument}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Elevator Pitch */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-            <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
-                  <Megaphone className="w-5 h-5 text-white" />
-                </div>
-                {language === 'ko' ? '엘리베이터 피치' : 'Elevator Pitch'}
-              </h4>
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-6">
-                <div className="flex items-start gap-2 mb-3">
-                  <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <h5 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-                      {language === 'ko' ? '엘리베이터 피치 작성하기' : 'Crafting Your Elevator Pitch'}
-                    </h5>
-                    <div className="space-y-3 text-sm text-blue-800 dark:text-blue-200">
-                      <div>
-                        <p className="font-medium mb-1">{language === 'ko' ? '엘리베이터 피치 - 베스트 프랙티스' : 'Elevator Pitch - best practices'}</p>
-                        <p className="text-xs">
-                          {language === 'ko' 
-                            ? '엘리베이터를 타는 시간 동안 누군가에게 프로젝트를 피칭해야 한다면 - 무엇을 말하시겠습니까?'
-                            : 'If you had the duration of an elevator ride to pitch your project to someone - what would you say?'
-                          }
-                        </p>
-                      </div>
-                      <p className="text-xs">
-                        {language === 'ko' 
-                          ? '완벽한 엘리베이터 피치는 최대 500자의 단일 단락으로 작성됩니다. 왜 이 트랙이 중요한지 자세히 설명하는 요약이어야 합니다 - 여기서 명확하고, 설득력 있고, 흥미로운 방식으로 DSP에게 음악에 대해 이야기할 수 있습니다.'
-                          : 'The perfect Elevator Pitch is written in one single paragraph of max 500 characters. It should be a summary of the track that details why it\'s so important - here\'s where you get to talk about your music to the DSPs in a way that should be clear, compelling and interesting.'
-                        }
-                      </p>
-                      <div className="text-xs">
-                        <p className="mb-1">{language === 'ko' ? '다음과 같은 사항을 생각해보면 유용할 수 있습니다:' : 'It can be useful to think about such things as:'}</p>
-                        <ul className="list-disc list-inside space-y-0.5 ml-2">
-                          <li>{language === 'ko' ? '노래의 스토리는 무엇인가?' : 'What\'s the story of the song?'}</li>
-                          <li>{language === 'ko' ? '이 노래를 특별하게 만드는 것은 무엇인가?' : 'What makes this song so special?'}</li>
-                          <li>{language === 'ko' ? '노래를 홍보하기 위해 당신과 아티스트가 하고 있는 흥미로운 일들은 무엇인가 - 마케팅, 투어, 디지털 활성화, 팬 커뮤니티, D2F 전략, 프로모?' : 'What interesting things are you and the artist doing to promote the song - marketing, touring, digital activations, fan communities, D2F strategies, promo?'}</li>
-                        </ul>
-                      </div>
-                      <p className="text-xs font-medium text-red-600 dark:text-red-400">
-                        {language === 'ko' 
-                          ? '특정 DSP를 언급하지 말고 폭넓은 어필을 위해 플랫폼에 구애받지 않는 피치를 유지하세요.'
-                          : 'Please avoid mentioning specific DSPs and keep your pitch platform-agnostic to ensure broad appeal.'
-                        }
-                      </p>
-                      <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-700">
-                        <p className="font-medium mb-1">{language === 'ko' ? '훅 - 베스트 프랙티스' : 'Hook - best practices'}</p>
-                        <p className="text-xs">
-                          {language === 'ko' 
-                            ? '프로젝트를 판매하는 데 10초밖에 없다면 - 무엇을 말하시겠습니까?'
-                            : 'And if you had only 10 seconds to sell your project - what would you say?'
-                          }
-                        </p>
-                        <p className="text-xs mt-1">
-                          {language === 'ko' 
-                            ? '이것은 이 릴리즈를 흥미롭게 만드는 것이 무엇인지 즉시 요약하고 설명하는 최대 175자의 강렬하고 주의를 끄는 단일 문장입니다. 여기서는 가장 설득력 있는 정보만 사용하고 정말로 와닿는 것에 집중하세요.'
-                            : 'This is a punchy, attention grabbing single sentence of max 175 characters that instantly summarises and explains what makes this release exciting. Use only the most compelling info here and focus on what really cuts through.'
-                          }
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-6">
-              {/* Hook */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '1. 당신의 훅은 무엇입니까?' : "1. What's Your Hook?"} <span className="text-red-500">*</span>
-                </label>
-                <p className="text-xs text-gray-500 mb-2">
-                  {language === 'ko' 
-                    ? '주의를 즉시 사로잡는 한두 문장으로 릴리스를 설명하세요. 이 프로젝트를 흥미롭고, 독특하거나, 뉴스거리로 만드는 것은 무엇입니까? (최대 175자)'
-                    : 'Describe your release in one or two sentences that instantly capture attention. What makes this project exciting, unique, or newsworthy? (Max. 175 characters)'
-                  }
-                </p>
-                <div className="relative">
-                  <textarea
-                    value={marketing.hook}
-                    onChange={(e) => {
-                      if (e.target.value.length <= 175) {
-                        setMarketing(prev => ({ ...prev, hook: e.target.value }))
-                      }
-                    }}
-                    rows={2}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all resize-none"
-                    placeholder={language === 'ko' 
-                      ? '예: 글로벌 히트곡 제작자와 신예 K-pop 아티스트의 획기적인 콜라보레이션' 
-                      : 'e.g., A groundbreaking collaboration between a global hitmaker and rising K-pop artist'
-                    }
-                  />
-                  <div className="absolute bottom-2 right-2 text-xs text-gray-500">
-                    {marketing.hook.length} / 175
-                  </div>
-                </div>
-              </div>
-              
-              {/* Main Pitch */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {language === 'ko' ? '2. 메인 피치' : '2. The Main Pitch'} <span className="text-red-500">*</span>
-                </label>
-                <p className="text-xs text-gray-500 mb-2">
-                  {language === 'ko' 
-                    ? '프로젝트의 본질—스토리, 영향력, 비전—을 500자 이내로 포착하는 간결하고 설득력 있는 요약을 전달하세요.\n\n폭넓은 어필을 위해 피치를 플랫폼에 구애받지 않게 유지하고 특정 DSP를 언급하지 마세요.'
-                    : 'Deliver a concise and compelling summary that captures the essence of your project—its story, impact, and vision—all within 500 characters.\n\nBe sure to keep your pitch platform-agnostic and avoid mentioning specific DSPs to ensure broad appeal.'
-                  }
-                </p>
-                <div className="relative">
-                  <textarea
-                    value={marketing.mainPitch}
-                    onChange={(e) => {
-                      if (e.target.value.length <= 500) {
-                        setMarketing(prev => ({ ...prev, mainPitch: e.target.value }))
-                      }
-                    }}
-                    rows={5}
-                    className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all resize-none"
-                    placeholder={language === 'ko' 
-                      ? '프로젝트의 스토리, 영향력, 비전을 설명하세요...' 
-                      : 'Describe the story, impact, and vision of your project...'
-                    }
-                  />
-                  <div className="absolute bottom-2 right-2 text-xs text-gray-500">
-                    {marketing.mainPitch.length} / 500
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Marketing Drivers */}
-          <div className="bg-gradient-to-br from-green-50 to-green-100/50 dark:from-green-900/20 dark:to-green-800/10 rounded-xl p-6 border border-green-200 dark:border-green-800 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-start justify-between mb-6">
-              <div>
-                <h4 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  {language === 'ko' ? '새 마케팅 드라이버 추가' : 'Add New Marketing Driver'}
-                </h4>
-                <div className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      {language === 'ko' ? '음악을 위한 임팩트 있는 마케팅 드라이버 만들기:' : 'Craft Impactful Marketing Drivers for Your Music:'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">
-                    {language === 'ko' 
-                      ? "엘리베이터 피치가 음악에 대한 매력적인 이야기를 전달하는 동안, 마케팅 드라이버는 프로젝트를 돋보이게 하는 전략적 요소를 강조하는 명확한 포인트 세트로 작용합니다. 우리는 이러한 드라이버를 불릿 포인트로 포맷하여 엘리베이터 피치의 내러티브를 정확하게 보완합니다."
-                      : "While your Elevator Pitch tells a compelling story about your music, the Marketing Drivers serve as a clear set of points highlighting the strategic elements that make your project stand out. We will format these drivers into bullet points, ensuring they complement the narrative of your Elevator Pitch with precision."
-                    }
-                  </p>
-                  <div className="mt-3">
-                    <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      {language === 'ko' ? '새로운 제출 구조: 관련성과 정확성에 초점:' : 'New Submission Structure: Focus on Relevance and Precision:'}
-                    </span>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                      {language === 'ko' 
-                        ? "우리의 새로운 라인별 제출 형식을 통해 글로벌하게 호소하고 타겟 지역에 특별히 맞춤화된 전략을 명확히 표현할 수 있습니다. 이 구조화된 접근법은 보다 효과적인 시장 커버리지를 보장하고 지역 참여와 지원을 향상시킵니다."
-                        : "Our new line-by-line submission format allows you to articulate strategies that appeal globally and cater specifically to targeted regions. This structured approach ensures more effective market coverage, enhancing local engagement and support."
-                      }
-                    </p>
-                  </div>
-                  <div className="mt-3">
-                    <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
-                      {language === 'ko' ? '영향력과 비전 입증:' : 'Demonstrate Impact and Vision:'}
-                    </span>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                      {language === 'ko' 
-                        ? "소셜 미디어 메트릭, 파트너십, 프로모션 노력에 대한 명확한 세부사항을 제출하여 음악의 도달 범위와 잠재력을 보여주세요. 이러한 포인트는 엘리베이터 피치에 소개된 역동적인 이야기를 더욱 풍부하게 하면서 과거의 성과와 미래 지향적인 계획을 모두 강조해야 합니다."
-                        : "Submit clear details about your social media metrics, partnerships, and promotional efforts to illustrate your music's reach and potential. These points should highlight both your historical achievements and your forward-looking plans, further enriching the dynamic story introduced in your Elevator Pitch."
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600 dark:text-gray-400">{language === 'ko' ? '더 많은 정보?' : 'More Info?'}</span>
-              </div>
-            </div>
-            
-            <div className="space-y-4">
-              {marketing.marketingDrivers.length === 0 && (
-                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    {language === 'ko' 
-                      ? '아직 마케팅 드라이버가 없습니다. 아래 버튼을 클릭하여 추가하세요.'
-                      : 'No marketing drivers yet. Click the button below to add one.'}
-                  </p>
-                </div>
-              )}
-              
-              {marketing.marketingDrivers.map((driver: any, index: number) => (
-                <div key={index} className="p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-1 space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'ko' ? '마케팅 드라이버' : 'Marketing Driver'}
-                        </label>
-                        <textarea
-                          value={driver.content}
-                          onChange={(e) => {
-                            const newDrivers = [...marketing.marketingDrivers]
-                            newDrivers[index] = { ...driver, content: e.target.value }
-                            setMarketing(prev => ({ ...prev, marketingDrivers: newDrivers }))
-                          }}
-                          rows={3}
-                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                          placeholder={language === 'ko' ? '마케팅 드라이버를 입력하세요' : 'Enter marketing driver'}
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          {language === 'ko' ? '관련 지역' : 'Relevant Territories'}
-                        </label>
-                        <input
-                          type="text"
-                          value={driver.territories?.join(', ') || ''}
-                          onChange={(e) => {
-                            const newDrivers = [...marketing.marketingDrivers]
-                            newDrivers[index] = { ...driver, territories: e.target.value.split(',').map(t => t.trim()).filter(t => t) }
-                            setMarketing(prev => ({ ...prev, marketingDrivers: newDrivers }))
-                          }}
-                          className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-all"
-                          placeholder={language === 'ko' ? '예: 한국, 일본, 미국 (쉼표로 구분)' : 'e.g., Korea, Japan, USA (comma separated)'}
-                        />
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const newDrivers = marketing.marketingDrivers.filter((_: any, i: number) => i !== index)
-                        setMarketing(prev => ({ ...prev, marketingDrivers: newDrivers }))
-                      }}
-                      className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-              
-              <button
-                type="button"
-                onClick={() => {
-                  setMarketing(prev => ({
-                    ...prev,
-                    marketingDrivers: [...prev.marketingDrivers, { content: '', territories: [] }]
-                  }))
-                }}
-                className="w-full px-6 py-3 bg-n3rve-main hover:bg-n3rve-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <Plus className="w-5 h-5" />
-                {language === 'ko' ? '마케팅 드라이버 추가' : 'Submit'}
-              </button>
-            </div>
-          </div>
-
-          {/* Social Media Rollout Plan */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
-            <div className="mb-6">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
-                <div className="p-2 bg-gradient-to-br from-n3rve-main to-n3rve-accent rounded-lg">
-                  <Share2 className="w-5 h-5 text-white" />
-                </div>
-                {language === 'ko' ? '소셜 미디어 롤아웃 계획' : 'Social Media Rollout Plan'}
-              </h4>
-              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-4">
-                <div className="flex items-start gap-2">
-                  <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                  <div className="space-y-2">
-                    <h5 className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-                      {language === 'ko' ? '소셜 미디어 롤아웃 계획 팁' : 'Social Media Rollout Plan Tips'}
-                    </h5>
-                    <div className="space-y-2 text-xs text-blue-800 dark:text-blue-200">
-                      <p className="font-medium">
-                        {language === 'ko' 
-                          ? '소셜 미디어 롤아웃 계획에서 무엇을 찾고 있나요?' 
-                          : 'What are we looking for in a Social Media Rollout Plan?'
-                        }
-                      </p>
-                      <ul className="list-disc list-inside space-y-1 ml-2">
-                        <li>
-                          <span className="font-medium">{language === 'ko' ? '게시 일정:' : 'Posting schedule:'}</span>
-                          <span className="ml-1">{language === 'ko' ? '언제, 얼마나 자주 콘텐츠를 게시할 예정인가요?' : 'When and how frequently will you post content?'}</span>
-                        </li>
-                        <li>
-                          <span className="font-medium">{language === 'ko' ? '콘텐츠 유형:' : 'Content types:'}</span>
-                          <span className="ml-1">{language === 'ko' ? '티저 비디오, 이미지, 비하인드 콘텐츠, 프로모션 그래픽을 공유할 예정인가요?' : 'Will you share teaser videos, images, behind-the-scenes content, or promotional graphics?'}</span>
-                        </li>
-                        <li>
-                          <span className="font-medium">{language === 'ko' ? '해시태그 및 키워드:' : 'Hashtags and keywords:'}</span>
-                          <span className="ml-1">{language === 'ko' ? '발견 가능성을 향상시키기 위해 관련 해시태그와 키워드를 선택하세요.' : 'Choose relevant hashtags and keywords to improve discoverability.'}</span>
-                        </li>
-                        <li>
-                          <span className="font-medium">{language === 'ko' ? '타겟 오디언스:' : 'Target audience:'}</span>
-                          <span className="ml-1">{language === 'ko' ? '오디언스의 인구 통계 및 선호도를 정의하세요.' : 'Define your audience demographics and preferences.'}</span>
-                        </li>
-                        <li>
-                          <span className="font-medium">{language === 'ko' ? 'KPI:' : 'KPIs:'}</span>
-                          <span className="ml-1">{language === 'ko' ? '좋아요, 공유, 댓글, 클릭률 또는 전환과 같이 추적할 주요 성과 지표를 지정하세요.' : 'Specify the key performance indicators you\'ll track, such as likes, shares, comments, click-through rates, or conversions.'}</span>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {language === 'ko' ? '소셜 미디어 롤아웃 계획' : 'Your Social Media Rollout Plan'} <span className="text-red-500">*</span>
-              </label>
-              <p className="text-xs text-gray-500 mb-3">
-                {language === 'ko' 
-                  ? '링크(예: Google 문서 또는 Google 스프레드시트)를 통해 콘텐츠 캘린더를 공유해 주세요. 문서 시스템이 없는 경우 아래 텍스트 상자에 요청된 정보를 제공하세요.'
-                  : 'Please share your content calendar with us through a link (e.g., Google Doc or Google Spreadsheet). If you don\'t have a document system, provide the requested information in the text box below.'
-                }
-              </p>
-              <textarea
-                value={marketing.socialMediaPlan}
-                onChange={(e) => setMarketing(prev => ({ ...prev, socialMediaPlan: e.target.value }))}
-                rows={8}
-                className="w-full px-4 py-3 border-2 border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-n3rve-500 focus:border-n3rve-main bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all resize-none"
-                placeholder={language === 'ko' 
-                  ? '소셜 미디어 롤아웃 계획을 입력하거나 문서 링크를 공유하세요...'
-                  : 'Enter your social media rollout plan or share a document link...'
-                }
-              />
-            </div>
-          </div>
-
-          {/* Album Description & Marketing Strategy */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('앨범 설명', 'Album Description')}</h4>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('앨범 소개', 'Album Introduction')}
-                </label>
-                <textarea
-                  value={marketing.albumIntroduction}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, albumIntroduction: e.target.value }))}
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder={t('앨범에 대한 간단한 소개를 작성하세요', 'Write a brief introduction about the album')}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('상세 설명', 'Detailed Description')}
-                </label>
-                <textarea
-                  value={marketing.albumDescription}
-                  onChange={(e) => setMarketing(prev => ({ ...prev, albumDescription: e.target.value }))}
-                  rows={6}
-                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  placeholder={t('앨범에 대한 상세한 설명을 작성하세요', 'Write a detailed description about the album')}
-                />
-              </div>
-            </div>
-          </div>
-
-
-          {/* Album Notes */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 mb-4">
-              <FileText className="w-5 h-5 text-n3rve-main" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('앨범 노트', 'Album Notes')}</h3>
-            </div>
-            
-            <textarea
-              value={(productMetadata as any).albumNotes || ''}
-              onChange={(e) => setProductMetadata(prev => ({ ...prev, albumNotes: e.target.value }))}
-              rows={4}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              placeholder={t('앨범에 대한 추가 노트나 설명을 입력하세요', 'Enter additional notes or description about the album')}
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              {language === 'ko' ? '국내 음원사이트에서만 표시됩니다' : 'Only displayed on Korean music sites'}
-            </p>
-          </div>
-
-          {/* Additional Notes */}
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 border border-gray-200 dark:border-gray-700">
-            <div className="flex items-center gap-2 mb-4">
-              <FileText className="w-5 h-5 text-n3rve-main" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('추가 노트', 'Additional Notes')}</h3>
-            </div>
-            
-            <textarea
-              value={productMetadata.additionalNotes}
-              onChange={(e) => setProductMetadata(prev => ({ ...prev, additionalNotes: e.target.value }))}
-              rows={4}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-n3rve-500 focus:border-transparent bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-              placeholder={language === 'ko' ? '특별한 요청사항이나 주의사항을 입력해주세요' : 'Enter any special requests or important notes'}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* QC Warnings */}
-      {qcValidationResults.length > 0 && (
-        <QCWarnings results={qcValidationResults} />
-      )}
       </div>
-    </div>
 
       {/* Modals */}
       {/* Artist Modal will be at the end */}
 
       {/* New DSP Territory Modal */}
       {showDspTerritoryModal && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] flex flex-col">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -5463,10 +5460,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 </div>
                 <button
                   onClick={() => {
-                    setShowDspTerritoryModal(false)
-                    setSelectedDsps([])
-                    setDspSearchQuery('')
-                    setTempDspTerritories({})
+                    setShowDspTerritoryModal(false);
+                    setSelectedDsps([]);
+                    setDspSearchQuery('');
+                    setTempDspTerritories({});
                   }}
                   className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
@@ -5483,7 +5480,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                   <h3 className="font-medium text-gray-900 dark:text-gray-100 mb-3">
                     {language === 'ko' ? 'DSP 선택' : 'Select DSPs'}
                   </h3>
-                  
+
                   {/* Search */}
                   <div className="relative mb-4">
                     <input
@@ -5501,10 +5498,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     <button
                       type="button"
                       onClick={() => {
-                        const filteredDsps = dspList.filter(dsp => 
+                        const filteredDsps = dspList.filter(dsp =>
                           dsp.toLowerCase().includes(dspSearchQuery.toLowerCase())
-                        )
-                        setSelectedDsps(filteredDsps)
+                        );
+                        setSelectedDsps(filteredDsps);
                       }}
                       className="text-xs px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 dark:hover:bg-blue-900/70"
                     >
@@ -5533,9 +5530,9 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             checked={selectedDsps.includes(dsp)}
                             onChange={(e) => {
                               if (e.target.checked) {
-                                setSelectedDsps([...selectedDsps, dsp])
+                                setSelectedDsps([...selectedDsps, dsp]);
                               } else {
-                                setSelectedDsps(selectedDsps.filter(d => d !== dsp))
+                                setSelectedDsps(selectedDsps.filter(d => d !== dsp));
                               }
                             }}
                             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -5581,11 +5578,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         <button
                           type="button"
                           onClick={() => {
-                            const newTerritories: Record<string, string[]> = {}
+                            const newTerritories: Record<string, string[]> = {};
                             selectedDsps.forEach(dsp => {
-                              newTerritories[dsp] = productMetadata.territories || []
-                            })
-                            setTempDspTerritories(newTerritories)
+                              newTerritories[dsp] = productMetadata.territories || [];
+                            });
+                            setTempDspTerritories(newTerritories);
                           }}
                           className={`flex-1 p-4 rounded-lg border-2 transition-all ${
                             Object.keys(tempDspTerritories).length > 0
@@ -5610,14 +5607,14 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             <button
                               type="button"
                               onClick={() => {
-                                const allTerritories = Object.keys(territoryData).flatMap(continent => 
+                                const allTerritories = Object.keys(territoryData).flatMap(continent =>
                                   territoryData[continent as keyof typeof territoryData].countries
-                                )
-                                const newTerritories: Record<string, string[]> = {}
+                                );
+                                const newTerritories: Record<string, string[]> = {};
                                 selectedDsps.forEach(dsp => {
-                                  newTerritories[dsp] = allTerritories
-                                })
-                                setTempDspTerritories(newTerritories)
+                                  newTerritories[dsp] = allTerritories;
+                                });
+                                setTempDspTerritories(newTerritories);
                               }}
                               className="text-xs px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded hover:bg-green-200"
                             >
@@ -5626,11 +5623,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             <button
                               type="button"
                               onClick={() => {
-                                const newTerritories: Record<string, string[]> = {}
+                                const newTerritories: Record<string, string[]> = {};
                                 selectedDsps.forEach(dsp => {
-                                  newTerritories[dsp] = []
-                                })
-                                setTempDspTerritories(newTerritories)
+                                  newTerritories[dsp] = [];
+                                });
+                                setTempDspTerritories(newTerritories);
                               }}
                               className="text-xs px-3 py-1 bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300 rounded hover:bg-red-200"
                             >
@@ -5642,11 +5639,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                         {/* Continent Selection */}
                         <div className="grid grid-cols-2 gap-4">
                           {Object.entries(territoryData).map(([continentKey, continent]) => {
-                            const selectedCount = tempDspTerritories[selectedDsps[0]]?.filter(t => 
+                            const selectedCount = tempDspTerritories[selectedDsps[0]]?.filter(t =>
                               continent.countries.includes(t)
-                            ).length || 0
-                            const totalCount = continent.countries.length
-                            const percentage = (selectedCount / totalCount) * 100
+                            ).length || 0;
+                            const totalCount = continent.countries.length;
+                            const percentage = (selectedCount / totalCount) * 100;
 
                             return (
                               <div key={continentKey} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
@@ -5658,10 +5655,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                     {selectedCount}/{totalCount}
                                   </span>
                                 </div>
-                                
+
                                 <div className="mb-3">
                                   <div className="h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
-                                    <div 
+                                    <div
                                       className="h-full bg-blue-500 transition-all duration-300"
                                       style={{ width: `${percentage}%` }}
                                     />
@@ -5672,13 +5669,13 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      const newTerritories = { ...tempDspTerritories }
+                                      const newTerritories = { ...tempDspTerritories };
                                       selectedDsps.forEach(dsp => {
-                                        const current = newTerritories[dsp] || []
-                                        const toAdd = continent.countries.filter(c => !current.includes(c))
-                                        newTerritories[dsp] = [...current, ...toAdd]
-                                      })
-                                      setTempDspTerritories(newTerritories)
+                                        const current = newTerritories[dsp] || [];
+                                        const toAdd = continent.countries.filter(c => !current.includes(c));
+                                        newTerritories[dsp] = [...current, ...toAdd];
+                                      });
+                                      setTempDspTerritories(newTerritories);
                                     }}
                                     className="flex-1 text-xs px-2 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200"
                                   >
@@ -5687,13 +5684,13 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                   <button
                                     type="button"
                                     onClick={() => {
-                                      const newTerritories = { ...tempDspTerritories }
+                                      const newTerritories = { ...tempDspTerritories };
                                       selectedDsps.forEach(dsp => {
-                                        newTerritories[dsp] = (newTerritories[dsp] || []).filter(t => 
+                                        newTerritories[dsp] = (newTerritories[dsp] || []).filter(t =>
                                           !continent.countries.includes(t)
-                                        )
-                                      })
-                                      setTempDspTerritories(newTerritories)
+                                        );
+                                      });
+                                      setTempDspTerritories(newTerritories);
                                     }}
                                     className="flex-1 text-xs px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded hover:bg-gray-200"
                                   >
@@ -5701,7 +5698,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                   </button>
                                 </div>
                               </div>
-                            )
+                            );
                           })}
                         </div>
                       </div>
@@ -5723,8 +5720,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
             {/* Modal Footer */}
             <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {selectedDsps.length > 0 && (language === 'ko' 
-                  ? `${selectedDsps.length}개 DSP에 적용됩니다` 
+                {selectedDsps.length > 0 && (language === 'ko'
+                  ? `${selectedDsps.length}개 DSP에 적용됩니다`
                   : `Applying to ${selectedDsps.length} DSPs`
                 )}
               </p>
@@ -5732,10 +5729,10 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <button
                   type="button"
                   onClick={() => {
-                    setShowDspTerritoryModal(false)
-                    setSelectedDsps([])
-                    setDspSearchQuery('')
-                    setTempDspTerritories({})
+                    setShowDspTerritoryModal(false);
+                    setSelectedDsps([]);
+                    setDspSearchQuery('');
+                    setTempDspTerritories({});
                   }}
                   className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
                 >
@@ -5744,30 +5741,30 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 <button
                   type="button"
                   onClick={() => {
-                    const newDspTerritories = { ...productMetadata.dspTerritories }
-                    
+                    const newDspTerritories = { ...productMetadata.dspTerritories };
+
                     selectedDsps.forEach(dsp => {
                       if (Object.keys(tempDspTerritories).length === 0) {
                         // Use default territories
-                        delete newDspTerritories[dsp]
+                        delete newDspTerritories[dsp];
                       } else {
                         // Use custom territories
                         newDspTerritories[dsp] = {
                           territoryType: 'custom' as const,
                           territories: tempDspTerritories[dsp] || []
-                        }
+                        };
                       }
-                    })
-                    
+                    });
+
                     setProductMetadata({
                       ...productMetadata,
                       dspTerritories: newDspTerritories
-                    })
-                    
-                    setShowDspTerritoryModal(false)
-                    setSelectedDsps([])
-                    setDspSearchQuery('')
-                    setTempDspTerritories({})
+                    });
+
+                    setShowDspTerritoryModal(false);
+                    setSelectedDsps([]);
+                    setDspSearchQuery('');
+                    setTempDspTerritories({});
                   }}
                   disabled={selectedDsps.length === 0}
                   className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -5789,7 +5786,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                 {editingDSP} - {t('지역 설정', 'Territory Settings')}
               </h3>
             </div>
-            
+
             <div className="p-6 overflow-y-auto flex-1">
               <div className="space-y-4">
                 {/* Territory Type Selection */}
@@ -5806,7 +5803,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                             ...productMetadata.dspTerritories,
                             [editingDSP]: { territoryType: 'default' }
                           }
-                        })
+                        });
                       }}
                       className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
                     />
@@ -5822,12 +5819,12 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                           ...productMetadata,
                           dspTerritories: {
                             ...productMetadata.dspTerritories,
-                            [editingDSP]: { 
+                            [editingDSP]: {
                               territoryType: 'custom',
                               territories: productMetadata.dspTerritories?.[editingDSP]?.territories || []
                             }
                           }
-                        })
+                        });
                       }}
                       className="w-4 h-4 text-n3rve-main focus:ring-n3rve-500"
                     />
@@ -5843,7 +5840,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                       <button
                         type="button"
                         onClick={() => {
-                          const allCountries = Object.values(territoryData).flatMap(c => c.countries)
+                          const allCountries = Object.values(territoryData).flatMap(c => c.countries);
                           setProductMetadata({
                             ...productMetadata,
                             dspTerritories: {
@@ -5853,7 +5850,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 territories: allCountries
                               }
                             }
-                          })
+                          });
                         }}
                         className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition-colors"
                       >
@@ -5871,7 +5868,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 territories: []
                               }
                             }
-                          })
+                          });
                         }}
                         className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm transition-colors"
                       >
@@ -5882,12 +5879,12 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                     {/* Continent Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {Object.entries(territoryData).map(([continentKey, continent]) => {
-                        const dspTerritories = productMetadata.dspTerritories?.[editingDSP]?.territories || []
-                        const selectedCount = continent.countries.filter(c => dspTerritories.includes(c)).length
-                        const totalCount = continent.countries.length
-                        const isAllSelected = selectedCount === totalCount
+                        const dspTerritories = productMetadata.dspTerritories?.[editingDSP]?.territories || [];
+                        const selectedCount = continent.countries.filter(c => dspTerritories.includes(c)).length;
+                        const totalCount = continent.countries.length;
+                        const isAllSelected = selectedCount === totalCount;
                         // const isPartiallySelected = selectedCount > 0 && selectedCount < totalCount
-                        
+
                         return (
                           <div key={continentKey} className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border-2 border-gray-200 dark:border-gray-700 hover:border-n3rve-300 dark:hover:border-n3rve-700 transition-colors">
                             <div className="mb-3">
@@ -5898,14 +5895,14 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    const currentTerritories = dspTerritories
-                                    let newTerritories
+                                    const currentTerritories = dspTerritories;
+                                    let newTerritories;
                                     if (isAllSelected) {
-                                      newTerritories = currentTerritories.filter((c: string) => !continent.countries.includes(c))
+                                      newTerritories = currentTerritories.filter((c: string) => !continent.countries.includes(c));
                                     } else {
-                                      newTerritories = [...new Set([...currentTerritories, ...continent.countries])]
+                                      newTerritories = [...new Set([...currentTerritories, ...continent.countries])];
                                     }
-                                    
+
                                     setProductMetadata({
                                       ...productMetadata,
                                       dspTerritories: {
@@ -5915,11 +5912,11 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                           territories: newTerritories
                                         }
                                       }
-                                    })
+                                    });
                                   }}
                                   className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
-                                    isAllSelected 
-                                      ? 'bg-n3rve-100 text-n3rve-700 hover:bg-n3rve-200 dark:bg-n3rve-900 dark:text-n3rve-300' 
+                                    isAllSelected
+                                      ? 'bg-n3rve-100 text-n3rve-700 hover:bg-n3rve-200 dark:bg-n3rve-900 dark:text-n3rve-300'
                                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300'
                                   }`}
                                 >
@@ -5928,7 +5925,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               </div>
                               <div className="flex items-center gap-2">
                                 <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                                  <div 
+                                  <div
                                     className={`h-2 rounded-full transition-all ${
                                       selectedCount === 0 ? 'bg-gray-300 dark:bg-gray-600' : 'bg-n3rve-main'
                                     }`}
@@ -5940,7 +5937,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                 </span>
                               </div>
                             </div>
-                            
+
                             {/* Expandable Country List */}
                             <details className="group" id={`continent-${continentKey}`}>
                               <summary className="cursor-pointer text-sm text-n3rve-main hover:text-n3rve-700 font-medium list-none flex items-center gap-1">
@@ -5949,26 +5946,26 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               </summary>
                               <div className="mt-3 space-y-1 max-h-48 overflow-y-auto">
                                 {continent.countries.map(countryCode => (
-                                  <label 
-                                    key={countryCode} 
+                                  <label
+                                    key={countryCode}
                                     className={`flex items-center gap-2 p-2 rounded-lg cursor-pointer transition-colors text-sm
-                                      ${dspTerritories.includes(countryCode) 
-                                        ? 'bg-n3rve-50 dark:bg-n3rve-900/20 hover:bg-n3rve-100 dark:hover:bg-n3rve-900/30' 
-                                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                                      }`}
+                                      ${dspTerritories.includes(countryCode)
+                                    ? 'bg-n3rve-50 dark:bg-n3rve-900/20 hover:bg-n3rve-100 dark:hover:bg-n3rve-900/30'
+                                    : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                                  }`}
                                   >
                                     <input
                                       type="checkbox"
                                       value={countryCode}
                                       checked={dspTerritories.includes(countryCode)}
                                       onChange={(e) => {
-                                        let newTerritories
+                                        let newTerritories;
                                         if (e.target.checked) {
-                                          newTerritories = [...dspTerritories, countryCode]
+                                          newTerritories = [...dspTerritories, countryCode];
                                         } else {
-                                          newTerritories = dspTerritories.filter((c: string) => c !== countryCode)
+                                          newTerritories = dspTerritories.filter((c: string) => c !== countryCode);
                                         }
-                                        
+
                                         setProductMetadata({
                                           ...productMetadata,
                                           dspTerritories: {
@@ -5978,7 +5975,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                               territories: newTerritories
                                             }
                                           }
-                                        })
+                                        });
                                       }}
                                       className="rounded text-n3rve-main focus:ring-n3rve-500"
                                     />
@@ -5997,19 +5994,19 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               </div>
                             </details>
                           </div>
-                        )
+                        );
                       })}
                     </div>
 
                     {/* Selected Countries Summary */}
                     <div className="bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg p-4">
                       <h5 className="font-medium text-n3rve-900 dark:text-n3rve-100 mb-2">
-                        {language === 'ko' ? '선택된 국가' : 'Selected Countries'} 
+                        {language === 'ko' ? '선택된 국가' : 'Selected Countries'}
                         ({productMetadata.dspTerritories?.[editingDSP!]?.territories?.length || 0})
                       </h5>
                       <div className="flex flex-wrap gap-2">
                         {(productMetadata.dspTerritories?.[editingDSP!]?.territories || []).map((countryCode: string) => (
-                          <span 
+                          <span
                             key={countryCode}
                             className="inline-flex items-center gap-1 px-2 py-1 bg-n3rve-100 dark:bg-n3rve-800 text-n3rve-700 dark:text-n3rve-200 rounded-full text-xs"
                           >
@@ -6018,7 +6015,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                               type="button"
                               onClick={() => {
                                 const newTerritories = (productMetadata.dspTerritories?.[editingDSP!]?.territories || [])
-                                  .filter((c: string) => c !== countryCode)
+                                  .filter((c: string) => c !== countryCode);
                                 setProductMetadata({
                                   ...productMetadata,
                                   dspTerritories: {
@@ -6028,7 +6025,7 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
                                       territories: newTerritories
                                     }
                                   }
-                                })
+                                });
                               }}
                               className="ml-1 hover:text-n3rve-900 dark:hover:text-n3rve-100"
                             >
@@ -6046,8 +6043,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
             <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
               <button
                 onClick={() => {
-                  setShowDSPModal(false)
-                  setEditingDSP(null)
+                  setShowDSPModal(false);
+                  setEditingDSP(null);
                 }}
                 className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors"
               >
@@ -6055,8 +6052,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
               </button>
               <button
                 onClick={() => {
-                  setShowDSPModal(false)
-                  setEditingDSP(null)
+                  setShowDSPModal(false);
+                  setEditingDSP(null);
                 }}
                 className="px-4 py-2 bg-n3rve-main hover:bg-n3rve-700 text-white rounded-lg transition-colors"
               >
@@ -6071,8 +6068,8 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
       <EnhancedArtistModal
         isOpen={showArtistModal}
         onClose={() => {
-          setShowArtistModal(false)
-          setEditingArtist(null)
+          setShowArtistModal(false);
+          setEditingArtist(null);
         }}
         onSave={addArtistToTrack}
         role={artistModalType}
@@ -6089,5 +6086,5 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
         onSave={addContributorToTrack}
       /> */}
     </form>
-  )
+  );
 }

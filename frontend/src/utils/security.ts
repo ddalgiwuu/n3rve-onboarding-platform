@@ -7,7 +7,7 @@ export function disableConsole() {
   if (import.meta.env.PROD) {
     try {
       const noop = () => {};
-      
+
       // Check if console is already frozen
       if (!Object.isFrozen(console)) {
         // Override all console methods
@@ -22,7 +22,7 @@ export function disableConsole() {
             // If we can't override, it's already protected
           }
         });
-        
+
         // Prevent console restoration
         Object.freeze(console);
       }
@@ -37,17 +37,17 @@ export function detectDevTools() {
   if (import.meta.env.PROD) {
     // Temporarily disable aggressive devtools detection
     // This was causing false positives and blocking legitimate users
-    
+
     // Only disable keyboard shortcuts for security
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'F12' || 
+      if (e.key === 'F12' ||
           (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key)) ||
           (e.ctrlKey && e.key === 'U')) {
         e.preventDefault();
         return false;
       }
     });
-    
+
     // Disable right-click in production
     document.addEventListener('contextmenu', (e) => e.preventDefault());
   }
@@ -60,12 +60,12 @@ export function protectGlobalObjects() {
       // Only freeze immutable objects
       Object.freeze(window.location);
       Object.freeze(window.navigator);
-      
+
       // Disable eval
       window.eval = () => {
         throw new Error('eval is disabled');
       };
-      
+
       // Disable Function constructor
       window.Function = function() {
         throw new Error('Function constructor is disabled');
@@ -80,17 +80,17 @@ export function protectGlobalObjects() {
 // Auto logout on inactivity
 export function setupAutoLogout(logoutCallback: () => void, timeout = 15 * 60 * 1000) {
   let timer: NodeJS.Timeout;
-  
+
   const resetTimer = () => {
     clearTimeout(timer);
     timer = setTimeout(logoutCallback, timeout);
   };
-  
+
   // Reset timer on user activity
   ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(event => {
     document.addEventListener(event, resetTimer, true);
   });
-  
+
   // Check on tab visibility change
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
@@ -99,7 +99,7 @@ export function setupAutoLogout(logoutCallback: () => void, timeout = 15 * 60 * 
       resetTimer();
     }
   });
-  
+
   resetTimer();
 }
 
@@ -111,7 +111,7 @@ export function initializeSecurity(logoutCallback: () => void) {
     detectDevTools();
     protectGlobalObjects();
     setupAutoLogout(logoutCallback);
-    
+
     // Disable React DevTools in production
     // @ts-ignore
     if (typeof window.__REACT_DEVTOOLS_GLOBAL_HOOK__ === 'object') {

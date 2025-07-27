@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { X, Languages, Info, Smartphone, Monitor, Youtube, Music } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { v4 as uuidv4 } from 'uuid'
+import { useState } from 'react';
+import { X, Languages, Info, Smartphone, Monitor, Youtube, Music } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { v4 as uuidv4 } from 'uuid';
 
 interface ArtistIdentifier {
   type: string
@@ -33,9 +33,9 @@ interface Props {
 }
 
 export default function ArtistModal({ isOpen, onClose, onSave, role, editingArtist }: Props) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+
   const getLanguageOptions = () => [
     { value: 'en', label: t('영어', 'English') },
     { value: 'ko', label: t('한국어', 'Korean') },
@@ -47,7 +47,7 @@ export default function ArtistModal({ isOpen, onClose, onSave, role, editingArti
     { value: 'it', label: t('이탈리아어', 'Italian') },
     { value: 'pt', label: t('포르투갈어', 'Portuguese') },
     { value: 'ru', label: t('러시아어', 'Russian') }
-  ]
+  ];
   const [artist, setArtist] = useState<Artist>(editingArtist || {
     id: uuidv4(),
     primaryName: '',
@@ -61,48 +61,48 @@ export default function ArtistModal({ isOpen, onClose, onSave, role, editingArti
     youtubeChannelId: '',
     spotifyId: '',
     appleId: ''
-  })
-  const [errors, setErrors] = useState<Record<string, string>>({})
-  const [showHelpModal, setShowHelpModal] = useState<'spotify' | 'apple' | null>(null)
+  });
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showHelpModal, setShowHelpModal] = useState<'spotify' | 'apple' | null>(null);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   const validate = () => {
-    const newErrors: Record<string, string> = {}
-    
+    const newErrors: Record<string, string> = {};
+
     if (!artist.primaryName.trim()) {
-      newErrors.primaryName = t('필수 항목입니다', 'This field is required')
+      newErrors.primaryName = t('필수 항목입니다', 'This field is required');
     }
-    
+
     if (artist.hasTranslation) {
       if (!artist.translationLanguage) {
-        newErrors.translationLanguage = t('번역 언어를 선택해주세요', 'Please select a translation language')
+        newErrors.translationLanguage = t('번역 언어를 선택해주세요', 'Please select a translation language');
       }
       if (!artist.translatedName?.trim()) {
-        newErrors.translatedName = t('번역된 이름을 입력해주세요', 'Please enter the translated name')
+        newErrors.translatedName = t('번역된 이름을 입력해주세요', 'Please enter the translated name');
       }
     }
-    
+
     // Platform IDs are required unless it's a new artist
     if (!artist.isNewArtist) {
       if (!artist.spotifyId?.trim()) {
-        newErrors.spotifyId = t('Spotify ID는 필수입니다', 'Spotify ID is required')
+        newErrors.spotifyId = t('Spotify ID는 필수입니다', 'Spotify ID is required');
       }
       if (!artist.appleId?.trim()) {
-        newErrors.appleId = t('Apple Music ID는 필수입니다', 'Apple Music ID is required')
+        newErrors.appleId = t('Apple Music ID는 필수입니다', 'Apple Music ID is required');
       }
     }
-    
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSave = () => {
     if (validate()) {
-      onSave(artist)
-      onClose()
+      onSave(artist);
+      onClose();
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -369,7 +369,7 @@ export default function ArtistModal({ isOpen, onClose, onSave, role, editingArti
                 <X className="w-5 h-5" />
               </button>
             </div>
-            
+
             <div className="px-6 py-4 space-y-4">
               {showHelpModal === 'spotify' ? (
                 <>
@@ -387,7 +387,7 @@ export default function ArtistModal({ isOpen, onClose, onSave, role, editingArti
                         </ol>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start gap-3">
                       <Smartphone className="w-5 h-5 text-gray-600 mt-0.5" />
                       <div>
@@ -400,7 +400,7 @@ export default function ArtistModal({ isOpen, onClose, onSave, role, editingArti
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                     <p className="text-sm text-yellow-800 dark:text-yellow-200">
                       <Info className="w-4 h-4 inline mr-1" />
@@ -424,7 +424,7 @@ export default function ArtistModal({ isOpen, onClose, onSave, role, editingArti
                         </ol>
                       </div>
                     </div>
-                    
+
                     <div className="flex items-start gap-3">
                       <Smartphone className="w-5 h-5 text-gray-600 mt-0.5" />
                       <div>
@@ -437,7 +437,7 @@ export default function ArtistModal({ isOpen, onClose, onSave, role, editingArti
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                     <p className="text-sm text-yellow-800 dark:text-yellow-200">
                       <Info className="w-4 h-4 inline mr-1" />
@@ -447,7 +447,7 @@ export default function ArtistModal({ isOpen, onClose, onSave, role, editingArti
                 </>
               )}
             </div>
-            
+
             <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
               <button
                 onClick={() => setShowHelpModal(null)}
@@ -460,5 +460,5 @@ export default function ArtistModal({ isOpen, onClose, onSave, role, editingArti
         </div>
       )}
     </div>
-  )
+  );
 }

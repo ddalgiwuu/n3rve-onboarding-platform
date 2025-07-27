@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { Music, Info } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import TranslationManager, { Translation } from './TranslationManager'
-import TrackVersionManager from './TrackVersionManager'
+import { useState } from 'react';
+import { Music, Info } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import TranslationManager, { Translation } from './TranslationManager';
+import TrackVersionManager from './TrackVersionManager';
 
 interface TrackTranslationFormProps {
   trackIndex: number
@@ -30,15 +30,15 @@ export default function TrackTranslationForm({
   onTrackVersionChange,
   className = ''
 }: TrackTranslationFormProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [isExpanded, setIsExpanded] = useState(false)
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className={`border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800 ${className}`}>
       {/* Header */}
-      <div 
+      <div
         className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
@@ -58,7 +58,7 @@ export default function TrackTranslationForm({
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
           {translations.length > 0 && (
             <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded">
@@ -164,5 +164,5 @@ export default function TrackTranslationForm({
         </div>
       )}
     </div>
-  )
+  );
 }

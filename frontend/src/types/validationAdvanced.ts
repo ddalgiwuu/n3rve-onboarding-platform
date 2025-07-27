@@ -15,7 +15,7 @@ export interface EnhancedValidationWarning {
   canIgnore: boolean
   warningGroup?: string
   rejectionProbability?: number
-  
+
   // Advanced features
   priority: number // 1-10, higher = more important
   successRate?: number // 0-100, how often this fix is successful

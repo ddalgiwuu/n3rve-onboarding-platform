@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from 'react'
-import { ChevronDown, Search, Check } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react';
+import { ChevronDown, Search, Check } from 'lucide-react';
 
 interface Option {
   value: string
@@ -25,40 +25,40 @@ export default function SearchableSelect({
   searchPlaceholder = 'Search...',
   className = ''
 }: SearchableSelectProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const dropdownRef = useRef<HTMLDivElement>(null)
-  const searchInputRef = useRef<HTMLInputElement>(null)
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
-  const selectedOption = options.find(opt => opt.value === value)
-  
+  const selectedOption = options.find(opt => opt.value === value);
+
   const filteredOptions = options.filter(option =>
     option.label.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  );
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
-        setSearchTerm('')
+        setIsOpen(false);
+        setSearchTerm('');
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     if (isOpen && searchInputRef.current) {
-      searchInputRef.current.focus()
+      searchInputRef.current.focus();
     }
-  }, [isOpen])
+  }, [isOpen]);
 
   const handleSelect = (optionValue: string) => {
-    onChange(optionValue)
-    setIsOpen(false)
-    setSearchTerm('')
-  }
+    onChange(optionValue);
+    setIsOpen(false);
+    setSearchTerm('');
+  };
 
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
@@ -98,7 +98,7 @@ export default function SearchableSelect({
               </div>
             </div>
           )}
-          
+
           <div className="max-h-60 overflow-y-auto">
             {filteredOptions.length === 0 ? (
               <div className="px-3 py-2 text-sm text-gray-500 dark:text-gray-400">
@@ -129,5 +129,5 @@ export default function SearchableSelect({
         </div>
       )}
     </div>
-  )
+  );
 }

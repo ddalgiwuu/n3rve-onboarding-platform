@@ -6,7 +6,7 @@ class DropboxService {
 
   constructor() {
     this.accessToken = import.meta.env.VITE_DROPBOX_ACCESS_TOKEN || '';
-    this.dbx = new Dropbox({ 
+    this.dbx = new Dropbox({
       accessToken: this.accessToken,
       fetch: window.fetch.bind(window)
     });
@@ -26,10 +26,10 @@ class DropboxService {
    * Upload file to Dropbox with structured folder path
    */
   async uploadFile(
-    file: File, 
-    submissionId: string, 
-    artist: string, 
-    album: string, 
+    file: File,
+    submissionId: string,
+    artist: string,
+    album: string,
     fileType: string
   ): Promise<{ path: string; url: string }> {
     try {
@@ -50,7 +50,7 @@ class DropboxService {
         const linkResponse = await this.dbx.sharingCreateSharedLinkWithSettings({
           path: response.result.path_display!
         });
-        
+
         return {
           path: response.result.path_display!,
           url: linkResponse.result.url
@@ -61,7 +61,7 @@ class DropboxService {
           const existingLinks = await this.dbx.sharingListSharedLinks({
             path: response.result.path_display!
           });
-          
+
           if (existingLinks.result.links.length > 0) {
             return {
               path: response.result.path_display!,
@@ -94,7 +94,7 @@ class DropboxService {
       try {
         const result = await this.uploadFile(file, submissionId, artist, album, fileType);
         results[fileType] = result;
-        
+
         completed++;
         if (onProgress) {
           onProgress((completed / files.length) * 100);

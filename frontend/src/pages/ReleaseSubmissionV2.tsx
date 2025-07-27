@@ -1,13 +1,13 @@
-import ReleaseFormV2 from '@/components/ReleaseFormV2'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+import ReleaseFormV2 from '@/components/ReleaseFormV2';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
 
 export default function ReleaseSubmissionV2Page() {
-  const navigate = useNavigate()
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const navigate = useNavigate();
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -22,10 +22,10 @@ export default function ReleaseSubmissionV2Page() {
           </button>
         </div>
       </div>
-      
+
       <div className="py-8">
         <ReleaseFormV2 />
       </div>
     </div>
-  )
+  );
 }

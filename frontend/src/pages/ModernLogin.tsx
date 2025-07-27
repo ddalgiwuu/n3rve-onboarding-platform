@@ -1,20 +1,20 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion'
-import toast from 'react-hot-toast'
-import { useAuthStore } from '@/store/auth.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { useTranslation } from '@/hooks/useTranslation'
-import LanguageToggle from '@/components/common/LanguageToggle'
-import { Mail, Lock, Eye, EyeOff, Music, Sparkles, Shield, ArrowRight, CheckCircle2 } from 'lucide-react'
-import api from '@/lib/api'
-import { logger } from '@/utils/logger'
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
+import toast from 'react-hot-toast';
+import { useAuthStore } from '@/store/auth.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { useTranslation } from '@/hooks/useTranslation';
+import LanguageToggle from '@/components/common/LanguageToggle';
+import { Mail, Lock, Eye, EyeOff, Music, Sparkles, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
+import api from '@/lib/api';
+import { logger } from '@/utils/logger';
 
 // Musical note particle component
 const MusicalNote = ({ delay = 0 }) => {
-  const randomX = Math.random() * 100
-  const randomDuration = 15 + Math.random() * 20
-  
+  const randomX = Math.random() * 100;
+  const randomDuration = 15 + Math.random() * 20;
+
   return (
     <motion.div
       className="absolute pointer-events-none"
@@ -22,226 +22,226 @@ const MusicalNote = ({ delay = 0 }) => {
       animate={{
         y: '-10vh',
         opacity: [0, 0.8, 0.8, 0],
-        rotate: [0, 360],
+        rotate: [0, 360]
       }}
       transition={{
         duration: randomDuration,
         delay,
         repeat: Infinity,
-        ease: 'linear',
+        ease: 'linear'
       }}
     >
       <Music className="w-6 h-6 text-purple-400/30 dark:text-purple-300/20" />
     </motion.div>
-  )
-}
+  );
+};
 
 // Animated gradient orb component
 const GradientOrb = ({ color, size, position, delay = 0 }) => {
   return (
     <motion.div
-      className={`absolute rounded-full filter blur-3xl mix-blend-multiply dark:mix-blend-screen opacity-30`}
+      className={'absolute rounded-full filter blur-3xl mix-blend-multiply dark:mix-blend-screen opacity-30'}
       style={{
         background: color,
         width: size,
         height: size,
-        ...position,
+        ...position
       }}
       animate={{
         x: [0, 30, -30, 0],
         y: [0, -30, 30, 0],
-        scale: [1, 1.1, 0.9, 1],
+        scale: [1, 1.1, 0.9, 1]
       }}
       transition={{
         duration: 20,
         delay,
         repeat: Infinity,
-        ease: 'easeInOut',
+        ease: 'easeInOut'
       }}
     />
-  )
-}
+  );
+};
 
 export default function ModernLoginPage() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [loginMethod, setLoginMethod] = useState<'google' | 'email'>('google')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [emailFocused, setEmailFocused] = useState(false)
-  const [passwordFocused, setPasswordFocused] = useState(false)
-  
-  const navigate = useNavigate()
-  const location = useLocation()
-  const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated)
-  const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth)
-  const { t } = useTranslation()
-  const popupRef = useRef<Window | null>(null)
-  
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [loginMethod, setLoginMethod] = useState<'google' | 'email'>('google');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [emailFocused, setEmailFocused] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated);
+  const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth);
+  const { t } = useTranslation();
+  const popupRef = useRef<Window | null>(null);
+
   // Mouse position tracking for interactive effects
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-  
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
   // Spring animations for smooth mouse tracking
-  const springConfig = { damping: 25, stiffness: 200 }
-  const springX = useSpring(mouseX, springConfig)
-  const springY = useSpring(mouseY, springConfig)
-  
+  const springConfig = { damping: 25, stiffness: 200 };
+  const springX = useSpring(mouseX, springConfig);
+  const springY = useSpring(mouseY, springConfig);
+
   // Transform mouse position for parallax effects
-  const parallaxX = useTransform(springX, [0, 1], [-20, 20])
-  const parallaxY = useTransform(springY, [0, 1], [-20, 20])
-  
+  const parallaxX = useTransform(springX, [0, 1], [-20, 20]);
+  const parallaxY = useTransform(springY, [0, 1], [-20, 20]);
+
   // Handle mouse move for interactive effects
   const handleMouseMove = useCallback((e: MouseEvent) => {
-    const { clientX, clientY } = e
-    const { innerWidth, innerHeight } = window
-    mouseX.set(clientX / innerWidth)
-    mouseY.set(clientY / innerHeight)
-  }, [mouseX, mouseY])
-  
+    const { clientX, clientY } = e;
+    const { innerWidth, innerHeight } = window;
+    mouseX.set(clientX / innerWidth);
+    mouseY.set(clientY / innerHeight);
+  }, [mouseX, mouseY]);
+
   useEffect(() => {
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [handleMouseMove])
-  
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [handleMouseMove]);
+
   // Component mounted
   useEffect(() => {
     // Component initialization
-  }, [])
-  
+  }, []);
+
   // Check for OAuth error in URL
   useEffect(() => {
-    const urlParams = new URLSearchParams(location.search)
-    const error = urlParams.get('error')
-    
+    const urlParams = new URLSearchParams(location.search);
+    const error = urlParams.get('error');
+
     if (error === 'oauth_failed') {
-      toast.error(t('auth.oauthFailed', 'OAuth 인증에 실패했습니다', 'OAuth authentication failed', 'OAuth認証に失敗しました'))
+      toast.error(t('auth.oauthFailed', 'OAuth 인증에 실패했습니다', 'OAuth authentication failed', 'OAuth認証に失敗しました'));
     }
-  }, [location, t])
-  
+  }, [location, t]);
+
   // Handle messages from popup window (Safari OAuth flow)
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       // Verify origin
-      if (event.origin !== window.location.origin) return
-      
+      if (event.origin !== window.location.origin) return;
+
       // Handle auth callback message
       if (event.data?.type === 'auth-callback') {
         if (event.data.success && event.data.accessToken && event.data.refreshToken) {
-          setIsSuccess(true)
+          setIsSuccess(true);
           setTimeout(() => {
             // Redirect to auth callback with tokens
             const params = new URLSearchParams({
               access_token: event.data.accessToken,
               refresh_token: event.data.refreshToken,
               profile_complete: event.data.profileComplete?.toString() || 'false'
-            })
-            navigate(`/auth/callback?${params.toString()}`)
-          }, 1500)
+            });
+            navigate(`/auth/callback?${params.toString()}`);
+          }, 1500);
         } else {
-          setIsLoading(false)
-          toast.error(t('auth.loginFailed', '로그인에 실패했습니다', 'Login failed', 'ログインに失敗しました'))
+          setIsLoading(false);
+          toast.error(t('auth.loginFailed', '로그인에 실패했습니다', 'Login failed', 'ログインに失敗しました'));
         }
       }
-    }
-    
-    window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
-  }, [navigate])
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [navigate]);
 
   const handleGoogleLogin = () => {
-    setIsLoading(true)
+    setIsLoading(true);
     // Get the returnUrl from location state or query params
-    const returnUrl = location.state?.from || new URLSearchParams(location.search).get('returnUrl') || '/dashboard'
-    
+    const returnUrl = location.state?.from || new URLSearchParams(location.search).get('returnUrl') || '/dashboard';
+
     // Store returnUrl in sessionStorage to persist across OAuth redirect
-    sessionStorage.setItem('returnUrl', returnUrl)
-    
-    const googleAuthUrl = `${import.meta.env.VITE_API_URL}/auth/google`
-    
+    sessionStorage.setItem('returnUrl', returnUrl);
+
+    const googleAuthUrl = `${import.meta.env.VITE_API_URL}/auth/google`;
+
     // Safari-friendly approach: Use popup window for OAuth
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
-    
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
     if (isSafari) {
       // Open OAuth in a popup for Safari
-      const width = 500
-      const height = 600
-      const left = (window.screen.width - width) / 2
-      const top = (window.screen.height - height) / 2
-      
+      const width = 500;
+      const height = 600;
+      const left = (window.screen.width - width) / 2;
+      const top = (window.screen.height - height) / 2;
+
       popupRef.current = window.open(
         googleAuthUrl,
         'google-auth',
         `width=${width},height=${height},left=${left},top=${top},toolbar=no,menubar=no`
-      )
-      
+      );
+
       if (!popupRef.current) {
-        toast.error(t('auth.popupBlocked', '팝업이 차단되었습니다. 팝업 차단을 해제해주세요.', 'Popup blocked. Please allow popups and try again.', 'ポップアップがブロックされました。ポップアップを許可してください'))
-        setIsLoading(false)
-        return
+        toast.error(t('auth.popupBlocked', '팝업이 차단되었습니다. 팝업 차단을 해제해주세요.', 'Popup blocked. Please allow popups and try again.', 'ポップアップがブロックされました。ポップアップを許可してください'));
+        setIsLoading(false);
+        return;
       }
-      
+
       // Focus the popup
-      popupRef.current.focus()
+      popupRef.current.focus();
     } else {
       // Standard redirect for other browsers
-      window.location.href = googleAuthUrl
+      window.location.href = googleAuthUrl;
     }
-  }
+  };
 
   const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!email || !password) {
-      toast.error(t('auth.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべての項目を入力してください'))
-      return
+      toast.error(t('auth.fillAllFields', '모든 필드를 입력해주세요', 'Please fill in all fields', 'すべての項目を入力してください'));
+      return;
     }
-    
-    setIsLoading(true)
-    
+
+    setIsLoading(true);
+
     try {
       const response = await api.post('/auth/login', {
         email,
         password
-      })
-      
-      const { user, accessToken, refreshToken } = response.data
-      
+      });
+
+      const { user, accessToken, refreshToken } = response.data;
+
       // Set auth in store
-      setAuth?.(user, accessToken, refreshToken)
-      
-      setIsSuccess(true)
-      
+      setAuth?.(user, accessToken, refreshToken);
+
+      setIsSuccess(true);
+
       // Get return URL
-      const returnUrl = location.state?.from || new URLSearchParams(location.search).get('returnUrl') || '/dashboard'
-      
+      const returnUrl = location.state?.from || new URLSearchParams(location.search).get('returnUrl') || '/dashboard';
+
       setTimeout(() => {
         // Check if user needs to select role or complete profile
         if (user.role === 'ADMIN' && user.isProfileComplete) {
           // Store tokens temporarily for role selection
-          sessionStorage.setItem('temp_access_token', accessToken)
-          sessionStorage.setItem('temp_refresh_token', refreshToken)
-          sessionStorage.setItem('temp_user', JSON.stringify(user))
-          navigate('/role-select')
+          sessionStorage.setItem('temp_access_token', accessToken);
+          sessionStorage.setItem('temp_refresh_token', refreshToken);
+          sessionStorage.setItem('temp_user', JSON.stringify(user));
+          navigate('/role-select');
         } else if (!user.isProfileComplete) {
-          navigate('/profile-setup')
+          navigate('/profile-setup');
         } else {
-          navigate(returnUrl)
+          navigate(returnUrl);
         }
-      }, 1500)
-      
-      toast.success(t('auth.loginSuccess', '로그인되었습니다', 'Logged in successfully', 'ログインしました'))
+      }, 1500);
+
+      toast.success(t('auth.loginSuccess', '로그인되었습니다', 'Logged in successfully', 'ログインしました'));
     } catch (error: any) {
-      logger.error('Login error:', error)
+      logger.error('Login error:', error);
       if (error.response?.status === 401) {
-        toast.error(t('auth.invalidCredentials', '이메일 또는 비밀번호가 올바르지 않습니다', 'Invalid email or password', 'メールアドレスまたはパスワードが正しくありません'))
+        toast.error(t('auth.invalidCredentials', '이메일 또는 비밀번호가 올바르지 않습니다', 'Invalid email or password', 'メールアドレスまたはパスワードが正しくありません'));
       } else {
-        toast.error(t('auth.loginFailed'))
+        toast.error(t('auth.loginFailed'));
       }
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   // Animation variants
   const containerVariants = {
@@ -250,10 +250,10 @@ export default function ModernLoginPage() {
       opacity: 1,
       transition: {
         duration: 0.5,
-        staggerChildren: 0.1,
-      },
-    },
-  }
+        staggerChildren: 0.1
+      }
+    }
+  };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -263,10 +263,10 @@ export default function ModernLoginPage() {
       transition: {
         type: 'spring',
         stiffness: 100,
-        damping: 15,
-      },
-    },
-  }
+        damping: 15
+      }
+    }
+  };
 
   const cardVariants = {
     hidden: { scale: 0.8, opacity: 0 },
@@ -276,13 +276,13 @@ export default function ModernLoginPage() {
       transition: {
         type: 'spring',
         stiffness: 200,
-        damping: 20,
-      },
-    },
-  }
+        damping: 20
+      }
+    }
+  };
 
   return (
-    <motion.div 
+    <motion.div
       className="min-h-screen relative overflow-hidden bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-950 dark:via-purple-950/20 dark:to-blue-950/20"
       initial="hidden"
       animate="visible"
@@ -318,7 +318,7 @@ export default function ModernLoginPage() {
       </div>
 
       {/* Language Toggle */}
-      <motion.div 
+      <motion.div
         className="fixed top-4 right-4 sm:top-6 sm:right-6 z-50"
         variants={itemVariants}
       >
@@ -338,7 +338,7 @@ export default function ModernLoginPage() {
             {/* Glassmorphic card with multiple layers */}
             <div className="absolute inset-0 bg-white/20 dark:bg-gray-900/20 backdrop-blur-3xl rounded-3xl" />
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-blue-500/10 dark:from-purple-400/10 dark:to-blue-400/10 backdrop-blur-2xl rounded-3xl" />
-            
+
             {/* Animated border gradient */}
             <div className="absolute inset-0 rounded-3xl p-[2px] overflow-hidden">
               <motion.div
@@ -351,19 +351,19 @@ export default function ModernLoginPage() {
             {/* Main card content */}
             <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 border border-white/20 dark:border-gray-800/50">
               {/* Logo with breathing animation */}
-              <motion.div 
+              <motion.div
                 className="text-center mb-8"
                 variants={itemVariants}
               >
-                <motion.div 
+                <motion.div
                   className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-purple-600 to-blue-600 rounded-3xl mb-4 shadow-xl relative overflow-hidden"
                   animate={{
-                    scale: [1, 1.05, 1],
+                    scale: [1, 1.05, 1]
                   }}
                   transition={{
                     duration: 4,
                     repeat: Infinity,
-                    ease: 'easeInOut',
+                    ease: 'easeInOut'
                   }}
                 >
                   <Sparkles className="absolute w-full h-full text-white/20" />
@@ -407,7 +407,7 @@ export default function ModernLoginPage() {
                 ) : (
                   <>
                     {/* Login Method Tabs with 3D effect */}
-                    <motion.div 
+                    <motion.div
                       className="relative mb-6"
                       variants={itemVariants}
                     >
@@ -418,12 +418,12 @@ export default function ModernLoginPage() {
                           initial={false}
                           animate={{
                             x: loginMethod === 'google' ? 0 : '50%',
-                            width: '50%',
+                            width: '50%'
                           }}
                           transition={{
                             type: 'spring',
                             stiffness: 300,
-                            damping: 30,
+                            damping: 30
                           }}
                         />
                         <button
@@ -512,7 +512,7 @@ export default function ModernLoginPage() {
                             </div>
                           </motion.button>
 
-                          <motion.div 
+                          <motion.div
                             className="mt-6 text-center"
                             variants={itemVariants}
                           >
@@ -673,7 +673,7 @@ export default function ModernLoginPage() {
                             </motion.button>
                           </form>
 
-                          <motion.div 
+                          <motion.div
                             className="mt-6 text-center space-y-4"
                             variants={itemVariants}
                           >
@@ -681,7 +681,7 @@ export default function ModernLoginPage() {
                               <p className="text-sm text-gray-600 dark:text-gray-400">
                                 {t('auth.forgotPassword', '비밀번호를 잊으셨나요?', 'Forgot your password?', 'パスワードをお忘れですか？')}
                               </p>
-                              <motion.button 
+                              <motion.button
                                 className="text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium mt-1"
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
@@ -689,7 +689,7 @@ export default function ModernLoginPage() {
                                 {t('auth.resetPassword', '비밀번호 재설정', 'Reset password', 'パスワードをリセット')}
                               </motion.button>
                             </div>
-                            
+
                             <div className="relative">
                               <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
@@ -700,13 +700,13 @@ export default function ModernLoginPage() {
                                 </span>
                               </div>
                             </div>
-                            
+
                             <div>
                               <p className="text-sm text-gray-600 dark:text-gray-400">
                                 {t('auth.noAccount', '계정이 없으신가요?', "Don't have an account?", 'アカウントをお持ちでない方')}
                               </p>
-                              <Link 
-                                to="/register" 
+                              <Link
+                                to="/register"
                                 className="inline-block text-sm text-purple-600 hover:text-purple-700 dark:text-purple-400 dark:hover:text-purple-300 font-medium mt-1"
                               >
                                 <motion.span
@@ -727,19 +727,19 @@ export default function ModernLoginPage() {
               </AnimatePresence>
 
               {/* Security Notice with shield animation */}
-              <motion.div 
+              <motion.div
                 className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700"
                 variants={itemVariants}
               >
                 <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                   <motion.div
-                    animate={{ 
-                      rotate: [0, 10, -10, 0],
+                    animate={{
+                      rotate: [0, 10, -10, 0]
                     }}
                     transition={{
                       duration: 4,
                       repeat: Infinity,
-                      ease: 'easeInOut',
+                      ease: 'easeInOut'
                     }}
                   >
                     <Shield className="w-4 h-4" />
@@ -752,5 +752,5 @@ export default function ModernLoginPage() {
         </motion.div>
       </div>
     </motion.div>
-  )
+  );
 }

@@ -18,7 +18,7 @@ export const MOODS = [
   { value: 'heartbreak', label: 'Heartbreak' },
   { value: 'cooking', label: 'Cooking' },
   { value: 'feel-good', label: 'Feel Good' }
-]
+];
 
 // Instruments list based on the screenshots
 export const INSTRUMENTS = [
@@ -34,14 +34,14 @@ export const INSTRUMENTS = [
   { value: 'harp', label: 'Harp', category: 'Strings' },
   { value: 'sitar', label: 'Sitar', category: 'Strings' },
   { value: 'oud', label: 'Oud', category: 'Strings' },
-  
+
   // Orchestral Strings
   { value: 'violin', label: 'Violin', category: 'Orchestral' },
   { value: 'viola', label: 'Viola', category: 'Orchestral' },
   { value: 'cello', label: 'Cello', category: 'Orchestral' },
   { value: 'double-bass', label: 'Double Bass', category: 'Orchestral' },
   { value: 'orchestra', label: 'Orchestra', category: 'Orchestral' },
-  
+
   // Wind
   { value: 'flute', label: 'Flute', category: 'Wind' },
   { value: 'piccolo', label: 'Piccolo', category: 'Wind' },
@@ -52,13 +52,13 @@ export const INSTRUMENTS = [
   { value: 'bassoon', label: 'Bassoon', category: 'Wind' },
   { value: 'saxophone', label: 'Saxophone', category: 'Wind' },
   { value: 'harmonica', label: 'Harmonica', category: 'Wind' },
-  
+
   // Brass
   { value: 'trumpet', label: 'Trumpet', category: 'Brass' },
   { value: 'trombone', label: 'Trombone', category: 'Brass' },
   { value: 'french-horn', label: 'French Horn', category: 'Brass' },
   { value: 'horn', label: 'Horn', category: 'Brass' },
-  
+
   // Percussion
   { value: 'drum-kit', label: 'Drum Kit', category: 'Percussion' },
   { value: 'djembe', label: 'Djembe', category: 'Percussion' },
@@ -66,23 +66,23 @@ export const INSTRUMENTS = [
   { value: 'marimba', label: 'Marimba', category: 'Percussion' },
   { value: 'vibraphone', label: 'Vibraphone', category: 'Percussion' },
   { value: 'xylophone', label: 'Xylophone', category: 'Percussion' },
-  
+
   // Keys
   { value: 'piano', label: 'Piano', category: 'Keys' },
   { value: 'organ', label: 'Organ', category: 'Keys' },
   { value: 'harpsichord', label: 'Harpsichord', category: 'Keys' },
   { value: 'accordion', label: 'Accordion', category: 'Keys' },
   { value: 'cembalo', label: 'Cembalo', category: 'Keys' },
-  
+
   // Electronic
   { value: 'synthesizer', label: 'Synthesizer', category: 'Electronic' },
   { value: 'samples', label: 'Samples', category: 'Electronic' },
-  
+
   // Other
   { value: 'vocals', label: 'Vocals', category: 'Other' },
   { value: 'buzuq', label: 'Buzuq', category: 'Other' },
   { value: 'erhu', label: 'Erhu', category: 'Other' }
-]
+];
 
 // Campaign goals
 export const CAMPAIGN_GOALS = [
@@ -156,13 +156,13 @@ export const CAMPAIGN_GOALS = [
       'How will you measure engagement success?'
     ]
   }
-]
+];
 
 // Project types
 export const PROJECT_TYPES = [
   { value: 'FRONTLINE', label: 'Frontline' },
   { value: 'CATALOG', label: 'Catalog' }
-]
+];
 
 // Priority levels
 export const PRIORITY_LEVELS = [
@@ -171,4 +171,4 @@ export const PRIORITY_LEVELS = [
   { value: 3, label: '⭐⭐⭐ Priority 3' },
   { value: 4, label: '⭐⭐⭐⭐ Priority 4' },
   { value: 5, label: '⭐⭐⭐⭐⭐ Priority 5' }
-]
+];

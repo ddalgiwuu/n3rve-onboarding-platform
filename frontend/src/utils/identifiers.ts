@@ -37,7 +37,7 @@ function calculateEANCheckDigit(digits: string): string {
 // Validate UPC
 export function validateUPC(upc: string): boolean {
   if (!/^\d{12}$/.test(upc)) return false;
-  
+
   const checkDigit = calculateUPCCheckDigit(upc.slice(0, 11));
   return checkDigit === upc[11];
 }
@@ -45,7 +45,7 @@ export function validateUPC(upc: string): boolean {
 // Validate EAN
 export function validateEAN(ean: string): boolean {
   if (!/^\d{13}$/.test(ean)) return false;
-  
+
   const checkDigit = calculateEANCheckDigit(ean.slice(0, 12));
   return checkDigit === ean[12];
 }

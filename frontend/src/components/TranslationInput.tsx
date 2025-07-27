@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Plus, X, Globe, Languages, ChevronDown } from 'lucide-react'
+import { useState, useEffect } from 'react';
+import { Plus, X, Globe, Languages, ChevronDown } from 'lucide-react';
 
 interface Translation {
   id: string
@@ -28,7 +28,7 @@ const languageOptions = [
   { value: 'de', label: 'Deutsch (German)', group: 'major' },
   { value: 'fr', label: 'Français (French)', group: 'major' },
   { value: 'ko', label: '한국어 (Korean)', group: 'major' },
-  
+
   // Asian Languages
   { value: 'id', label: 'Bahasa Indonesia', group: 'asian' },
   { value: 'vi', label: 'Tiếng Việt (Vietnamese)', group: 'asian' },
@@ -44,7 +44,7 @@ const languageOptions = [
   { value: 'ml', label: 'മലയാളം (Malayalam)', group: 'asian' },
   { value: 'pa', label: 'ਪੰਜਾਬੀ (Punjabi)', group: 'asian' },
   { value: 'ur', label: 'اردو (Urdu)', group: 'asian' },
-  
+
   // European Languages
   { value: 'it', label: 'Italiano (Italian)', group: 'european' },
   { value: 'nl', label: 'Nederlands (Dutch)', group: 'european' },
@@ -65,7 +65,7 @@ const languageOptions = [
   { value: 'sk', label: 'Slovenčina (Slovak)', group: 'european' },
   { value: 'sl', label: 'Slovenščina (Slovenian)', group: 'european' },
   { value: 'et', label: 'Eesti (Estonian)', group: 'european' },
-  
+
   // Other Languages
   { value: 'he', label: 'עברית (Hebrew)', group: 'other' },
   { value: 'fa', label: 'فارسی (Persian)', group: 'other' },
@@ -97,15 +97,15 @@ const languageOptions = [
   { value: 'ps', label: 'پښتو (Pashto)', group: 'other' },
   { value: 'ku', label: 'Kurdî (Kurdish)', group: 'other' },
   { value: 'sd', label: 'سنڌي (Sindhi)', group: 'other' }
-]
+];
 
 // Translation Title Input Component with local state
-const TranslationTitleInput = ({ 
-  index, 
-  initialValue, 
+const TranslationTitleInput = ({
+  index,
+  initialValue,
   language,
   onUpdate,
-  placeholder 
+  placeholder
 }: {
   index: number
   initialValue: string
@@ -113,16 +113,16 @@ const TranslationTitleInput = ({
   onUpdate: (index: number, field: 'language' | 'title', value: string) => void
   placeholder: string
 }) => {
-  const [localValue, setLocalValue] = useState(initialValue)
-  
+  const [localValue, setLocalValue] = useState(initialValue);
+
   useEffect(() => {
-    setLocalValue(initialValue)
-  }, [initialValue])
-  
+    setLocalValue(initialValue);
+  }, [initialValue]);
+
   const handleBlur = () => {
-    onUpdate(index, 'title', localValue)
-  }
-  
+    onUpdate(index, 'title', localValue);
+  };
+
   return (
     <input
       type="text"
@@ -133,55 +133,55 @@ const TranslationTitleInput = ({
       disabled={!language}
       className="w-full px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm disabled:bg-gray-100 dark:disabled:bg-gray-800 disabled:cursor-not-allowed transition-colors"
     />
-  )
-}
+  );
+};
 
-export default function TranslationInput({ 
-  translations, 
-  onTranslationsChange, 
+export default function TranslationInput({
+  translations,
+  onTranslationsChange,
   language,
-  placeholder 
+  placeholder
 }: TranslationInputProps) {
-  const [showDropdown, setShowDropdown] = useState<number | null>(null)
-  const [searchQuery, setSearchQuery] = useState('')
+  const [showDropdown, setShowDropdown] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const addTranslation = () => {
     const newTranslation: Translation = {
       id: `trans-${Date.now()}`,
       language: '',
       title: ''
-    }
-    onTranslationsChange([...translations, newTranslation])
-  }
+    };
+    onTranslationsChange([...translations, newTranslation]);
+  };
 
   const updateTranslation = (index: number, field: 'language' | 'title', value: string) => {
-    const updated = [...translations]
-    updated[index] = { ...updated[index], [field]: value }
-    onTranslationsChange(updated)
-  }
+    const updated = [...translations];
+    updated[index] = { ...updated[index], [field]: value };
+    onTranslationsChange(updated);
+  };
 
   const removeTranslation = (index: number) => {
-    onTranslationsChange(translations.filter((_, i) => i !== index))
-  }
+    onTranslationsChange(translations.filter((_, i) => i !== index));
+  };
 
   const filteredLanguages = searchQuery
-    ? languageOptions.filter(lang => 
-        lang.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    ? languageOptions.filter(lang =>
+      lang.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
         lang.value.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : languageOptions
+    )
+    : languageOptions;
 
   const languageGroups = {
     major: language === 'ko' ? '주요 언어' : 'Major Languages',
     asian: language === 'ko' ? '아시아 언어' : 'Asian Languages',
     european: language === 'ko' ? '유럽 언어' : 'European Languages',
     other: language === 'ko' ? '기타 언어' : 'Other Languages'
-  }
+  };
 
   const getSelectedLanguageLabel = (langValue: string) => {
-    const lang = languageOptions.find(l => l.value === langValue)
-    return lang ? lang.label : langValue
-  }
+    const lang = languageOptions.find(l => l.value === langValue);
+    return lang ? lang.label : langValue;
+  };
 
   return (
     <div className="space-y-3">
@@ -208,7 +208,7 @@ export default function TranslationInput({
         <div className="flex items-center gap-2">
           <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
           <p className="text-xs text-gray-700 dark:text-gray-300">
-            {language === 'ko' 
+            {language === 'ko'
               ? '70개 이상의 언어로 번역하여 전 세계 청취자에게 도달하세요'
               : 'Translate into 70+ languages to reach listeners worldwide'
             }
@@ -220,8 +220,8 @@ export default function TranslationInput({
       {translations.length > 0 ? (
         <div className="space-y-3">
           {translations.map((translation, index) => (
-            <div 
-              key={translation.id} 
+            <div
+              key={translation.id}
               className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:shadow-sm transition-shadow"
             >
               <div className="flex gap-2">
@@ -234,13 +234,13 @@ export default function TranslationInput({
                     <button
                       type="button"
                       onClick={() => {
-                        setShowDropdown(showDropdown === index ? null : index)
-                        setSearchQuery('')
+                        setShowDropdown(showDropdown === index ? null : index);
+                        setSearchQuery('');
                       }}
                       className="w-full px-2.5 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm text-left flex items-center justify-between hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
                     >
                       <span className={translation.language ? '' : 'text-gray-500 dark:text-gray-400'}>
-                        {translation.language 
+                        {translation.language
                           ? getSelectedLanguageLabel(translation.language)
                           : (language === 'ko' ? '언어를 선택하세요' : 'Select a language')
                         }
@@ -266,8 +266,8 @@ export default function TranslationInput({
                         {/* Language List */}
                         <div className="max-h-64 overflow-y-auto">
                           {Object.entries(languageGroups).map(([groupKey, groupLabel]) => {
-                            const groupLanguages = filteredLanguages.filter(lang => lang.group === groupKey)
-                            if (groupLanguages.length === 0) return null
+                            const groupLanguages = filteredLanguages.filter(lang => lang.group === groupKey);
+                            if (groupLanguages.length === 0) return null;
 
                             return (
                               <div key={groupKey}>
@@ -279,13 +279,13 @@ export default function TranslationInput({
                                     key={lang.value}
                                     type="button"
                                     onClick={() => {
-                                      updateTranslation(index, 'language', lang.value)
-                                      setShowDropdown(null)
-                                      setSearchQuery('')
+                                      updateTranslation(index, 'language', lang.value);
+                                      setShowDropdown(null);
+                                      setSearchQuery('');
                                     }}
                                     className={`w-full px-3 py-2 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                                      translation.language === lang.value 
-                                        ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300' 
+                                      translation.language === lang.value
+                                        ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
                                         : 'text-gray-700 dark:text-gray-300'
                                     }`}
                                   >
@@ -293,7 +293,7 @@ export default function TranslationInput({
                                   </button>
                                 ))}
                               </div>
-                            )
+                            );
                           })}
                         </div>
                       </div>
@@ -314,7 +314,7 @@ export default function TranslationInput({
                     />
                     {!translation.language && (
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        {language === 'ko' 
+                        {language === 'ko'
                           ? '먼저 언어를 선택해주세요'
                           : 'Please select a language first'
                         }
@@ -339,13 +339,13 @@ export default function TranslationInput({
         <div className="text-center py-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
           <Globe className="w-8 h-8 text-gray-300 dark:text-gray-600 mx-auto mb-2" />
           <p className="text-gray-600 dark:text-gray-400 text-xs">
-            {language === 'ko' 
+            {language === 'ko'
               ? '아직 번역이 없습니다'
               : 'No translations yet'
             }
           </p>
           <p className="text-gray-500 dark:text-gray-500 text-xs mt-0.5">
-            {language === 'ko' 
+            {language === 'ko'
               ? '"번역 추가" 버튼을 클릭하여 시작하세요'
               : 'Click "Add Translation" to get started'
             }
@@ -355,14 +355,14 @@ export default function TranslationInput({
 
       {/* Click outside to close dropdown */}
       {showDropdown !== null && (
-        <div 
-          className="fixed inset-0 z-10" 
+        <div
+          className="fixed inset-0 z-10"
           onClick={() => {
-            setShowDropdown(null)
-            setSearchQuery('')
+            setShowDropdown(null);
+            setSearchQuery('');
           }}
         />
       )}
     </div>
-  )
+  );
 }

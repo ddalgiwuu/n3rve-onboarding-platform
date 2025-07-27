@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLanguageStore } from '@/store/language.store';
-import useSafeStore from '@/hooks/useSafeStore'
+import useSafeStore from '@/hooks/useSafeStore';
 import {
   FileAudio,
   Image,
@@ -240,49 +240,49 @@ const TechnicalGuide: React.FC = () => {
           </div>
         </div>
 
-      {/* Audio Specifications */}
-      <SpecificationCard
-        title={t('오디오 사양', 'Audio Specifications')}
-        icon={<FileAudio className="w-6 h-6" />}
-        specs={AUDIO_SPECIFICATIONS}
-        examples={audioExamples}
-        tips={audioTips}
-      />
+        {/* Audio Specifications */}
+        <SpecificationCard
+          title={t('오디오 사양', 'Audio Specifications')}
+          icon={<FileAudio className="w-6 h-6" />}
+          specs={AUDIO_SPECIFICATIONS}
+          examples={audioExamples}
+          tips={audioTips}
+        />
 
-      {/* Artwork Specifications */}
-      <SpecificationCard
-        title={t('앨범 아트워크 사양', 'Album Artwork Specifications')}
-        icon={<Image className="w-6 h-6" />}
-        specs={ARTWORK_SPECIFICATIONS}
-        examples={artworkExamples}
-        tips={artworkTips}
-      />
+        {/* Artwork Specifications */}
+        <SpecificationCard
+          title={t('앨범 아트워크 사양', 'Album Artwork Specifications')}
+          icon={<Image className="w-6 h-6" />}
+          specs={ARTWORK_SPECIFICATIONS}
+          examples={artworkExamples}
+          tips={artworkTips}
+        />
 
-      {/* Motion Art Specifications */}
-      <SpecificationCard
-        title={t('모션 아트 사양', 'Motion Art Specifications')}
-        icon={<Film className="w-6 h-6" />}
-        specs={MOTION_ART_SPECIFICATIONS}
-        examples={motionArtExamples}
-        tips={motionArtTips}
-      />
+        {/* Motion Art Specifications */}
+        <SpecificationCard
+          title={t('모션 아트 사양', 'Motion Art Specifications')}
+          icon={<Film className="w-6 h-6" />}
+          specs={MOTION_ART_SPECIFICATIONS}
+          examples={motionArtExamples}
+          tips={motionArtTips}
+        />
 
-      {/* Dolby Atmos Specifications */}
-      <SpecificationCard
-        title={t('Dolby Atmos 사양', 'Dolby Atmos Specifications')}
-        icon={<FileAudio className="w-6 h-6" />}
-        specs={DOLBY_ATMOS_SPECIFICATIONS}
-        tips={dolbyAtmosTips}
-      />
+        {/* Dolby Atmos Specifications */}
+        <SpecificationCard
+          title={t('Dolby Atmos 사양', 'Dolby Atmos Specifications')}
+          icon={<FileAudio className="w-6 h-6" />}
+          specs={DOLBY_ATMOS_SPECIFICATIONS}
+          tips={dolbyAtmosTips}
+        />
 
-      {/* Video Specifications */}
-      <SpecificationCard
-        title={t('비디오 사양', 'Video Specifications')}
-        icon={<Video className="w-6 h-6" />}
-        specs={VIDEO_SPECIFICATIONS}
-        examples={videoExamples}
-        tips={videoTips}
-      />
+        {/* Video Specifications */}
+        <SpecificationCard
+          title={t('비디오 사양', 'Video Specifications')}
+          icon={<Video className="w-6 h-6" />}
+          specs={VIDEO_SPECIFICATIONS}
+          examples={videoExamples}
+          tips={videoTips}
+        />
 
         {/* Contact Support */}
         <div className="mt-8 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-8 text-center border border-gray-300 dark:border-gray-600">

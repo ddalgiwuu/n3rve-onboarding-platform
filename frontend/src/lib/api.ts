@@ -1,31 +1,31 @@
-import axios from 'axios'
+import axios from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
-  },
-})
+    'Content-Type': 'application/json'
+  }
+});
 
 // Request interceptor for auth token
 api.interceptors.request.use(
   (config) => {
     // Get auth data from zustand persist store
-    const authData = localStorage.getItem('auth-storage')
+    const authData = localStorage.getItem('auth-storage');
     if (authData) {
-      const { state } = JSON.parse(authData)
+      const { state } = JSON.parse(authData);
       if (state?.accessToken) {
-        config.headers.Authorization = `Bearer ${state.accessToken}`
+        config.headers.Authorization = `Bearer ${state.accessToken}`;
       }
     }
-    return config
+    return config;
   },
   (error) => {
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
 // Response interceptor for error handling
 api.interceptors.response.use(
@@ -33,12 +33,12 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Handle unauthorized access - clear auth storage
-      localStorage.removeItem('auth-storage')
-      window.location.href = '/login'
+      localStorage.removeItem('auth-storage');
+      window.location.href = '/login';
     }
-    return Promise.reject(error)
+    return Promise.reject(error);
   }
-)
+);
 
-export { api }
-export default api
+export { api };
+export default api;

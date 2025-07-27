@@ -1,10 +1,10 @@
-import { NavLink, useLocation } from 'react-router-dom'
-import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield, UserCog, Building2 } from 'lucide-react'
-import { cn } from '@/utils/cn'
-import { useAuthStore } from '@/store/auth.store'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { useEffect, useRef } from 'react'
+import { NavLink, useLocation } from 'react-router-dom';
+import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield, UserCog, Building2 } from 'lucide-react';
+import { cn } from '@/utils/cn';
+import { useAuthStore } from '@/store/auth.store';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { useEffect, useRef } from 'react';
 
 interface SidebarProps {
   isOpen: boolean
@@ -12,14 +12,14 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
-  const user = useSafeStore(useAuthStore, (state) => state.user)
-  const logout = useSafeStore(useAuthStore, (state) => state.logout)
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const location = useLocation()
-  const sidebarRef = useRef<HTMLDivElement>(null)
-  const isAdmin = user?.role === 'ADMIN'
-  const isInAdminConsole = location.pathname.startsWith('/admin')
-  
+  const user = useSafeStore(useAuthStore, (state) => state.user);
+  const logout = useSafeStore(useAuthStore, (state) => state.logout);
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const location = useLocation();
+  const sidebarRef = useRef<HTMLDivElement>(null);
+  const isAdmin = user?.role === 'ADMIN';
+  const isInAdminConsole = location.pathname.startsWith('/admin');
+
   // Color mapping function to avoid dynamic class concatenation
   const getIconColorClasses = (color: string, isActive: boolean) => {
     const colorMap: Record<string, { active: string; inactive: string; hover: string }> = {
@@ -63,52 +63,52 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         inactive: 'text-gray-500 dark:text-gray-400',
         hover: 'group-hover:text-indigo-600'
       }
-    }
-    
-    const colorConfig = colorMap[color] || colorMap['text-gray-600']
+    };
+
+    const colorConfig = colorMap[color] || colorMap['text-gray-600'];
     if (isActive) {
-      return colorConfig.active
+      return colorConfig.active;
     }
-    return `${colorConfig.inactive} ${colorConfig.hover}`
-  }
-  
+    return `${colorConfig.inactive} ${colorConfig.hover}`;
+  };
+
   // Close sidebar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent | TouchEvent) => {
       if (isOpen && sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
         // Check if the click target is the menu button in header
-        const target = event.target as HTMLElement
+        const target = event.target as HTMLElement;
         if (!target.closest('[data-menu-button]')) {
-          onClose()
+          onClose();
         }
       }
-    }
+    };
 
     const handleEscapeKey = (event: KeyboardEvent) => {
       if (event.key === 'Escape' && isOpen) {
-        onClose()
+        onClose();
       }
-    }
+    };
 
     if (isOpen) {
       // Add small delay to prevent immediate close when opening
       const timer = setTimeout(() => {
-        document.addEventListener('mousedown', handleClickOutside, { passive: true })
-        document.addEventListener('touchstart', handleClickOutside, { passive: true })
-        document.addEventListener('keydown', handleEscapeKey)
-      }, 200)
+        document.addEventListener('mousedown', handleClickOutside, { passive: true });
+        document.addEventListener('touchstart', handleClickOutside, { passive: true });
+        document.addEventListener('keydown', handleEscapeKey);
+      }, 200);
 
       return () => {
-        clearTimeout(timer)
-        document.removeEventListener('mousedown', handleClickOutside)
-        document.removeEventListener('touchstart', handleClickOutside)
-        document.removeEventListener('keydown', handleEscapeKey)
-      }
+        clearTimeout(timer);
+        document.removeEventListener('mousedown', handleClickOutside);
+        document.removeEventListener('touchstart', handleClickOutside);
+        document.removeEventListener('keydown', handleEscapeKey);
+      };
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose]);
 
   // Remove automatic sidebar closing on route change - now handled by onClick
-  
+
   // Make menu items reactive to language changes
   const customerMenuItems = [
     { icon: Home, label: language === 'ko' ? '대시보드' : language === 'en' ? 'Dashboard' : 'ダッシュボード', path: '/dashboard', color: 'text-blue-600' },
@@ -117,39 +117,39 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { icon: FileText, label: language === 'ko' ? '가이드' : language === 'en' ? 'Guide' : 'ガイド', path: '/guide', color: 'text-green-600' },
     { icon: Music, label: language === 'ko' ? '아티스트 프로필' : language === 'en' ? 'Artist Profile' : 'アーティストプロフィール', path: '/artist-profile-guide', color: 'text-pink-600' },
     { icon: Building2, label: language === 'ko' ? '계정 관리' : language === 'en' ? 'Account Management' : 'アカウント管理', path: '/account', color: 'text-indigo-600' },
-    { icon: Settings, label: language === 'ko' ? '설정' : language === 'en' ? 'Settings' : '設定', path: '/settings', color: 'text-gray-600' },
-  ] as const
-  
+    { icon: Settings, label: language === 'ko' ? '설정' : language === 'en' ? 'Settings' : '設定', path: '/settings', color: 'text-gray-600' }
+  ] as const;
+
   const adminMenuItems = [
     { icon: Shield, label: language === 'ko' ? '관리자 대시보드' : language === 'en' ? 'Admin Dashboard' : '管理者ダッシュボード', path: '/admin', color: 'text-red-600' },
     { icon: ClipboardList, label: language === 'ko' ? '제출 관리' : language === 'en' ? 'Submission Management' : '提出管理', path: '/admin/submission-management', color: 'text-blue-600' },
     { icon: Users, label: language === 'ko' ? '고객 관리' : language === 'en' ? 'Customer Management' : '顧客管理', path: '/admin/customers', color: 'text-green-600' },
     { icon: UserCog, label: language === 'ko' ? '계정 관리' : language === 'en' ? 'Account Management' : 'アカウント管理', path: '/admin/accounts', color: 'text-purple-600' },
-    { icon: Settings, label: language === 'ko' ? '설정' : language === 'en' ? 'Settings' : '設定', path: '/admin/settings', color: 'text-gray-600' },
-  ] as const
-  
+    { icon: Settings, label: language === 'ko' ? '설정' : language === 'en' ? 'Settings' : '設定', path: '/admin/settings', color: 'text-gray-600' }
+  ] as const;
+
   // Show menu items based on admin status and current console
-  const menuItems = isAdmin && isInAdminConsole ? adminMenuItems : customerMenuItems
-  
+  const menuItems = isAdmin && isInAdminConsole ? adminMenuItems : customerMenuItems;
+
   const handleLogout = () => {
-    logout?.()
-    window.location.href = '/'
-  }
-  
+    logout?.();
+    window.location.href = '/';
+  };
+
   return (
-    <>      
+    <>
       {/* Sidebar */}
-      <aside 
+      <aside
         ref={sidebarRef}
         className={cn(
-          "w-64 sm:w-72 h-screen",
-          "fixed top-0 left-0 z-50",
-          "glass-effect-strong backdrop-blur-xl",
-          "border-r border-gray-200/50 dark:border-gray-700/50",
-          "shadow-2xl",
-          isOpen ? "translate-x-0" : "-translate-x-full",
-          "transition-all duration-300 ease-in-out",
-          "will-change-transform"
+          'w-64 sm:w-72 h-screen',
+          'fixed top-0 left-0 z-50',
+          'glass-effect-strong backdrop-blur-xl',
+          'border-r border-gray-200/50 dark:border-gray-700/50',
+          'shadow-2xl',
+          isOpen ? 'translate-x-0' : '-translate-x-full',
+          'transition-all duration-300 ease-in-out',
+          'will-change-transform'
         )}
       >
         <div className="h-full flex flex-col">
@@ -159,19 +159,19 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               <div className="flex items-center gap-3">
                 {/* Logo with light/dark mode support */}
                 <div className="h-10 flex items-center">
-                  <img 
-                    src="/assets/logos/n3rve-logo.svg" 
-                    alt="N3RVE" 
+                  <img
+                    src="/assets/logos/n3rve-logo.svg"
+                    alt="N3RVE"
                     className="h-full w-auto dark:hidden"
                   />
-                  <img 
-                    src="/assets/logos/n3rve-logo-white.svg" 
-                    alt="N3RVE" 
+                  <img
+                    src="/assets/logos/n3rve-logo-white.svg"
+                    alt="N3RVE"
                     className="h-full w-auto hidden dark:block"
                   />
                 </div>
               </div>
-              
+
               {/* Close button for mobile */}
               <button
                 onClick={onClose}
@@ -200,7 +200,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               </div>
             </div>
           </div>
-        
+
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 overflow-y-auto">
             <div className="space-y-1">
@@ -212,8 +212,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     // On mobile, close sidebar after navigation with a delay
                     if (window.innerWidth < 1024) {
                       setTimeout(() => {
-                        onClose()
-                      }, 150)
+                        onClose();
+                      }, 150);
                     }
                   }}
                   className={({ isActive }) =>
@@ -227,21 +227,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {({ isActive }) => (
                     <>
                       <div className={cn(
-                        "p-2.5 rounded-lg transition-all duration-200",
-                        isActive 
-                          ? "bg-blue-100/70 dark:bg-blue-800/50 shadow-inner" 
-                          : "group-hover:bg-gray-200/50 dark:group-hover:bg-gray-700/50"
+                        'p-2.5 rounded-lg transition-all duration-200',
+                        isActive
+                          ? 'bg-blue-100/70 dark:bg-blue-800/50 shadow-inner'
+                          : 'group-hover:bg-gray-200/50 dark:group-hover:bg-gray-700/50'
                       )}>
                         <item.icon className={cn(
-                          "w-5 h-5 transition-colors duration-150",
+                          'w-5 h-5 transition-colors duration-150',
                           getIconColorClasses(item.color, isActive)
                         )} />
                       </div>
                       <span className={cn(
-                        "font-medium flex-1",
-                        isActive 
-                          ? "text-gray-900 dark:text-white" 
-                          : "text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white"
+                        'font-medium flex-1',
+                        isActive
+                          ? 'text-gray-900 dark:text-white'
+                          : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white'
                       )}>
                         {item.label}
                       </span>
@@ -266,8 +266,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     // On mobile, close sidebar after navigation with a delay
                     if (window.innerWidth < 1024) {
                       setTimeout(() => {
-                        onClose()
-                      }, 150)
+                        onClose();
+                      }, 150);
                     }
                   }}
                   className="flex items-center gap-3 px-4 py-3 rounded-xl bg-gray-50/50 dark:bg-gray-800/50 hover:bg-gray-100/50 dark:hover:bg-gray-700/50 transition-all duration-200 hover:shadow-lg"
@@ -276,7 +276,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                     <Shield className="w-5 h-5 text-red-600" />
                   </div>
                   <span className="font-medium text-gray-700 dark:text-gray-300">
-                    {isInAdminConsole 
+                    {isInAdminConsole
                       ? (language === 'ko' ? '고객 콘솔로' : 'To Customer Console')
                       : (language === 'ko' ? '관리자 콘솔로' : 'To Admin Console')
                     }
@@ -302,15 +302,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
         </div>
       </aside>
-      
+
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 bg-black/30 z-40 lg:hidden transition-opacity duration-300",
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          'fixed inset-0 bg-black/30 z-40 lg:hidden transition-opacity duration-300',
+          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
         )}
         onClick={onClose}
       />
     </>
-  )
+  );
 }

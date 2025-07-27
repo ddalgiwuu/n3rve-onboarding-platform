@@ -1,13 +1,13 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { Disc, FileText, Info, Languages, AlertCircle, ChevronDown, Globe } from 'lucide-react'
-import { validateField } from '@/utils/fugaQCValidation'
-import QCWarnings from '@/components/submission/QCWarnings'
-import { useMemo, useState } from 'react'
-import ValidatedFormInput from '@/components/ValidatedFormInput'
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { Disc, FileText, Info, Languages, AlertCircle, ChevronDown, Globe } from 'lucide-react';
+import { validateField } from '@/utils/fugaQCValidation';
+import QCWarnings from '@/components/submission/QCWarnings';
+import { useMemo, useState } from 'react';
+import ValidatedFormInput from '@/components/ValidatedFormInput';
 
 const createAlbumSchema = (t: (ko: string, en: string) => string) => z.object({
   primaryTitle: z.string().min(1, t('앨범 제목을 입력해주세요', 'Please enter the album title')),
@@ -18,16 +18,16 @@ const createAlbumSchema = (t: (ko: string, en: string) => string) => z.object({
   releaseVersion: z.string().optional()
 }).refine((data) => {
   if (data.hasTranslation && !data.translationLanguage) {
-    return false
+    return false;
   }
   if (data.hasTranslation && !data.translatedTitle?.trim()) {
-    return false
+    return false;
   }
-  return true
+  return true;
 }, {
   message: t('번역 정보를 모두 입력해주세요', 'Please enter all translation information'),
-  path: ["translatedTitle"]
-})
+  path: ['translatedTitle']
+});
 
 type AlbumForm = z.infer<ReturnType<typeof createAlbumSchema>>
 
@@ -42,7 +42,7 @@ const getLanguageOptions = (t: (ko: string, en: string) => string) => [
   { value: 'it', label: t('이탈리아어', 'Italian') },
   { value: 'pt', label: t('포르투갈어', 'Portuguese') },
   { value: 'ru', label: t('러시아어', 'Russian') }
-]
+];
 
 interface Props {
   data: any
@@ -51,8 +51,8 @@ interface Props {
 }
 
 export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<AlbumForm>({
     resolver: zodResolver(createAlbumSchema(t)),
     defaultValues: data?.album || {
@@ -60,62 +60,62 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
       hasTranslation: false,
       releaseVersion: ''
     }
-  })
+  });
 
   // Watch form values for validation
-  const primaryTitle = watch('primaryTitle')
-  const hasTranslation = watch('hasTranslation')
-  const translationLanguage = watch('translationLanguage')
-  const translatedTitle = watch('translatedTitle')
-  const albumType = watch('type')
-  
+  const primaryTitle = watch('primaryTitle');
+  const hasTranslation = watch('hasTranslation');
+  const translationLanguage = watch('translationLanguage');
+  const translatedTitle = watch('translatedTitle');
+  const albumType = watch('type');
+
   // Real-time QC validation
   const qcValidationResults = useMemo(() => {
-    const results = []
-    
+    const results = [];
+
     if (primaryTitle) {
-      results.push(...validateField('albumTitleKo', primaryTitle))
+      results.push(...validateField('albumTitleKo', primaryTitle));
     }
-    
+
     if (translatedTitle) {
-      results.push(...validateField('albumTitleEn', translatedTitle))
+      results.push(...validateField('albumTitleEn', translatedTitle));
     }
-    
+
     // Note: Format validation will be done in Step6 when we have track count
-    
-    return results
-  }, [primaryTitle, translatedTitle])
+
+    return results;
+  }, [primaryTitle, translatedTitle]);
 
   return (
     <form onSubmit={handleSubmit(
       onNext,
       (errors) => {
         // Find first error and scroll to it
-        const firstErrorField = Object.keys(errors)[0]
-        let elementId = ''
-        
+        const firstErrorField = Object.keys(errors)[0];
+        let elementId = '';
+
         switch(firstErrorField) {
           case 'primaryTitle':
-            elementId = 'album-title-section'
-            break
+            elementId = 'album-title-section';
+            break;
           case 'translationLanguage':
           case 'translatedTitle':
-            elementId = 'translation-section'
-            break
+            elementId = 'translation-section';
+            break;
           case 'type':
-            elementId = 'release-info-section'
-            break
+            elementId = 'release-info-section';
+            break;
         }
-        
+
         if (elementId) {
-          const element = document.getElementById(elementId)
+          const element = document.getElementById(elementId);
           if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
             // Add visual indicator
-            element.classList.add('ring-2', 'ring-red-500', 'ring-offset-2')
+            element.classList.add('ring-2', 'ring-red-500', 'ring-offset-2');
             setTimeout(() => {
-              element.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2')
-            }, 3000)
+              element.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2');
+            }, 3000);
           }
         }
       }
@@ -129,11 +129,11 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
             {language === 'ko' ? '앨범의 기본 정보를 입력해주세요' : 'Enter basic album information'}
           </p>
         </div>
-        
+
         <div className="space-y-6">
           {/* Album Title Section */}
           <div id="album-title-section" className="relative">
-            
+
             {/* Primary Album Title */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-6 shadow-sm">
               <div className="mb-6">
@@ -159,7 +159,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                   )}
                 </div>
                 <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-                  {language === 'ko' 
+                  {language === 'ko'
                     ? '정확한 앨범 제목을 입력하세요. 특수 문자 사용에 주의하세요.'
                     : 'Enter the exact album title. Be careful with special characters.'
                   }
@@ -169,7 +169,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
               {/* Translation Toggle */}
               <div className="relative mt-6">
                 <div className="absolute left-0 top-0 bottom-0 w-px bg-gradient-to-b from-gray-200 via-gray-300 to-transparent dark:from-gray-700 dark:via-gray-600" />
-                
+
                 <label htmlFor="hasTranslation" className="flex items-center justify-between p-5 -mx-6 -mb-6 border-t border-gray-100 dark:border-gray-800 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 dark:hover:from-blue-900/10 dark:hover:to-purple-900/10 cursor-pointer transition-all duration-200 rounded-b-2xl group">
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg flex items-center justify-center group-hover:from-blue-200 group-hover:to-purple-200 dark:group-hover:from-blue-800/30 dark:group-hover:to-purple-800/30 transition-all duration-200">
@@ -180,7 +180,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                         {language === 'ko' ? '번역 추가' : 'Add Translation'}
                       </span>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                        {language === 'ko' 
+                        {language === 'ko'
                           ? '다른 언어로 앨범 제목을 추가할 수 있습니다'
                           : 'Add album title in another language'
                         }
@@ -205,7 +205,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
               <div id="translation-section" className="mt-6 relative overflow-hidden">
                 {/* Background gradient effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5 dark:from-blue-500/10 dark:via-purple-500/10 dark:to-pink-500/10 rounded-3xl" />
-                
+
                 <div className="relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl border border-gray-200/50 dark:border-gray-700/50 p-8 shadow-xl animate-fadeIn">
                   {/* Header with icon */}
                   <div className="flex items-center gap-4 mb-8">
@@ -224,7 +224,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="space-y-8">
                     {/* Language Selection Grid */}
                     <div>
@@ -308,11 +308,11 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                             className="w-full px-6 py-4 border-2 border-gray-200 dark:border-gray-700 rounded-2xl focus:ring-4 focus:ring-blue-500/20 focus:border-transparent bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-all text-lg font-medium shadow-sm focus:shadow-lg"
                             placeholder={
                               translationLanguage === 'en' ? 'e.g., My First Album' :
-                              translationLanguage === 'ja' ? 'e.g., 私の最初のアルバム' :
-                              translationLanguage === 'zh' ? 'e.g., 我的第一张专辑' :
-                              translationLanguage === 'es' ? 'e.g., Mi Primer Álbum' :
-                              translationLanguage === 'fr' ? 'e.g., Mon Premier Album' :
-                              language === 'ko' ? '번역된 앨범 제목을 입력하세요' : 'Enter translated album title'
+                                translationLanguage === 'ja' ? 'e.g., 私の最初のアルバム' :
+                                  translationLanguage === 'zh' ? 'e.g., 我的第一张专辑' :
+                                    translationLanguage === 'es' ? 'e.g., Mi Primer Álbum' :
+                                      translationLanguage === 'fr' ? 'e.g., Mon Premier Album' :
+                                        language === 'ko' ? '번역된 앨범 제목을 입력하세요' : 'Enter translated album title'
                             }
                           />
                           <div className="absolute inset-y-0 right-0 flex items-center pr-6">
@@ -359,7 +359,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                 <p className="text-sm text-gray-500 dark:text-gray-400">{language === 'ko' ? '앨범 형식을 선택하세요' : 'Choose your release format'}</p>
               </div>
             </div>
-            
+
             {/* Release Version Field */}
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -375,7 +375,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                 {t('특별한 버전이나 에디션이 있는 경우 입력하세요', 'Enter if this is a special version or edition')}
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Single */}
               <label className={`relative group cursor-pointer transition-all duration-300 ${
@@ -388,8 +388,8 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                   className="sr-only"
                 />
                 <div className={`relative overflow-hidden rounded-2xl border-2 transition-all duration-300 ${
-                  albumType === 'single' 
-                    ? 'border-n3rve-main shadow-lg shadow-n3rve-500/25' 
+                  albumType === 'single'
+                    ? 'border-n3rve-main shadow-lg shadow-n3rve-500/25'
                     : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-300 dark:hover:border-n3rve-700'
                 }`}>
                   {albumType === 'single' && (
@@ -426,7 +426,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                   )}
                 </div>
               </label>
-              
+
               {/* EP */}
               <label className={`relative group cursor-pointer transition-all duration-300 ${
                 albumType === 'ep' ? 'scale-105' : 'hover:scale-105'
@@ -438,8 +438,8 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                   className="sr-only"
                 />
                 <div className={`relative overflow-hidden rounded-2xl border-2 transition-all duration-300 ${
-                  albumType === 'ep' 
-                    ? 'border-n3rve-main shadow-lg shadow-n3rve-500/25' 
+                  albumType === 'ep'
+                    ? 'border-n3rve-main shadow-lg shadow-n3rve-500/25'
                     : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-300 dark:hover:border-n3rve-700'
                 }`}>
                   {albumType === 'ep' && (
@@ -483,7 +483,7 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                   )}
                 </div>
               </label>
-              
+
               {/* Album */}
               <label className={`relative group cursor-pointer transition-all duration-300 ${
                 albumType === 'album' ? 'scale-105' : 'hover:scale-105'
@@ -495,8 +495,8 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                   className="sr-only"
                 />
                 <div className={`relative overflow-hidden rounded-2xl border-2 transition-all duration-300 ${
-                  albumType === 'album' 
-                    ? 'border-n3rve-main shadow-lg shadow-n3rve-500/25' 
+                  albumType === 'album'
+                    ? 'border-n3rve-main shadow-lg shadow-n3rve-500/25'
                     : 'border-gray-200 dark:border-gray-700 hover:border-n3rve-300 dark:hover:border-n3rve-700'
                 }`}>
                   {albumType === 'album' && (
@@ -545,8 +545,6 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
             </div>
           </div>
 
-
-          
           {/* QC Validation Warnings */}
           {qcValidationResults.length > 0 && (
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl p-6 border border-amber-200 dark:border-amber-800">
@@ -570,5 +568,5 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
       </div>
 
     </form>
-  )
+  );
 }

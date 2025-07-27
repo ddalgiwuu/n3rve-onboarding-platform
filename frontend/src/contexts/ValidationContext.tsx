@@ -1,5 +1,5 @@
-import { createContext, useContext, ReactNode } from 'react'
-import { useValidationWarnings } from '@/hooks/useValidationWarnings'
+import { createContext, useContext, ReactNode } from 'react';
+import { useValidationWarnings } from '@/hooks/useValidationWarnings';
 
 interface ValidationContextType {
   validateWithDebounce: ReturnType<typeof useValidationWarnings>['validateWithDebounce']
@@ -16,22 +16,22 @@ interface ValidationContextType {
   getInputBorderClass: ReturnType<typeof useValidationWarnings>['getInputBorderClass']
 }
 
-const ValidationContext = createContext<ValidationContextType | undefined>(undefined)
+const ValidationContext = createContext<ValidationContextType | undefined>(undefined);
 
 export function ValidationProvider({ children }: { children: ReactNode }) {
-  const validationWarnings = useValidationWarnings()
+  const validationWarnings = useValidationWarnings();
 
   return (
     <ValidationContext.Provider value={validationWarnings}>
       {children}
     </ValidationContext.Provider>
-  )
+  );
 }
 
 export function useValidationContext() {
-  const context = useContext(ValidationContext)
+  const context = useContext(ValidationContext);
   if (!context) {
-    throw new Error('useValidationContext must be used within a ValidationProvider')
+    throw new Error('useValidationContext must be used within a ValidationProvider');
   }
-  return context
+  return context;
 }

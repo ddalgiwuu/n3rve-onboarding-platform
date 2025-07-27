@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react'
-import { Plus, X, Edit2, Globe, Search, Check } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
-import { SUPPORTED_LANGUAGES, getLanguageByCode, getCommonLanguages } from '@/data/languages'
+import { useState, useCallback } from 'react';
+import { Plus, X, Edit2, Globe, Search, Check } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
+import { SUPPORTED_LANGUAGES, getLanguageByCode, getCommonLanguages } from '@/data/languages';
 
 export interface Translation {
   id: string
@@ -29,70 +29,70 @@ export default function TranslationManager({
   className = '',
   showCommonOnly = false
 }: TranslationManagerProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [isAdding, setIsAdding] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [newLanguage, setNewLanguage] = useState('')
-  const [newTitle, setNewTitle] = useState('')
-  const [searchQuery, setSearchQuery] = useState('')
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [newLanguage, setNewLanguage] = useState('');
+  const [newTitle, setNewTitle] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Get available languages (exclude already used ones)
-  const usedLanguageCodes = value.map(t => t.language)
+  const usedLanguageCodes = value.map(t => t.language);
   const availableLanguages = (showCommonOnly ? getCommonLanguages() : SUPPORTED_LANGUAGES)
     .filter(lang => !usedLanguageCodes.includes(lang.code))
     .filter(lang => {
-      if (!searchQuery) return true
-      const query = searchQuery.toLowerCase()
+      if (!searchQuery) return true;
+      const query = searchQuery.toLowerCase();
       return (
         lang.name.toLowerCase().includes(query) ||
         lang.nativeName.toLowerCase().includes(query) ||
         lang.code.toLowerCase().includes(query)
-      )
-    })
+      );
+    });
 
-  const generateId = () => `translation-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+  const generateId = () => `translation-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
   const handleAdd = useCallback(() => {
-    if (!newLanguage || !newTitle.trim()) return
+    if (!newLanguage || !newTitle.trim()) return;
 
     const newTranslation: Translation = {
       id: generateId(),
       language: newLanguage,
       title: newTitle.trim()
-    }
+    };
 
-    onChange([...value, newTranslation])
-    setNewLanguage('')
-    setNewTitle('')
-    setIsAdding(false)
-    setSearchQuery('')
-  }, [newLanguage, newTitle, value, onChange])
+    onChange([...value, newTranslation]);
+    setNewLanguage('');
+    setNewTitle('');
+    setIsAdding(false);
+    setSearchQuery('');
+  }, [newLanguage, newTitle, value, onChange]);
 
   const handleEdit = useCallback((id: string, newTitleValue: string) => {
     const updated = value.map(translation =>
       translation.id === id
         ? { ...translation, title: newTitleValue.trim() }
         : translation
-    )
-    onChange(updated)
-    setEditingId(null)
-  }, [value, onChange])
+    );
+    onChange(updated);
+    setEditingId(null);
+  }, [value, onChange]);
 
   const handleDelete = useCallback((id: string) => {
-    const filtered = value.filter(translation => translation.id !== id)
-    onChange(filtered)
-  }, [value, onChange])
+    const filtered = value.filter(translation => translation.id !== id);
+    onChange(filtered);
+  }, [value, onChange]);
 
   const handleCancelAdd = () => {
-    setIsAdding(false)
-    setNewLanguage('')
-    setNewTitle('')
-    setSearchQuery('')
-  }
+    setIsAdding(false);
+    setNewLanguage('');
+    setNewTitle('');
+    setSearchQuery('');
+  };
 
-  const canAddMore = value.length < maxTranslations && availableLanguages.length > 0
+  const canAddMore = value.length < maxTranslations && availableLanguages.length > 0;
 
   return (
     <div className={`space-y-4 ${className}`}>
@@ -105,7 +105,7 @@ export default function TranslationManager({
             {value.length}/{maxTranslations}
           </span>
         </div>
-        
+
         {canAddMore && !isAdding && (
           <button
             onClick={() => setIsAdding(true)}
@@ -121,8 +121,8 @@ export default function TranslationManager({
       {value.length > 0 && (
         <div className="space-y-2">
           {value.map((translation) => {
-            const lang = getLanguageByCode(translation.language)
-            const isEditing = editingId === translation.id
+            const lang = getLanguageByCode(translation.language);
+            const isEditing = editingId === translation.id;
 
             return (
               <div key={translation.id} className="flex items-center gap-3 p-3 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-800">
@@ -151,9 +151,9 @@ export default function TranslationManager({
                       defaultValue={translation.title}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                          handleEdit(translation.id, e.currentTarget.value)
+                          handleEdit(translation.id, e.currentTarget.value);
                         } else if (e.key === 'Escape') {
-                          setEditingId(null)
+                          setEditingId(null);
                         }
                       }}
                       onBlur={(e) => handleEdit(translation.id, e.target.value)}
@@ -188,7 +188,7 @@ export default function TranslationManager({
                   </button>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       )}
@@ -223,9 +223,9 @@ export default function TranslationManager({
                   className={`
                     w-full text-left p-2 rounded-lg transition-colors text-sm
                     ${newLanguage === lang.code
-                      ? 'bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-300'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700'
-                    }
+                  ? 'bg-purple-100 dark:bg-purple-800 text-purple-700 dark:text-purple-300'
+                  : 'hover:bg-gray-100 dark:hover:bg-gray-700'
+                }
                   `}
                 >
                   <div className="flex items-center justify-between">
@@ -246,7 +246,7 @@ export default function TranslationManager({
 
             {availableLanguages.length === 0 && (
               <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-2">
-                {searchQuery 
+                {searchQuery
                   ? t('검색 결과가 없습니다', 'No search results')
                   : t('추가할 수 있는 언어가 없습니다', 'No available languages')
                 }
@@ -265,9 +265,9 @@ export default function TranslationManager({
                   onChange={(e) => setNewTitle(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      handleAdd()
+                      handleAdd();
                     } else if (e.key === 'Escape') {
-                      handleCancelAdd()
+                      handleCancelAdd();
                     }
                   }}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
@@ -326,5 +326,5 @@ export default function TranslationManager({
         </div>
       )}
     </div>
-  )
+  );
 }

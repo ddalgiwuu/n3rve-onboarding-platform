@@ -1,7 +1,7 @@
-import { useState, useRef } from 'react'
-import { Upload, Image, Music, FileText, X, CheckCircle, AlertCircle, Info, Film, Video, ExternalLink } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+import { useState, useRef } from 'react';
+import { Upload, Image, Music, FileText, X, CheckCircle, AlertCircle, Info, Film, Video, ExternalLink, HelpCircle } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
 import {
   AUDIO_SPECIFICATIONS,
   ARTWORK_SPECIFICATIONS,
@@ -12,8 +12,9 @@ import {
   validateMotionArtFile,
   validateVideoFile,
   formatFileSize
-} from '@/utils/technicalSpecs'
-import { Link } from 'react-router-dom'
+} from '@/utils/technicalSpecs';
+import { Link } from 'react-router-dom';
+import FileUploadGuidelines from '@/components/FileUploadGuidelines';
 
 interface Props {
   data: any
@@ -22,8 +23,8 @@ interface Props {
 }
 
 export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
   const [files, setFiles] = useState(data?.files || {
     coverImage: null,
     artistPhoto: null,
@@ -31,111 +32,123 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
     additionalFiles: [],
     motionArt: null,
     musicVideo: null
-  })
+  });
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string[]}>({});
-  
-  const coverImageRef = useRef<HTMLInputElement>(null)
-  const artistPhotoRef = useRef<HTMLInputElement>(null)
-  const audioFilesRef = useRef<HTMLInputElement>(null)
-  const additionalFilesRef = useRef<HTMLInputElement>(null)
-  const motionArtRef = useRef<HTMLInputElement>(null)
-  const musicVideoRef = useRef<HTMLInputElement>(null)
+  const [showGuidelines, setShowGuidelines] = useState<{[key: string]: boolean}>({
+    albumArt: false,
+    audio: false,
+    additional: false
+  });
+
+  const coverImageRef = useRef<HTMLInputElement>(null);
+  const artistPhotoRef = useRef<HTMLInputElement>(null);
+  const audioFilesRef = useRef<HTMLInputElement>(null);
+  const additionalFilesRef = useRef<HTMLInputElement>(null);
+  const motionArtRef = useRef<HTMLInputElement>(null);
+  const musicVideoRef = useRef<HTMLInputElement>(null);
+
+  const toggleGuidelines = (type: string) => {
+    setShowGuidelines(prev => ({
+      ...prev,
+      [type]: !prev[type]
+    }));
+  };
 
   const handleFileUpload = (type: string, file: File | FileList) => {
     if (type === 'coverImage' || type === 'artistPhoto') {
-      const validation = validateArtworkFile(file as File)
+      const validation = validateArtworkFile(file as File);
       if (!validation.valid) {
-        setValidationErrors({ ...validationErrors, [type]: validation.errors })
-        return
+        setValidationErrors({ ...validationErrors, [type]: validation.errors });
+        return;
       }
-      setValidationErrors({ ...validationErrors, [type]: [] })
-      setFiles({ ...files, [type]: file })
+      setValidationErrors({ ...validationErrors, [type]: [] });
+      setFiles({ ...files, [type]: file });
     } else if (type === 'audioFiles') {
-      const fileList = Array.from(file as FileList)
-      const errors: string[] = []
-      
+      const fileList = Array.from(file as FileList);
+      const errors: string[] = [];
+
       fileList.forEach(f => {
-        const validation = validateAudioFile(f)
+        const validation = validateAudioFile(f);
         if (!validation.valid) {
-          errors.push(`${f.name}: ${validation.errors.join(', ')}`)
+          errors.push(`${f.name}: ${validation.errors.join(', ')}`);
         }
-      })
-      
+      });
+
       if (errors.length > 0) {
-        setValidationErrors({ ...validationErrors, audioFiles: errors })
-        return
+        setValidationErrors({ ...validationErrors, audioFiles: errors });
+        return;
       }
-      
-      setValidationErrors({ ...validationErrors, audioFiles: [] })
+
+      setValidationErrors({ ...validationErrors, audioFiles: [] });
       const audioFiles = fileList.map((f, index) => ({
         trackId: data?.tracks?.[index]?.id || `track-${index}`,
         file: f
-      }))
-      setFiles({ ...files, audioFiles })
+      }));
+      setFiles({ ...files, audioFiles });
     } else if (type === 'motionArt') {
-      const validation = validateMotionArtFile(file as File)
+      const validation = validateMotionArtFile(file as File);
       if (!validation.valid) {
-        setValidationErrors({ ...validationErrors, motionArt: validation.errors })
-        return
+        setValidationErrors({ ...validationErrors, motionArt: validation.errors });
+        return;
       }
-      setValidationErrors({ ...validationErrors, motionArt: [] })
-      setFiles({ ...files, motionArt: file })
+      setValidationErrors({ ...validationErrors, motionArt: [] });
+      setFiles({ ...files, motionArt: file });
     } else if (type === 'musicVideo') {
-      const validation = validateVideoFile(file as File)
+      const validation = validateVideoFile(file as File);
       if (!validation.valid) {
-        setValidationErrors({ ...validationErrors, musicVideo: validation.errors })
-        return
+        setValidationErrors({ ...validationErrors, musicVideo: validation.errors });
+        return;
       }
-      setValidationErrors({ ...validationErrors, musicVideo: [] })
-      setFiles({ ...files, musicVideo: file })
+      setValidationErrors({ ...validationErrors, musicVideo: [] });
+      setFiles({ ...files, musicVideo: file });
     } else if (type === 'additionalFiles') {
-      const fileList = Array.from(file as FileList)
-      setFiles({ ...files, additionalFiles: [...files.additionalFiles, ...fileList] })
+      const fileList = Array.from(file as FileList);
+      setFiles({ ...files, additionalFiles: [...files.additionalFiles, ...fileList] });
     }
-  }
+  };
 
   const removeFile = (type: string, index?: number) => {
     if (type === 'coverImage' || type === 'artistPhoto' || type === 'motionArt' || type === 'musicVideo') {
-      setFiles({ ...files, [type]: null })
-      setValidationErrors({ ...validationErrors, [type]: [] })
+      setFiles({ ...files, [type]: null });
+      setValidationErrors({ ...validationErrors, [type]: [] });
     } else if (type === 'additionalFiles' && index !== undefined) {
-      const newFiles = [...files.additionalFiles]
-      newFiles.splice(index, 1)
-      setFiles({ ...files, additionalFiles: newFiles })
+      const newFiles = [...files.additionalFiles];
+      newFiles.splice(index, 1);
+      setFiles({ ...files, additionalFiles: newFiles });
     }
-  }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!files.coverImage) {
       // Scroll to cover image section
-      const element = document.getElementById('cover-image-section')
+      const element = document.getElementById('cover-image-section');
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        element.classList.add('ring-2', 'ring-red-500', 'ring-offset-2')
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.classList.add('ring-2', 'ring-red-500', 'ring-offset-2');
         setTimeout(() => {
-          element.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2')
-        }, 3000)
+          element.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2');
+        }, 3000);
       }
-      return
+      return;
     }
-    
+
     if (files.audioFiles.length === 0) {
       // Scroll to audio files section
-      const element = document.getElementById('audio-files-section')
+      const element = document.getElementById('audio-files-section');
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        element.classList.add('ring-2', 'ring-red-500', 'ring-offset-2')
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.classList.add('ring-2', 'ring-red-500', 'ring-offset-2');
         setTimeout(() => {
-          element.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2')
-        }, 3000)
+          element.classList.remove('ring-2', 'ring-red-500', 'ring-offset-2');
+        }, 3000);
       }
-      return
+      return;
     }
-    
-    onNext(files)
-  }
+
+    onNext(files);
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-8">
@@ -162,11 +175,25 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
                 <Image className="w-5 h-5 text-n3rve-main" />
                 {t('upload.coverImage', 'Album Cover Image')}
                 <span className="text-red-500">*</span>
+                <button
+                  type="button"
+                  onClick={() => toggleGuidelines('albumArt')}
+                  className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                  title={t('upload.viewGuidelines', 'View Guidelines')}
+                >
+                  <HelpCircle className="w-4 h-4 text-gray-400 hover:text-n3rve-main dark:hover:text-n3rve-accent2" />
+                </button>
               </h3>
               {files.coverImage && (
                 <CheckCircle className="w-5 h-5 text-green-500" />
               )}
             </div>
+
+            {showGuidelines.albumArt && (
+              <div className="mb-4">
+                <FileUploadGuidelines fileType="albumArt" showCompact={true} />
+              </div>
+            )}
             <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 transition-colors hover:border-n3rve-accent2 dark:hover:border-n3rve-accent">
               {files.coverImage ? (
                 <div className="relative group">
@@ -292,6 +319,14 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
               <Music className="w-5 h-5 text-n3rve-main" />
               {t('upload.audioFiles', 'Audio Files')}
               <span className="text-red-500">*</span>
+              <button
+                type="button"
+                onClick={() => toggleGuidelines('audio')}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                title={t('upload.viewGuidelines', 'View Guidelines')}
+              >
+                <HelpCircle className="w-4 h-4 text-gray-400 hover:text-n3rve-main dark:hover:text-n3rve-accent2" />
+              </button>
             </h3>
             {files.audioFiles.length > 0 && (
               <span className="text-sm text-green-600 dark:text-green-400 flex items-center gap-1">
@@ -300,7 +335,13 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
               </span>
             )}
           </div>
-          
+
+          {showGuidelines.audio && (
+            <div className="mb-4">
+              <FileUploadGuidelines fileType="audio" showCompact={true} />
+            </div>
+          )}
+
           {/* Audio Specifications Box */}
           <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex items-start gap-3">
@@ -406,7 +447,7 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
               <CheckCircle className="w-5 h-5 text-green-500" />
             )}
           </div>
-          
+
           {/* Motion Art Specifications Box */}
           <div className="mb-4 p-3 bg-n3rve-50 dark:bg-n3rve-900/20 rounded-lg border border-n3rve-200 dark:border-n3rve-800">
             <div className="flex items-start gap-2">
@@ -419,7 +460,7 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
               </div>
             </div>
           </div>
-          
+
           <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 transition-colors hover:border-n3rve-accent2 dark:hover:border-n3rve-accent">
             {files.motionArt ? (
               <div className="relative group">
@@ -484,7 +525,7 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
               <CheckCircle className="w-5 h-5 text-green-500" />
             )}
           </div>
-          
+
           {/* Video Specifications Box */}
           <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
             <div className="flex items-start gap-2">
@@ -497,7 +538,7 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
               </div>
             </div>
           </div>
-          
+
           <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 transition-colors hover:border-n3rve-accent2 dark:hover:border-n3rve-accent">
             {files.musicVideo ? (
               <div className="relative group">
@@ -556,6 +597,14 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
               <FileText className="w-5 h-5 text-n3rve-main" />
               {t('upload.additionalFiles', 'Additional Files')}
+              <button
+                type="button"
+                onClick={() => toggleGuidelines('additional')}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                title={t('upload.viewGuidelines', 'View Guidelines')}
+              >
+                <HelpCircle className="w-4 h-4 text-gray-400 hover:text-n3rve-main dark:hover:text-n3rve-accent2" />
+              </button>
             </h3>
             {files.additionalFiles.length > 0 && (
               <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -563,6 +612,12 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
               </span>
             )}
           </div>
+
+          {showGuidelines.additional && (
+            <div className="mb-4">
+              <FileUploadGuidelines fileType="additional" showCompact={true} />
+            </div>
+          )}
           <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 transition-colors hover:border-n3rve-accent2 dark:hover:border-n3rve-accent">
             {files.additionalFiles.length > 0 && (
               <div className="space-y-2 mb-4">
@@ -603,6 +658,21 @@ export default function Step4FileUpload({ data, onNext, onPrevious }: Props) {
         </div>
       </div>
 
+      <div className="flex justify-between mt-8">
+        <button
+          type="button"
+          onClick={onPrevious}
+          className="px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+        >
+          {t('onboarding.previous', 'Previous')}
+        </button>
+        <button
+          type="submit"
+          className="px-6 py-3 bg-n3rve-main hover:bg-n3rve-700 text-white rounded-lg transition-colors"
+        >
+          {t('onboarding.next', 'Next')}
+        </button>
+      </div>
     </form>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import { Video, X, Check, AlertCircle } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+import { useState } from 'react';
+import { Video, X, Check, AlertCircle } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
 
 interface MusicVideo {
   id: string
@@ -22,44 +22,44 @@ interface MusicVideoFormProps {
 }
 
 export default function MusicVideoForm({ video, audioTracks, onSave, onCancel }: MusicVideoFormProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const [localVideo, setLocalVideo] = useState<MusicVideo>(video)
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const [localVideo, setLocalVideo] = useState<MusicVideo>(video);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const formatDuration = (seconds: string | number) => {
-    const sec = typeof seconds === 'string' ? parseInt(seconds) : seconds
-    const mins = Math.floor(sec / 60)
-    const secs = sec % 60
-    return `${mins}:${secs.toString().padStart(2, '0')}`
-  }
+    const sec = typeof seconds === 'string' ? parseInt(seconds) : seconds;
+    const mins = Math.floor(sec / 60);
+    const secs = sec % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const parseDuration = (duration: string) => {
-    const [mins, secs] = duration.split(':').map(n => parseInt(n) || 0)
-    return (mins * 60 + secs).toString()
-  }
+    const [mins, secs] = duration.split(':').map(n => parseInt(n) || 0);
+    return (mins * 60 + secs).toString();
+  };
 
   const validate = () => {
-    const newErrors: Record<string, string> = {}
+    const newErrors: Record<string, string> = {};
 
     if (!localVideo.title) {
-      newErrors.title = t('제목은 필수입니다', 'Title is required')
+      newErrors.title = t('제목은 필수입니다', 'Title is required');
     }
 
     if (!localVideo.audioISRC) {
-      newErrors.audioISRC = t('연결된 오디오 트랙을 선택해주세요', 'Please select an associated audio track')
+      newErrors.audioISRC = t('연결된 오디오 트랙을 선택해주세요', 'Please select an associated audio track');
     }
 
-    setErrors(newErrors)
-    return Object.keys(newErrors).length === 0
-  }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSave = () => {
     if (validate()) {
-      onSave(localVideo)
+      onSave(localVideo);
     }
-  }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -196,9 +196,9 @@ export default function MusicVideoForm({ video, audioTracks, onSave, onCancel }:
               <input
                 type="text"
                 value={localVideo.duration ? formatDuration(localVideo.duration) : ''}
-                onChange={(e) => setLocalVideo(prev => ({ 
-                  ...prev, 
-                  duration: parseDuration(e.target.value) 
+                onChange={(e) => setLocalVideo(prev => ({
+                  ...prev,
+                  duration: parseDuration(e.target.value)
                 }))}
                 className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-700"
                 placeholder="3:45"
@@ -253,5 +253,5 @@ export default function MusicVideoForm({ video, audioTracks, onSave, onCancel }:
         </div>
       </div>
     </div>
-  )
+  );
 }

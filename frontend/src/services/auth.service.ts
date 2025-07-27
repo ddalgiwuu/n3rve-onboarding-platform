@@ -1,187 +1,187 @@
 // Production-safe auth service with no console logging
 class AuthService {
-  private refreshPromise: Promise<string | null> | null = null
+  private refreshPromise: Promise<string | null> | null = null;
 
   parseJwt(token: string): any {
     try {
-      const base64Url = token.split('.')[1]
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => 
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(atob(base64).split('').map(c =>
         '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-      ).join(''))
-      return JSON.parse(jsonPayload)
+      ).join(''));
+      return JSON.parse(jsonPayload);
     } catch (error) {
       // Silently handle error in production
-      return null
+      return null;
     }
   }
 
   isTokenExpired(token: string): boolean {
-    const payload = this.parseJwt(token)
+    const payload = this.parseJwt(token);
     if (!payload || !payload.exp) {
       // Token has no expiration or invalid payload
-      return true
+      return true;
     }
-    
-    const currentTime = Math.floor(Date.now() / 1000)
-    const expirationTime = payload.exp
-    const bufferTime = 60 // 1 minute buffer before actual expiration
-    
+
+    const currentTime = Math.floor(Date.now() / 1000);
+    const expirationTime = payload.exp;
+    const bufferTime = 60; // 1 minute buffer before actual expiration
+
     // Token expiration check performed
-    
-    return currentTime >= (expirationTime - bufferTime)
+
+    return currentTime >= (expirationTime - bufferTime);
   }
 
   async refreshAccessToken(): Promise<string | null> {
     // Prevent multiple simultaneous refresh attempts
     if (this.refreshPromise) {
       // Refresh already in progress, waiting...
-      return this.refreshPromise
+      return this.refreshPromise;
     }
 
-    this.refreshPromise = this._performRefresh()
-    
+    this.refreshPromise = this._performRefresh();
+
     try {
-      const result = await this.refreshPromise
-      return result
+      const result = await this.refreshPromise;
+      return result;
     } finally {
-      this.refreshPromise = null
+      this.refreshPromise = null;
     }
   }
 
   private async _performRefresh(): Promise<string | null> {
     try {
-      const refreshToken = this.getRefreshToken()
+      const refreshToken = this.getRefreshToken();
       if (!refreshToken) {
         // No refresh token available
-        return null
+        return null;
       }
 
       // Attempting to refresh access token...
       const response = await fetch('/api/auth/refresh', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ refreshToken }),
-      })
+        body: JSON.stringify({ refreshToken })
+      });
 
       if (!response.ok) {
         // Failed to refresh token
         if (response.status === 401) {
           // Refresh token is invalid, logout user
-          this.logout()
+          this.logout();
         }
-        return null
+        return null;
       }
 
-      const data = await response.json()
-      
+      const data = await response.json();
+
       // Update stored tokens
-      const storedValue = localStorage.getItem('auth-storage')
+      const storedValue = localStorage.getItem('auth-storage');
       if (storedValue) {
-        const parsed = JSON.parse(storedValue)
-        
+        const parsed = JSON.parse(storedValue);
+
         // Update both state and root level for compatibility
         if (parsed.state) {
-          parsed.state.accessToken = data.accessToken
+          parsed.state.accessToken = data.accessToken;
           if (data.refreshToken) {
-            parsed.state.refreshToken = data.refreshToken
+            parsed.state.refreshToken = data.refreshToken;
           }
         } else {
-          parsed.accessToken = data.accessToken
+          parsed.accessToken = data.accessToken;
           if (data.refreshToken) {
-            parsed.refreshToken = data.refreshToken
+            parsed.refreshToken = data.refreshToken;
           }
         }
-        
+
         // Update expiration time
-        const tokenPayload = this.parseJwt(data.accessToken)
+        const tokenPayload = this.parseJwt(data.accessToken);
         if (tokenPayload && tokenPayload.exp) {
-          parsed.exp = tokenPayload.exp
+          parsed.exp = tokenPayload.exp;
         }
-        
-        localStorage.setItem('auth-storage', JSON.stringify(parsed))
+
+        localStorage.setItem('auth-storage', JSON.stringify(parsed));
         // Access token refreshed successfully
       }
-      
-      return data.accessToken
+
+      return data.accessToken;
     } catch (error) {
       // Error refreshing token
-      return null
+      return null;
     }
   }
 
   async getToken(): Promise<string | null> {
     try {
-      const storedValue = localStorage.getItem('auth-storage')
+      const storedValue = localStorage.getItem('auth-storage');
       // Check localStorage auth-storage
-      
+
       if (storedValue) {
-        const parsed = JSON.parse(storedValue)
+        const parsed = JSON.parse(storedValue);
         // Parse auth storage structure
-        
-        const token = parsed.state?.accessToken || parsed.accessToken || null
+
+        const token = parsed.state?.accessToken || parsed.accessToken || null;
         // Token retrieved from storage
-        
+
         if (token) {
-          const isExpired = this.isTokenExpired(token)
+          const isExpired = this.isTokenExpired(token);
           // Check if token is expired
-          
+
           if (isExpired) {
             // Token expired, attempting refresh...
-            const newToken = await this.refreshAccessToken()
-            return newToken || null
+            const newToken = await this.refreshAccessToken();
+            return newToken || null;
           }
         }
-        
-        return token
+
+        return token;
       }
-      
-      return null
+
+      return null;
     } catch (error) {
       // Handle getToken error silently
-      return null
+      return null;
     }
   }
 
   getRefreshToken(): string | null {
     try {
-      const storedValue = localStorage.getItem('auth-storage')
+      const storedValue = localStorage.getItem('auth-storage');
       if (storedValue) {
-        const parsed = JSON.parse(storedValue)
-        return parsed.state?.refreshToken || parsed.refreshToken || null
+        const parsed = JSON.parse(storedValue);
+        return parsed.state?.refreshToken || parsed.refreshToken || null;
       }
-      return null
+      return null;
     } catch (error) {
       // Error handled silently for security
-      return null
+      return null;
     }
   }
 
   // Synchronous method to check if token exists (doesn't check expiration)
   hasToken(): boolean {
     try {
-      const storedValue = localStorage.getItem('auth-storage')
+      const storedValue = localStorage.getItem('auth-storage');
       if (storedValue) {
-        const parsed = JSON.parse(storedValue)
-        const token = parsed.state?.accessToken || parsed.accessToken || null
-        return !!token
+        const parsed = JSON.parse(storedValue);
+        const token = parsed.state?.accessToken || parsed.accessToken || null;
+        return !!token;
       }
-      return false
+      return false;
     } catch (error) {
-      return false
+      return false;
     }
   }
 
   // Async method that checks token validity and refreshes if needed
   async isAuthenticated(): Promise<boolean> {
-    const token = await this.getToken()
-    return !!token
+    const token = await this.getToken();
+    return !!token;
   }
 
   logout(): void {
-    localStorage.removeItem('auth-storage')
+    localStorage.removeItem('auth-storage');
   }
 
   async register(data: {
@@ -196,22 +196,22 @@ class AuthService {
       const response = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(data),
-      })
+        body: JSON.stringify(data)
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || 'Registration failed')
+        const error = await response.json();
+        throw new Error(error.message || 'Registration failed');
       }
 
-      return await response.json()
+      return await response.json();
     } catch (error) {
       // Registration error occurred
-      throw error
+      throw error;
     }
   }
 }
 
-export const authService = new AuthService()
+export const authService = new AuthService();

@@ -1,13 +1,13 @@
-import { Info, Music, Image, Video, Disc, AlertCircle } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+import { Info, Music, Image, Video, Disc, AlertCircle } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
 import {
   AUDIO_SPECIFICATIONS,
   ARTWORK_SPECIFICATIONS,
   MOTION_ART_SPECIFICATIONS,
   DOLBY_ATMOS_SPECIFICATIONS,
   VIDEO_SPECIFICATIONS
-} from '@/utils/technicalSpecs'
+} from '@/utils/technicalSpecs';
 
 interface FileSpecsGuideProps {
   type: 'audio' | 'artwork' | 'motionart' | 'dolbyatmos' | 'video'
@@ -15,8 +15,8 @@ interface FileSpecsGuideProps {
 }
 
 export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const getSpecContent = () => {
     switch (type) {
@@ -37,7 +37,7 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
                   ))}
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <h4 className="font-medium mb-2">{t('샘플레이트', 'Sample Rate')}</h4>
@@ -76,7 +76,7 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
               </div>
             </div>
           )
-        }
+        };
 
       case 'artwork':
         return {
@@ -143,7 +143,7 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
               </div>
             </div>
           )
-        }
+        };
 
       case 'motionart':
         return {
@@ -199,7 +199,7 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
               </div>
             </div>
           )
-        }
+        };
 
       case 'dolbyatmos':
         return {
@@ -258,7 +258,7 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
               </div>
             </div>
           )
-        }
+        };
 
       case 'video':
         return {
@@ -319,15 +319,15 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
               </div>
             </div>
           )
-        }
+        };
 
       default:
-        return null
+        return null;
     }
-  }
+  };
 
-  const content = getSpecContent()
-  if (!content) return null
+  const content = getSpecContent();
+  if (!content) return null;
 
   return (
     <div className={`bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 ${className}`}>
@@ -337,5 +337,5 @@ export default function FileSpecsGuide({ type, className = '' }: FileSpecsGuideP
       </div>
       {content.content}
     </div>
-  )
+  );
 }

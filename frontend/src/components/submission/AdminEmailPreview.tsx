@@ -1,35 +1,35 @@
-import { Mail, Info } from 'lucide-react'
-import { useLanguageStore } from '@/store/language.store'
-import useSafeStore from '@/hooks/useSafeStore'
+import { Mail, Info } from 'lucide-react';
+import { useLanguageStore } from '@/store/language.store';
+import useSafeStore from '@/hooks/useSafeStore';
 
 interface Props {
   data: any // Using any since SubmissionData type is not available
 }
 
 export default function AdminEmailPreview({ data }: Props) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language)
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en
-  
-  if (!data.release?.koreanDSP) return null
+  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  const koreanDSP = data.release.koreanDSP
-  const artist = data.artist
-  const album = data.album
-  const release = data.release
-  const tracks = data.tracks || []
+  if (!data.release?.koreanDSP) return null;
+
+  const koreanDSP = data.release.koreanDSP;
+  const artist = data.artist;
+  const album = data.album;
+  const release = data.release;
+  const tracks = data.tracks || [];
 
   // Format release date to Korean format
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
+    const date = new Date(dateStr);
     return date.toLocaleDateString('ko-KR', {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit'
-    }).replace(/\. /g, '.').replace(/\.$/, '')
-  }
+    }).replace(/\. /g, '.').replace(/\.$/, '');
+  };
 
   // Get title track
-  const titleTrack = tracks.find((t: any) => t.isTitle)
+  const titleTrack = tracks.find((t: any) => t.isTitle);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -156,5 +156,5 @@ export default function AdminEmailPreview({ data }: Props) {
         </div>
       </div>
     </div>
-  )
+  );
 }
