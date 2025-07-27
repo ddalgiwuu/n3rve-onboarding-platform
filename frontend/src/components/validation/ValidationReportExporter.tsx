@@ -5,10 +5,10 @@ import {
   Star, Calendar, Clock, BarChart3, Target, Award, Mail
 } from 'lucide-react';
 import { DSPReadinessReport, ValidationSummary } from '@/types/validationAdvanced';
-import { ValidationWarning } from '@/components/ValidationWarning';
+import { ValidationWarningData } from '@/components/ValidationWarning';
 
 interface ValidationReportExporterProps {
-  warnings: ValidationWarning[]
+  warnings: ValidationWarningData[]
   summary: ValidationSummary
   submissionData?: {
     albumTitle: string
@@ -71,29 +71,29 @@ export default function ValidationReportExporter({
     );
 
     const submissionReadiness: 'ready' | 'needs_work' | 'not_ready' =
-      summary.errors > 0 ? 'not_ready' :
-        summary.warnings > 3 ? 'needs_work' : 'ready';
+      summary.warningBreakdown.errors > 0 ? 'not_ready' :
+        summary.warningBreakdown.warnings > 3 ? 'needs_work' : 'ready';
 
     const estimatedRejectionRisk = Math.max(0, Math.min(100,
-      (summary.errors * 25) + (summary.warnings * 10) + (summary.suggestions * 2)
+      (summary.warningBreakdown.errors * 25) + (summary.warningBreakdown.warnings * 10) + (summary.warningBreakdown.suggestions * 2)
     ));
 
     const recommendedActions = [
-      ...(summary.errors > 0 ? [{
+      ...(summary.warningBreakdown.errors > 0 ? [{
         priority: 'critical' as const,
         action: t('모든 오류 즉시 수정', 'Fix all errors immediately'),
         impact: t('DSP 거절 방지', 'Prevents DSP rejection'),
         timeEstimate: t('10-15분', '10-15 minutes'),
         platforms: ['All DSPs']
       }] : []),
-      ...(summary.warnings > 2 ? [{
+      ...(summary.warningBreakdown.warnings > 2 ? [{
         priority: 'high' as const,
         action: t('주요 경고사항 검토', 'Review major warnings'),
         impact: t('승인 가능성 향상', 'Improves approval chances'),
         timeEstimate: t('5-10분', '5-10 minutes'),
         platforms: ['Spotify', 'Apple Music']
       }] : []),
-      ...(summary.suggestions > 0 ? [{
+      ...(summary.warningBreakdown.suggestions > 0 ? [{
         priority: 'medium' as const,
         action: t('품질 개선 제안 적용', 'Apply quality suggestions'),
         impact: t('전체적인 품질 향상', 'Enhances overall quality'),

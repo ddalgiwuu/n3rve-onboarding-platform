@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Upload, X, File, Image, Music } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useLanguageStore } from '@/store/language.store';

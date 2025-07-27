@@ -8,7 +8,7 @@ import ReleaseDateSettings from './ReleaseDateSettings';
 import CopyrightInfo from './CopyrightInfo';
 import MobileFormNav from './MobileFormNav';
 import TrackList from './TrackList';
-import ValidationWarning, { ValidationWarning as ValidationWarningType } from './ValidationWarning';
+import ValidationWarning, { ValidationWarningData } from './ValidationWarning';
 import {
   validateAlbumTitle,
   validateArtistName,
@@ -142,7 +142,7 @@ export default function ReleaseFormV2() {
   const [showContributorForm, setShowContributorForm] = useState(false);
   const [editingContributor, setEditingContributor] = useState<any>(null);
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const [validationWarnings, setValidationWarnings] = useState<Record<string, ValidationWarningType[]>>({});
+  const [validationWarnings, setValidationWarnings] = useState<Record<string, ValidationWarningData[]>>({});
   const [completedSections, setCompletedSections] = useState<number[]>([]);
 
   // Validation state management
@@ -252,7 +252,7 @@ export default function ReleaseFormV2() {
     return result;
   };
 
-  const handleAcceptSuggestion = (warning: ValidationWarningType) => {
+  const handleAcceptSuggestion = (warning: ValidationWarningData) => {
     if (warning.suggestedValue) {
       switch (warning.field) {
         case 'albumTitle':
@@ -269,7 +269,7 @@ export default function ReleaseFormV2() {
     validationState.dismissWarning(warning.id);
   };
 
-  const handleDismissWarning = (warning: ValidationWarningType) => {
+  const handleDismissWarning = (warning: ValidationWarningData) => {
     validationState.dismissWarning(warning.id);
     setValidationWarnings(prev => ({
       ...prev,

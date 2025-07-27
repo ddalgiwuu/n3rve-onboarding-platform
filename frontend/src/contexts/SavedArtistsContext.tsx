@@ -17,12 +17,12 @@ interface SavedArtistsContextType extends SavedArtistsState {
   addArtist: (artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => Promise<SavedArtist>
   updateArtist: (id: string, updates: Partial<SavedArtist>) => Promise<void>
   deleteArtist: (id: string) => Promise<void>
-  useArtist: (id: string) => Promise<SavedArtist>
+  recordArtistUsage: (id: string) => Promise<SavedArtist>
   searchArtists: (query: string) => SavedArtist[]
   addContributor: (contributor: Omit<SavedContributor, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>) => Promise<SavedContributor>
   updateContributor: (id: string, updates: Partial<SavedContributor>) => Promise<void>
   deleteContributor: (id: string) => Promise<void>
-  useContributor: (id: string) => Promise<SavedContributor>
+  recordContributorUsage: (id: string) => Promise<SavedContributor>
   searchContributors: (query: string) => SavedContributor[]
 }
 
@@ -208,14 +208,14 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const useArtist = async (id: string) => {
+  const recordArtistUsage = async (id: string) => {
     try {
       let updatedArtist: SavedArtist;
 
       const isAuth = await authService.isAuthenticated();
       if (isAuth && !id.startsWith('local_')) {
         // If authenticated and it's a server artist, update on server
-        updatedArtist = await savedArtistsService.useArtist(id);
+        updatedArtist = await savedArtistsService.recordArtistUsage(id);
       } else {
         // If not authenticated or it's a local artist, update locally
         const artist = state.artists.find(a => a.id === id);
@@ -310,9 +310,9 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const useContributor = async (id: string) => {
+  const recordContributorUsage = async (id: string) => {
     try {
-      const contributor = await savedArtistsService.useContributor(id);
+      const contributor = await savedArtistsService.recordContributorUsage(id);
       setState(prev => ({
         ...prev,
         contributors: prev.contributors.map(c => c.id === id ? contributor : c)
@@ -375,12 +375,12 @@ export function SavedArtistsProvider({ children }: { children: ReactNode }) {
     addArtist,
     updateArtist,
     deleteArtist,
-    useArtist,
+    recordArtistUsage,
     searchArtists,
     addContributor,
     updateContributor,
     deleteContributor,
-    useContributor,
+    recordContributorUsage,
     searchContributors
   };
 

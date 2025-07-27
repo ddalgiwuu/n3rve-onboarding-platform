@@ -11,11 +11,11 @@ interface FugaQCHelpModalProps {
 export default function FugaQCHelpModal({ isOpen, onClose }: FugaQCHelpModalProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'process' | 'errors' | 'specs' | 'faq'>('overview');
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
-  const language = useLanguageStore(state => state.language);
+  const { language } = useLanguageStore();
 
   // Load help content based on current language
   const { fugaQCHelp, qcFAQ } = useMemo(() => {
-    const helpContent = getQCHelp(language);
+    const helpContent = getQCHelp(language as 'ko' | 'en' | undefined);
     return {
       fugaQCHelp: helpContent,
       qcFAQ: helpContent.faq || []

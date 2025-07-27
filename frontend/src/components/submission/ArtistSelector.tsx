@@ -71,7 +71,7 @@ export default function ArtistSelector({
     setSearchQuery('');
 
     // Update usage count
-    savedArtistsStore.useArtist(artist.id).catch(error => {
+    savedArtistsStore.recordArtistUsage(artist.id).catch((error: any) => {
       console.error('Failed to update usage count:', error);
     });
 

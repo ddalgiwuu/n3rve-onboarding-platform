@@ -4,8 +4,12 @@ import { useLanguageStore } from '@/store/language.store';
 import ContributorForm from './ContributorForm';
 import contributorRolesData from '@/data/contributorRoles.json';
 import instrumentsData from '@/data/instruments.json';
-import roleTranslations from '@/data/contributorRolesTranslations.json';
-import instrumentTranslations from '@/data/instrumentTranslations.json';
+import roleTranslationsData from '@/data/contributorRolesTranslations.json';
+import instrumentTranslationsData from '@/data/instrumentTranslations.json';
+import type { RoleTranslations, InstrumentTranslations } from '@/types/translations';
+
+const roleTranslations = roleTranslationsData as RoleTranslations;
+const instrumentTranslations = instrumentTranslationsData as InstrumentTranslations;
 
 interface Translation {
   id: string

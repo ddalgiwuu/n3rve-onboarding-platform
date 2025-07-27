@@ -245,7 +245,7 @@ export function useTranslation() {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
 
   // Support for direct language strings instead of key-based translations
-  const t = (key: string, ko: string, en: string, ja?: string): string => {
+  const t = (key: string, ko?: string, en?: string, ja?: string): string => {
     // If using the old format with translations object
     if (arguments.length === 1 || arguments.length === 2) {
       const fallback = arguments[1];
@@ -257,13 +257,13 @@ export function useTranslation() {
     // New format with direct language strings
     switch (language) {
       case 'ko':
-        return ko;
+        return ko || key;
       case 'en':
-        return en;
+        return en || key;
       case 'ja':
-        return ja || en; // Fallback to English if Japanese not provided
+        return ja || en || key; // Fallback to English if Japanese not provided
       default:
-        return en;
+        return en || key;
     }
   };
 

@@ -33,8 +33,8 @@ export default function ArtistSelector({
     loading,
     searchArtists,
     searchContributors,
-    useArtist,
-    useContributor,
+    recordArtistUsage,
+    recordContributorUsage,
     addArtist,
     addContributor,
     updateArtist,
@@ -47,7 +47,7 @@ export default function ArtistSelector({
 
   // Fetch data on mount and when component becomes visible
   useEffect(() => {
-    console.log('ArtistSelector: Fetching data for type:', type);
+    // Fetching data for type
     if (type === 'artist') {
       fetchArtists();
     } else {
@@ -58,7 +58,7 @@ export default function ArtistSelector({
   // Also fetch fresh data whenever searchQuery changes from empty (component likely just opened)
   useEffect(() => {
     if (searchQuery === '') {
-      console.log('ArtistSelector: Component opened, fetching fresh data');
+      // Component opened, fetching fresh data
       if (type === 'artist') {
         fetchArtists();
       } else {
@@ -73,10 +73,10 @@ export default function ArtistSelector({
 
   const handleSelect = async (item: SavedArtist | SavedContributor) => {
     if (type === 'artist') {
-      const artist = await useArtist(item.id);
+      const artist = await recordArtistUsage(item.id);
       if (artist) onSelect(artist);
     } else {
-      const contributor = await useContributor(item.id);
+      const contributor = await recordContributorUsage(item.id);
       if (contributor) onSelect(contributor);
     }
   };

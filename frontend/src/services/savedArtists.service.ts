@@ -1,5 +1,4 @@
 import { authService } from './auth.service';
-import { logger } from '@/utils/logger';
 
 export interface SavedArtist {
   id: string
@@ -60,26 +59,22 @@ class SavedArtistsService {
   }
 
   async addArtist(artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedArtist> {
-    try {
-      // Adding new artist to API
+    // Adding new artist to API
 
-      const response = await fetch(`${this.baseUrl}/artists`, {
-        method: 'POST',
-        headers: await this.getHeaders(),
-        credentials: 'include',
-        body: JSON.stringify(artist)
-      });
+    const response = await fetch(`${this.baseUrl}/artists`, {
+      method: 'POST',
+      headers: await this.getHeaders(),
+      credentials: 'include',
+      body: JSON.stringify(artist)
+    });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Failed to add artist: ${response.status} ${response.statusText} - ${errorText}`);
-      }
-
-      const result = await response.json();
-      return result;
-    } catch (fetchError) {
-      throw fetchError;
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to add artist: ${response.status} ${response.statusText} - ${errorText}`);
     }
+
+    const result = await response.json();
+    return result;
   }
 
   async updateArtist(id: string, updates: Partial<SavedArtist>): Promise<SavedArtist> {
@@ -109,7 +104,7 @@ class SavedArtistsService {
     }
   }
 
-  async useArtist(id: string): Promise<SavedArtist> {
+  async recordArtistUsage(id: string): Promise<SavedArtist> {
     const response = await fetch(`${this.baseUrl}/artists/${id}/use`, {
       method: 'PUT',
       headers: await this.getHeaders(),
@@ -180,7 +175,7 @@ class SavedArtistsService {
     }
   }
 
-  async useContributor(id: string): Promise<SavedContributor> {
+  async recordContributorUsage(id: string): Promise<SavedContributor> {
     const response = await fetch(`${this.baseUrl}/contributors/${id}/use`, {
       method: 'PUT',
       headers: await this.getHeaders(),

@@ -8,13 +8,10 @@ import {
   Info,
   CheckCircle,
   XCircle,
-  AlertCircle,
   ChevronDown,
-  ChevronUp,
-  Download,
   Cloud
 } from 'lucide-react';
-import { getFileUploadGuidelines, FileUploadGuideline } from '@/utils/inputValidation';
+import { getFileUploadGuidelines } from '@/utils/inputValidation';
 import { useLanguageStore } from '@/store/language.store';
 
 interface FileUploadGuidelinesProps {

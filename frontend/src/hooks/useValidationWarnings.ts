@@ -39,9 +39,10 @@ export function useValidationWarnings() {
         case 'artist':
           result = validateArtistName(value, options?.isComposer, language as 'ko' | 'en' | 'ja');
           break;
-        case 'label':
-          result = validateLabel(value, language as 'ko' | 'en' | 'ja');
-          break;
+        // Label validation is not implemented yet
+        // case 'label':
+        //   result = validateLabel(value, language as 'ko' | 'en' | 'ja');
+        //   break;
       }
 
       setValidationStates(prev => {

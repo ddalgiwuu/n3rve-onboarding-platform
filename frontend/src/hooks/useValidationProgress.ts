@@ -29,8 +29,8 @@ export function useValidationProgress() {
   });
 
   const [isTracking, setIsTracking] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout>();
-  const lastUpdateRef = useRef<Date>(new Date());
+  const intervalRef = useRef<NodeJS.Timeout | undefined>(undefined);
+  const lastUpdateRef = useRef<Date | null>(null);
 
   // Start progress tracking
   const startTracking = useCallback((initialIssueCount: number) => {

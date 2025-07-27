@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ClipboardList, Users, CheckCircle, XCircle, Calendar, Music, Eye, Download, Search, Filter, Clock, Settings } from 'lucide-react';
 import { submissionService } from '@/services/submission.service';
 import { useNavigate, Link } from 'react-router-dom';
