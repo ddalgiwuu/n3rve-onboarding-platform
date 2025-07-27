@@ -87,6 +87,24 @@
   }
 }
 
+/* Gradient text fallback for better browser support */
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.text-transparent {
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* Ensure gradient text is visible even without animation */
+.bg-gradient-to-r {
+  background-image: linear-gradient(to right, var(--tw-gradient-stops));
+  /* Fallback color if gradient fails */
+  color: #c084fc; /* purple-400 fallback */
+}
+
 @keyframes gradient-shift {
   0% {
     background: linear-gradient(45deg, #7c3aed, #ec4899);
@@ -312,6 +330,15 @@
 .animate-slide-in-right {
   animation: slide-in-right 0.5s ease-out 0.5s forwards;
   opacity: 0;
+  /* Fallback for animation issues */
+  animation-fill-mode: both;
+}
+
+/* Ensure text is visible even if animation fails */
+@supports not (animation: test) {
+  .animate-slide-in-right {
+    opacity: 1 !important;
+  }
 }
 
 .animate-slide-in-up {

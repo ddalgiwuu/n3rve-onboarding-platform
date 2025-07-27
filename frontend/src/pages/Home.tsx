@@ -190,7 +190,12 @@ export default function HomePage() {
                 <span
                   className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent inline-block animate-slide-in-right animate-gradient-x"
                   style={{
-                    backgroundSize: '200% 100%'
+                    backgroundSize: '200% 100%',
+                    // Fallback for gradient text
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    // Ensure text is visible
+                    opacity: 1
                   }}
                 >
                   새로운 기준
@@ -205,7 +210,12 @@ export default function HomePage() {
                 <span
                   className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent inline-block animate-slide-in-right animate-gradient-x"
                   style={{
-                    backgroundSize: '200% 100%'
+                    backgroundSize: '200% 100%',
+                    // Fallback for gradient text
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    // Ensure text is visible
+                    opacity: 1
                   }}
                 >
                   新しい基準
@@ -220,7 +230,12 @@ export default function HomePage() {
                 <span
                   className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent inline-block animate-slide-in-right animate-gradient-x"
                   style={{
-                    backgroundSize: '200% 100%'
+                    backgroundSize: '200% 100%',
+                    // Fallback for gradient text
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    // Ensure text is visible
+                    opacity: 1
                   }}
                 >
                   Global Music Distribution
