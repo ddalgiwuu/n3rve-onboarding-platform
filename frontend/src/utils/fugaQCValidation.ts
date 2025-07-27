@@ -1052,13 +1052,14 @@ export function validateField(fieldType: string, value: string, additionalData?:
     case 'albumTitleKo':
     case 'albumTitleEn':
     case 'trackTitleKo':
-    case 'trackTitleEn':
+    case 'trackTitleEn': {
       const isAlbum = fieldType.includes('album');
       return validateTrackTitle(
         fieldType.includes('Ko') ? value : '',
         fieldType.includes('En') ? value : '',
         isAlbum
       ).filter(r => r.field?.includes(fieldType.includes('Ko') ? 'Ko' : 'En'));
+    }
 
     case 'featuring':
       return validateFeaturingFormat(value);

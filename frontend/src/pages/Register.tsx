@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Building2, User, Mail, Lock, Eye, EyeOff, Check, Phone, ArrowRight, Music, Shield, Users, Sparkles, CheckCircle2, AlertCircle, Zap, Globe, Headphones, TrendingUp, Award, Briefcase, ChevronRight } from 'lucide-react';
+import { Building2, User, Mail, Lock, Eye, EyeOff, Check, X, Phone, ArrowRight, Music, Shield, Users, Sparkles, CheckCircle2, AlertCircle, Zap, Globe, Headphones, TrendingUp, Award, Briefcase, ChevronRight } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
@@ -100,6 +100,16 @@ export default function Register() {
       setFieldErrors(prev => ({ ...prev, phone: t('올바른 전화번호 형식이 아닙니다', 'Invalid phone number format', '無効な電話番号形式です') }));
     } else {
       setFieldErrors(prev => ({ ...prev, phone: '' }));
+    }
+  };
+
+  // Stub for validateField - can be implemented if needed
+  const validateField = (field: string, value: string) => {
+    // Currently using individual validation functions
+    if (field === 'email') {
+      validateEmail(value);
+    } else if (field === 'phone') {
+      validatePhone(value);
     }
   };
 

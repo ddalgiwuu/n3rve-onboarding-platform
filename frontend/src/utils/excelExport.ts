@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import * as ExcelJS from 'exceljs';
 import { Submission } from '../types/submission';
 
 interface ExcelExportOptions {
@@ -7,16 +7,35 @@ interface ExcelExportOptions {
   includeDetails?: boolean;
 }
 
-export const exportSubmissionsToExcel = ({
+export const exportSubmissionsToExcel = async ({
   submissions,
   filename = 'submissions',
   includeDetails = true
 }: ExcelExportOptions) => {
-  const workbook = XLSX.utils.book_new();
+  const workbook = new ExcelJS.Workbook();
 
   // Sheet 1: Overview
-  const overviewData = submissions.map((sub: any) => {
-    // Handle different submission data structures
+  const overviewSheet = workbook.addWorksheet('Overview');
+
+  // Define columns
+  overviewSheet.columns = [
+    { header: 'Submission ID', key: 'submissionId', width: 15 },
+    { header: 'Artist Name', key: 'artistName', width: 20 },
+    { header: 'Label', key: 'label', width: 20 },
+    { header: 'Release Title', key: 'releaseTitle', width: 25 },
+    { header: 'Release Type', key: 'releaseType', width: 15 },
+    { header: 'Genre', key: 'genre', width: 15 },
+    { header: 'Status', key: 'status', width: 12 },
+    { header: 'Submitted Date', key: 'submittedDate', width: 15 },
+    { header: 'Submitted Time', key: 'submittedTime', width: 15 },
+    { header: 'Last Updated', key: 'lastUpdated', width: 15 },
+    { header: 'Track Count', key: 'trackCount', width: 12 },
+    { header: 'Total Files', key: 'totalFiles', width: 12 },
+    { header: 'Distribution', key: 'distribution', width: 30 }
+  ];
+
+  // Add data
+  submissions.forEach((sub: any) => {
     const artistName = sub.artistName || sub.artist?.primaryName || 'N/A';
     const labelName = sub.labelName || sub.artist?.labelName || 'N/A';
     const releaseTitle = sub.releaseTitle || sub.album?.titleKo || sub.album?.titleEn || 'N/A';
@@ -26,49 +45,65 @@ export const exportSubmissionsToExcel = ({
     const fileCount = sub.files?.length || 0;
     const distribution = Array.isArray(sub.distribution) ? sub.distribution.join(', ') : 'N/A';
 
-    return {
-      'Submission ID': sub.id || 'N/A',
-      'Artist Name': artistName,
-      'Label': labelName,
-      'Release Title': releaseTitle,
-      'Release Type': releaseType,
-      'Genre': genre,
-      'Status': sub.status || 'pending',
-      'Submitted Date': sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A',
-      'Submitted Time': sub.createdAt ? new Date(sub.createdAt).toLocaleTimeString() : 'N/A',
-      'Last Updated': sub.updatedAt ? new Date(sub.updatedAt).toLocaleDateString() : 'N/A',
-      'Track Count': trackCount,
-      'Total Files': fileCount,
-      'Distribution': distribution
-    };
+    overviewSheet.addRow({
+      submissionId: sub.id || 'N/A',
+      artistName: artistName,
+      label: labelName,
+      releaseTitle: releaseTitle,
+      releaseType: releaseType,
+      genre: genre,
+      status: sub.status || 'pending',
+      submittedDate: sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A',
+      submittedTime: sub.createdAt ? new Date(sub.createdAt).toLocaleTimeString() : 'N/A',
+      lastUpdated: sub.updatedAt ? new Date(sub.updatedAt).toLocaleDateString() : 'N/A',
+      trackCount: trackCount,
+      totalFiles: fileCount,
+      distribution: distribution
+    });
   });
 
-  const overviewSheet = XLSX.utils.json_to_sheet(overviewData);
-
-  // Apply column widths
-  const overviewCols = [
-    { wch: 15 }, // Submission ID
-    { wch: 20 }, // Artist Name
-    { wch: 20 }, // Label
-    { wch: 25 }, // Release Title
-    { wch: 15 }, // Release Type
-    { wch: 15 }, // Genre
-    { wch: 12 }, // Status
-    { wch: 15 }, // Submitted Date
-    { wch: 15 }, // Submitted Time
-    { wch: 15 }, // Last Updated
-    { wch: 12 }, // Track Count
-    { wch: 12 }, // Total Files
-    { wch: 30 } // Distribution
-  ];
-  overviewSheet['!cols'] = overviewCols;
-
-  XLSX.utils.book_append_sheet(workbook, overviewSheet, 'Overview');
+  // Style the header row
+  const headerRow = overviewSheet.getRow(1);
+  headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  headerRow.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FF4472C4' }
+  };
+  headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+  headerRow.height = 20;
 
   if (includeDetails) {
     // Sheet 2: Detailed Metadata
-    const detailsData = submissions.map((sub: any) => {
-      // Handle different submission data structures
+    const detailsSheet = workbook.addWorksheet('Detailed Metadata');
+
+    // Define columns
+    detailsSheet.columns = [
+      { header: 'Submission ID', key: 'submissionId', width: 15 },
+      { header: 'Artist Name', key: 'artistName', width: 20 },
+      { header: 'Artist Email', key: 'artistEmail', width: 25 },
+      { header: 'Artist Phone', key: 'artistPhone', width: 15 },
+      { header: 'Label Name', key: 'labelName', width: 20 },
+      { header: 'Release Title', key: 'releaseTitle', width: 25 },
+      { header: 'Release Type', key: 'releaseType', width: 15 },
+      { header: 'Release Date', key: 'releaseDate', width: 15 },
+      { header: 'Genre', key: 'genre', width: 15 },
+      { header: 'Subgenre', key: 'subgenre', width: 15 },
+      { header: 'Language', key: 'language', width: 15 },
+      { header: 'Copyright', key: 'copyright', width: 30 },
+      { header: 'Copyright Year', key: 'copyrightYear', width: 15 },
+      { header: 'UPC/EAN', key: 'upcEan', width: 15 },
+      { header: 'Catalog Number', key: 'catalogNumber', width: 15 },
+      { header: 'Distribution Platforms', key: 'distribution', width: 30 },
+      { header: 'Spotify Artist ID', key: 'spotifyArtistId', width: 20 },
+      { header: 'Apple Music Artist ID', key: 'appleMusicArtistId', width: 20 },
+      { header: 'Marketing Plan', key: 'marketingPlan', width: 40 },
+      { header: 'Status', key: 'status', width: 12 },
+      { header: 'Admin Notes', key: 'adminNotes', width: 40 }
+    ];
+
+    // Add data
+    submissions.forEach((sub: any) => {
       const artistName = sub.artistName || sub.artist?.primaryName || 'N/A';
       const artistEmail = sub.artistEmail || sub.artist?.email || 'N/A';
       const artistPhone = sub.artistPhone || sub.artist?.phone || 'N/A';
@@ -88,60 +123,41 @@ export const exportSubmissionsToExcel = ({
       const appleMusicArtistId = sub.appleMusicArtistId || sub.artist?.appleMusicArtistId || 'N/A';
       const marketingPlan = sub.marketingPlan || sub.release?.marketingPlan || 'N/A';
 
-      return {
-        'Submission ID': sub.id || 'N/A',
-        'Artist Name': artistName,
-        'Artist Email': artistEmail,
-        'Artist Phone': artistPhone,
-        'Label Name': labelName,
-        'Release Title': releaseTitle,
-        'Release Type': releaseType,
-        'Release Date': releaseDate ? new Date(releaseDate).toLocaleDateString() : 'N/A',
-        'Genre': genre,
-        'Subgenre': subgenre,
-        'Language': language,
-        'Copyright': copyright,
-        'Copyright Year': copyrightYear,
-        'UPC/EAN': upcEan,
-        'Catalog Number': catalogNumber,
-        'Distribution Platforms': distribution,
-        'Spotify Artist ID': spotifyArtistId,
-        'Apple Music Artist ID': appleMusicArtistId,
-        'Marketing Plan': marketingPlan,
-        'Status': sub.status || 'pending',
-        'Admin Notes': sub.adminNotes || 'N/A'
-      };
+      detailsSheet.addRow({
+        submissionId: sub.id || 'N/A',
+        artistName: artistName,
+        artistEmail: artistEmail,
+        artistPhone: artistPhone,
+        labelName: labelName,
+        releaseTitle: releaseTitle,
+        releaseType: releaseType,
+        releaseDate: releaseDate ? new Date(releaseDate).toLocaleDateString() : 'N/A',
+        genre: genre,
+        subgenre: subgenre,
+        language: language,
+        copyright: copyright,
+        copyrightYear: copyrightYear,
+        upcEan: upcEan,
+        catalogNumber: catalogNumber,
+        distribution: distribution,
+        spotifyArtistId: spotifyArtistId,
+        appleMusicArtistId: appleMusicArtistId,
+        marketingPlan: marketingPlan,
+        status: sub.status || 'pending',
+        adminNotes: sub.adminNotes || 'N/A'
+      });
     });
 
-    const detailsSheet = XLSX.utils.json_to_sheet(detailsData);
-
-    // Apply column widths
-    const detailsCols = [
-      { wch: 15 }, // Submission ID
-      { wch: 20 }, // Artist Name
-      { wch: 25 }, // Artist Email
-      { wch: 15 }, // Artist Phone
-      { wch: 20 }, // Label Name
-      { wch: 25 }, // Release Title
-      { wch: 15 }, // Release Type
-      { wch: 15 }, // Release Date
-      { wch: 15 }, // Genre
-      { wch: 15 }, // Subgenre
-      { wch: 15 }, // Language
-      { wch: 30 }, // Copyright
-      { wch: 15 }, // Copyright Year
-      { wch: 15 }, // UPC/EAN
-      { wch: 15 }, // Catalog Number
-      { wch: 30 }, // Distribution
-      { wch: 20 }, // Spotify ID
-      { wch: 20 }, // Apple ID
-      { wch: 40 }, // Marketing Plan
-      { wch: 12 }, // Status
-      { wch: 40 } // Admin Notes
-    ];
-    detailsSheet['!cols'] = detailsCols;
-
-    XLSX.utils.book_append_sheet(workbook, detailsSheet, 'Detailed Metadata');
+    // Style the header row
+    const detailsHeaderRow = detailsSheet.getRow(1);
+    detailsHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    detailsHeaderRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF4472C4' }
+    };
+    detailsHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+    detailsHeaderRow.height = 20;
 
     // Sheet 3: Track Information
     const tracksData: any[] = [];
@@ -153,42 +169,56 @@ export const exportSubmissionsToExcel = ({
 
       tracks.forEach((track: any, index: number) => {
         tracksData.push({
-          'Submission ID': sub.id || 'N/A',
-          'Artist Name': artistName,
-          'Release Title': releaseTitle,
-          'Track Number': index + 1,
-          'Track Title': track.title || track.titleKo || track.titleEn || 'N/A',
-          'Track Artist': track.artist || track.artistName || artistName,
-          'Duration': track.duration || 'N/A',
-          'ISRC': track.isrc || 'N/A',
-          'Genre': track.genre || genre,
-          'Lyrics Language': track.lyricsLanguage || 'N/A',
-          'Explicit': track.explicit ? 'Yes' : 'No',
-          'Preview Start': track.previewStart || 'N/A'
+          submissionId: sub.id || 'N/A',
+          artistName: artistName,
+          releaseTitle: releaseTitle,
+          trackNumber: index + 1,
+          trackTitle: track.title || track.titleKo || track.titleEn || 'N/A',
+          trackArtist: track.artist || track.artistName || artistName,
+          duration: track.duration || 'N/A',
+          isrc: track.isrc || 'N/A',
+          genre: track.genre || genre,
+          lyricsLanguage: track.lyricsLanguage || 'N/A',
+          explicit: track.explicit ? 'Yes' : 'No',
+          previewStart: track.previewStart || 'N/A'
         });
       });
     });
 
     if (tracksData.length > 0) {
-      const tracksSheet = XLSX.utils.json_to_sheet(tracksData);
+      const tracksSheet = workbook.addWorksheet('Track Information');
 
-      const tracksCols = [
-        { wch: 15 }, // Submission ID
-        { wch: 20 }, // Artist Name
-        { wch: 25 }, // Release Title
-        { wch: 12 }, // Track Number
-        { wch: 30 }, // Track Title
-        { wch: 20 }, // Track Artist
-        { wch: 10 }, // Duration
-        { wch: 15 }, // ISRC
-        { wch: 15 }, // Genre
-        { wch: 15 }, // Lyrics Language
-        { wch: 10 }, // Explicit
-        { wch: 12 } // Preview Start
+      // Define columns
+      tracksSheet.columns = [
+        { header: 'Submission ID', key: 'submissionId', width: 15 },
+        { header: 'Artist Name', key: 'artistName', width: 20 },
+        { header: 'Release Title', key: 'releaseTitle', width: 25 },
+        { header: 'Track Number', key: 'trackNumber', width: 12 },
+        { header: 'Track Title', key: 'trackTitle', width: 30 },
+        { header: 'Track Artist', key: 'trackArtist', width: 20 },
+        { header: 'Duration', key: 'duration', width: 10 },
+        { header: 'ISRC', key: 'isrc', width: 15 },
+        { header: 'Genre', key: 'genre', width: 15 },
+        { header: 'Lyrics Language', key: 'lyricsLanguage', width: 15 },
+        { header: 'Explicit', key: 'explicit', width: 10 },
+        { header: 'Preview Start', key: 'previewStart', width: 12 }
       ];
-      tracksSheet['!cols'] = tracksCols;
 
-      XLSX.utils.book_append_sheet(workbook, tracksSheet, 'Track Information');
+      // Add data
+      tracksData.forEach(track => {
+        tracksSheet.addRow(track);
+      });
+
+      // Style the header row
+      const tracksHeaderRow = tracksSheet.getRow(1);
+      tracksHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      tracksHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF4472C4' }
+      };
+      tracksHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+      tracksHeaderRow.height = 20;
     }
 
     // Sheet 4: File Status
@@ -196,73 +226,94 @@ export const exportSubmissionsToExcel = ({
     submissions.forEach((sub) => {
       sub.files.forEach((file) => {
         filesData.push({
-          'Submission ID': sub.id,
-          'Artist Name': sub.artistName,
-          'Release Title': sub.releaseTitle,
-          'File Name': file.fileName,
-          'File Type': file.fileType,
-          'File Size (MB)': (file.fileSize / (1024 * 1024)).toFixed(2),
-          'Upload Date': new Date(file.uploadedAt).toLocaleDateString(),
-          'Upload Time': new Date(file.uploadedAt).toLocaleTimeString(),
-          'Status': file.status,
-          'URL': file.url || 'N/A'
+          submissionId: sub.id,
+          artistName: sub.artistName,
+          releaseTitle: sub.releaseTitle,
+          fileName: file.fileName,
+          fileType: file.fileType,
+          fileSize: (file.fileSize / (1024 * 1024)).toFixed(2),
+          uploadDate: new Date(file.uploadedAt).toLocaleDateString(),
+          uploadTime: new Date(file.uploadedAt).toLocaleTimeString(),
+          status: file.status,
+          url: file.url || 'N/A'
         });
       });
     });
 
     if (filesData.length > 0) {
-      const filesSheet = XLSX.utils.json_to_sheet(filesData);
+      const filesSheet = workbook.addWorksheet('File Status');
 
-      const filesCols = [
-        { wch: 15 }, // Submission ID
-        { wch: 20 }, // Artist Name
-        { wch: 25 }, // Release Title
-        { wch: 30 }, // File Name
-        { wch: 15 }, // File Type
-        { wch: 15 }, // File Size
-        { wch: 15 }, // Upload Date
-        { wch: 15 }, // Upload Time
-        { wch: 12 }, // Status
-        { wch: 40 } // URL
+      // Define columns
+      filesSheet.columns = [
+        { header: 'Submission ID', key: 'submissionId', width: 15 },
+        { header: 'Artist Name', key: 'artistName', width: 20 },
+        { header: 'Release Title', key: 'releaseTitle', width: 25 },
+        { header: 'File Name', key: 'fileName', width: 30 },
+        { header: 'File Type', key: 'fileType', width: 15 },
+        { header: 'File Size (MB)', key: 'fileSize', width: 15 },
+        { header: 'Upload Date', key: 'uploadDate', width: 15 },
+        { header: 'Upload Time', key: 'uploadTime', width: 15 },
+        { header: 'Status', key: 'status', width: 12 },
+        { header: 'URL', key: 'url', width: 40 }
       ];
-      filesSheet['!cols'] = filesCols;
 
-      XLSX.utils.book_append_sheet(workbook, filesSheet, 'File Status');
+      // Add data
+      filesData.forEach(file => {
+        filesSheet.addRow(file);
+      });
+
+      // Style the header row
+      const filesHeaderRow = filesSheet.getRow(1);
+      filesHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      filesHeaderRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF4472C4' }
+      };
+      filesHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+      filesHeaderRow.height = 20;
     }
   }
-
-  // Apply styles to all sheets
-  workbook.SheetNames.forEach((sheetName) => {
-    const sheet = workbook.Sheets[sheetName];
-    const range = XLSX.utils.decode_range(sheet['!ref'] || 'A1');
-
-    // Style header row
-    for (let col = range.s.c; col <= range.e.c; col++) {
-      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col });
-      if (sheet[cellAddress]) {
-        sheet[cellAddress].s = {
-          font: { bold: true, color: { rgb: 'FFFFFF' } },
-          fill: { fgColor: { rgb: '4472C4' } },
-          alignment: { horizontal: 'center', vertical: 'center' }
-        };
-      }
-    }
-  });
 
   // Generate and download the file
   const timestamp = new Date().toISOString().split('T')[0];
   const fullFilename = `${filename}_${timestamp}.xlsx`;
 
-  XLSX.writeFile(workbook, fullFilename);
+  // Create a buffer and download
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fullFilename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
 };
 
 // Export single submission as detailed report
-export const exportSubmissionReport = (submission: Submission) => {
-  const workbook = XLSX.utils.book_new();
+export const exportSubmissionReport = async (submission: Submission) => {
+  const workbook = new ExcelJS.Workbook();
 
   // Sheet 1: Submission Overview
-  const overviewData = [
-    ['Field', 'Value'],
+  const overviewSheet = workbook.addWorksheet('Overview');
+
+  // Set column widths
+  overviewSheet.getColumn(1).width = 25;
+  overviewSheet.getColumn(2).width = 50;
+
+  // Add header
+  const headerRow = overviewSheet.addRow(['Field', 'Value']);
+  headerRow.font = { bold: true };
+  headerRow.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFE0E0E0' }
+  };
+
+  // Add data rows
+  const dataRows = [
     ['Submission ID', submission.id],
     ['Status', submission.status],
     ['Artist Name', submission.artistName],
@@ -286,106 +337,115 @@ export const exportSubmissionReport = (submission: Submission) => {
     ['Last Updated', new Date(submission.updatedAt).toLocaleString()]
   ];
 
-  const overviewSheet = XLSX.utils.aoa_to_sheet(overviewData);
-  overviewSheet['!cols'] = [{ wch: 25 }, { wch: 50 }];
-
-  // Style the header
-  overviewSheet['A1'].s = { font: { bold: true } };
-  overviewSheet['B1'].s = { font: { bold: true } };
-
-  XLSX.utils.book_append_sheet(workbook, overviewSheet, 'Overview');
+  dataRows.forEach(row => {
+    const dataRow = overviewSheet.addRow(row);
+    dataRow.getCell(1).font = { bold: true };
+  });
 
   // Sheet 2: Track List
   if (submission.tracks.length > 0) {
-    const trackHeaders = [
-      'Track #',
-      'Title',
-      'Artist',
-      'Duration',
-      'ISRC',
-      'Genre',
-      'Language',
-      'Explicit',
-      'Preview Start'
+    const tracksSheet = workbook.addWorksheet('Tracks');
+
+    // Define columns
+    tracksSheet.columns = [
+      { header: 'Track #', key: 'trackNumber', width: 10 },
+      { header: 'Title', key: 'title', width: 30 },
+      { header: 'Artist', key: 'artist', width: 25 },
+      { header: 'Duration', key: 'duration', width: 10 },
+      { header: 'ISRC', key: 'isrc', width: 15 },
+      { header: 'Genre', key: 'genre', width: 15 },
+      { header: 'Language', key: 'language', width: 15 },
+      { header: 'Explicit', key: 'explicit', width: 10 },
+      { header: 'Preview Start', key: 'previewStart', width: 12 }
     ];
 
-    const trackData = [trackHeaders];
+    // Add data
     submission.tracks.forEach((track, index) => {
-      trackData.push([
-        (index + 1).toString(),
-        track.title,
-        track.artist || submission.artistName,
-        track.duration || 'N/A',
-        track.isrc || 'N/A',
-        track.genre || submission.genre,
-        track.lyricsLanguage || 'N/A',
-        track.explicit ? 'Yes' : 'No',
-        track.previewStart ? String(track.previewStart) : 'N/A'
-      ]);
+      tracksSheet.addRow({
+        trackNumber: index + 1,
+        title: track.title,
+        artist: track.artist || submission.artistName,
+        duration: track.duration || 'N/A',
+        isrc: track.isrc || 'N/A',
+        genre: track.genre || submission.genre,
+        language: track.lyricsLanguage || 'N/A',
+        explicit: track.explicit ? 'Yes' : 'No',
+        previewStart: track.previewStart ? String(track.previewStart) : 'N/A'
+      });
     });
 
-    const tracksSheet = XLSX.utils.aoa_to_sheet(trackData);
-    tracksSheet['!cols'] = [
-      { wch: 10 },
-      { wch: 30 },
-      { wch: 25 },
-      { wch: 10 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 10 },
-      { wch: 12 }
-    ];
-
-    XLSX.utils.book_append_sheet(workbook, tracksSheet, 'Tracks');
+    // Style header row
+    const tracksHeaderRow = tracksSheet.getRow(1);
+    tracksHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    tracksHeaderRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF4472C4' }
+    };
+    tracksHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+    tracksHeaderRow.height = 20;
   }
 
   // Sheet 3: Files
   if (submission.files.length > 0) {
-    const fileHeaders = ['File Name', 'Type', 'Size', 'Status', 'Uploaded'];
-    const fileData = [fileHeaders];
+    const filesSheet = workbook.addWorksheet('Files');
 
-    submission.files.forEach((file) => {
-      fileData.push([
-        file.fileName,
-        file.fileType,
-        `${(file.fileSize / (1024 * 1024)).toFixed(2)} MB`,
-        file.status,
-        new Date(file.uploadedAt).toLocaleString()
-      ]);
-    });
-
-    const filesSheet = XLSX.utils.aoa_to_sheet(fileData);
-    filesSheet['!cols'] = [
-      { wch: 30 },
-      { wch: 15 },
-      { wch: 15 },
-      { wch: 12 },
-      { wch: 20 }
+    // Define columns
+    filesSheet.columns = [
+      { header: 'File Name', key: 'fileName', width: 30 },
+      { header: 'Type', key: 'type', width: 15 },
+      { header: 'Size', key: 'size', width: 15 },
+      { header: 'Status', key: 'status', width: 12 },
+      { header: 'Uploaded', key: 'uploaded', width: 20 }
     ];
 
-    XLSX.utils.book_append_sheet(workbook, filesSheet, 'Files');
+    // Add data
+    submission.files.forEach((file) => {
+      filesSheet.addRow({
+        fileName: file.fileName,
+        type: file.fileType,
+        size: `${(file.fileSize / (1024 * 1024)).toFixed(2)} MB`,
+        status: file.status,
+        uploaded: new Date(file.uploadedAt).toLocaleString()
+      });
+    });
+
+    // Style header row
+    const filesHeaderRow = filesSheet.getRow(1);
+    filesHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    filesHeaderRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF4472C4' }
+    };
+    filesHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
+    filesHeaderRow.height = 20;
   }
 
   // Sheet 4: Marketing & Notes
-  const marketingData = [
-    ['Field', 'Value'],
-    ['Marketing Plan', submission.marketingPlan || 'No marketing plan provided'],
-    ['Admin Notes', submission.adminNotes || 'No admin notes']
-  ];
+  const marketingSheet = workbook.addWorksheet('Marketing & Notes');
 
-  const marketingSheet = XLSX.utils.aoa_to_sheet(marketingData);
-  marketingSheet['!cols'] = [{ wch: 20 }, { wch: 80 }];
+  // Set column widths
+  marketingSheet.getColumn(1).width = 20;
+  marketingSheet.getColumn(2).width = 80;
 
-  // Enable text wrapping for long content
-  if (marketingSheet['B2']) {
-    marketingSheet['B2'].s = { alignment: { wrapText: true } };
-  }
-  if (marketingSheet['B3']) {
-    marketingSheet['B3'].s = { alignment: { wrapText: true } };
-  }
+  // Add header
+  const marketingHeaderRow = marketingSheet.addRow(['Field', 'Value']);
+  marketingHeaderRow.font = { bold: true };
+  marketingHeaderRow.fill = {
+    type: 'pattern',
+    pattern: 'solid',
+    fgColor: { argb: 'FFE0E0E0' }
+  };
 
-  XLSX.utils.book_append_sheet(workbook, marketingSheet, 'Marketing & Notes');
+  // Add data rows with text wrapping
+  const marketingPlanRow = marketingSheet.addRow(['Marketing Plan', submission.marketingPlan || 'No marketing plan provided']);
+  marketingPlanRow.getCell(1).font = { bold: true };
+  marketingPlanRow.getCell(2).alignment = { wrapText: true, vertical: 'top' };
+
+  const adminNotesRow = marketingSheet.addRow(['Admin Notes', submission.adminNotes || 'No admin notes']);
+  adminNotesRow.getCell(1).font = { bold: true };
+  adminNotesRow.getCell(2).alignment = { wrapText: true, vertical: 'top' };
 
   // Generate filename
   const safeArtistName = submission.artistName.replace(/[^a-z0-9]/gi, '_');
@@ -393,5 +453,15 @@ export const exportSubmissionReport = (submission: Submission) => {
   const timestamp = new Date().toISOString().split('T')[0];
   const filename = `${safeArtistName}_${safeReleaseTitle}_${timestamp}.xlsx`;
 
-  XLSX.writeFile(workbook, filename);
+  // Create a buffer and download
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  window.URL.revokeObjectURL(url);
 };

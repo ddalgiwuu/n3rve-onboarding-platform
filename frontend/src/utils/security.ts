@@ -18,7 +18,7 @@ export function disableConsole() {
               writable: false,
               configurable: false
             });
-          } catch (e) {
+          } catch {
             // If we can't override, it's already protected
           }
         });
@@ -26,7 +26,7 @@ export function disableConsole() {
         // Prevent console restoration
         Object.freeze(console);
       }
-    } catch (error) {
+    } catch {
       // Console protection failed, but app should continue
     }
   }
@@ -70,7 +70,7 @@ export function protectGlobalObjects() {
       window.Function = function() {
         throw new Error('Function constructor is disabled');
       } as any;
-    } catch (error) {
+    } catch {
       // Security protections failed, but app should continue
       console.warn('Some security features could not be enabled');
     }

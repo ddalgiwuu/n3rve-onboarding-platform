@@ -1,4 +1,4 @@
-import { useState, useEffect, forwardRef } from 'react';
+import React, { useState, useEffect, forwardRef } from 'react';
 import { motion } from 'framer-motion';
 import EnhancedValidationWarning from './EnhancedValidationWarning';
 import { useValidationContext } from '@/contexts/ValidationContext';
@@ -6,14 +6,14 @@ import { AlertCircle, AlertTriangle, Lightbulb } from 'lucide-react';
 
 interface ValidatedInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   fieldId: string
-  validationType: 'album' | 'track' | 'artist' | 'label'
+  validationType: 'album' | 'track' | 'artist'
   validationOptions?: {
     trackNumber?: number
     isComposer?: boolean
   }
   onValueChange?: (value: string) => void
   showInlineWarnings?: boolean
-  language?: 'ko' | 'en' | 'ja'
+  language?: 'ko' | 'en'
   label?: React.ReactNode
   helpText?: string
 }

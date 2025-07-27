@@ -496,7 +496,7 @@ export default function ArtistManagementModal({
 
                                 setArtists([...artists, artist]);
                                 setRecentlyAddedIds(new Set([...recentlyAddedIds, artist.id]));
-                                savedArtistsStore.useArtist(savedArtist.id);
+                                savedArtistsStore.recordArtistUsage(savedArtist.id);
                                 toast.success(t('아티스트가 추가되었습니다', 'Artist added', 'アーティストが追加されました'));
                               }}
                               className="px-3 py-1.5 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-1"

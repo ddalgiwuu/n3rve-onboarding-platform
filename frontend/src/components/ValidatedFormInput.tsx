@@ -1,10 +1,10 @@
-import { forwardRef } from 'react';
+import React, { forwardRef } from 'react';
 import { UseFormRegisterReturn } from 'react-hook-form';
 import ValidatedInput from './ValidatedInput';
 
 interface ValidatedFormInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   fieldId: string
-  validationType: 'album' | 'track' | 'artist' | 'label'
+  validationType: 'album' | 'track' | 'artist'
   validationOptions?: {
     trackNumber?: number
     isComposer?: boolean
@@ -12,7 +12,7 @@ interface ValidatedFormInputProps extends React.InputHTMLAttributes<HTMLInputEle
   register: UseFormRegisterReturn
   error?: { message?: string }
   showInlineWarnings?: boolean
-  language?: 'ko' | 'en' | 'ja'
+  language?: 'ko' | 'en'
   label?: React.ReactNode
   helpText?: string
 }
@@ -26,7 +26,7 @@ const ValidatedFormInput = forwardRef<HTMLInputElement, ValidatedFormInputProps>
   validationType,
   validationOptions,
   register,
-  error,
+  error: _error, // Prefixed with _ to indicate it's intentionally unused
   showInlineWarnings = true,
   language = 'en',
   label,

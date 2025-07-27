@@ -99,7 +99,7 @@ export default function SimpleReleaseSubmission() {
           <Button
             size="lg"
             onClick={() => {
-              console.log('Form submitted:', formData);
+              // Form submitted with formData
               alert(t('양식이 제출되었습니다!', 'Form submitted!'));
             }}
           >
