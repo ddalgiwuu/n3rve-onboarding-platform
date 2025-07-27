@@ -1,9 +1,6 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Brain, TrendingUp, Users, Zap, CheckCircle, X,
-  ArrowRight, Star, Clock, Target, Lightbulb
-} from 'lucide-react';
+import { Brain, TrendingUp, Users, CheckCircle, Target, Lightbulb } from 'lucide-react';
 import { EnhancedValidationWarning, UserValidationPatterns } from '@/types/validationAdvanced';
 
 interface IntelligentSuggestionsEngineProps {

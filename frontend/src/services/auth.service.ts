@@ -10,7 +10,7 @@ class AuthService {
         '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
       ).join(''));
       return JSON.parse(jsonPayload);
-    } catch (error) {
+    } catch {
       // Silently handle error in production
       return null;
     }
@@ -106,7 +106,7 @@ class AuthService {
       }
 
       return data.accessToken;
-    } catch (error) {
+    } catch {
       // Error refreshing token
       return null;
     }
@@ -139,7 +139,7 @@ class AuthService {
       }
 
       return null;
-    } catch (error) {
+    } catch {
       // Handle getToken error silently
       return null;
     }
@@ -153,7 +153,7 @@ class AuthService {
         return parsed.state?.refreshToken || parsed.refreshToken || null;
       }
       return null;
-    } catch (error) {
+    } catch {
       // Error handled silently for security
       return null;
     }
@@ -169,7 +169,7 @@ class AuthService {
         return !!token;
       }
       return false;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -207,7 +207,7 @@ class AuthService {
       }
 
       return await response.json();
-    } catch (error) {
+    } catch {
       // Registration error occurred
       throw error;
     }
