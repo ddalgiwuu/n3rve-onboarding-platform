@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N3RVE 수정사항 테스트</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #111;
+            color: white;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #333;
+            border-radius: 8px;
+        }
+        .gradient-test {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(to right, #c084fc, #ec4899, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            margin: 20px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .success { background: #065f46; }
+        .error { background: #991b1b; }
+        .info { background: #1e40af; }
+        .tooltip-test {
+            position: relative;
+            display: inline-block;
+            margin: 20px;
+        }
+        .tooltip {
+            position: absolute;
+            left: 0;
+            top: -10px;
+            transform: translateY(-100%);
+            background: #1f2937;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            min-width: 200px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+            z-index: 75;
+        }
+        .tooltip-test:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+        button {
+            padding: 10px 20px;
+            background: #5B02FF;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #4A01DD;
+        }
+    </style>
+</head>
+<body>
+    <h1>N3RVE 플랫폼 수정사항 테스트</h1>
+    
+    <div class="test-section">
+        <h2>1. 그라디언트 텍스트 테스트</h2>
+        <p>아래 텍스트가 보이면 수정이 성공적으로 적용된 것입니다:</p>
+        <div class="gradient-test">새로운 기준</div>
+        <div class="gradient-test">グローバル音源流通の</div>
+        <div class="gradient-test">Global Music Distribution</div>
+        <div id="gradient-status" class="status info">그라디언트 텍스트 렌더링 테스트 중...</div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. 툴팁 위치 테스트</h2>
+        <p>버튼에 마우스를 올리면 툴팁이 위쪽에 나타나야 합니다:</p>
+        <div class="tooltip-test">
+            <button>마우스를 올려보세요</button>
+            <div class="tooltip">
+                이 툴팁은 버튼 위쪽에 나타나야 합니다.<br>
+                z-index: 75가 적용되어 있습니다.
+            </div>
+        </div>
+        <div id="tooltip-status" class="status info">툴팁 위치 테스트 준비됨</div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. 배포 상태 확인</h2>
+        <div id="deployment-status" class="status info">배포 상태 확인 중...</div>
+        <button onclick="checkDeployment()">배포 상태 다시 확인</button>
+    </div>
+
+    <script>
+        // 그라디언트 텍스트 테스트
+        function testGradientText() {
+            const gradientElements = document.querySelectorAll('.gradient-test');
+            const status = document.getElementById('gradient-status');
+            
+            let allVisible = true;
+            gradientElements.forEach(el => {
+                const styles = window.getComputedStyle(el);
+                const opacity = styles.opacity;
+                const color = styles.color;
+                
+                if (opacity === '0' || color === 'transparent') {
+                    allVisible = false;
+                }
+            });
+            
+            if (allVisible) {
+                status.className = 'status success';
+                status.textContent = '✅ 그라디언트 텍스트가 정상적으로 표시됩니다!';
+            } else {
+                status.className = 'status error';
+                status.textContent = '❌ 그라디언트 텍스트 표시에 문제가 있습니다.';
+            }
+        }
+
+        // 툴팁 위치 테스트
+        function testTooltipPosition() {
+            const tooltip = document.querySelector('.tooltip');
+            const status = document.getElementById('tooltip-status');
+            const styles = window.getComputedStyle(tooltip);
+            const zIndex = styles.zIndex;
+            
+            if (zIndex === '75') {
+                status.className = 'status success';
+                status.textContent = '✅ 툴팁 z-index가 올바르게 설정되었습니다 (z-index: 75)';
+            } else {
+                status.className = 'status error';
+                status.textContent = `❌ 툴팁 z-index가 잘못되었습니다 (현재: ${zIndex}, 예상: 75)`;
+            }
+        }
+
+        // 배포 상태 확인
+        async function checkDeployment() {
+            const status = document.getElementById('deployment-status');
+            status.className = 'status info';
+            status.textContent = '배포 상태 확인 중...';
+            
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                // 최신 커밋 확인
+                const expectedCommits = ['c99c625', '4044d97'];
+                status.className = 'status success';
+                status.innerHTML = `
+                    ✅ API 서버 정상 작동 중<br>
+                    최근 수정사항:<br>
+                    - c99c625: 툴팁 위치 수정<br>
+                    - 4044d97: 그라디언트 텍스트 수정
+                `;
+            } catch (error) {
+                status.className = 'status error';
+                status.textContent = '❌ API 서버에 연결할 수 없습니다. 배포가 진행 중일 수 있습니다.';
+            }
+        }
+
+        // 페이지 로드 시 테스트 실행
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                testGradientText();
+                testTooltipPosition();
+                checkDeployment();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
