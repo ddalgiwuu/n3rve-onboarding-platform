@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gradient Text Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom animations */
+        @keyframes slide-in-right {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes gradient-x {
+            0%, 100% {
+                background-size: 200% 200%;
+                background-position: left center;
+            }
+            50% {
+                background-size: 200% 200%;
+                background-position: right center;
+            }
+        }
+
+        .animate-slide-in-right {
+            animation: slide-in-right 0.5s ease-out 0.5s forwards;
+            opacity: 0;
+            animation-fill-mode: both;
+        }
+
+        .animate-gradient-x {
+            animation: gradient-x 3s ease infinite;
+            background-size: 200% 100%;
+        }
+
+        /* Gradient text fallback */
+        .bg-clip-text {
+            -webkit-background-clip: text;
+            background-clip: text;
+        }
+
+        .text-transparent {
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        /* Ensure gradient text is visible */
+        .gradient-text {
+            background: linear-gradient(to right, #c084fc, #ec4899, #06b6d4);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+            background-size: 200% 100%;
+            animation: gradient-x 3s ease infinite;
+            /* Fallback color if gradient fails */
+            text-shadow: none;
+        }
+
+        /* Force visibility */
+        .force-visible {
+            opacity: 1 !important;
+            display: inline-block !important;
+            visibility: visible !important;
+        }
+
+        /* Test different approaches */
+        .gradient-approach-1 {
+            background: linear-gradient(to right, #c084fc, #ec4899, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .gradient-approach-2 {
+            background-image: linear-gradient(to right, #c084fc, #ec4899, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .gradient-approach-3 {
+            background: linear-gradient(90deg, #c084fc 0%, #ec4899 50%, #06b6d4 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: #c084fc; /* fallback */
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+    <div class="text-center space-y-8">
+        <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+            <span class="text-white/90 inline-block">
+                글로벌 음원 유통의
+            </span>
+            <br />
+            <!-- Original approach from Home.tsx -->
+            <span
+                class="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent inline-block animate-slide-in-right animate-gradient-x force-visible"
+                style="
+                    background-size: 200% 100%;
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    opacity: 1;
+                "
+            >
+                새로운 기준 (Original)
+            </span>
+        </h1>
+
+        <!-- Test different approaches -->
+        <div class="space-y-4">
+            <h2 class="text-3xl font-bold">
+                <span class="gradient-approach-1">새로운 기준 (Approach 1)</span>
+            </h2>
+            
+            <h2 class="text-3xl font-bold">
+                <span class="gradient-approach-2">새로운 기준 (Approach 2)</span>
+            </h2>
+            
+            <h2 class="text-3xl font-bold">
+                <span class="gradient-approach-3">새로운 기준 (Approach 3)</span>
+            </h2>
+
+            <!-- Simple gradient without animation -->
+            <h2 class="text-3xl font-bold">
+                <span class="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    새로운 기준 (Simple)
+                </span>
+            </h2>
+
+            <!-- With solid fallback -->
+            <h2 class="text-3xl font-bold">
+                <span class="text-purple-400" style="background: linear-gradient(to right, #c084fc, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    새로운 기준 (Fallback)
+                </span>
+            </h2>
+        </div>
+
+        <!-- Debug info -->
+        <div class="text-white text-sm space-y-2 bg-black/50 p-4 rounded">
+            <p>Testing gradient text visibility issues</p>
+            <p>Check which approach renders correctly</p>
+            <p id="browser-info"></p>
+        </div>
+    </div>
+
+    <script>
+        // Log browser info
+        document.getElementById('browser-info').textContent = `Browser: ${navigator.userAgent}`;
+
+        // Test if gradient text is supported
+        const testElement = document.createElement('div');
+        testElement.style.background = 'linear-gradient(to right, red, blue)';
+        testElement.style.webkitBackgroundClip = 'text';
+        testElement.style.webkitTextFillColor = 'transparent';
+        
+        console.log('Gradient text support test:', {
+            background: testElement.style.background,
+            webkitBackgroundClip: testElement.style.webkitBackgroundClip,
+            webkitTextFillColor: testElement.style.webkitTextFillColor
+        });
+    </script>
+</body>
+</html>
