@@ -5,6 +5,7 @@ import { useSavedArtistsStore } from '@/store/savedArtists.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import { v4 as uuidv4 } from 'uuid';
 import toast from 'react-hot-toast';
+import ModalWrapper from '@/components/common/ModalWrapper';
 
 interface ArtistIdentifier {
   type: string
@@ -204,23 +205,14 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            {role === 'main' ? t('메인 아티스트 추가', 'Add Main Artist') : t('피처링 아티스트 추가', 'Add Featuring Artist')}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+    <ModalWrapper
+      isOpen={isOpen}
+      onClose={onClose}
+      title={role === 'main' ? t('메인 아티스트 추가', 'Add Main Artist') : t('피처링 아티스트 추가', 'Add Featuring Artist')}
+      maxWidth="max-w-3xl"
+    >
+      {/* Content */}
+      <div className="px-6 py-4">
           <div className="space-y-6">
             {/* Saved Artists Section */}
             <div>
@@ -545,11 +537,13 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
 
       {/* Help Modals */}
       {showHelpModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-semibold mb-4">
-              {showHelpModal === 'spotify' ? 'Spotify Artist ID 찾는 방법' : 'Apple Music Artist ID 찾는 방법'}
-            </h3>
+        <ModalWrapper
+          isOpen={true}
+          onClose={() => setShowHelpModal(null)}
+          title={showHelpModal === 'spotify' ? 'Spotify Artist ID 찾는 방법' : 'Apple Music Artist ID 찾는 방법'}
+          maxWidth="max-w-md"
+        >
+          <div className="p-6">
             <div className="text-sm text-gray-600 dark:text-gray-400 space-y-2">
               {showHelpModal === 'spotify' ? (
                 <>
@@ -584,15 +578,9 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
                 </>
               )}
             </div>
-            <button
-              onClick={() => setShowHelpModal(null)}
-              className="mt-4 w-full px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-            >
-              닫기
-            </button>
           </div>
-        </div>
+        </ModalWrapper>
       )}
-    </div>
+    </ModalWrapper>
   );
 }
