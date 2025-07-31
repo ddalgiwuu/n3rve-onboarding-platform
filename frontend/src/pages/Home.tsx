@@ -211,7 +211,7 @@ export default function HomePage() {
                 </span>
                 <br />
                 <span
-                  className="gradient-hero-text inline-block animate-slide-in-right animate-gradient-x"
+                  className="gradient-hero-text inline-block animate-gradient-x"
                   style={{
                     // Explicit gradient definition
                     background: 'linear-gradient(90deg, #c084fc 0%, #ec4899 35%, #06b6d4 70%, #c084fc 100%)',
@@ -221,7 +221,9 @@ export default function HomePage() {
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                     // Force visibility and prevent flicker
-                    opacity: '1',
+                    opacity: 1,
+                    // Override any CSS animations that set opacity to 0
+                    visibility: 'visible',
                     display: 'inline-block',
                     // Fallback color in case gradient fails
                     color: '#c084fc',
@@ -240,7 +242,7 @@ export default function HomePage() {
                 </span>
                 <br />
                 <span
-                  className="gradient-hero-text inline-block animate-slide-in-right animate-gradient-x"
+                  className="gradient-hero-text inline-block animate-gradient-x"
                   style={{
                     // Explicit gradient definition
                     background: 'linear-gradient(90deg, #c084fc 0%, #ec4899 35%, #06b6d4 70%, #c084fc 100%)',
@@ -250,7 +252,9 @@ export default function HomePage() {
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                     // Force visibility and prevent flicker
-                    opacity: '1',
+                    opacity: 1,
+                    // Override any CSS animations that set opacity to 0
+                    visibility: 'visible',
                     display: 'inline-block',
                     // Fallback color in case gradient fails
                     color: '#c084fc',
@@ -269,7 +273,7 @@ export default function HomePage() {
                 </span>
                 <br />
                 <span
-                  className="gradient-hero-text inline-block animate-slide-in-right animate-gradient-x"
+                  className="gradient-hero-text inline-block animate-gradient-x"
                   style={{
                     // Explicit gradient definition
                     background: 'linear-gradient(90deg, #c084fc 0%, #ec4899 35%, #06b6d4 70%, #c084fc 100%)',
@@ -279,7 +283,9 @@ export default function HomePage() {
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text',
                     // Force visibility and prevent flicker
-                    opacity: '1',
+                    opacity: 1,
+                    // Override any CSS animations that set opacity to 0
+                    visibility: 'visible',
                     display: 'inline-block',
                     // Fallback color in case gradient fails
                     color: '#c084fc',
