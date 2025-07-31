@@ -83,6 +83,29 @@ export default function HomePage() {
   const [heroRef] = useAutoAnimate();
   const [featuresRef] = useAutoAnimate();
   const [trustRef] = useAutoAnimate();
+  
+  // Ensure gradient text is visible - failsafe
+  useEffect(() => {
+    const ensureGradientTextVisible = () => {
+      const gradientTexts = document.querySelectorAll('.gradient-hero-text');
+      gradientTexts.forEach((element) => {
+        const htmlElement = element as HTMLElement;
+        htmlElement.style.opacity = '1';
+        htmlElement.style.visibility = 'visible';
+        htmlElement.style.display = 'inline-block';
+      });
+    };
+
+    // Run immediately and after animations should complete
+    ensureGradientTextVisible();
+    const timer1 = setTimeout(ensureGradientTextVisible, 1000);
+    const timer2 = setTimeout(ensureGradientTextVisible, 2000);
+
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, []);
 
   // Mouse tracking and scroll handling
   useEffect(() => {
@@ -188,14 +211,23 @@ export default function HomePage() {
                 </span>
                 <br />
                 <span
-                  className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent inline-block animate-slide-in-right animate-gradient-x"
+                  className="gradient-hero-text inline-block animate-slide-in-right animate-gradient-x"
                   style={{
+                    // Explicit gradient definition
+                    background: 'linear-gradient(90deg, #c084fc 0%, #ec4899 35%, #06b6d4 70%, #c084fc 100%)',
                     backgroundSize: '200% 100%',
-                    // Fallback for gradient text
+                    // WebKit prefixes for better support
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    // Ensure text is visible
-                    opacity: 1
+                    backgroundClip: 'text',
+                    // Force visibility and prevent flicker
+                    opacity: '1',
+                    display: 'inline-block',
+                    // Fallback color in case gradient fails
+                    color: '#c084fc',
+                    // Ensure proper rendering
+                    textRendering: 'optimizeLegibility',
+                    WebkitFontSmoothing: 'antialiased'
                   }}
                 >
                   새로운 기준
@@ -208,14 +240,23 @@ export default function HomePage() {
                 </span>
                 <br />
                 <span
-                  className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent inline-block animate-slide-in-right animate-gradient-x"
+                  className="gradient-hero-text inline-block animate-slide-in-right animate-gradient-x"
                   style={{
+                    // Explicit gradient definition
+                    background: 'linear-gradient(90deg, #c084fc 0%, #ec4899 35%, #06b6d4 70%, #c084fc 100%)',
                     backgroundSize: '200% 100%',
-                    // Fallback for gradient text
+                    // WebKit prefixes for better support
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    // Ensure text is visible
-                    opacity: 1
+                    backgroundClip: 'text',
+                    // Force visibility and prevent flicker
+                    opacity: '1',
+                    display: 'inline-block',
+                    // Fallback color in case gradient fails
+                    color: '#c084fc',
+                    // Ensure proper rendering
+                    textRendering: 'optimizeLegibility',
+                    WebkitFontSmoothing: 'antialiased'
                   }}
                 >
                   新しい基準
@@ -228,14 +269,23 @@ export default function HomePage() {
                 </span>
                 <br />
                 <span
-                  className="bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent inline-block animate-slide-in-right animate-gradient-x"
+                  className="gradient-hero-text inline-block animate-slide-in-right animate-gradient-x"
                   style={{
+                    // Explicit gradient definition
+                    background: 'linear-gradient(90deg, #c084fc 0%, #ec4899 35%, #06b6d4 70%, #c084fc 100%)',
                     backgroundSize: '200% 100%',
-                    // Fallback for gradient text
+                    // WebKit prefixes for better support
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
-                    // Ensure text is visible
-                    opacity: 1
+                    backgroundClip: 'text',
+                    // Force visibility and prevent flicker
+                    opacity: '1',
+                    display: 'inline-block',
+                    // Fallback color in case gradient fails
+                    color: '#c084fc',
+                    // Ensure proper rendering
+                    textRendering: 'optimizeLegibility',
+                    WebkitFontSmoothing: 'antialiased'
                   }}
                 >
                   Global Music Distribution
