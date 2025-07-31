@@ -585,7 +585,7 @@
 /* Glass Modal Background */
 .glass-modal-backdrop {
   @apply fixed inset-0 bg-black/20 backdrop-blur-sm;
-  @apply z-50 flex items-center justify-center;
+  @apply z-[60] flex items-center justify-center;
 }
 
 .glass-modal {
