@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Plus, Trash2, Users, User, Music, HelpCircle, Globe, Search, Check, Sparkles, Edit2 } from 'lucide-react';
 import { useLanguageStore } from '@/store/language.store';
 import { useSavedArtistsStore } from '@/store/savedArtists.store';
@@ -222,16 +223,19 @@ export default function ArtistManagementModal({
     setNewArtist({ ...newArtist, translations: newTranslations });
   };
 
+  console.log('ArtistManagementModal render - isOpen:', isOpen);
+  
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div 
-      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       style={{
         position: 'fixed',
         top: 0,
         left: 0,
         right: 0,
+        zIndex: 9999,
         bottom: 0,
         display: 'flex',
         alignItems: 'center',
@@ -1025,6 +1029,7 @@ export default function ArtistManagementModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

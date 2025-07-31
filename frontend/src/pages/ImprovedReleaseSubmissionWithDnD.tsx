@@ -1709,7 +1709,10 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                 {/* Add Artist Button */}
                 <button
                   type="button"
-                  onClick={() => setShowAlbumArtistModal(true)}
+                  onClick={() => {
+                    console.log('Album Artist Modal button clicked');
+                    setShowAlbumArtistModal(true);
+                  }}
                   className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-dashed border-gray-300 dark:border-gray-600
                            rounded-lg hover:border-purple-400 dark:hover:border-purple-500
                            transition-colors flex items-center justify-center gap-2
@@ -3266,10 +3269,14 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         </div>
 
         {/* Artist Management Modal */}
+        {console.log('showAlbumArtistModal state:', showAlbumArtistModal)}
         {showAlbumArtistModal && (
           <ArtistManagementModal
             isOpen={showAlbumArtistModal}
-            onClose={() => setShowAlbumArtistModal(false)}
+            onClose={() => {
+              console.log('Closing Album Artist Modal');
+              setShowAlbumArtistModal(false);
+            }}
             artists={formData.albumArtists}
             onSave={(artists) => {
               setFormData(prev => ({

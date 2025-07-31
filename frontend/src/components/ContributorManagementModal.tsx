@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Plus, Trash2, Users, Music2, Edit3, Mic2 } from 'lucide-react';
 import { useLanguageStore } from '@/store/language.store';
 import ContributorForm from './ContributorForm';
@@ -133,8 +134,8 @@ export default function ContributorManagementModal({
     return instrumentName;
   };
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[60]">
+  return createPortal(
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]" style={{ zIndex: 9999 }}>
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] flex flex-col overflow-hidden">
         {/* Header */}
         <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
@@ -331,6 +332,7 @@ export default function ContributorManagementModal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
