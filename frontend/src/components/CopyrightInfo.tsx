@@ -53,7 +53,7 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
                 >
                   <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                   {showTooltip === 'production' && (
-                    <div className="absolute left-0 bottom-full mb-2 w-80 p-4 bg-gray-900 text-white rounded-lg shadow-xl z-10">
+                    <div className="absolute left-0 -top-2 -translate-y-full w-80 p-4 bg-gray-900 text-white rounded-lg shadow-xl z-[75]">
                       <div className="text-sm space-y-2">
                         <p className="font-medium flex items-center gap-2">
                           <Music className="w-4 h-4" />
@@ -136,7 +136,7 @@ export default function CopyrightInfo({ copyrightData, onChange }: CopyrightInfo
                 >
                   <HelpCircle className="w-4 h-4 text-gray-400 hover:text-gray-600" />
                   {showTooltip === 'copyright' && (
-                    <div className="absolute left-0 bottom-full mb-2 w-80 p-4 bg-gray-900 text-white rounded-lg shadow-xl z-10">
+                    <div className="absolute left-0 -top-2 -translate-y-full w-80 p-4 bg-gray-900 text-white rounded-lg shadow-xl z-[75]">
                       <div className="text-sm space-y-2">
                         <p className="font-medium flex items-center gap-2">
                           <Disc className="w-4 h-4" />
