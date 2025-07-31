@@ -38,7 +38,8 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
                     duration: 4000,
                     style: {
                       background: '#363636',
-                      color: '#fff'
+                      color: '#fff',
+                      zIndex: 55
                     }
                   }}
                 />
