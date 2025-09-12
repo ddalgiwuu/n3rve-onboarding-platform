@@ -5,6 +5,7 @@ import {
   Check, AlertCircle, ExternalLink, Languages
 } from 'lucide-react';
 import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/hooks/useTranslation';
 import useSafeStore from '@/hooks/useSafeStore';
 import contributorRolesData from '@/data/contributorRoles.json';
 import contributorRolesKoData from '@/data/contributorRolesKo.json';
@@ -76,13 +77,7 @@ const identifierTypes = {
 
 function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFormProps) {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
-  const t = (ko: string, en: string, ja?: string) => {
-    switch (language) {
-      case 'ko': return ko;
-      case 'ja': return ja || en;
-      default: return en;
-    }
-  };
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState<Contributor>({
     id: contributor?.id || uuidv4(),

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, AlertTriangle, Info, Music, User, Disc, Calendar, Shield, ChevronDown, ChevronRight, FileText, Star, AlertCircle } from 'lucide-react';
-import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/hooks/useTranslation';
 import type { SubmissionData } from '@/services/submission.service';
 import AdminEmailPreview from '@/components/submission/AdminEmailPreview';
 import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation';
@@ -23,8 +23,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
   const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [qcResults, setQcResults] = useState<QCValidationResults | null>(null);
-  const language = useLanguageStore((state: any) => state.language) || 'ko';
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const { t } = useTranslation();
 
   useEffect(() => {
     // 검증 로직

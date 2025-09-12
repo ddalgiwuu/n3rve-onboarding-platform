@@ -345,7 +345,7 @@ export default function LoginPage() {
                       </span>
                     </h1>
                     <p className="text-gray-600 dark:text-gray-400 font-medium">
-                      {t('auth.subtitle', '공식 음원 유통 플랫폼', 'Official Music Distribution Platform', '公式音楽配信プラットフォーム')}
+                      {t('auth.subtitle')}
                     </p>
                   </div>
 
@@ -370,7 +370,7 @@ export default function LoginPage() {
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                           </svg>
-                          {t('auth.googleLogin', 'Google 로그인', 'Google Login', 'Googleログイン')}
+                          {t('auth.googleLogin')}
                         </span>
                       </button>
                       <button
@@ -386,7 +386,7 @@ export default function LoginPage() {
                         )}
                         <span className="relative z-10 flex items-center justify-center gap-2">
                           <Mail className="w-4 h-4" />
-                          {t('auth.emailLogin', '이메일 로그인', 'Email Login', 'メールログイン')}
+                          {t('auth.emailLogin')}
                         </span>
                       </button>
                     </div>
@@ -431,7 +431,7 @@ export default function LoginPage() {
                                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                               </svg>
                               <span className="font-semibold text-gray-900 dark:text-gray-100 relative z-10">
-                                {t('auth.continueWithGoogle', 'Google로 계속하기', 'Continue with Google', 'Googleで続ける')}
+                                {t('auth.continueWithGoogle')}
                               </span>
                             </>
                           )}
@@ -440,11 +440,11 @@ export default function LoginPage() {
 
                       <div className="mt-8 text-center">
                         <p className="text-sm text-gray-600 dark:text-gray-400">
-                          {t('auth.noAccount', '계정이 없으신가요?', "Don't have an account?", 'アカウントがありませんか？')}
+                          {t('auth.noAccount')}
                         </p>
                         <p className="text-xs text-gray-500 dark:text-gray-500 mt-2 flex items-center justify-center gap-2">
                           <Shield className="w-4 h-4" />
-                          {t('auth.contactAdmin', '관리자에게 계정 생성을 요청하세요', 'Contact admin for account creation', '管理者にアカウント作成を依頼してください')}
+                          {t('auth.contactAdmin')}
                         </p>
                       </div>
                     </>
@@ -578,7 +578,7 @@ export default function LoginPage() {
                         <AnimatedText delay={0.6}>
                           <div className="group">
                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                              {t('auth.noAccount', '계정이 없으신가요?', "Don't have an account?", 'アカウントをお持ちでない方')}
+                              {t('auth.noAccount')}
                             </p>
                             <Link
                               to="/register"
@@ -599,7 +599,7 @@ export default function LoginPage() {
                     <div className="mt-6 pt-6 border-t border-gray-200/50 dark:border-gray-700/50">
                       <div className="flex items-center justify-center gap-2 text-xs text-gray-500 dark:text-gray-400">
                         <Shield className="w-4 h-4 animate-pulse" />
-                        <p>{t('auth.securityNotice', '안전한 SSL 암호화 연결', 'Secure SSL encrypted connection', '安全なSSL暗号化接続')}</p>
+                        <p>{t('auth.securityNotice')}</p>
                       </div>
                     </div>
                   </AnimatedText>

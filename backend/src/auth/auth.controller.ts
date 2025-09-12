@@ -46,8 +46,10 @@ export class AuthController {
       
       const result = await this.authService.googleLogin(req.user);
       
-      // Always use production frontend URL
-      const frontendUrl = 'https://n3rve-onboarding.com';
+      // Use environment-appropriate frontend URL
+      const frontendUrl = this.configService.get<string>('NODE_ENV') === 'production' 
+        ? 'https://n3rve-onboarding.com'
+        : 'http://localhost:3000';
       
       // Use the user returned from googleLogin which has the updated role
       const profileComplete = result.user?.isProfileComplete || false;

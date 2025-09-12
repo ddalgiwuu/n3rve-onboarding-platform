@@ -315,11 +315,20 @@ export default function HomePage() {
             <div className="transform hover:scale-105 active:scale-95 transition-transform duration-200">
               <Link
                 to="/login"
-                className="group relative px-10 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold text-lg overflow-hidden flex items-center gap-3 hover-lift"
+                className="group relative px-10 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold text-lg overflow-hidden flex items-center gap-3 hover-lift shadow-xl shadow-purple-500/50"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"/>
-                <span className="relative z-10">{language === 'ko' ? '지금 시작하기' : language === 'ja' ? '今すぐ始める' : 'Start Now'}</span>
-                <ArrowRight className="relative z-10 w-5 h-5 animate-bounce-x" />
+                <span 
+                  className="relative z-10 text-white font-black text-xl drop-shadow-lg" 
+                  style={{ 
+                    textShadow: '0 2px 4px rgba(0,0,0,0.5)', 
+                    color: '#ffffff',
+                    fontWeight: '900'
+                  }}
+                >
+                  {language === 'ko' ? '지금 시작하기' : language === 'ja' ? '今すぐ始める' : 'Start Now'}
+                </span>
+                <ArrowRight className="relative z-10 w-5 h-5 animate-bounce-x text-white drop-shadow-lg" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }} />
               </Link>
             </div>
 
@@ -614,10 +623,16 @@ export default function HomePage() {
                     className="group relative px-12 py-5 bg-white text-purple-600 rounded-full font-bold text-lg overflow-hidden shadow-2xl flex items-center gap-3"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-pink-100 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"/>
-                    <span className="relative z-10">
+                    <span 
+                      className="relative z-10 text-purple-700 font-black text-xl" 
+                      style={{ 
+                        color: '#7c3aed',
+                        fontWeight: '900'
+                      }}
+                    >
                       {language === 'ko' ? '무료로 시작하기' : language === 'ja' ? '無料で始める' : 'Start Free'}
                     </span>
-                    <ArrowRight className="relative z-10 w-5 h-5 animate-bounce-x" />
+                    <ArrowRight className="relative z-10 w-5 h-5 animate-bounce-x text-purple-700" style={{ color: '#7c3aed' }} />
                   </Link>
                 </div>
 

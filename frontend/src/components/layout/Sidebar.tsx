@@ -3,6 +3,7 @@ import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Mus
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/auth.store';
 import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/hooks/useTranslation';
 import useSafeStore from '@/hooks/useSafeStore';
 import { useEffect, useRef } from 'react';
 
@@ -14,11 +15,13 @@ interface SidebarProps {
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const user = useSafeStore(useAuthStore, (state) => state.user);
   const logout = useSafeStore(useAuthStore, (state) => state.logout);
-  const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const languageStore = useLanguageStore();
+  const { t, language: currentLang } = useTranslation();
   const location = useLocation();
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isAdmin = user?.role === 'ADMIN';
   const isInAdminConsole = location.pathname.startsWith('/admin');
+
 
   // Color mapping function to avoid dynamic class concatenation
   const getIconColorClasses = (color: string, isActive: boolean) => {
@@ -111,21 +114,21 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
   // Make menu items reactive to language changes
   const customerMenuItems = [
-    { icon: Home, label: language === 'ko' ? '대시보드' : language === 'en' ? 'Dashboard' : 'ダッシュボード', path: '/dashboard', color: 'text-blue-600' },
-    { icon: Upload, label: language === 'ko' ? '새 음원 제출' : language === 'en' ? 'New Submission' : '新規提出', path: '/release-submission-modern', color: 'text-n3rve-main', badge: 'NEW' },
-    { icon: FolderOpen, label: language === 'ko' ? '제출 내역' : language === 'en' ? 'Submissions' : '提出履歴', path: '/submissions', color: 'text-purple-600' },
-    { icon: FileText, label: language === 'ko' ? '가이드' : language === 'en' ? 'Guide' : 'ガイド', path: '/guide', color: 'text-green-600' },
-    { icon: Music, label: language === 'ko' ? '아티스트 프로필' : language === 'en' ? 'Artist Profile' : 'アーティストプロフィール', path: '/artist-profile-guide', color: 'text-pink-600' },
-    { icon: Building2, label: language === 'ko' ? '계정 관리' : language === 'en' ? 'Account Management' : 'アカウント管理', path: '/account', color: 'text-indigo-600' },
-    { icon: Settings, label: language === 'ko' ? '설정' : language === 'en' ? 'Settings' : '設定', path: '/settings', color: 'text-gray-600' }
+    { icon: Home, label: t('nav.dashboard'), path: '/dashboard', color: 'text-blue-600' },
+    { icon: Upload, label: t('nav.newSubmission'), path: '/release-submission-modern', color: 'text-n3rve-main', badge: 'NEW' },
+    { icon: FolderOpen, label: t('nav.submissionHistory'), path: '/submissions', color: 'text-purple-600' },
+    { icon: FileText, label: t('nav.guide'), path: '/guide', color: 'text-green-600' },
+    { icon: Music, label: t('nav.artistProfile'), path: '/artist-profile-guide', color: 'text-pink-600' },
+    { icon: Building2, label: t('nav.accountManagement'), path: '/account', color: 'text-indigo-600' },
+    { icon: Settings, label: t('nav.settings'), path: '/settings', color: 'text-gray-600' }
   ] as const;
 
   const adminMenuItems = [
-    { icon: Shield, label: language === 'ko' ? '관리자 대시보드' : language === 'en' ? 'Admin Dashboard' : '管理者ダッシュボード', path: '/admin', color: 'text-red-600' },
-    { icon: ClipboardList, label: language === 'ko' ? '제출 관리' : language === 'en' ? 'Submission Management' : '提出管理', path: '/admin/submission-management', color: 'text-blue-600' },
-    { icon: Users, label: language === 'ko' ? '고객 관리' : language === 'en' ? 'Customer Management' : '顧客管理', path: '/admin/customers', color: 'text-green-600' },
-    { icon: UserCog, label: language === 'ko' ? '계정 관리' : language === 'en' ? 'Account Management' : 'アカウント管理', path: '/admin/accounts', color: 'text-purple-600' },
-    { icon: Settings, label: language === 'ko' ? '설정' : language === 'en' ? 'Settings' : '設定', path: '/admin/settings', color: 'text-gray-600' }
+    { icon: Shield, label: t('nav.adminDashboard'), path: '/admin', color: 'text-red-600' },
+    { icon: ClipboardList, label: t('nav.submissionManagement'), path: '/admin/submission-management', color: 'text-blue-600' },
+    { icon: Users, label: t('nav.customerManagement'), path: '/admin/customers', color: 'text-green-600' },
+    { icon: UserCog, label: t('nav.accountManagement'), path: '/admin/accounts', color: 'text-purple-600' },
+    { icon: Settings, label: t('nav.settings'), path: '/admin/settings', color: 'text-gray-600' }
   ] as const;
 
   // Show menu items based on admin status and current console
@@ -293,8 +296,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   </div>
                   <span className="font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-all duration-300">
                     {isInAdminConsole
-                      ? (language === 'ko' ? '고객 콘솔로' : 'To Customer Console')
-                      : (language === 'ko' ? '관리자 콘솔로' : 'To Admin Console')
+                      ? t('nav.toCustomerConsole')
+                      : t('nav.toAdminConsole')
                     }
                   </span>
                 </NavLink>
@@ -312,7 +315,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <LogOut className="w-5 h-5 text-gray-500 group-hover:text-red-600 dark:group-hover:text-red-400 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-12" />
               </div>
               <span className="font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-all duration-300 group-hover:font-semibold">
-                {language === 'ko' ? '로그아웃' : 'Logout'}
+                {t('nav.logout')}
               </span>
             </button>
           </div>
