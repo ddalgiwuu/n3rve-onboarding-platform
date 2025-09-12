@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N3RVE Onboarding - Complete Content</title>
+    
+    <!-- N3RVE Design System CSS -->
+    <style>
+        /* CSS Variables - N3RVE Design Tokens */
+        :root {
+            /* Brand Colors */
+            --n3rve-primary: #5B02FF;
+            --n3rve-primary-hover: #5002e6;
+            --n3rve-primary-active: #4301cc;
+            --n3rve-gradient: linear-gradient(135deg, #9070ff 0%, #5002e6 100%);
+            
+            /* Glass Effect */
+            --glass-bg-light: rgba(255, 255, 255, 0.85);
+            --glass-bg-medium: rgba(255, 255, 255, 0.9);
+            --glass-bg-strong: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            --glass-blur: 20px;
+            
+            /* Typography */
+            --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --font-size-xs: 0.75rem;
+            --font-size-sm: 0.875rem;
+            --font-size-base: 1rem;
+            --font-size-lg: 1.125rem;
+            --font-size-xl: 1.25rem;
+            --font-size-2xl: 1.5rem;
+            --font-size-3xl: 1.875rem;
+            --font-size-4xl: 2.25rem;
+            
+            /* Spacing */
+            --space-xs: 0.5rem;
+            --space-sm: 0.75rem;
+            --space-md: 1rem;
+            --space-lg: 1.5rem;
+            --space-xl: 2rem;
+            --space-2xl: 3rem;
+        }
+
+        /* Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        /* Glass Container */
+        .glass-container {
+            background: var(--glass-bg-medium);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            border-radius: 24px;
+            padding: var(--space-xl);
+            margin: var(--space-xl);
+        }
+
+        /* Typography */
+        h1 {
+            font-size: var(--font-size-4xl);
+            font-weight: 700;
+            background: var(--n3rve-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-lg);
+        }
+
+        h2 {
+            font-size: var(--font-size-2xl);
+            font-weight: 600;
+            color: var(--n3rve-primary);
+            margin-bottom: var(--space-md);
+        }
+
+        h3 {
+            font-size: var(--font-size-xl);
+            font-weight: 500;
+            margin-bottom: var(--space-sm);
+        }
+
+        /* Components */
+        .button-primary {
+            background: var(--n3rve-gradient);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 32px;
+            font-size: var(--font-size-base);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(91, 2, 255, 0.3);
+        }
+
+        .input-glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: var(--font-size-base);
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .input-glass:focus {
+            outline: none;
+            border-color: var(--n3rve-primary);
+            box-shadow: 0 0 0 3px rgba(91, 2, 255, 0.1);
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: var(--space-xl);
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            padding: var(--space-lg);
+            transition: transform 0.3s ease;
+        }
+
+        .content-card:hover {
+            transform: translateY(-4px);
+        }
+
+        /* Language Toggle */
+        .lang-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--glass-bg-strong);
+            backdrop-filter: blur(10px);
+            border-radius: 100px;
+            padding: 8px;
+            display: flex;
+            gap: 4px;
+            z-index: 1000;
+        }
+
+        .lang-btn {
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .lang-btn.active {
+            background: var(--n3rve-primary);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Language Toggle -->
+    <div class="lang-toggle">
+        <button class="lang-btn active" onclick="setLanguage('ko')">한국어</button>
+        <button class="lang-btn" onclick="setLanguage('en')">English</button>
+    </div>
+
+    <!-- Main Container -->
+    <div class="glass-container">
+        <h1>N3RVE Onboarding Platform</h1>
+        <p style="font-size: var(--font-size-lg); margin-bottom: var(--space-2xl); opacity: 0.8;">
+            Complete Content for Framer Import
+        </p>
+
+        <!-- Login Section -->
+        <section class="section" id="login-section">
+            <h2>로그인 페이지 / Login Page</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3 class="lang-ko">N3RVE에 오신 것을 환영합니다</h3>
+                    <h3 class="lang-en" style="display:none;">Welcome to N3RVE</h3>
+                    <p class="lang-ko" style="margin-top: 8px; opacity: 0.7;">음악 여정을 시작하세요</p>
+                    <p class="lang-en" style="display:none; margin-top: 8px; opacity: 0.7;">Start Your Music Journey</p>
+                    
+                    <div style="margin-top: 24px;">
+                        <input type="email" class="input-glass" placeholder="이메일을 입력하세요" />
+                        <input type="password" class="input-glass" placeholder="비밀번호를 입력하세요" style="margin-top: 12px;" />
+                        <button class="button-primary" style="width: 100%; margin-top: 20px;">
+                            <span class="lang-ko">로그인</span>
+                            <span class="lang-en" style="display:none;">Sign In</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Role Selection Section -->
+        <section class="section" id="role-section">
+            <h2>역할 선택 / Role Selection</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>🎤 아티스트 / Artist</h3>
+                    <p style="margin-top: 8px;">음악을 만들고 발매하는 뮤지션</p>
+                    <ul style="margin-top: 12px; list-style: none;">
+                        <li>✅ 음원 등록</li>
+                        <li>✅ 프로필 관리</li>
+                        <li>✅ 수익 관리</li>
+                        <li>✅ 팬 소통</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3>🏢 레이블 / Label</h3>
+                    <p style="margin-top: 8px;">아티스트와 음원을 관리하는 레이블</p>
+                    <ul style="margin-top: 12px; list-style: none;">
+                        <li>✅ 다중 아티스트 관리</li>
+                        <li>✅ 통합 대시보드</li>
+                        <li>✅ 계약 관리</li>
+                        <li>✅ 마케팅 도구</li>
+                    </ul>
+                </div>
+                
+                <div class="content-card">
+                    <h3>📡 유통사 / Distributor</h3>
+                    <p style="margin-top: 8px;">음원 유통 및 배급 서비스</p>
+                    <ul style="margin-top: 12px; list-style: none;">
+                        <li>✅ 대량 음원 처리</li>
+                        <li>✅ 글로벌 유통</li>
+                        <li>✅ 실시간 리포트</li>
+                        <li>✅ API 연동</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section class="section" id="dashboard-section">
+            <h2>대시보드 / Dashboard</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>📊 통계</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px;">
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: var(--n3rve-primary);">12</div>
+                            <div style="font-size: 14px; opacity: 0.7;">총 발매 수</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: var(--n3rve-primary);">3</div>
+                            <div style="font-size: 14px; opacity: 0.7;">진행 중인 제출</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: var(--n3rve-primary);">₩2.5M</div>
+                            <div style="font-size: 14px; opacity: 0.7;">수익</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 24px; font-weight: bold; color: var(--n3rve-primary);">45.2K</div>
+                            <div style="font-size: 14px; opacity: 0.7;">스트리밍 수</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-card">
+                    <h3>⚡ 빠른 작업</h3>
+                    <div style="display: grid; gap: 12px; margin-top: 16px;">
+                        <button class="button-primary" style="width: 100%;">새 음원 등록</button>
+                        <button class="button-primary" style="width: 100%; background: white; color: var(--n3rve-primary); border: 2px solid var(--n3rve-primary);">분석 보기</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Release Submission Steps -->
+        <section class="section" id="submission-section">
+            <h2>음원 제출 단계 / Release Submission Steps</h2>
+            <div class="content-grid">
+                <div class="content-card">
+                    <h3>12단계 제출 프로세스</h3>
+                    <ol style="margin-top: 16px; padding-left: 20px;">
+                        <li>기본 정보 / Basic Info</li>
+                        <li>아티스트 정보 / Artist Info</li>
+                        <li>트랙 정보 / Track Info</li>
+                        <li>기여자 / Contributors</li>
+                        <li>음원 파일 / Audio Files</li>
+                        <li>커버 아트 / Cover Art</li>
+                        <li>메타데이터 / Metadata</li>
+                        <li>유통 설정 / Distribution</li>
+                        <li>가격 설정 / Pricing</li>
+                        <li>마케팅 / Marketing</li>
+                        <li>법적 정보 / Legal Info</li>
+                        <li>검토 및 제출 / Review & Submit</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <section class="section" id="footer-section">
+            <div style="text-align: center; padding-top: 40px; border-top: 1px solid var(--glass-border);">
+                <h2 style="background: var(--n3rve-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">N3RVE</h2>
+                <p style="margin-top: 8px; opacity: 0.7;">음악의 미래 / The Future of Music</p>
+                <p style="margin-top: 16px; font-size: 14px; opacity: 0.5;">© 2025 N3RVE. All rights reserved.</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- JavaScript for Language Toggle -->
+    <script>
+        function setLanguage(lang) {
+            // Toggle button states
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Toggle content visibility
+            document.querySelectorAll('.lang-ko').forEach(el => {
+                el.style.display = lang === 'ko' ? 'block' : 'none';
+            });
+            document.querySelectorAll('.lang-en').forEach(el => {
+                el.style.display = lang === 'en' ? 'block' : 'none';
+            });
+        }
+
+        // Content Data (same as ContentData.tsx)
+        const contentData = {
+            login: {
+                title: { ko: "N3RVE에 오신 것을 환영합니다", en: "Welcome to N3RVE" },
+                subtitle: { ko: "음악 여정을 시작하세요", en: "Start Your Music Journey" }
+            },
+            // ... rest of the content structure
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('N3RVE Content Loaded');
+            console.log('Available content:', contentData);
+        });
+    </script>
+</body>
+</html>

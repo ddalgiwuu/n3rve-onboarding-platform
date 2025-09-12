@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { User, Bell, Shield, Globe, CreditCard, Key, Save, ToggleLeft, ToggleRight, CheckCircle } from 'lucide-react';
-import { useTranslation } from '@/store/language.store';
+import { User, Bell, Shield, Globe, CreditCard, Key, Save, ToggleLeft, ToggleRight, CheckCircle, ChevronRight } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguageStore } from '@/store/language.store';
 import { useAuthStore } from '@/store/auth.store';
 import useSafeStore from '@/hooks/useSafeStore';
 
@@ -247,7 +248,7 @@ const Settings = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">🇺🇸</span>
-                        <span className="text-gray-900 dark:text-white font-medium">English</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{t('language.english')}</span>
                       </div>
                       {language === 'en' && <CheckCircle className="w-5 h-5 text-purple-400" />}
                     </div>
@@ -264,7 +265,7 @@ const Settings = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">🇰🇷</span>
-                        <span className="text-gray-900 dark:text-white font-medium">한국어</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{t('language.korean')}</span>
                       </div>
                       {language === 'ko' && <CheckCircle className="w-5 h-5 text-purple-400" />}
                     </div>
@@ -281,7 +282,7 @@ const Settings = () => {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">🇯🇵</span>
-                        <span className="text-gray-900 dark:text-white font-medium">日本語</span>
+                        <span className="text-gray-900 dark:text-white font-medium">{t('language.japanese')}</span>
                       </div>
                       {language === 'ja' && <CheckCircle className="w-5 h-5 text-purple-400" />}
                     </div>

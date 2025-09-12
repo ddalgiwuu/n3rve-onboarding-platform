@@ -231,11 +231,11 @@ export default function RoleSelect() {
 
                 <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight">
                   <span className="text-white/90">
-                    {t('역할 선택', 'Role Selection', '役割選択')}
+                    {t('roleSelect.title')}
                   </span>
                 </h1>
                 <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                  {t('어떤 모드로 접속하시겠습니까?', 'Which mode would you like to access?', 'どのモードでアクセスしますか？')}
+                  {t('roleSelect.subtitle')}
                 </p>
               </div>
             </AnimatedText>
@@ -286,32 +286,32 @@ export default function RoleSelect() {
                     </div>
 
                     <h3 className="text-2xl font-bold mb-3 text-white group-hover:text-purple-300 transition-colors duration-300">
-                      {t('관리자 모드', 'Admin Mode', '管理者モード')}
+                      {t('roleSelect.adminMode')}
                     </h3>
                     <p className="text-gray-300 leading-relaxed group-hover:text-gray-100 transition-colors duration-300 mb-6">
-                      {t('제출물 관리, 사용자 관리, 통계 확인', 'Manage submissions, users, and view statistics', '提出物管理、ユーザー管理、統計確認')}
+                      {t('roleSelect.adminDesc')}
                     </p>
 
                     {/* Features list */}
                     <div className="space-y-2 mb-6">
                       <div className="flex items-center justify-center gap-2 text-sm text-purple-300">
                         <Shield className="w-4 h-4" />
-                        <span>{t('제출물 관리', 'Manage Submissions', '提出物管理')}</span>
+                        <span>{t('roleSelect.manageSubmissions')}</span>
                       </div>
                       <div className="flex items-center justify-center gap-2 text-sm text-purple-300">
                         <Users className="w-4 h-4" />
-                        <span>{t('사용자 관리', 'User Management', 'ユーザー管理')}</span>
+                        <span>{t('roleSelect.userManagement')}</span>
                       </div>
                       <div className="flex items-center justify-center gap-2 text-sm text-purple-300">
                         <Globe className="w-4 h-4" />
-                        <span>{t('통계 분석', 'Analytics', '統計分析')}</span>
+                        <span>{t('roleSelect.analytics')}</span>
                       </div>
                     </div>
 
                     {/* Hidden arrow that appears on hover */}
                     <div className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
                       <div className="inline-flex items-center gap-2 text-purple-400 font-medium">
-                        <span>{t('접속하기', 'Access Now', 'アクセス')}</span>
+                        <span>{t('roleSelect.access')}</span>
                         <ArrowRight className="w-5 h-5 animate-bounce-x" />
                       </div>
                     </div>
@@ -362,32 +362,32 @@ export default function RoleSelect() {
                     </div>
 
                     <h3 className="text-2xl font-bold mb-3 text-white group-hover:text-cyan-300 transition-colors duration-300">
-                      {t('사용자 모드', 'User Mode', 'ユーザーモード')}
+                      {t('roleSelect.userMode')}
                     </h3>
                     <p className="text-gray-300 leading-relaxed group-hover:text-gray-100 transition-colors duration-300 mb-6">
-                      {t('릴리즈 제출, 제출 내역 확인', 'Submit releases and view submission history', 'リリース提出、提出履歴確認')}
+                      {t('roleSelect.userDesc')}
                     </p>
 
                     {/* Features list */}
                     <div className="space-y-2 mb-6">
                       <div className="flex items-center justify-center gap-2 text-sm text-cyan-300">
                         <Zap className="w-4 h-4" />
-                        <span>{t('릴리즈 제출', 'Submit Releases', 'リリース提出')}</span>
+                        <span>{t('roleSelect.submitReleases')}</span>
                       </div>
                       <div className="flex items-center justify-center gap-2 text-sm text-cyan-300">
                         <Shield className="w-4 h-4" />
-                        <span>{t('제출 내역', 'Submission History', '提出履歴')}</span>
+                        <span>{t('roleSelect.submissionHistory')}</span>
                       </div>
                       <div className="flex items-center justify-center gap-2 text-sm text-cyan-300">
                         <Globe className="w-4 h-4" />
-                        <span>{t('배포 현황', 'Distribution Status', '配信状況')}</span>
+                        <span>{t('roleSelect.distributionStatus')}</span>
                       </div>
                     </div>
 
                     {/* Hidden arrow that appears on hover */}
                     <div className="opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
                       <div className="inline-flex items-center gap-2 text-cyan-400 font-medium">
-                        <span>{t('접속하기', 'Access Now', 'アクセス')}</span>
+                        <span>{t('roleSelect.access')}</span>
                         <ArrowRight className="w-5 h-5 animate-bounce-x" />
                       </div>
                     </div>

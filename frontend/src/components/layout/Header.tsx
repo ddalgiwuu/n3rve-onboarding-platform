@@ -4,7 +4,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import LanguageToggle from '@/components/common/LanguageToggle';
 import DarkModeToggle from '@/components/common/DarkModeToggle';
-import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/hooks/useTranslation';
 import useSafeStore from '@/hooks/useSafeStore';
 
 interface HeaderProps {
@@ -14,15 +14,7 @@ interface HeaderProps {
 export default function Header({ onMenuClick }: HeaderProps) {
   const user = useSafeStore(useAuthStore, (state) => state.user);
   const clearAuth = useSafeStore(useAuthStore, (state) => state.clearAuth);
-  const language = useSafeStore(useLanguageStore, (state) => state.language);
-  const t = (ko: string, en: string, ja?: string) => {
-    switch (language) {
-      case 'ko': return ko;
-      case 'en': return en;
-      case 'ja': return ja || en;
-      default: return en;
-    }
-  };
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const isAdmin = user?.role === 'ADMIN';
@@ -32,7 +24,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
     if (clearAuth) {
       clearAuth();
     }
-    toast.success(t('로그아웃되었습니다', 'Logged out successfully', 'ログアウトしました'));
+    toast.success(t('auth.logoutSuccess'));
     navigate('/login');
   };
 
@@ -66,7 +58,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
               />
               <div className="hidden sm:block border-l border-gray-300 dark:border-gray-700 pl-3">
                 <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Music Distribution
+                  {t('nav.musicDistribution')}
                 </span>
               </div>
             </Link>
@@ -121,7 +113,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
                   className="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-red-500/10 dark:hover:bg-red-400/10 hover:text-red-600 dark:hover:text-red-400 flex items-center gap-3 transition-all duration-300 group/item"
                 >
                   <LogOut className="w-4 h-4 group-hover/item:scale-110 group-hover/item:-rotate-12 transition-all duration-300" />
-                  {t('로그아웃', 'Logout', 'ログアウト')}
+                  {t('nav.logout')}
                 </button>
               </div>
             </div>

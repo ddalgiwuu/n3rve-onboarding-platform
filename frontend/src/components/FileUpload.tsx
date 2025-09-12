@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, X, File, Image, Music } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { useLanguageStore } from '@/store/language.store';
-import useSafeStore from '@/hooks/useSafeStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface FileUploadProps {
   accept?: string
@@ -25,8 +24,7 @@ export default function FileUpload({
   required = false,
   className
 }: FileUploadProps) {
-  const language = useSafeStore(useLanguageStore, (state) => state.language);
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const { t } = useTranslation();
   const [dragActive, setDragActive] = useState(false);
   const [error, setError] = useState('');
 
@@ -48,7 +46,7 @@ export default function FileUpload({
     // Check file size
     const maxSizeBytes = maxSize * 1024 * 1024;
     if (file.size > maxSizeBytes) {
-      setError(t(`파일 크기는 ${maxSize}MB를 초과할 수 없습니다`, `File size cannot exceed ${maxSize}MB`));
+      setError(t('file.maxSizeError'));
       return false;
     }
 
@@ -68,7 +66,7 @@ export default function FileUpload({
       });
 
       if (!isAccepted) {
-        setError(t('지원하지 않는 파일 형식입니다', 'Unsupported file format'));
+        setError(t('file.unsupportedFormat'));
         return false;
       }
     }
@@ -219,13 +217,13 @@ export default function FileUpload({
           <div className="p-8 text-center">
             <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-              {t('클릭하거나 파일을 드래그하여 업로드', 'Click or drag files to upload')}
+              {t('file.uploadDragText')}
             </p>
             <p className="text-xs text-gray-500">
               {accept === '*/*'
-                ? t('모든 파일 형식 지원', 'All file formats supported')
+                ? t('file.allFormatsSupported')
                 : accept.replace(/\*/g, '').toUpperCase()
-              } • {t(`최대 ${maxSize}MB`, `Max ${maxSize}MB`)}
+              } • Max {maxSize}MB
             </p>
           </div>
         )}
