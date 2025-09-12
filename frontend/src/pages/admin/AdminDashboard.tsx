@@ -2,21 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { ClipboardList, Users, CheckCircle, XCircle, Music, Eye, Download, Search, Filter, Clock, Settings } from 'lucide-react';
 import { submissionService } from '@/services/submission.service';
 import { useNavigate, Link } from 'react-router-dom';
-import { useLanguageStore } from '@/store/language.store';
-import useSafeStore from '@/hooks/useSafeStore';
+import { useTranslation } from '@/hooks/useTranslation';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const language = useSafeStore(useLanguageStore, (state) => state.language);
-  const t = (ko: string, en: string, ja?: string) => {
-    switch (language) {
-      case 'ko': return ko;
-      case 'en': return en;
-      case 'ja': return ja || en;
-      default: return en;
-    }
-  };
+  const { t, language } = useTranslation();
+  
+  // Force re-render when language changes by adding dependency
+  console.log('AdminDashboard rendered with language:', language);
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
@@ -69,7 +63,8 @@ export default function AdminDashboard() {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('ko-KR', {
+    const locale = language === 'ko' ? 'ko-KR' : language === 'ja' ? 'ja-JP' : 'en-US';
+    return date.toLocaleDateString(locale, {
       year: 'numeric',
       month: '2-digit',
       day: '2-digit',
@@ -83,18 +78,18 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:via-n3rve-900/20 dark:to-gray-900 p-6">
+    <div key={language} className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:via-n3rve-900/20 dark:to-gray-900 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            {t('관리자 대시보드', 'Admin Dashboard', '管理者ダッシュボード')}
+{t('admin.dashboard')}
           </h1>
           <button
             onClick={() => submissionService.exportSubmissions()}
             className="px-4 py-2 bg-gradient-to-r from-n3rve-500 to-purple-600 hover:from-n3rve-600 hover:to-purple-700 text-white rounded-lg flex items-center gap-2 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <Download className="w-4 h-4" />
-            {t('엑셀 다운로드', 'Export to Excel', 'Excelにエクスポート')}
+{t('admin.exportExcel')}
           </button>
         </div>
 
@@ -103,7 +98,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('전체 제출', 'Total Submissions', '総提出数')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('admin.totalSubmissions')}</p>
                 <p className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">{stats.totalSubmissions}</p>
               </div>
               <div className="p-2 md:p-3 bg-blue-500/20 rounded-lg">
@@ -115,7 +110,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('검토 대기', 'Pending Review', '審査待ち')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('admin.pendingReview')}</p>
                 <p className="text-2xl md:text-3xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pendingReview}</p>
               </div>
               <div className="p-2 md:p-3 bg-yellow-500/20 rounded-lg">
@@ -127,7 +122,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('승인됨', 'Approved', '承認済み')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('admin.approved')}</p>
                 <p className="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400">{stats.approved}</p>
               </div>
               <div className="p-2 md:p-3 bg-green-500/20 rounded-lg">
@@ -139,7 +134,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('반려됨', 'Rejected', '却下')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('admin.rejected')}</p>
                 <p className="text-2xl md:text-3xl font-bold text-red-600 dark:text-red-400">{stats.rejected}</p>
               </div>
               <div className="p-2 md:p-3 bg-red-500/20 rounded-lg">
@@ -151,7 +146,7 @@ export default function AdminDashboard() {
           <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('전체 사용자', 'Total Users', '総ユーザー数')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">{t('admin.totalUsers')}</p>
                 <p className="text-2xl md:text-3xl font-bold text-n3rve-600 dark:text-n3rve-400">{stats.totalCustomers}</p>
               </div>
               <div className="p-2 md:p-3 bg-n3rve-500/20 rounded-lg">
@@ -170,7 +165,7 @@ export default function AdminDashboard() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder={t('아티스트, 앨범, 제출자 검색...', 'Search artist, album, submitter...', 'アーティスト、アルバム、提出者を検索...')}
+                placeholder={t('admin.searchPlaceholder')}
                 className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:border-transparent"
               />
             </div>
@@ -179,10 +174,10 @@ export default function AdminDashboard() {
               onChange={(e) => setStatusFilter(e.target.value as any)}
               className="px-4 py-3 bg-gray-50 dark:bg-white/10 border border-gray-300 dark:border-white/20 rounded-lg text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:border-transparent"
             >
-              <option value="all">{t('전체 상태', 'All Status', 'すべてのステータス')}</option>
-              <option value="pending">{t('대기 중', 'Pending', '待機中')}</option>
-              <option value="approved">{t('승인됨', 'Approved', '承認済み')}</option>
-              <option value="rejected">{t('반려됨', 'Rejected', '却下')}</option>
+              <option value="all">{t('admin.allStatus')}</option>
+              <option value="pending">{t('admin.pending')}</option>
+              <option value="approved">{t('admin.approved')}</option>
+              <option value="rejected">{t('admin.rejected')}</option>
             </select>
           </div>
         </div>
@@ -190,25 +185,25 @@ export default function AdminDashboard() {
         {/* 최근 제출 목록 */}
         <div className="bg-white/10 backdrop-blur-md rounded-xl border border-white/20 shadow-xl overflow-hidden">
           <div className="p-6 border-b border-white/20">
-            <h2 className="text-xl font-bold text-white">{t('최근 제출 내역', 'Recent Submissions', '最近の提出履歴')}</h2>
+            <h2 className="text-xl font-bold text-white">{t('admin.recentSubmissions')}</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-gray-200 dark:border-white/20">
-                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('제출일', 'Date', '提出日')}</th>
-                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('아티스트', 'Artist', 'アーティスト')}</th>
-                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('앨범명', 'Album', 'アルバム')}</th>
-                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('제출자', 'Submitter', '提出者')}</th>
-                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('상태', 'Status', 'ステータス')}</th>
-                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('작업', 'Actions', 'アクション')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.date')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.artist')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.album')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.submitter')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.status')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {recentSubmissions.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="text-center p-8 text-gray-500 dark:text-gray-400">
-                      {t('제출된 데이터가 없습니다', 'No submissions found', '提出データがありません')}
+                      {t('admin.noData')}
                     </td>
                   </tr>
                 ) : (
@@ -225,13 +220,7 @@ export default function AdminDashboard() {
                       </td>
                       <td className="p-4">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(submission.status)}`}>
-                          {t(
-                            submission.status === 'approved' ? '승인됨' :
-                              submission.status === 'rejected' ? '반려됨' : '대기 중',
-                            submission.status.charAt(0).toUpperCase() + submission.status.slice(1),
-                            submission.status === 'approved' ? '承認済み' :
-                              submission.status === 'rejected' ? '却下' : '待機中'
-                          )}
+                          {t(`admin.${submission.status}`)}
                         </span>
                       </td>
                       <td className="p-4">
@@ -240,7 +229,7 @@ export default function AdminDashboard() {
                           className="px-3 py-1 bg-n3rve-500 hover:bg-n3rve-600 text-white rounded-lg text-sm flex items-center gap-1 transition-colors"
                         >
                           <Eye className="w-4 h-4" />
-                          {t('상세보기', 'View', '詳細表示')}
+                          {t('admin.view')}
                         </button>
                       </td>
                     </tr>
@@ -256,7 +245,7 @@ export default function AdminDashboard() {
               onClick={() => navigate('/admin/submissions')}
               className="text-n3rve-600 hover:text-n3rve-700 dark:text-n3rve-400 dark:hover:text-n3rve-300 font-medium transition-colors"
             >
-              {t('모든 제출 보기 →', 'View All Submissions →', 'すべての提出を表示 →')}
+              {t('admin.viewAllSubmissions')}
             </button>
           </div>
         </div>
@@ -273,8 +262,8 @@ export default function AdminDashboard() {
               </div>
               <span className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors">→</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('제출 관리', 'Manage Submissions', '提出管理')}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{t('모든 제출 내역 검토 및 관리', 'Review and manage all submissions', 'すべての提出履歴の確認と管理')}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('admin.manageSubmissions')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('admin.manageSubmissionsDesc')}</p>
           </Link>
 
           <Link
@@ -287,8 +276,8 @@ export default function AdminDashboard() {
               </div>
               <span className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors">→</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('사용자 관리', 'Manage Users', 'ユーザー管理')}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{t('사용자 계정 및 권한 관리', 'Manage user accounts and permissions', 'ユーザーアカウントと権限管理')}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('admin.manageUsers')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('admin.manageUsersDesc')}</p>
           </Link>
 
           <Link
@@ -301,8 +290,8 @@ export default function AdminDashboard() {
               </div>
               <span className="text-gray-400 group-hover:text-gray-600 dark:group-hover:text-white transition-colors">→</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('플랫폼 설정', 'Platform Settings', 'プラットフォーム設定')}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{t('시스템 설정 및 구성 관리', 'Manage system settings and configuration', 'システム設定と構成管理')}</p>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('admin.platformSettings')}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{t('admin.platformSettingsDesc')}</p>
           </Link>
         </div>
       </div>

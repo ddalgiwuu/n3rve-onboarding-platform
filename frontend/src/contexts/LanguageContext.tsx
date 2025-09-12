@@ -92,18 +92,7 @@ export function useLanguageStore() {
   return context;
 }
 
-// Translation hook (simplified version)
-export function useTranslation() {
-  const { language } = useLanguageStore();
-
-  const t = (key: string): string => {
-    // For now, just return the key
-    // This would normally look up translations
-    return key;
-  };
-
-  return { t, language };
-}
+// Translation hook is now in a separate file to avoid circular imports
 
 // Mimic zustand persist API for compatibility
 export const useLanguageStorePersist = {

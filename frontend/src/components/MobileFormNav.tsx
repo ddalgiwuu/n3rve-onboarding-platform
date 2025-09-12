@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Menu, X, Check } from 'lucide-react';
 import { useLanguageStore } from '@/store/language.store';
+import { useTranslation } from '@/hooks/useTranslation';
 import useSafeStore from '@/hooks/useSafeStore';
 
 interface MobileFormNavProps {
@@ -22,6 +23,7 @@ export default function MobileFormNav({
 }: MobileFormNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const language = useSafeStore(useLanguageStore, (state) => state.language);
+  const { t } = useTranslation();
 
   return (
     <>
@@ -50,7 +52,7 @@ export default function MobileFormNav({
           <div className="p-6">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-lg font-semibold">
-                {language === 'ko' ? '섹션 내비게이션' : 'Section Navigation'}
+                {t('form.sectionNavigation')}
               </h3>
               <button
                 onClick={() => setIsOpen(false)}
@@ -101,10 +103,10 @@ export default function MobileFormNav({
                       </p>
                       <p className="text-xs text-gray-500 dark:text-gray-400">
                         {isCompleted
-                          ? (language === 'ko' ? '완료됨' : 'Completed')
+                          ? t('status.completedForm')
                           : isCurrent
-                            ? (language === 'ko' ? '진행 중' : 'In Progress')
-                            : (language === 'ko' ? '대기 중' : 'Pending')
+                            ? t('status.inProgress')
+                            : t('status.pending')
                         }
                       </p>
                     </div>
@@ -117,7 +119,7 @@ export default function MobileFormNav({
             <div className="mt-8 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">
-                  {language === 'ko' ? '전체 진행률' : 'Overall Progress'}
+                  {t('form.overallProgress')}
                 </span>
                 <span className="text-sm font-bold text-purple-600">
                   {Math.round((completedSections.length / sections.length) * 100)}%
