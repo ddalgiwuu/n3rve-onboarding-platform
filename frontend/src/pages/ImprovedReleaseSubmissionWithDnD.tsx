@@ -708,9 +708,12 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   };
 
   // Audio playback handlers
-  const toggleAudioPlayback = (index: number) => {
+  const toggleAudioPlayback = async (index: number) => {
     const audio = audioRefs.current[index];
-    if (!audio) return;
+    if (!audio) {
+      console.error('Audio element not found for index:', index);
+      return;
+    }
 
     if (playingAudioIndex === index) {
       audio.pause();
@@ -720,8 +723,18 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
       audioRefs.current.forEach((a, i) => {
         if (a && i !== index) a.pause();
       });
-      audio.play();
-      setPlayingAudioIndex(index);
+
+      try {
+        await audio.play();
+        setPlayingAudioIndex(index);
+      } catch (error) {
+        console.error('Audio playback failed:', error);
+        toast.error(t(
+          '오디오 재생에 실패했습니다',
+          'Audio playback failed',
+          'オーディオ再生に失敗しました'
+        ));
+      }
     }
   };
 
@@ -1317,6 +1330,10 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                     ref={(el) => (audioRefs.current[index] = el)}
                     src={track.audioFile ? URL.createObjectURL(track.audioFile) : ''}
                     onEnded={() => setPlayingAudioIndex(null)}
+                    onError={(e) => {
+                      console.error('Audio loading error (Step 2):', e);
+                    }}
+                    preload="metadata"
                     className="hidden"
                   />
                 </div>
@@ -1938,6 +1955,11 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                             ref={(el) => (audioRefs.current[index] = el)}
                             src={URL.createObjectURL(file)}
                             onEnded={() => setPlayingAudioIndex(null)}
+                            onError={(e) => {
+                              console.error('Audio loading error:', e);
+                              toast.error(t('오디오 파일을 로드할 수 없습니다', 'Cannot load audio file', 'オーディオファイルを読み込めません'));
+                            }}
+                            preload="metadata"
                             className="hidden"
                           />
                         </Reorder.Item>
