@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Reorder } from 'framer-motion';
+import { Reorder, useDragControls } from 'framer-motion';
 import { useLanguageStore } from '@/store/language.store';
 import {
   Upload, Music, Image, CheckCircle, X, Plus, Trash2,
@@ -1981,24 +1981,38 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                             power: 0.15,
                             timeConstant: 200
                           }}
-                          className="group relative bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-5 cursor-grab active:cursor-grabbing hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300"
+                          className="group relative bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-5 hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300"
+                          style={{ cursor: 'default' }}
+                          dragListener={false}
                         >
                           {/* Header Row - Top Info */}
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-3 flex-1 min-w-0">
                               {/* Drag Handle */}
-                              <div className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-50 hover:opacity-100 transition-opacity">
+                              <div
+                                className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-50 hover:opacity-100 transition-opacity"
+                                onPointerDown={(e) => {
+                                  console.log('🖱️ [Debug] Drag handle grabbed');
+                                  // Reorder.Item will handle this with dragListener={false}
+                                }}
+                              >
                                 <GripVertical className="w-5 h-5 text-slate-400" />
                               </div>
 
                               {/* Play Button - Compact */}
                               <button
                                 type="button"
+                                onPointerDown={(e) => {
+                                  e.stopPropagation();
+                                  console.log('🖱️ [Debug] Play button pointer down');
+                                }}
                                 onClick={(e) => {
                                   e.stopPropagation();
+                                  e.preventDefault();
+                                  console.log('🖱️ [Debug] Play button clicked!');
                                   toggleAudioPlayback(index);
                                 }}
-                                className="relative flex-shrink-0 w-11 h-11 flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full transition-all shadow-lg shadow-purple-500/50 hover:shadow-xl hover:shadow-purple-500/70 hover:scale-110 group/play"
+                                className="relative flex-shrink-0 w-11 h-11 flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full transition-all shadow-lg shadow-purple-500/50 hover:shadow-xl hover:shadow-purple-500/70 hover:scale-110 group/play z-10 pointer-events-auto"
                               >
                                 {playingAudioIndex === index ? (
                                   <Pause className="w-5 h-5" />
