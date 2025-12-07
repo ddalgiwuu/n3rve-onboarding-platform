@@ -72,6 +72,12 @@ export default function SubmissionSuccess() {
             {language === 'ko' ? '대시보드로 이동' : 'Go to Dashboard'}
           </button>
           <button
+            onClick={() => navigate('/marketing-submission')}
+            className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium"
+          >
+            {language === 'ko' ? '마케팅 정보 추가' : 'Add Marketing Info'}
+          </button>
+          <button
             onClick={() => navigate('/release-submission-modern')}
             className="px-8 py-3 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-medium"
           >
