@@ -895,54 +895,11 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         }
         return true;
 
-      case 4: // Marketing Details
-        if (!formData.marketingInfo?.projectType) {
-          toast.error(t('프로젝트 타입을 선택해주세요', 'Please select project type', 'プロジェクトタイプを選択してください'));
-          return false;
-        }
-        if (!formData.marketingInfo?.moods || formData.marketingInfo.moods.length === 0) {
-          toast.error(t('최소 1개 이상의 무드를 선택해주세요', 'Please select at least one mood', '少なくとも1つのムードを選択してください'));
-          return false;
-        }
-        if (!formData.marketingInfo?.instruments || formData.marketingInfo.instruments.length === 0) {
-          toast.error(t('최소 1개 이상의 악기를 선택해주세요', 'Please select at least one instrument', '少なくとも1つの楽器を選択してください'));
-          return false;
-        }
-        if (!formData.marketingInfo?.hook) {
-          toast.error(t('Hook을 입력해주세요', 'Please enter your hook', 'フックを入력してください'));
-          return false;
-        }
-        if (!formData.marketingInfo?.mainPitch) {
-          toast.error(t('메인 피치를 입력해주세요', 'Please enter your main pitch', 'メインピッチを入力してください'));
-          return false;
-        }
-        if (!formData.marketingInfo?.marketingDrivers || formData.marketingInfo.marketingDrivers.length === 0) {
-          toast.error(t('마케팅 드라이버를 입력해주세요', 'Please enter marketing drivers', 'マーケティングドライバーを入力してください'));
-          return false;
-        }
-        if (!formData.marketingInfo?.socialMediaPlan) {
-          toast.error(t('소셜 미디어 계획을 입력해주세요', 'Please enter social media plan', 'ソーシャルメディア計画を入力してください'));
-          return false;
-        }
-        return true;
+      // case 4: // Marketing Details - REMOVED (moved to /marketing-submission)
+      // case 5: // Goals & Expectations - REMOVED (moved to /marketing-submission)
 
-      case 5: // Goals & Expectations
-        // Only require goals if priority is 5 (highest)
-        if (formData.marketingInfo?.priorityLevel === 5) {
-          if (!formData.marketingInfo?.campaignGoals || formData.marketingInfo.campaignGoals.length === 0) {
-            toast.error(t('최소 1개 이상의 목표를 추가해주세요', 'Please add at least one goal', '少なくとも1つの目標を追加してください'));
-            return false;
-          }
-          for (const goal of formData.marketingInfo.campaignGoals) {
-            if (!goal.goalType) {
-              toast.error(t('모든 목표의 타입을 선택해주세요', 'Please select type for all goals', 'すべての目標のタイプを選択してください'));
-              return false;
-            }
-          }
-        }
-        return true;
 
-      case 6: // Distribution
+      case 4: // Distribution (changed from case 6)
         if (formData.distributionType === 'selected' && formData.selectedStores.length === 0) {
           toast.error(t('최소 1개 이상의 스토어를 선택해주세요', 'Please select at least one store', '少なくとも1つのストアを選択してください'));
           highlightField('store-selection');
@@ -3791,7 +3748,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                   {t('이전', 'Previous')}
                 </button>
 
-                {currentStep < 7 && (
+                {currentStep < steps.length && (
                   <button
                     type="button"
                     onClick={handleNext}
