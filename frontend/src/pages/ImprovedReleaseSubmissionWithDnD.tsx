@@ -366,6 +366,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
   const audioFileInputRef = useRef<HTMLInputElement>(null);
   const [audioMetadata, setAudioMetadata] = useState<(AudioMetadata | null)[]>([]);
+  const [audioCurrentTimes, setAudioCurrentTimes] = useState<number[]>([]);
 
   // Dolby Atmos decision state
   const [isDolbyDecisionStep, setIsDolbyDecisionStep] = useState(false);
@@ -515,37 +516,68 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
   // Audio element management with useEffect (prevent re-creation)
   useEffect(() => {
-    console.log('🎬 Creating audio elements for', formData.audioFiles.length, 'files');
+    console.log('🎬 [Audio] useEffect triggered - files count:', formData.audioFiles.length);
 
-    // Create new audio elements only if they don't exist
-    formData.audioFiles.forEach((file, index) => {
-      if (!audioRefs.current[index]) {
-        console.log(`➕ Creating audio element ${index}`);
-        const audio = new Audio();
-        audio.volume = 1.0;
-        audio.muted = false;
-        audio.preload = 'metadata';
-        audio.src = URL.createObjectURL(file);
-
-        audio.onended = () => setPlayingAudioIndex(null);
-        audio.onerror = (e) => console.error(`Audio ${index} error:`, e);
-        audio.onloadedmetadata = () => console.log(`📊 Audio ${index} ready - duration: ${audio.duration}s`);
-
-        audioRefs.current[index] = audio;
-      }
-    });
-
-    // Remove excess audio elements
-    while (audioRefs.current.length > formData.audioFiles.length) {
-      const audio = audioRefs.current.pop();
-      if (audio) {
+    // Clear old refs first
+    audioRefs.current.forEach((audio, idx) => {
+      if (audio && idx >= formData.audioFiles.length) {
+        console.log(`🗑️ [Audio] Removing audio ${idx}`);
         audio.pause();
         audio.src = '';
       }
-    }
+    });
+    audioRefs.current.length = formData.audioFiles.length;
+
+    // Create audio elements for each file
+    formData.audioFiles.forEach((file, index) => {
+      // Always recreate to get fresh blob URLs
+      if (audioRefs.current[index]) {
+        const oldAudio = audioRefs.current[index];
+        oldAudio!.pause();
+        oldAudio!.src = '';
+      }
+
+      console.log(`➕ [Audio] Creating audio element ${index} for`, file.name);
+      const audio = new Audio();
+      audio.volume = 1.0;
+      audio.muted = false;
+      audio.preload = 'metadata';
+      audio.src = URL.createObjectURL(file);
+
+      // Event listeners
+      audio.addEventListener('ended', () => {
+        console.log(`⏹️ [Audio] Audio ${index} ended`);
+        setPlayingAudioIndex(null);
+        setAudioCurrentTimes(prev => {
+          const updated = [...prev];
+          updated[index] = 0;
+          return updated;
+        });
+      });
+
+      audio.addEventListener('error', (e) => {
+        console.error(`❌ [Audio] Audio ${index} error:`, e);
+      });
+
+      audio.addEventListener('loadedmetadata', () => {
+        console.log(`📊 [Audio] Audio ${index} ready - duration: ${audio.duration}s, volume: ${audio.volume}, muted: ${audio.muted}`);
+      });
+
+      // CRITICAL: timeupdate event for progress tracking
+      audio.addEventListener('timeupdate', () => {
+        setAudioCurrentTimes(prev => {
+          const updated = [...prev];
+          updated[index] = audio.currentTime;
+          return updated;
+        });
+      });
+
+      audioRefs.current[index] = audio;
+    });
 
     return () => {
       // Cleanup on unmount
+      console.log('🧹 [Audio] Cleanup - removing all audio elements');
       audioRefs.current.forEach(audio => {
         if (audio) {
           audio.pause();
@@ -553,7 +585,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         }
       });
     };
-  }, [formData.audioFiles.length]); // Only re-run when file count changes
+  }, [formData.audioFiles]); // Watch entire array, not just length
 
   // Generate identifiers
   const handleGenerateUPC = () => {
@@ -1984,13 +2016,20 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                             <ModernWaveform
                               isPlaying={playingAudioIndex === index}
                               duration={audioMetadata[index]?.duration || 0}
-                              currentTime={0}
+                              currentTime={audioCurrentTimes[index] || 0}
+                              onSeek={(time) => {
+                                const audio = audioRefs.current[index];
+                                if (audio) {
+                                  audio.currentTime = time;
+                                  console.log(`⏩ [Audio] Seeked to ${time}s`);
+                                }
+                              }}
                               className="h-20"
                             />
                             {/* Time Overlay */}
                             {audioMetadata[index] && (
                               <div className="flex justify-between text-xs text-slate-400 mt-2">
-                                <span className="font-mono">0:00</span>
+                                <span className="font-mono">{formatDuration(audioCurrentTimes[index] || 0)}</span>
                                 <span className="font-mono">{formatDuration(audioMetadata[index]!.duration)}</span>
                               </div>
                             )}
