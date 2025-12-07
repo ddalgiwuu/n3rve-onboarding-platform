@@ -1862,14 +1862,15 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                   </div>
 
                   {formData.audioFiles.length > 0 ? (
-                    <Reorder.Group
-                      axis="y"
-                      values={formData.audioFiles}
-                      onReorder={handleAudioReorder}
-                      className="space-y-3"
-                    >
-                      {formData.audioFiles.map((file, index) => (
-                        <Reorder.Item
+                    <>
+                      <Reorder.Group
+                        axis="y"
+                        values={formData.audioFiles}
+                        onReorder={handleAudioReorder}
+                        className="space-y-3"
+                      >
+                        {formData.audioFiles.map((file, index) => (
+                          <Reorder.Item
                           key={`audio-${file.name}-${index}`}
                           value={file}
                           layoutId={`audio-card-${file.name}-${file.size}`}
@@ -2005,35 +2006,38 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                               </>
                             )}
                           </div>
-
-                          {/* Hidden Audio Element */}
-                          <audio
-                            ref={(el) => {
-                              if (el) {
-                                audioRefs.current[index] = el;
-                                el.volume = 1.0;
-                                el.muted = false;
-                                console.log(`🔊 [Audio Debug] Audio ${index} ref set - volume: ${el.volume}, muted: ${el.muted}`);
-                              }
-                            }}
-                            src={URL.createObjectURL(file)}
-                            onEnded={() => setPlayingAudioIndex(null)}
-                            onError={(e) => {
-                              console.error('Audio loading error:', e);
-                              toast.error(t('오디오 파일을 로드할 수 없습니다', 'Cannot load audio file', 'オーディオファイルを読み込めません'));
-                            }}
-                            onLoadedMetadata={(e) => {
-                              const audio = e.currentTarget;
-                              audio.volume = 1.0;
-                              audio.muted = false;
-                              console.log(`📊 [Audio Debug] Audio ${index} metadata loaded - duration: ${audio.duration}, volume: ${audio.volume}`);
-                            }}
-                            preload="metadata"
-                            className="hidden"
-                          />
                         </Reorder.Item>
                       ))}
                     </Reorder.Group>
+
+                    {/* Audio Elements - Outside Reorder.Item to prevent re-creation */}
+                    {formData.audioFiles.map((file, index) => (
+                      <audio
+                        key={`audio-${file.name}-${index}`}
+                        ref={(el) => {
+                          if (el) {
+                            audioRefs.current[index] = el;
+                            el.volume = 1.0;
+                            el.muted = false;
+                            console.log(`🔊 [Audio Debug] Audio ${index} ref set (outside Reorder) - volume: ${el.volume}, muted: ${el.muted}`);
+                          }
+                        }}
+                        src={URL.createObjectURL(file)}
+                        onEnded={() => setPlayingAudioIndex(null)}
+                        onError={(e) => {
+                          console.error(`Audio loading error for file ${index}:`, e);
+                        }}
+                        onLoadedMetadata={(e) => {
+                          const audio = e.currentTarget;
+                          audio.volume = 1.0;
+                          audio.muted = false;
+                          console.log(`📊 [Audio Debug] Audio ${index} metadata loaded (outside) - duration: ${audio.duration}, volume: ${audio.volume}`);
+                        }}
+                        preload="metadata"
+                        className="hidden"
+                      />
+                    ))}
+                    </>
                   ) : (
                     <button
                       type="button"
