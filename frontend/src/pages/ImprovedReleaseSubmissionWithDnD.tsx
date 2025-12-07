@@ -1,15 +1,18 @@
 import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Reorder } from 'framer-motion';
 import { useLanguageStore } from '@/store/language.store';
 import {
   Upload, Music, Image, CheckCircle, X, Plus, Trash2,
   Globe, Users, Disc,
   ChevronRight, ChevronLeft, Info,
   GripVertical,
-  HelpCircle, AlertTriangle, Star,
-  ExternalLink,
+  HelpCircle, AlertTriangle, AlertCircle, Star,
+  ExternalLink, Download,
   ChevronUp, ChevronDown, User, Languages,
-  Film, FileText, Folder, Megaphone, Target
+  Film, FileText, Folder, Megaphone, Target,
+  MoreVertical, Eye, RefreshCw,
+  Play, Pause
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { submissionService } from '@/services/submission.service';
@@ -38,6 +41,10 @@ import { validateAlbumTitle, validateTrackTitle } from '@/utils/inputValidation'
 import ValidatedInput from '@/components/ValidatedInput';
 import TrackTitleInput, { TrackWarningsManager } from '@/components/TrackTitleInput';
 import { ValidationProvider, useValidationContext } from '@/contexts/ValidationContext';
+import ModernWaveform from '@/components/ModernWaveform';
+import AudioPlayer from '@/components/AudioPlayer';
+import { extractAudioMetadata, formatDuration, formatSampleRate, type AudioMetadata } from '@/utils/audioMetadata';
+import DolbyAtmosDecisionCard from '@/components/DolbyAtmosDecisionCard';
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -148,6 +155,10 @@ interface Track {
   artists: Artist[]
   featuringArtists: Artist[]
   contributors: Contributor[]
+  composers?: Artist[]
+  lyricists?: Artist[]
+  arrangers?: Artist[]
+  publishers?: Artist[]
   isrc?: string
   musicVideoISRC?: string
   duration?: string
@@ -157,11 +168,16 @@ interface Track {
   audioLanguage?: string
   lyrics?: string
   explicit?: boolean
+  explicitContent?: boolean
   remixVersion?: string
   titleLanguage?: 'Korean' | 'English' | 'Japanese' | 'Chinese' | 'Other'
   trackNumber?: number
   dolbyAtmos?: boolean
   volume?: number
+  discNumber?: number
+  audioFile?: File
+  audioMetadata?: AudioMetadata
+  translations?: { [key: string]: string }
 }
 
 interface FormData {
@@ -344,6 +360,20 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   // State for drag and drop
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  // Audio playback state
+  const [playingAudioIndex, setPlayingAudioIndex] = useState<number | null>(null);
+  const audioRefs = useRef<(HTMLAudioElement | null)[]>([]);
+  const audioFileInputRef = useRef<HTMLInputElement>(null);
+  const [audioMetadata, setAudioMetadata] = useState<(AudioMetadata | null)[]>([]);
+
+  // Dolby Atmos decision state
+  const [isDolbyDecisionStep, setIsDolbyDecisionStep] = useState(false);
+  const [hasDolbyAtmos, setHasDolbyAtmos] = useState(false);
+
+  // Scroll position preservation
+  const scrollPositionRef = useRef<number>(0);
+  const activeTrackRef = useRef<string | null>(null);
 
   const t = (ko: string, en: string, ja?: string) => {
     switch (language) {
@@ -577,6 +607,26 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
     }));
   };
 
+  // Scroll position preservation helpers
+  const saveScrollPosition = (trackId: string) => {
+    scrollPositionRef.current = window.scrollY;
+    activeTrackRef.current = trackId;
+  };
+
+  const restoreScrollPosition = () => {
+    requestAnimationFrame(() => {
+      if (activeTrackRef.current) {
+        const trackElement = document.getElementById(`track-${activeTrackRef.current}`);
+        if (trackElement) {
+          trackElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+          window.scrollTo({ top: scrollPositionRef.current, behavior: 'smooth' });
+        }
+      }
+      activeTrackRef.current = null;
+    });
+  };
+
   const updateTrack = useCallback((trackId: string, updates: Partial<Track>) => {
     setFormData(prev => ({
       ...prev,
@@ -621,13 +671,21 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   };
 
   // File handling
-  const handleAudioFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAudioFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length > 0) {
       setFormData(prev => ({
         ...prev,
         audioFiles: [...prev.audioFiles, ...files]
       }));
+
+      // Extract metadata for each file
+      const metadataPromises = files.map(file =>
+        extractAudioMetadata(file).catch(() => null)
+      );
+      const newMetadata = await Promise.all(metadataPromises);
+      setAudioMetadata(prev => [...prev, ...newMetadata]);
+
       toast.success(t(`${files.length}개의 오디오 파일이 추가되었습니다`, `${files.length} audio files added`, `${files.length}個のオーディオファイルが追加されました`));
     }
   };
@@ -645,7 +703,85 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
       ...prev,
       audioFiles: prev.audioFiles.filter((_, i) => i !== index)
     }));
+    setAudioMetadata(prev => prev.filter((_, i) => i !== index));
     toast.success(t('오디오 파일이 제거되었습니다', 'Audio file removed', 'オーディオファイルが削除されました'));
+  };
+
+  // Audio playback handlers
+  const toggleAudioPlayback = (index: number) => {
+    const audio = audioRefs.current[index];
+    if (!audio) return;
+
+    if (playingAudioIndex === index) {
+      audio.pause();
+      setPlayingAudioIndex(null);
+    } else {
+      // Pause all other audios
+      audioRefs.current.forEach((a, i) => {
+        if (a && i !== index) a.pause();
+      });
+      audio.play();
+      setPlayingAudioIndex(index);
+    }
+  };
+
+  // Reorder audio files
+  const handleAudioReorder = (newOrder: File[]) => {
+    const oldOrder = formData.audioFiles;
+    const newMetadata: (AudioMetadata | null)[] = [];
+
+    // Reorder metadata to match new file order
+    newOrder.forEach(file => {
+      const oldIndex = oldOrder.findIndex(f => f.name === file.name);
+      if (oldIndex !== -1) {
+        newMetadata.push(audioMetadata[oldIndex] || null);
+      }
+    });
+
+    setFormData(prev => ({ ...prev, audioFiles: newOrder }));
+    setAudioMetadata(newMetadata);
+  };
+
+  // Dolby Atmos decision handler
+  const handleDolbyDecision = (hasDolby: boolean) => {
+    setHasDolbyAtmos(hasDolby);
+    setIsDolbyDecisionStep(false); // Hide Dolby decision page
+
+    // Auto-create tracks from uploaded audio files
+    if (formData.audioFiles.length > 0 && formData.tracks.length === 0) {
+      const newTracks = formData.audioFiles.map((file, index) => ({
+        id: uuidv4(),
+        title: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
+        artists: [],
+        featuringArtists: [],
+        composers: [],
+        lyricists: [],
+        arrangers: [],
+        publishers: [],
+        contributors: [],
+        translations: {},
+        isrc: '',
+        explicitContent: false,
+        dolbyAtmos: hasDolby,
+        trackNumber: index + 1,
+        discNumber: 1,
+        audioFile: file,
+        audioMetadata: audioMetadata[index] || undefined
+      }));
+
+      setFormData(prev => ({ ...prev, tracks: newTracks }));
+    }
+
+    setCompletedSteps(prev => [...new Set([...prev, 1])]);
+    setCurrentStep(2);
+
+    if (hasDolby) {
+      toast.info(t(
+        'Step 2에서 각 트랙의 Dolby Atmos 파일을 업로드할 수 있습니다',
+        'You can upload Dolby Atmos files for each track in Step 2',
+        'ステップ2で各トラックのDolby Atmosファイルをアップロードできます'
+      ));
+    }
   };
 
   // Validation with visual feedback
@@ -822,12 +958,22 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
+      // Step 1 completed - show Dolby Atmos decision page
+      if (currentStep === 1 && formData.audioFiles.length > 0 && !isDolbyDecisionStep) {
+        setIsDolbyDecisionStep(true);
+        return; // Show Dolby decision page
+      }
+
       setCompletedSteps(prev => [...new Set([...prev, currentStep])]);
       setCurrentStep(prev => prev + 1);
     }
   };
 
   const handleBack = () => {
+    if (isDolbyDecisionStep) {
+      setIsDolbyDecisionStep(false);
+      return;
+    }
     setCurrentStep(prev => prev - 1);
   };
 
@@ -1118,12 +1264,108 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
         return (
           <div
+            id={`track-${track.id}`}
             className={`
           p-4 border rounded-lg transition-all
           ${isDragOver ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20 scale-105' : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'}
           ${draggedIndex === index ? 'opacity-50' : ''}
         `}
           >
+            {/* Audio File Info Section - Table Format */}
+            {track.audioFile && (
+              <div className="mb-4">
+                <div className="bg-slate-800 dark:bg-slate-900 rounded-xl border border-slate-700 overflow-hidden">
+                  {/* Table Header */}
+                  <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-slate-800/50 border-b border-slate-700 text-xs font-medium text-slate-400 uppercase tracking-wider">
+                    <div className="col-span-4">Filename</div>
+                    <div className="col-span-2">Quality</div>
+                    <div className="col-span-2">Sample Rate</div>
+                    <div className="col-span-2">Bit Depth</div>
+                    <div className="col-span-2">Actions</div>
+                  </div>
+
+                  {/* Table Row */}
+                  <div className="grid grid-cols-12 gap-4 px-6 py-4 items-center">
+                    {/* Filename */}
+                    <div className="col-span-4 flex items-center gap-3">
+                      <Music className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                      <span className="text-sm text-white truncate">{track.audioFile.name}</span>
+                    </div>
+
+                    {/* Quality */}
+                    <div className="col-span-2">
+                      {track.audioMetadata && (
+                        <span className="inline-flex px-3 py-1 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">
+                          {track.audioMetadata.qualityLabel}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Sample Rate */}
+                    <div className="col-span-2">
+                      {track.audioMetadata && (
+                        <span className="text-sm text-slate-300">
+                          {formatSampleRate(track.audioMetadata.sampleRate)}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Bit Depth */}
+                    <div className="col-span-2">
+                      {track.audioMetadata && (
+                        <span className="inline-flex px-3 py-1 rounded-lg text-xs font-semibold bg-purple-500/20 text-purple-300">
+                          {track.audioMetadata.bitDepth || 16} bits
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="col-span-2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => toggleAudioPlayback(index)}
+                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Play"
+                      >
+                        {playingAudioIndex === index ? (
+                          <Pause className="w-5 h-5 text-white" />
+                        ) : (
+                          <Play className="w-5 h-5 text-white" />
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const a = document.createElement('a');
+                          a.href = URL.createObjectURL(track.audioFile!);
+                          a.download = track.audioFile!.name;
+                          a.click();
+                        }}
+                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Download"
+                      >
+                        <Download className="w-5 h-5 text-blue-400" />
+                      </button>
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+                        title="Replace"
+                      >
+                        <RefreshCw className="w-5 h-5 text-slate-400" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <audio
+                    ref={(el) => (audioRefs.current[index] = el)}
+                    src={track.audioFile ? URL.createObjectURL(track.audioFile) : ''}
+                    onEnded={() => setPlayingAudioIndex(null)}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="flex items-start gap-4">
               {/* Drag Handle */}
               <div
@@ -1222,7 +1464,10 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
                   <button
                     type="button"
-                    onClick={() => setShowTrackArtistModal(track.id)}
+                    onClick={() => {
+                      saveScrollPosition(track.id);
+                      setShowTrackArtistModal(track.id);
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
                   >
                     <Plus className="w-4 h-4 inline-block mr-1" />
@@ -1252,7 +1497,10 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
                   <button
                     type="button"
-                    onClick={() => setShowFeaturingArtistModal(track.id)}
+                    onClick={() => {
+                      saveScrollPosition(track.id);
+                      setShowFeaturingArtistModal(track.id);
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400"
                   >
                     <Plus className="w-4 h-4 inline-block mr-1" />
@@ -1311,7 +1559,10 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
                   <button
                     type="button"
-                    onClick={() => setShowContributorModal(track.id)}
+                    onClick={() => {
+                      saveScrollPosition(track.id);
+                      setShowContributorModal(track.id);
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:border-purple-500 dark:hover:border-purple-400 transition-colors text-sm text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 flex items-center justify-center gap-2"
                   >
                     <Plus className="w-4 h-4" />
@@ -1405,16 +1656,6 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                     </select>
                   </div>
                 )}
-
-                {/* Dolby Atmos Toggle */}
-                <div className="md:col-span-2">
-                  <Toggle
-                    checked={track.dolbyAtmos || false}
-                    onChange={(checked) => updateTrack(track.id, { dolbyAtmos: checked })}
-                    label={t('Dolby Atmos 지원', 'Dolby Atmos Support', 'Dolby Atmosサポート')}
-                    helpText={t('이 트랙이 Dolby Atmos로 마스터링되었나요?', 'Is this track mastered in Dolby Atmos?', 'このトラックはDolby Atmosでマスタリングされていますか？')}
-                  />
-                </div>
               </div>
 
               {/* Actions */}
@@ -1467,6 +1708,18 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
   // Step Components
   const renderStepContent = () => {
+    // Show Dolby Atmos decision page between Step 1 and Step 2
+    if (isDolbyDecisionStep) {
+      return (
+        <div className="min-h-[600px] flex items-center justify-center">
+          <DolbyAtmosDecisionCard
+            trackCount={formData.audioFiles.length}
+            onDecision={handleDolbyDecision}
+          />
+        </div>
+      );
+    }
+
     switch (currentStep) {
       case 1:
         return (
@@ -1476,6 +1729,290 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Cover Art Upload - Moved from Step 3 */}
+              <div className="md:col-span-2 mt-6">
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/10 dark:to-purple-900/10 border border-blue-200 dark:border-blue-800/30 rounded-xl p-6">
+                  <div className="flex items-start gap-3 mb-4">
+                    <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                    <div className="text-sm">
+                      <p className="font-semibold text-blue-900 dark:text-blue-200 mb-2">
+                        {t('커버 아트 가이드', 'Cover Art Guidelines', 'カバーアートガイド')}
+                      </p>
+                      <ul className="space-y-1 text-blue-800 dark:text-blue-300">
+                        <li>• {t('최소 해상도: 3000x3000px', 'Min Resolution: 3000x3000px', '最小解像度：3000x3000px')}</li>
+                        <li>• {t('파일 형식: JPG 또는 PNG', 'File Format: JPG or PNG', 'ファイル形式：JPGまたはPNG')}</li>
+                        <li>• {t('색상 모드: RGB (CMYK 불가)', 'Color Mode: RGB (no CMYK)', 'カラーモード：RGB（CMYKは不可）')}</li>
+                        <li>• {t('정사각형 비율 (1:1) 필수', 'Square aspect ratio (1:1) required', '正方形（1:1）必須')}</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <label className="block text-sm font-medium text-gray-900 dark:text-gray-100 mb-3">
+                    {t('커버 아트', 'Cover Art', 'カバーアート')}
+                    <span className="text-red-500 ml-1">*</span>
+                  </label>
+
+                  {formData.coverArt ? (
+                    <div className="relative group">
+                      <div className="flex items-center gap-4 p-4 border-2 border-green-200 dark:border-green-700 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20">
+                        <div className="relative w-48 h-48 flex-shrink-0 overflow-hidden rounded-lg border-2 border-white dark:border-gray-700 shadow-lg">
+                          <img
+                            src={URL.createObjectURL(formData.coverArt!)}
+                            alt="Cover art preview"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-gray-900 dark:text-gray-100 truncate">{formData.coverArt!.name}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                            {(formData.coverArt!.size / 1024 / 1024).toFixed(2)} MB
+                          </p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <div className="flex items-center gap-1 text-xs text-green-700 dark:text-green-300">
+                              <CheckCircle className="w-3.5 h-3.5" />
+                              <span>{t('업로드 완료', 'Uploaded', 'アップロード完了')}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, coverArt: undefined }))}
+                          className="flex-shrink-0 p-2 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                          title={t('제거', 'Remove', '削除')}
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      id="cover-art-upload"
+                      type="button"
+                      onClick={() => coverArtInputRef.current?.click()}
+                      className="w-full p-10 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-200 bg-white dark:bg-gray-800/30 hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/20 dark:hover:to-pink-900/20 group">
+                      <Upload className="w-14 h-14 mx-auto text-gray-400 dark:text-gray-500 mb-4 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+                      <p className="text-gray-900 dark:text-gray-100 font-semibold text-lg mb-2">
+                        {t('클릭하여 커버 아트 선택', 'Click to select cover art', 'クリックしてカバーアートを選択')}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {t('최소 3000x3000px, JPG/PNG, RGB 색상 모드', 'Min 3000x3000px, JPG/PNG, RGB color mode', '最小3000x3000px、JPG/PNG、RGBカラーモード')}
+                      </p>
+                    </button>
+                  )}
+
+                  <input
+                    ref={coverArtInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png"
+                    onChange={handleCoverArtSelect}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+
+              {/* Audio Files Upload with Waveform & Player */}
+              <div className="md:col-span-2 mt-6">
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 border border-purple-200 dark:border-purple-800/30 rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="block text-sm font-medium text-gray-900 dark:text-gray-100">
+                      {t('오디오 파일', 'Audio Files', 'オーディオファイル')}
+                      <span className="text-red-500 ml-1">*</span>
+                      <span className="ml-2 text-xs text-gray-500">
+                        ({formData.audioFiles.length} {t('파일', 'files', 'ファイル')})
+                      </span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => audioFileInputRef.current?.click()}
+                      className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
+                    >
+                      <Plus className="w-4 h-4" />
+                      {t('파일 추가', 'Add Files', 'ファイルを追加')}
+                    </button>
+                  </div>
+
+                  {formData.audioFiles.length > 0 ? (
+                    <Reorder.Group
+                      axis="y"
+                      values={formData.audioFiles}
+                      onReorder={handleAudioReorder}
+                      className="space-y-3"
+                    >
+                      {formData.audioFiles.map((file, index) => (
+                        <Reorder.Item
+                          key={`audio-${file.name}-${index}`}
+                          value={file}
+                          layoutId={`audio-card-${file.name}-${file.size}`}
+                          layout="position"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          whileDrag={{
+                            scale: 1.05,
+                            boxShadow: "0 20px 50px rgba(139, 92, 246, 0.4)",
+                            zIndex: 1000,
+                            rotate: 2,
+                            cursor: 'grabbing'
+                          }}
+                          transition={{
+                            layout: {
+                              type: "spring",
+                              stiffness: 120,
+                              damping: 30
+                            },
+                            default: {
+                              duration: 0.4,
+                              ease: [0.34, 1.56, 0.64, 1]
+                            }
+                          }}
+                          dragElastic={0.3}
+                          dragTransition={{
+                            bounceStiffness: 180,
+                            bounceDamping: 40,
+                            power: 0.15,
+                            timeConstant: 200
+                          }}
+                          className="group relative bg-gradient-to-br from-slate-800/95 to-slate-900/95 backdrop-blur-xl rounded-2xl border border-slate-700/50 p-5 cursor-grab active:cursor-grabbing hover:border-purple-500/50 hover:shadow-xl hover:shadow-purple-500/20 transition-all duration-300"
+                        >
+                          {/* Header Row - Top Info */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                              {/* Drag Handle */}
+                              <div className="flex-shrink-0 cursor-grab active:cursor-grabbing opacity-50 hover:opacity-100 transition-opacity">
+                                <GripVertical className="w-5 h-5 text-slate-400" />
+                              </div>
+
+                              {/* Play Button - Compact */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleAudioPlayback(index);
+                                }}
+                                className="relative flex-shrink-0 w-11 h-11 flex items-center justify-center bg-gradient-to-br from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-full transition-all shadow-lg shadow-purple-500/50 hover:shadow-xl hover:shadow-purple-500/70 hover:scale-110 group/play"
+                              >
+                                {playingAudioIndex === index ? (
+                                  <Pause className="w-5 h-5" />
+                                ) : (
+                                  <Play className="w-5 h-5 ml-0.5" />
+                                )}
+                                {playingAudioIndex === index && (
+                                  <span className="absolute inset-0 rounded-full bg-purple-500 animate-ping opacity-20"></span>
+                                )}
+                              </button>
+
+                              {/* File Info */}
+                              <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-white truncate text-base leading-tight mb-0.5">
+                                  {file.name}
+                                </h3>
+                                {audioMetadata[index] && (
+                                  <p className="text-sm text-slate-400">
+                                    {formatDuration(audioMetadata[index]!.duration)}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Top Right Actions */}
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              {/* HD Badge */}
+                              {audioMetadata[index] && audioMetadata[index]!.isHD && (
+                                <span className="px-3 py-1 rounded-md text-xs font-black tracking-tight bg-green-500 text-white border border-green-400/50">
+                                  HD
+                                </span>
+                              )}
+                              {/* Delete Button */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeAudioFile(index);
+                                }}
+                                className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+                                title={t('제거', 'Remove', '削除')}
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Waveform - Enlarged Center */}
+                          <div className="relative mb-4 bg-black/20 rounded-xl p-4 border border-slate-700/30">
+                            <ModernWaveform
+                              isPlaying={playingAudioIndex === index}
+                              duration={audioMetadata[index]?.duration || 0}
+                              currentTime={0}
+                              className="h-20"
+                            />
+                            {/* Time Overlay */}
+                            {audioMetadata[index] && (
+                              <div className="flex justify-between text-xs text-slate-400 mt-2">
+                                <span className="font-mono">0:00</span>
+                                <span className="font-mono">{formatDuration(audioMetadata[index]!.duration)}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Audio Specs - Bottom Pills */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="px-3 py-1.5 rounded-lg bg-slate-700/60 text-slate-200 text-xs font-semibold backdrop-blur-sm">
+                              {(file.size / 1024 / 1024).toFixed(2)} MB
+                            </span>
+                            {audioMetadata[index] && (
+                              <>
+                                <span className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-500/20 to-purple-600/20 text-purple-300 text-xs font-bold border border-purple-500/40">
+                                  {formatSampleRate(audioMetadata[index]!.sampleRate)}
+                                </span>
+                                <span className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-pink-500/20 to-pink-600/20 text-pink-300 text-xs font-bold border border-pink-500/40">
+                                  {audioMetadata[index]!.bitDepth || 16}-bit
+                                </span>
+                                <span className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-500/20 to-blue-600/20 text-blue-300 text-xs font-semibold border border-blue-500/40">
+                                  {audioMetadata[index]!.numberOfChannels === 1 ? 'Mono' :
+                                   audioMetadata[index]!.numberOfChannels === 2 ? 'Stereo' :
+                                   `${audioMetadata[index]!.numberOfChannels}ch`}
+                                </span>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Hidden Audio Element */}
+                          <audio
+                            ref={(el) => (audioRefs.current[index] = el)}
+                            src={URL.createObjectURL(file)}
+                            onEnded={() => setPlayingAudioIndex(null)}
+                            className="hidden"
+                          />
+                        </Reorder.Item>
+                      ))}
+                    </Reorder.Group>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => audioFileInputRef.current?.click()}
+                      className="w-full p-10 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-purple-500 dark:hover:border-purple-400 transition-all duration-200 bg-white dark:bg-gray-800/30 hover:bg-gradient-to-br hover:from-purple-50 hover:to-pink-50 dark:hover:from-purple-900/20 dark:hover:to-pink-900/20 group"
+                    >
+                      <Music className="w-14 h-14 mx-auto text-gray-400 dark:text-gray-500 mb-4 group-hover:text-purple-500 dark:group-hover:text-purple-400 transition-colors" />
+                      <p className="text-gray-900 dark:text-gray-100 font-semibold text-lg mb-2">
+                        {t('오디오 파일 업로드', 'Upload Audio Files', 'オーディオファイルをアップロード')}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        {t('WAV, FLAC, MP3 - 여러 파일 선택 가능', 'WAV, FLAC, MP3 - Multiple files supported', 'WAV、FLAC、MP3 - 複数ファイル対応')}
+                      </p>
+                    </button>
+                  )}
+
+                  <input
+                    ref={audioFileInputRef}
+                    type="file"
+                    accept="audio/*"
+                    multiple
+                    onChange={handleAudioFileSelect}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+
               {/* Album Title */}
               <div className="md:col-span-2">
                 <div className="flex items-center justify-between mb-2">
@@ -3158,11 +3695,8 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   const steps = [
     { number: 1, title: t('앨범 정보', 'Album Info'), icon: Disc },
     { number: 2, title: t('트랙 정보', 'Track Info'), icon: Music },
-    { number: 3, title: t('파일 업로드', 'File Upload'), icon: Upload },
-    { number: 4, title: t('마케팅 정보', 'Marketing Details'), icon: Megaphone },
-    { number: 5, title: t('목표 설정', 'Goals & Expectations'), icon: Target },
-    { number: 6, title: t('배포 설정', 'Distribution'), icon: Globe },
-    { number: 7, title: t('최종 검토', 'Review'), icon: CheckCircle }
+    { number: 3, title: t('배포 설정', 'Distribution'), icon: Globe },
+    { number: 4, title: t('최종 검토', 'Review'), icon: CheckCircle }
   ];
 
   return (
@@ -3179,10 +3713,11 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
             </p>
           </div>
 
-          {/* Progress Bar */}
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              {steps.map((step, index) => {
+          {/* Progress Bar - Hidden during Dolby decision */}
+          {!isDolbyDecisionStep && (
+            <div className="mb-8">
+              <div className="flex items-center justify-between">
+                {steps.map((step, index) => {
                 const Icon = step.icon;
                 const isActive = currentStep === step.number;
                 const isCompleted = completedSteps.includes(step.number);
@@ -3234,37 +3769,40 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                     </button>
                   </div>
                 );
-              })}
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Content */}
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 md:p-8">
             {renderStepContent()}
 
-            {/* Navigation */}
-            <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <button
-                type="button"
-                onClick={handleBack}
-                disabled={currentStep === 1}
-                className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                {t('이전', 'Previous')}
-              </button>
-
-              {currentStep < 7 && (
+            {/* Navigation - Hidden during Dolby decision (buttons are in the card) */}
+            {!isDolbyDecisionStep && (
+              <div className="flex justify-between mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
                 <button
                   type="button"
-                  onClick={handleNext}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  onClick={handleBack}
+                  disabled={currentStep === 1}
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {t('다음', 'Next')}
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronLeft className="w-4 h-4" />
+                  {t('이전', 'Previous')}
                 </button>
-              )}
-            </div>
+
+                {currentStep < 7 && (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                  >
+                    {t('다음', 'Next')}
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -3313,7 +3851,10 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         {showTrackArtistModal && (
           <ArtistManagementModal
             isOpen={!!showTrackArtistModal}
-            onClose={() => setShowTrackArtistModal(null)}
+            onClose={() => {
+              setShowTrackArtistModal(null);
+              restoreScrollPosition();
+            }}
             artists={formData.tracks.find(t => t.id === showTrackArtistModal)?.artists || []}
             onSave={(artists) => {
               setFormData(prev => ({
@@ -3325,6 +3866,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                 )
               }));
               setShowTrackArtistModal(null);
+              restoreScrollPosition();
             }}
             albumLevel={false}
           />
@@ -3334,7 +3876,10 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         {showFeaturingArtistModal && (
           <ArtistManagementModal
             isOpen={!!showFeaturingArtistModal}
-            onClose={() => setShowFeaturingArtistModal(null)}
+            onClose={() => {
+              setShowFeaturingArtistModal(null);
+              restoreScrollPosition();
+            }}
             artists={formData.tracks.find(t => t.id === showFeaturingArtistModal)?.featuringArtists || []}
             onSave={(artists) => {
               setFormData(prev => ({
@@ -3346,6 +3891,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                 )
               }));
               setShowFeaturingArtistModal(null);
+              restoreScrollPosition();
             }}
             albumLevel={false}
             isFeaturing={true}
@@ -3353,25 +3899,46 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         )}
 
         {/* Contributor Management Modal */}
-        {showContributorModal && (
-          <ContributorManagementModal
-            isOpen={!!showContributorModal}
-            onClose={() => setShowContributorModal(null)}
-            contributors={formData.tracks.find(t => t.id === showContributorModal)?.contributors || []}
-            onSave={(contributors) => {
-              setFormData(prev => ({
-                ...prev,
-                tracks: prev.tracks.map(t =>
-                  t.id === showContributorModal
-                    ? { ...t, contributors }
-                    : t
-                )
-              }));
-              setShowContributorModal(null);
-            }}
-            trackTitle={formData.tracks.find(t => t.id === showContributorModal)?.title}
-          />
-        )}
+        {showContributorModal && (() => {
+          const currentTrack = formData.tracks.find(t => t.id === showContributorModal);
+
+          // Combine album artists and track artists for suggestions
+          const allArtists = [
+            ...(formData.albumArtists || []).map(a => ({ ...a, role: 'main' as const })),
+            ...(currentTrack?.artists || [])
+          ];
+
+          const allFeaturingArtists = [
+            ...(formData.albumFeaturingArtists || []),
+            ...(currentTrack?.featuringArtists || [])
+          ];
+
+          return (
+            <ContributorManagementModal
+              isOpen={!!showContributorModal}
+              onClose={() => {
+                setShowContributorModal(null);
+                restoreScrollPosition();
+              }}
+              contributors={currentTrack?.contributors || []}
+              onSave={(contributors) => {
+                setFormData(prev => ({
+                  ...prev,
+                  tracks: prev.tracks.map(t =>
+                    t.id === showContributorModal
+                      ? { ...t, contributors }
+                      : t
+                  )
+                }));
+                setShowContributorModal(null);
+                restoreScrollPosition();
+              }}
+              trackTitle={currentTrack?.title}
+              trackArtists={allArtists}
+              trackFeaturingArtists={allFeaturingArtists}
+            />
+          );
+        })()}
       </div>
     </SavedArtistsProvider>
   );
