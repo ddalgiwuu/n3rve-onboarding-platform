@@ -709,30 +709,73 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
   // Audio playback handlers
   const toggleAudioPlayback = async (index: number) => {
+    console.log('🎵 [Audio Debug] ===== toggleAudioPlayback called =====');
+    console.log('🎵 [Audio Debug] Index:', index);
+    console.log('🎵 [Audio Debug] audioRefs.current:', audioRefs.current);
+    console.log('🎵 [Audio Debug] audioRefs.current.length:', audioRefs.current.length);
+    console.log('🎵 [Audio Debug] formData.audioFiles.length:', formData.audioFiles.length);
+
     const audio = audioRefs.current[index];
-    if (!audio) {
-      console.error('Audio element not found for index:', index);
+    console.log('🎵 [Audio Debug] audio element:', audio);
+
+    if (audio) {
+      console.log('🎵 [Audio Debug] audio.src:', audio.src);
+      console.log('🎵 [Audio Debug] audio.readyState:', audio.readyState);
+      console.log('🎵 [Audio Debug] audio.networkState:', audio.networkState);
+      console.log('🎵 [Audio Debug] audio.duration:', audio.duration);
+      console.log('🎵 [Audio Debug] audio.paused:', audio.paused);
+      console.log('🎵 [Audio Debug] audio.volume:', audio.volume);
+      console.log('🎵 [Audio Debug] audio.muted:', audio.muted);
+    } else {
+      console.error('❌ [Audio Debug] Audio element NOT found for index:', index);
+      console.error('❌ [Audio Debug] Available refs:', audioRefs.current.map((a, i) => ({ index: i, hasRef: !!a })));
+      toast.error(t('오디오 엘리먼트를 찾을 수 없습니다', 'Audio element not found', 'オーディオ要素が見つかりません'));
       return;
     }
 
     if (playingAudioIndex === index) {
+      console.log('⏸️ [Audio Debug] Pausing current audio');
       audio.pause();
       setPlayingAudioIndex(null);
     } else {
       // Pause all other audios
+      console.log('⏹️ [Audio Debug] Pausing all other audios');
       audioRefs.current.forEach((a, i) => {
-        if (a && i !== index) a.pause();
+        if (a && i !== index) {
+          console.log(`⏹️ [Audio Debug] Pausing audio at index ${i}`);
+          a.pause();
+        }
       });
 
+      console.log('▶️ [Audio Debug] Attempting to play audio...');
+
+      // Ensure volume and muted are properly set
+      audio.volume = 1.0;
+      audio.muted = false;
+      console.log('🔊 [Audio Debug] Set volume to 1.0 and muted to false');
+
       try {
-        await audio.play();
+        const playPromise = audio.play();
+        console.log('▶️ [Audio Debug] Play promise created:', playPromise);
+        await playPromise;
+        console.log('✅ [Audio Debug] Audio playing successfully!');
+        console.log('✅ [Audio Debug] Final state - paused:', audio.paused, 'volume:', audio.volume, 'muted:', audio.muted);
         setPlayingAudioIndex(index);
       } catch (error) {
-        console.error('Audio playback failed:', error);
+        console.error('❌ [Audio Debug] Audio playback FAILED!');
+        console.error('❌ [Audio Debug] Error:', error);
+        console.error('❌ [Audio Debug] Error details:', {
+          name: (error as Error).name,
+          message: (error as Error).message,
+          audioSrc: audio.src,
+          audioReadyState: audio.readyState,
+          audioNetworkState: audio.networkState,
+          audioError: audio.error
+        });
         toast.error(t(
-          '오디오 재생에 실패했습니다',
-          'Audio playback failed',
-          'オーディオ再生に失敗しました'
+          `오디오 재생 실패: ${(error as Error).message}`,
+          `Audio playback failed: ${(error as Error).message}`,
+          `オーディオ再生失敗: ${(error as Error).message}`
         ));
       }
     }
@@ -1327,11 +1370,24 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                   </div>
 
                   <audio
-                    ref={(el) => (audioRefs.current[index] = el)}
+                    ref={(el) => {
+                      if (el) {
+                        audioRefs.current[index] = el;
+                        el.volume = 1.0;
+                        el.muted = false;
+                        console.log(`🔊 [Audio Debug] Step 2 Audio ${index} ref set - volume: ${el.volume}, muted: ${el.muted}`);
+                      }
+                    }}
                     src={track.audioFile ? URL.createObjectURL(track.audioFile) : ''}
                     onEnded={() => setPlayingAudioIndex(null)}
                     onError={(e) => {
                       console.error('Audio loading error (Step 2):', e);
+                    }}
+                    onLoadedMetadata={(e) => {
+                      const audio = e.currentTarget;
+                      audio.volume = 1.0;
+                      audio.muted = false;
+                      console.log(`📊 [Audio Debug] Step 2 Audio ${index} metadata loaded - duration: ${audio.duration}, volume: ${audio.volume}`);
                     }}
                     preload="metadata"
                     className="hidden"
@@ -1952,12 +2008,25 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
                           {/* Hidden Audio Element */}
                           <audio
-                            ref={(el) => (audioRefs.current[index] = el)}
+                            ref={(el) => {
+                              if (el) {
+                                audioRefs.current[index] = el;
+                                el.volume = 1.0;
+                                el.muted = false;
+                                console.log(`🔊 [Audio Debug] Audio ${index} ref set - volume: ${el.volume}, muted: ${el.muted}`);
+                              }
+                            }}
                             src={URL.createObjectURL(file)}
                             onEnded={() => setPlayingAudioIndex(null)}
                             onError={(e) => {
                               console.error('Audio loading error:', e);
                               toast.error(t('오디오 파일을 로드할 수 없습니다', 'Cannot load audio file', 'オーディオファイルを読み込めません'));
+                            }}
+                            onLoadedMetadata={(e) => {
+                              const audio = e.currentTarget;
+                              audio.volume = 1.0;
+                              audio.muted = false;
+                              console.log(`📊 [Audio Debug] Audio ${index} metadata loaded - duration: ${audio.duration}, volume: ${audio.volume}`);
                             }}
                             preload="metadata"
                             className="hidden"
