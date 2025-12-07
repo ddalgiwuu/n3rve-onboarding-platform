@@ -367,6 +367,48 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   const audioFileInputRef = useRef<HTMLInputElement>(null);
   const [audioMetadata, setAudioMetadata] = useState<(AudioMetadata | null)[]>([]);
 
+  // Audio element management with useEffect (prevent re-creation)
+  useEffect(() => {
+    console.log('🎬 Creating audio elements for', formData.audioFiles.length, 'files');
+
+    // Create new audio elements only if they don't exist
+    formData.audioFiles.forEach((file, index) => {
+      if (!audioRefs.current[index]) {
+        console.log(`➕ Creating audio element ${index}`);
+        const audio = new Audio();
+        audio.volume = 1.0;
+        audio.muted = false;
+        audio.preload = 'metadata';
+        audio.src = URL.createObjectURL(file);
+
+        audio.onended = () => setPlayingAudioIndex(null);
+        audio.onerror = (e) => console.error(`Audio ${index} error:`, e);
+        audio.onloadedmetadata = () => console.log(`📊 Audio ${index} ready - duration: ${audio.duration}s`);
+
+        audioRefs.current[index] = audio;
+      }
+    });
+
+    // Remove excess audio elements
+    while (audioRefs.current.length > formData.audioFiles.length) {
+      const audio = audioRefs.current.pop();
+      if (audio) {
+        audio.pause();
+        audio.src = '';
+      }
+    }
+
+    return () => {
+      // Cleanup on unmount
+      audioRefs.current.forEach(audio => {
+        if (audio) {
+          audio.pause();
+          audio.src = '';
+        }
+      });
+    };
+  }, [formData.audioFiles.length]); // Only re-run when file count changes
+
   // Dolby Atmos decision state
   const [isDolbyDecisionStep, setIsDolbyDecisionStep] = useState(false);
   const [hasDolbyAtmos, setHasDolbyAtmos] = useState(false);
@@ -708,76 +750,20 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   };
 
   // Audio playback handlers
-  const toggleAudioPlayback = async (index: number) => {
-    console.log('🎵 [Audio Debug] ===== toggleAudioPlayback called =====');
-    console.log('🎵 [Audio Debug] Index:', index);
-    console.log('🎵 [Audio Debug] audioRefs.current:', audioRefs.current);
-    console.log('🎵 [Audio Debug] audioRefs.current.length:', audioRefs.current.length);
-    console.log('🎵 [Audio Debug] formData.audioFiles.length:', formData.audioFiles.length);
-
+  const toggleAudioPlayback = (index: number) => {
     const audio = audioRefs.current[index];
-    console.log('🎵 [Audio Debug] audio element:', audio);
-
-    if (audio) {
-      console.log('🎵 [Audio Debug] audio.src:', audio.src);
-      console.log('🎵 [Audio Debug] audio.readyState:', audio.readyState);
-      console.log('🎵 [Audio Debug] audio.networkState:', audio.networkState);
-      console.log('🎵 [Audio Debug] audio.duration:', audio.duration);
-      console.log('🎵 [Audio Debug] audio.paused:', audio.paused);
-      console.log('🎵 [Audio Debug] audio.volume:', audio.volume);
-      console.log('🎵 [Audio Debug] audio.muted:', audio.muted);
-    } else {
-      console.error('❌ [Audio Debug] Audio element NOT found for index:', index);
-      console.error('❌ [Audio Debug] Available refs:', audioRefs.current.map((a, i) => ({ index: i, hasRef: !!a })));
-      toast.error(t('오디오 엘리먼트를 찾을 수 없습니다', 'Audio element not found', 'オーディオ要素が見つかりません'));
-      return;
-    }
+    if (!audio) return;
 
     if (playingAudioIndex === index) {
-      console.log('⏸️ [Audio Debug] Pausing current audio');
       audio.pause();
       setPlayingAudioIndex(null);
     } else {
       // Pause all other audios
-      console.log('⏹️ [Audio Debug] Pausing all other audios');
       audioRefs.current.forEach((a, i) => {
-        if (a && i !== index) {
-          console.log(`⏹️ [Audio Debug] Pausing audio at index ${i}`);
-          a.pause();
-        }
+        if (a && i !== index) a.pause();
       });
-
-      console.log('▶️ [Audio Debug] Attempting to play audio...');
-
-      // Ensure volume and muted are properly set
-      audio.volume = 1.0;
-      audio.muted = false;
-      console.log('🔊 [Audio Debug] Set volume to 1.0 and muted to false');
-
-      try {
-        const playPromise = audio.play();
-        console.log('▶️ [Audio Debug] Play promise created:', playPromise);
-        await playPromise;
-        console.log('✅ [Audio Debug] Audio playing successfully!');
-        console.log('✅ [Audio Debug] Final state - paused:', audio.paused, 'volume:', audio.volume, 'muted:', audio.muted);
-        setPlayingAudioIndex(index);
-      } catch (error) {
-        console.error('❌ [Audio Debug] Audio playback FAILED!');
-        console.error('❌ [Audio Debug] Error:', error);
-        console.error('❌ [Audio Debug] Error details:', {
-          name: (error as Error).name,
-          message: (error as Error).message,
-          audioSrc: audio.src,
-          audioReadyState: audio.readyState,
-          audioNetworkState: audio.networkState,
-          audioError: audio.error
-        });
-        toast.error(t(
-          `오디오 재생 실패: ${(error as Error).message}`,
-          `Audio playback failed: ${(error as Error).message}`,
-          `オーディオ再生失敗: ${(error as Error).message}`
-        ));
-      }
+      audio.play();
+      setPlayingAudioIndex(index);
     }
   };
 
@@ -951,11 +937,54 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         }
         return true;
 
-      // case 4: // Marketing Details - REMOVED (moved to /marketing-submission)
-      // case 5: // Goals & Expectations - REMOVED (moved to /marketing-submission)
+      case 4: // Marketing Details
+        if (!formData.marketingInfo?.projectType) {
+          toast.error(t('프로젝트 타입을 선택해주세요', 'Please select project type', 'プロジェクトタイプを選択してください'));
+          return false;
+        }
+        if (!formData.marketingInfo?.moods || formData.marketingInfo.moods.length === 0) {
+          toast.error(t('최소 1개 이상의 무드를 선택해주세요', 'Please select at least one mood', '少なくとも1つのムードを選択してください'));
+          return false;
+        }
+        if (!formData.marketingInfo?.instruments || formData.marketingInfo.instruments.length === 0) {
+          toast.error(t('최소 1개 이상의 악기를 선택해주세요', 'Please select at least one instrument', '少なくとも1つの楽器を選択してください'));
+          return false;
+        }
+        if (!formData.marketingInfo?.hook) {
+          toast.error(t('Hook을 입력해주세요', 'Please enter your hook', 'フックを入력してください'));
+          return false;
+        }
+        if (!formData.marketingInfo?.mainPitch) {
+          toast.error(t('메인 피치를 입력해주세요', 'Please enter your main pitch', 'メインピッチを入力してください'));
+          return false;
+        }
+        if (!formData.marketingInfo?.marketingDrivers || formData.marketingInfo.marketingDrivers.length === 0) {
+          toast.error(t('마케팅 드라이버를 입력해주세요', 'Please enter marketing drivers', 'マーケティングドライバーを入力してください'));
+          return false;
+        }
+        if (!formData.marketingInfo?.socialMediaPlan) {
+          toast.error(t('소셜 미디어 계획을 입력해주세요', 'Please enter social media plan', 'ソーシャルメディア計画を入力してください'));
+          return false;
+        }
+        return true;
 
+      case 5: // Goals & Expectations
+        // Only require goals if priority is 5 (highest)
+        if (formData.marketingInfo?.priorityLevel === 5) {
+          if (!formData.marketingInfo?.campaignGoals || formData.marketingInfo.campaignGoals.length === 0) {
+            toast.error(t('최소 1개 이상의 목표를 추가해주세요', 'Please add at least one goal', '少なくとも1つの目標を追加してください'));
+            return false;
+          }
+          for (const goal of formData.marketingInfo.campaignGoals) {
+            if (!goal.goalType) {
+              toast.error(t('모든 목표의 타입을 선택해주세요', 'Please select type for all goals', 'すべての目標のタイプを選択してください'));
+              return false;
+            }
+          }
+        }
+        return true;
 
-      case 4: // Distribution (changed from case 6)
+      case 6: // Distribution
         if (formData.distributionType === 'selected' && formData.selectedStores.length === 0) {
           toast.error(t('최소 1개 이상의 스토어를 선택해주세요', 'Please select at least one store', '少なくとも1つのストアを選択してください'));
           highlightField('store-selection');
@@ -1370,26 +1399,9 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                   </div>
 
                   <audio
-                    ref={(el) => {
-                      if (el) {
-                        audioRefs.current[index] = el;
-                        el.volume = 1.0;
-                        el.muted = false;
-                        console.log(`🔊 [Audio Debug] Step 2 Audio ${index} ref set - volume: ${el.volume}, muted: ${el.muted}`);
-                      }
-                    }}
+                    ref={(el) => (audioRefs.current[index] = el)}
                     src={track.audioFile ? URL.createObjectURL(track.audioFile) : ''}
                     onEnded={() => setPlayingAudioIndex(null)}
-                    onError={(e) => {
-                      console.error('Audio loading error (Step 2):', e);
-                    }}
-                    onLoadedMetadata={(e) => {
-                      const audio = e.currentTarget;
-                      audio.volume = 1.0;
-                      audio.muted = false;
-                      console.log(`📊 [Audio Debug] Step 2 Audio ${index} metadata loaded - duration: ${audio.duration}, volume: ${audio.volume}`);
-                    }}
-                    preload="metadata"
                     className="hidden"
                   />
                 </div>
@@ -1862,15 +1874,14 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                   </div>
 
                   {formData.audioFiles.length > 0 ? (
-                    <>
-                      <Reorder.Group
-                        axis="y"
-                        values={formData.audioFiles}
-                        onReorder={handleAudioReorder}
-                        className="space-y-3"
-                      >
-                        {formData.audioFiles.map((file, index) => (
-                          <Reorder.Item
+                    <Reorder.Group
+                      axis="y"
+                      values={formData.audioFiles}
+                      onReorder={handleAudioReorder}
+                      className="space-y-3"
+                    >
+                      {formData.audioFiles.map((file, index) => (
+                        <Reorder.Item
                           key={`audio-${file.name}-${index}`}
                           value={file}
                           layoutId={`audio-card-${file.name}-${file.size}`}
@@ -2006,38 +2017,17 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                               </>
                             )}
                           </div>
+
+                          {/* Hidden Audio Element */}
+                          <audio
+                            ref={(el) => (audioRefs.current[index] = el)}
+                            src={URL.createObjectURL(file)}
+                            onEnded={() => setPlayingAudioIndex(null)}
+                            className="hidden"
+                          />
                         </Reorder.Item>
                       ))}
                     </Reorder.Group>
-
-                    {/* Audio Elements - Outside Reorder.Item to prevent re-creation */}
-                    {formData.audioFiles.map((file, index) => (
-                      <audio
-                        key={`audio-${file.name}-${index}`}
-                        ref={(el) => {
-                          if (el) {
-                            audioRefs.current[index] = el;
-                            el.volume = 1.0;
-                            el.muted = false;
-                            console.log(`🔊 [Audio Debug] Audio ${index} ref set (outside Reorder) - volume: ${el.volume}, muted: ${el.muted}`);
-                          }
-                        }}
-                        src={URL.createObjectURL(file)}
-                        onEnded={() => setPlayingAudioIndex(null)}
-                        onError={(e) => {
-                          console.error(`Audio loading error for file ${index}:`, e);
-                        }}
-                        onLoadedMetadata={(e) => {
-                          const audio = e.currentTarget;
-                          audio.volume = 1.0;
-                          audio.muted = false;
-                          console.log(`📊 [Audio Debug] Audio ${index} metadata loaded (outside) - duration: ${audio.duration}, volume: ${audio.volume}`);
-                        }}
-                        preload="metadata"
-                        className="hidden"
-                      />
-                    ))}
-                    </>
                   ) : (
                     <button
                       type="button"
@@ -3843,7 +3833,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                   {t('이전', 'Previous')}
                 </button>
 
-                {currentStep < steps.length && (
+                {currentStep < 7 && (
                   <button
                     type="button"
                     onClick={handleNext}
