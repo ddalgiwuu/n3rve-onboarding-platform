@@ -367,48 +367,6 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   const audioFileInputRef = useRef<HTMLInputElement>(null);
   const [audioMetadata, setAudioMetadata] = useState<(AudioMetadata | null)[]>([]);
 
-  // Audio element management with useEffect (prevent re-creation)
-  useEffect(() => {
-    console.log('🎬 Creating audio elements for', formData.audioFiles.length, 'files');
-
-    // Create new audio elements only if they don't exist
-    formData.audioFiles.forEach((file, index) => {
-      if (!audioRefs.current[index]) {
-        console.log(`➕ Creating audio element ${index}`);
-        const audio = new Audio();
-        audio.volume = 1.0;
-        audio.muted = false;
-        audio.preload = 'metadata';
-        audio.src = URL.createObjectURL(file);
-
-        audio.onended = () => setPlayingAudioIndex(null);
-        audio.onerror = (e) => console.error(`Audio ${index} error:`, e);
-        audio.onloadedmetadata = () => console.log(`📊 Audio ${index} ready - duration: ${audio.duration}s`);
-
-        audioRefs.current[index] = audio;
-      }
-    });
-
-    // Remove excess audio elements
-    while (audioRefs.current.length > formData.audioFiles.length) {
-      const audio = audioRefs.current.pop();
-      if (audio) {
-        audio.pause();
-        audio.src = '';
-      }
-    }
-
-    return () => {
-      // Cleanup on unmount
-      audioRefs.current.forEach(audio => {
-        if (audio) {
-          audio.pause();
-          audio.src = '';
-        }
-      });
-    };
-  }, [formData.audioFiles.length]); // Only re-run when file count changes
-
   // Dolby Atmos decision state
   const [isDolbyDecisionStep, setIsDolbyDecisionStep] = useState(false);
   const [hasDolbyAtmos, setHasDolbyAtmos] = useState(false);
@@ -554,6 +512,48 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
       loadSubmissionData(resubmitId);
     }
   }, [editId, resubmitId, navigate, t]);
+
+  // Audio element management with useEffect (prevent re-creation)
+  useEffect(() => {
+    console.log('🎬 Creating audio elements for', formData.audioFiles.length, 'files');
+
+    // Create new audio elements only if they don't exist
+    formData.audioFiles.forEach((file, index) => {
+      if (!audioRefs.current[index]) {
+        console.log(`➕ Creating audio element ${index}`);
+        const audio = new Audio();
+        audio.volume = 1.0;
+        audio.muted = false;
+        audio.preload = 'metadata';
+        audio.src = URL.createObjectURL(file);
+
+        audio.onended = () => setPlayingAudioIndex(null);
+        audio.onerror = (e) => console.error(`Audio ${index} error:`, e);
+        audio.onloadedmetadata = () => console.log(`📊 Audio ${index} ready - duration: ${audio.duration}s`);
+
+        audioRefs.current[index] = audio;
+      }
+    });
+
+    // Remove excess audio elements
+    while (audioRefs.current.length > formData.audioFiles.length) {
+      const audio = audioRefs.current.pop();
+      if (audio) {
+        audio.pause();
+        audio.src = '';
+      }
+    }
+
+    return () => {
+      // Cleanup on unmount
+      audioRefs.current.forEach(audio => {
+        if (audio) {
+          audio.pause();
+          audio.src = '';
+        }
+      });
+    };
+  }, [formData.audioFiles.length]); // Only re-run when file count changes
 
   // Generate identifiers
   const handleGenerateUPC = () => {
