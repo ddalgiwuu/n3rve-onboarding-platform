@@ -10,63 +10,61 @@ export interface AudioMetadata {
 export async function extractAudioMetadata(file: File): Promise<AudioMetadata> {
   return new Promise((resolve, reject) => {
     const audio = new Audio();
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+    // Set volume to avoid conflicts
+    audio.volume = 1.0;
+    audio.muted = false;
 
     audio.addEventListener('loadedmetadata', () => {
       const duration = audio.duration;
 
-      // Read file as ArrayBuffer to get detailed metadata
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const arrayBuffer = e.target?.result as ArrayBuffer;
-          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+      // Estimate sample rate from file name or use defaults
+      const fileName = file.name.toLowerCase();
+      let sampleRate = 48000; // Default HD
+      let bitDepth = 24; // Default
 
-          const sampleRate = audioBuffer.sampleRate;
-          const numberOfChannels = audioBuffer.numberOfChannels;
+      // Parse from filename if available (e.g., "song_96kHz_24bit.wav")
+      if (fileName.includes('192khz') || fileName.includes('192k')) sampleRate = 192000;
+      else if (fileName.includes('96khz') || fileName.includes('96k')) sampleRate = 96000;
+      else if (fileName.includes('48khz') || fileName.includes('48k')) sampleRate = 48000;
+      else if (fileName.includes('44.1khz') || fileName.includes('44khz')) sampleRate = 44100;
 
-          // Determine if HD quality
-          const isHD = sampleRate >= 48000;
+      if (fileName.includes('16bit') || fileName.includes('16-bit')) bitDepth = 16;
+      else if (fileName.includes('24bit') || fileName.includes('24-bit')) bitDepth = 24;
 
-          // Estimate bit depth from file size (approximation)
-          const bitDepth = estimateBitDepth(file.size, duration, sampleRate, numberOfChannels);
+      // Estimate from file size
+      const estimatedBitDepth = estimateBitDepth(file.size, duration, sampleRate, 2);
+      if (!fileName.includes('bit')) {
+        bitDepth = estimatedBitDepth;
+      }
 
-          // Quality label
-          let qualityLabel = 'SD';
-          if (sampleRate >= 192000) qualityLabel = 'Ultra HD';
-          else if (sampleRate >= 96000) qualityLabel = 'HD 96kHz';
-          else if (sampleRate >= 48000) qualityLabel = 'HD';
-          else if (sampleRate >= 44100) qualityLabel = 'CD Quality';
+      const numberOfChannels = 2; // Assume stereo (can't determine without decoding)
+      const isHD = sampleRate >= 48000;
 
-          resolve({
-            duration,
-            sampleRate,
-            numberOfChannels,
-            bitDepth,
-            isHD,
-            qualityLabel
-          });
+      // Quality label
+      let qualityLabel = 'SD';
+      if (sampleRate >= 192000) qualityLabel = 'Ultra HD';
+      else if (sampleRate >= 96000) qualityLabel = 'HD 96kHz';
+      else if (sampleRate >= 48000) qualityLabel = 'HD';
+      else if (sampleRate >= 44100) qualityLabel = 'CD Quality';
 
-          audioContext.close();
-        } catch (error) {
-          // Fallback: basic metadata only
-          resolve({
-            duration,
-            sampleRate: 44100,
-            numberOfChannels: 2,
-            isHD: false,
-            qualityLabel: 'Standard'
-          });
-          audioContext.close();
-        }
-      };
+      resolve({
+        duration,
+        sampleRate,
+        numberOfChannels,
+        bitDepth,
+        isHD,
+        qualityLabel
+      });
 
-      reader.readAsArrayBuffer(file);
+      // Clean up
+      audio.src = '';
+      URL.revokeObjectURL(audio.src);
     });
 
     audio.addEventListener('error', () => {
       reject(new Error('Failed to load audio metadata'));
-      audioContext.close();
+      audio.src = '';
     });
 
     audio.src = URL.createObjectURL(file);
