@@ -782,20 +782,55 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   };
 
   // Audio playback handlers
-  const toggleAudioPlayback = (index: number) => {
+  const toggleAudioPlayback = async (index: number) => {
+    console.log(`🎵 [Playback] Button clicked for index ${index}`);
+    console.log(`🎵 [Playback] audioRefs.current:`, audioRefs.current);
+    console.log(`🎵 [Playback] audioRefs.current.length:`, audioRefs.current.length);
+
     const audio = audioRefs.current[index];
-    if (!audio) return;
+    console.log(`🎵 [Playback] audio element:`, audio);
+
+    if (!audio) {
+      console.error(`❌ [Playback] No audio found at index ${index}`);
+      toast.error(t('오디오를 찾을 수 없습니다', 'Audio not found', 'オーディオが見つかりません'));
+      return;
+    }
+
+    console.log(`🎵 [Playback] Audio properties:`, {
+      src: audio.src,
+      readyState: audio.readyState,
+      volume: audio.volume,
+      muted: audio.muted,
+      paused: audio.paused
+    });
 
     if (playingAudioIndex === index) {
+      console.log(`⏸️ [Playback] Pausing audio ${index}`);
       audio.pause();
       setPlayingAudioIndex(null);
     } else {
       // Pause all other audios
+      console.log(`⏹️ [Playback] Pausing all other audios`);
       audioRefs.current.forEach((a, i) => {
-        if (a && i !== index) a.pause();
+        if (a && i !== index) {
+          console.log(`⏹️ [Playback] Pausing audio ${i}`);
+          a.pause();
+        }
       });
-      audio.play();
-      setPlayingAudioIndex(index);
+
+      console.log(`▶️ [Playback] Playing audio ${index}`);
+      try {
+        await audio.play();
+        console.log(`✅ [Playback] Audio ${index} playing successfully!`);
+        setPlayingAudioIndex(index);
+      } catch (error) {
+        console.error(`❌ [Playback] Play failed:`, error);
+        toast.error(t(
+          `재생 실패: ${(error as Error).message}`,
+          `Play failed: ${(error as Error).message}`,
+          `再生失敗: ${(error as Error).message}`
+        ));
+      }
     }
   };
 
