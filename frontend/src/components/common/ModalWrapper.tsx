@@ -27,20 +27,20 @@ export default function ModalWrapper({
     if (isOpen) {
       // Save current scroll position
       const scrollY = window.scrollY;
-      
+
       // Lock body scroll
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
-      
+
       return () => {
         // Restore body scroll
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
         document.body.style.overflow = '';
-        
+
         // Restore scroll position
         window.scrollTo(0, scrollY);
       };
@@ -70,18 +70,18 @@ export default function ModalWrapper({
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 overflow-hidden"
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}
       <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
-      
+
       {/* Modal Container - Full height with padding for mobile */}
       <div className="fixed inset-0 overflow-y-auto">
         <div className="flex min-h-full items-center justify-center p-4">
           {/* Modal Content */}
-          <div 
+          <div
             className={`relative bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full ${maxWidth} max-h-[calc(100vh-2rem)] flex flex-col`}
             onClick={(e) => e.stopPropagation()}
           >
@@ -105,7 +105,7 @@ export default function ModalWrapper({
                 )}
               </div>
             )}
-            
+
             {/* Content - Scrollable */}
             <div className="flex-1 overflow-y-auto overscroll-contain">
               {children}

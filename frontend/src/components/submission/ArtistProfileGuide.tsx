@@ -56,7 +56,16 @@ export default function ArtistProfileGuide() {
               }`}
             >
               <div className="flex items-center gap-2">
-                <div className="w-5 h-5 bg-gradient-to-br from-pink-500 to-red-500 rounded-full" />
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                  <defs>
+                    <linearGradient id="appleMusicGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style={{ stopColor: '#FA233B', stopOpacity: 1 }} />
+                      <stop offset="100%" style={{ stopColor: '#FB5C74', stopOpacity: 1 }} />
+                    </linearGradient>
+                  </defs>
+                  <circle cx="12" cy="12" r="10" fill="url(#appleMusicGradient)"/>
+                  <path d="M9.5 8.5c0-.28.22-.5.5-.5h4c.28 0 .5.22.5.5v.1c.83.27 1.5 1.02 1.5 1.9v2c0 1.1-.9 2-2 2-.55 0-1-.45-1-1s.45-1 1-1c.28 0 .5-.22.5-.5v-2c0-.28-.22-.5-.5-.5h-1v4.5c0 1.38-1.12 2.5-2.5 2.5S7.5 15.38 7.5 14s1.12-2.5 2.5-2.5c.28 0 .5.22.5.5v1.5c0 .55-.45 1-1 1s-1-.45-1-1 .45-1 1-1c.28 0 .5-.22.5-.5V8.5z" fill="white"/>
+                </svg>
                 {t('Apple Music for Artists', 'Apple Music for Artists')}
               </div>
             </button>

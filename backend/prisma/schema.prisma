@@ -43,6 +43,7 @@ model User {
   reviewedSubmissions Submission[] @relation("ReviewedSubmissions")
   savedArtists      SavedArtist[]
   savedContributors SavedContributor[]
+  guides            Guide[]      @relation("GuideCreator")
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
@@ -123,10 +124,14 @@ model Submission {
   reviewedBy      String?          @db.ObjectId
   reviewer        User?            @relation("ReviewedSubmissions", fields: [reviewedBy], references: [id])
   reviewedAt      DateTime?
-  
+
+  // FUGA SCORE Integration Relations
+  digitalProducts   DigitalProduct[]
+  marketingDrivers  MarketingDriver[]
+
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-  
+
   @@index([status, createdAt])
   @@index([submitterId, createdAt])
   @@index([releaseDate], map: "approved_releases_index")
@@ -185,6 +190,8 @@ type Track {
   arranger              String?
   featuring             String?
   isTitle               Boolean @default(false)
+  isFocusTrack          Boolean @default(false)  // FUGA SCORE: Promotional focus track
+  promotionPriority     Int?    // 1-5 priority level for multiple focus tracks
   isrc                  String?
   explicitContent       Boolean @default(false)
   
@@ -309,7 +316,12 @@ type ReleaseInfo {
   
   // 추가: 한국 DSP 정보
   koreanDSP                 KoreanDSPInfo?
-  
+
+  // FUGA Distribution Preferences
+  youtubeShortsPreviews     Boolean @default(false)  // YouTube Shorts opt-in
+  thisIsPlaylist            Boolean @default(false)  // Spotify "This Is" playlist pinning
+  motionArtwork             Boolean @default(false)  // Enhanced artwork with motion
+
   // 추가: FUGA 호환 마케팅 필드들
   // Project Context
   priorityLevel             Int?            // 1-5 성급 평가
@@ -529,21 +541,99 @@ type PricingInfo {
   territoryPricing  Json?
 }
 
-// Saved Artist model
+// Saved Artist model - Enhanced for FUGA SCORE Artist Roster
 model SavedArtist {
   id            String   @id @default(auto()) @map("_id") @db.ObjectId
   userId        String   @db.ObjectId
   user          User     @relation(fields: [userId], references: [id])
+
+  // Basic info
   name          String
   translations  ArtistTranslation[]
   identifiers   ArtistIdentifier[]
+
+  // FUGA Artist Roster fields
+  fugaArtistId  String?  @unique
+  status        ArtistStatus @default(DRAFT)
+
+  // Geographic data
+  country       String?
+  currentCity   String?
+  hometown      String?
+
+  // Biography & Marketing
+  bio           String?  @db.String
+  gender        ArtistGender?
+  similarArtists String[] // Artist names
+  socialMovements String?
+  syncHistory   String?
+  syncHistoryDetails String?
+
+  // Media assets
+  pressPhotosUrl    String?  // Dropbox link to press shots
+  pressPhotoCredits String?
+  artistAvatarUrl   String?  // 1x1 ratio
+  artistBannerUrl   String?  // 3x2 ratio
+  artistLogoUrl     String?  // 1x1 ratio for logo
+
+  // DSP & Social profiles
+  dspProfiles       DspProfile[]
+  socialProfiles    SocialProfile[]
+
+  // Validation
+  missingFields     String[] // List of incomplete required fields
+  completionScore   Int      @default(0) // 0-100%
+
+  // Analytics
+  releaseCount      Int      @default(0)
+  lastReleaseDate   DateTime?
+  totalStreams      Int?
+
+  // Usage tracking
   createdAt     DateTime @default(now())
   lastUsed      DateTime @default(now())
   usageCount    Int      @default(1)
-  
+  updatedAt     DateTime? @updatedAt
+
   @@index([userId, name])
   @@index([userId, lastUsed])
+  @@index([status])
   @@fulltext([name])
+}
+
+enum ArtistStatus {
+  DRAFT
+  COMPLETE
+  VERIFIED
+  PENDING_ENRICHMENT
+}
+
+enum ArtistGender {
+  MALE
+  FEMALE
+  NON_BINARY
+  BAND
+  GROUP
+  PREFER_NOT_TO_SAY
+}
+
+type DspProfile {
+  platform      String  // "spotify", "apple_music", "amazon_music", etc.
+  profileId     String?
+  profileUrl    String?
+  artistUri     String? // For Spotify URI format
+  verified      Boolean @default(false)
+  lastVerified  DateTime?
+  lastUpdated   DateTime?
+}
+
+type SocialProfile {
+  platform      String  // "instagram", "youtube", "tiktok", etc.
+  url           String
+  handle        String? // @username
+  verified      Boolean @default(false)
+  followerCount Int?
+  lastUpdated   DateTime?
 }
 
 // Saved Contributor model
@@ -646,4 +736,263 @@ enum TerritorySelectionType {
   WORLDWIDE       // All countries
   SPECIFIC        // Only selected countries
   WORLDWIDE_EXCEPT // All countries except excluded ones
+}
+
+// ============================================================================
+// FUGA SCORE Integration Models
+// ============================================================================
+
+// Digital Product model - FUGA SCORE integration
+// Represents individual products (singles, EPs, albums, focus tracks) for distribution
+model DigitalProduct {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  submissionId    String   @db.ObjectId
+  submission      Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  // Product identification
+  upc             String
+  format          ProductFormat
+  title           String
+  artistName      String
+
+  // Linked track (for focus tracks)
+  linkedTrackId   String?
+  trackIndex      Int?    // Position in album
+
+  // Release information
+  releaseDate     DateTime
+  territories     String[]
+
+  // Status tracking
+  status          SubmissionStatus @default(PENDING)
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+
+  // Marketing integration
+  marketingDriverIds String[] // References to MarketingDriver.id
+
+  // Relations
+  featureReport   FeatureReport?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([submissionId])
+  @@index([upc])
+  @@index([status])
+  @@index([releaseDate])
+  @@fulltext([title, artistName])
+}
+
+enum ProductFormat {
+  SINGLE
+  EP
+  ALBUM
+  FOCUS_TRACK
+}
+
+// Feature Report model - Performance tracking
+model FeatureReport {
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  digitalProductId      String   @unique @db.ObjectId
+  digitalProduct        DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
+
+  upc                   String   @unique
+
+  // Auto-detected placements (from FUGA API or scraping)
+  autoPlaylists         PlaylistPlacement[]
+
+  // Admin-entered placements
+  adminPlaylists        AdminPlaylistPlacement[]
+
+  // Analytics
+  lastUpdated           DateTime @default(now())
+  reportStatus          ReportStatus @default(NEW)
+
+  // Metadata
+  genres                String[]
+  moods                 String[]
+
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([reportStatus])
+  @@index([lastUpdated])
+}
+
+type PlaylistPlacement {
+  playlistId      String
+  playlistName    String
+  playlistUrl     String
+  platform        Platform
+  position        Int
+  followers       Int?
+  entryDate       DateTime
+  trend           PlacementTrend
+  lastChecked     DateTime
+}
+
+type AdminPlaylistPlacement {
+  id              String
+  playlistName    String
+  platform        Platform
+  position        Int?
+  playlistUrl     String?
+  curatorName     String?
+  followers       Int?
+  addedBy         String   // Admin user ID
+  addedAt         DateTime
+  notes           String?
+  verified        Boolean @default(false)
+}
+
+enum Platform {
+  SPOTIFY
+  APPLE_MUSIC
+  YOUTUBE_MUSIC
+  AMAZON_MUSIC
+  TIDAL
+  DEEZER
+  SOUNDCLOUD
+}
+
+enum PlacementTrend {
+  NEW
+  UP
+  DOWN
+  STABLE
+}
+
+enum ReportStatus {
+  NEW
+  UPDATED
+  STABLE
+  ARCHIVED
+}
+
+// Marketing Driver model - Campaign management
+model MarketingDriver {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  submissionId        String   @db.ObjectId
+  submission          Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+  // Campaign info
+  name                String   // Campaign name/hashtag
+  description         String   @db.String // Full campaign strategy
+
+  // Targeting
+  territories         String[] // Countries/regions
+  linkedProductUPCs   String[] // Which products this campaign promotes
+
+  // Timeline
+  startDate           DateTime?
+  endDate             DateTime?
+
+  // Budget & Resources
+  budget              Float?
+  channels            MarketingChannel[]
+
+  // Tracking
+  createdBy           String   @db.ObjectId
+  lastEditedBy        String?  @db.ObjectId
+  lastEditedAt        DateTime @default(now())
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@index([submissionId])
+  @@index([territories])
+  @@fulltext([name, description])
+}
+
+type MarketingChannel {
+  name        String  // Social Media, Advertising, PR, Playlists, etc.
+  tactics     String[]
+  budget      Float?
+  kpis        KPI[]
+}
+
+type KPI {
+  metric      String  // e.g., "Spotify Monthly Listeners"
+  target      Float
+  actual      Float?
+  unit        String? // e.g., "count", "percentage"
+}
+
+// Guide model - Documentation system
+model Guide {
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Classification
+  category          GuideCategory
+  subcategory       String?
+  platform          String?  // e.g., "Meta", "Spotify"
+
+  // Content
+  title             String
+  slug              String   @unique
+  description       String
+  content           String   @db.String
+  contentType       ContentType
+
+  // Metadata
+  tags              String[]
+  relatedGuideIds   String[] @db.ObjectId
+  difficulty        DifficultyLevel @default(BEGINNER)
+  estimatedReadTime Int      // minutes
+
+  // Assets
+  coverImageUrl     String?
+  screenshotUrls    String[]
+  videoUrl          String?
+
+  // Search & Discovery
+  searchKeywords    String[]
+  popularityScore   Int      @default(0)
+  viewCount         Int      @default(0)
+
+  // Versioning
+  version           String   @default("1.0.0")
+  changelog         String?
+
+  // Status
+  published         Boolean  @default(false)
+  featured          Boolean  @default(false)
+
+  // Admin
+  createdBy         String   @db.ObjectId
+  creator           User     @relation("GuideCreator", fields: [createdBy], references: [id])
+  lastEditedBy      String?  @db.ObjectId
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([category, published])
+  @@index([featured])
+  @@index([createdBy])
+  @@fulltext([title, description, searchKeywords])
+}
+
+enum GuideCategory {
+  SOCIAL_MEDIA
+  ADVERTISING
+  DSP
+  TERRITORY
+  TOOLS
+  GENERAL
+}
+
+enum ContentType {
+  VERIFICATION
+  PRODUCT
+  LYRICS
+  TIPS_TRICKS
+  TECHNICAL
+  HOW_TO
+}
+
+enum DifficultyLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
 }

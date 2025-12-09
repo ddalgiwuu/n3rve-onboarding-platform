@@ -15,7 +15,7 @@ export default function QCWarnings({ results, onDismiss, compact = false }: Prop
   const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  if (results.length === 0) return null;
+  if (!results || results.length === 0) return null;
 
   const visibleResults = results.filter((_, index) => !dismissed.includes(index));
   if (visibleResults.length === 0) return null;

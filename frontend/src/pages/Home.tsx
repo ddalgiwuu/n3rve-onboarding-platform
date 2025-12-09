@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Music, Shield, Globe, CheckCircle, Sparkles, Star } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/useTranslationFixed';
 import { useAuthStore } from '@/store/auth.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import LanguageToggle from '@/components/common/LanguageToggle';
@@ -83,7 +83,7 @@ export default function HomePage() {
   const [heroRef] = useAutoAnimate();
   const [featuresRef] = useAutoAnimate();
   const [trustRef] = useAutoAnimate();
-  
+
   // Ensure gradient text is visible - failsafe
   useEffect(() => {
     const ensureGradientTextVisible = () => {
@@ -318,10 +318,10 @@ export default function HomePage() {
                 className="group relative px-10 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold text-lg overflow-hidden flex items-center gap-3 hover-lift shadow-xl shadow-purple-500/50"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"/>
-                <span 
-                  className="relative z-10 text-white font-black text-xl drop-shadow-lg" 
-                  style={{ 
-                    textShadow: '0 2px 4px rgba(0,0,0,0.5)', 
+                <span
+                  className="relative z-10 text-white font-black text-xl drop-shadow-lg"
+                  style={{
+                    textShadow: '0 2px 4px rgba(0,0,0,0.5)',
                     color: '#ffffff',
                     fontWeight: '900'
                   }}
@@ -623,9 +623,9 @@ export default function HomePage() {
                     className="group relative px-12 py-5 bg-white text-purple-600 rounded-full font-bold text-lg overflow-hidden shadow-2xl flex items-center gap-3"
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-pink-100 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"/>
-                    <span 
-                      className="relative z-10 text-purple-700 font-black text-xl" 
-                      style={{ 
+                    <span
+                      className="relative z-10 text-purple-700 font-black text-xl"
+                      style={{
                         color: '#7c3aed',
                         fontWeight: '900'
                       }}

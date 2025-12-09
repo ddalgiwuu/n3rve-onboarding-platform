@@ -8,7 +8,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner';
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { t, language } = useTranslation();
-  
+
   // Force re-render when language changes by adding dependency
   console.log('AdminDashboard rendered with language:', language);
 
@@ -82,14 +82,14 @@ export default function AdminDashboard() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-{t('admin.dashboard')}
+            {t('admin.dashboard')}
           </h1>
           <button
             onClick={() => submissionService.exportSubmissions()}
             className="px-4 py-2 bg-gradient-to-r from-n3rve-500 to-purple-600 hover:from-n3rve-600 hover:to-purple-700 text-white rounded-lg flex items-center gap-2 transition-all duration-300 hover:scale-105 shadow-lg"
           >
             <Download className="w-4 h-4" />
-{t('admin.exportExcel')}
+            {t('admin.exportExcel')}
           </button>
         </div>
 

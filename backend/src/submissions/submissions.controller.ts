@@ -9,6 +9,7 @@ import {
   BadRequestException,
   UseInterceptors,
   UploadedFiles,
+  Patch,
 } from '@nestjs/common';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { SubmissionsService } from './submissions.service';
@@ -216,16 +217,26 @@ export class SubmissionsController {
             }
           }
           
-          // Upload music video
-          if (files.musicVideo?.[0] || files.musicVideoFiles?.[0]) {
-            const videoFile = files.musicVideo?.[0] || files.musicVideoFiles?.[0];
-            if (videoFile) {
+          // Upload music videos (track-level)
+          if (files.musicVideoFiles) {
+            files.musicVideoFiles.forEach((videoFile, index) => {
               dropboxFiles.push({
                 buffer: videoFile.buffer,
                 fileName: videoFile.originalname,
-                fileType: 'video'
+                fileType: `video_track_${index}`
               });
-            }
+            });
+          }
+
+          // Upload music video thumbnails (track-level)
+          if (files.musicVideoThumbnails) {
+            files.musicVideoThumbnails.forEach((thumbnailFile, index) => {
+              dropboxFiles.push({
+                buffer: thumbnailFile.buffer,
+                fileName: thumbnailFile.originalname,
+                fileType: `video_thumbnail_${index}`
+              });
+            });
           }
           
           // Upload all files to Dropbox
@@ -238,21 +249,21 @@ export class SubmissionsController {
           
           // Process the results to match expected format
           processedFiles = {
-            coverImage: dropboxResults.cover ? { 
+            coverImage: dropboxResults.cover ? {
               dropboxUrl: dropboxResults.cover.url,
-              path: dropboxResults.cover.path 
+              path: dropboxResults.cover.path
             } : undefined,
-            artistPhoto: dropboxResults.artist ? { 
+            artistPhoto: dropboxResults.artist ? {
               dropboxUrl: dropboxResults.artist.url,
-              path: dropboxResults.artist.path 
+              path: dropboxResults.artist.path
             } : undefined,
-            motionArt: dropboxResults.motion ? { 
+            motionArt: dropboxResults.motion ? {
               dropboxUrl: dropboxResults.motion.url,
-              path: dropboxResults.motion.path 
+              path: dropboxResults.motion.path
             } : undefined,
-            musicVideo: dropboxResults.video ? { 
+            musicVideo: dropboxResults.video ? {
               dropboxUrl: dropboxResults.video.url,
-              path: dropboxResults.video.path 
+              path: dropboxResults.video.path
             } : undefined,
             audioFiles: Object.entries(dropboxResults)
               .filter(([key]) => key.startsWith('audio'))
@@ -261,6 +272,28 @@ export class SubmissionsController {
                 path: value.path,
                 fileName: value.path.split('/').pop()
               })),
+            musicVideoFiles: Object.entries(dropboxResults)
+              .filter(([key]) => key.startsWith('video_track_'))
+              .map(([key, value]: [string, any]) => {
+                const trackIndex = parseInt(key.replace('video_track_', ''));
+                return {
+                  trackId: body.tracks?.[trackIndex]?.id,
+                  dropboxUrl: value.url,
+                  path: value.path,
+                  fileName: value.path.split('/').pop()
+                };
+              }),
+            musicVideoThumbnails: Object.entries(dropboxResults)
+              .filter(([key]) => key.startsWith('video_thumbnail_'))
+              .map(([key, value]: [string, any]) => {
+                const trackIndex = parseInt(key.replace('video_thumbnail_', ''));
+                return {
+                  trackId: body.tracks?.[trackIndex]?.id,
+                  dropboxUrl: value.url,
+                  path: value.path,
+                  fileName: value.path.split('/').pop()
+                };
+              }),
             additionalFiles: []
           };
           
@@ -513,5 +546,21 @@ export class SubmissionsController {
     }
 
     return submission;
+  }
+
+  @Patch(':id/marketing')
+  async updateMarketing(
+    @Param('id') id: string,
+    @Body() marketingData: any,
+    @CurrentUser() user: User
+  ) {
+    // Verify ownership
+    const submission = await this.submissionsService.findOne(id, user.id, user.role === 'ADMIN');
+    if (submission.submitterId !== user.id && user.role !== 'ADMIN') {
+      throw new BadRequestException('Unauthorized to update this submission');
+    }
+
+    // Update marketing fields
+    return this.submissionsService.updateMarketing(id, marketingData);
   }
 }

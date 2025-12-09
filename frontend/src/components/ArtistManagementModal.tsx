@@ -224,11 +224,11 @@ export default function ArtistManagementModal({
   };
 
   console.log('ArtistManagementModal render - isOpen:', isOpen);
-  
+
   if (!isOpen) return null;
 
   return createPortal(
-    <div 
+    <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
       style={{
         position: 'fixed',

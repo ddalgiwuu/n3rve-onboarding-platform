@@ -495,15 +495,15 @@ export default function TerritorySelector({ value, onChange }: TerritorySelector
                                           {selectedInContinent > 0 && `(${selectedInContinent}/${continent.countries.length})`}
                                         </span>
                                       </div>
-                                      <button
+                                      <div
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           toggleContinent(continentKey);
                                         }}
-                                        className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg text-sm hover:bg-purple-200 dark:hover:bg-purple-900/50"
+                                        className="px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-lg text-sm hover:bg-purple-200 dark:hover:bg-purple-900/50 cursor-pointer"
                                       >
                                         {selectedInContinent === continent.countries.length ? t('전체 해제', 'Deselect All') : t('전체 선택', 'Select All')}
-                                      </button>
+                                      </div>
                                     </button>
 
                                     {isExpanded && (

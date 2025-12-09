@@ -85,6 +85,8 @@ export class CreateSubmissionDto {
     featuring?: string;
     isTitle: boolean;
     isrc?: string;
+    hasMusicVideo?: boolean;
+    musicVideoISRC?: string;
     explicitContent: boolean;
     trackVersion?: string;
     lyricsLanguage?: string;
@@ -118,6 +120,19 @@ export class CreateSubmissionDto {
       filename?: string;
       fileSize?: number;
       duration?: number;
+      dropboxUrl?: string;
+    }>;
+    musicVideoFiles?: Array<{
+      trackId: string;
+      filename?: string;
+      fileSize?: number;
+      duration?: number;
+      dropboxUrl?: string;
+    }>;
+    musicVideoThumbnails?: Array<{
+      trackId: string;
+      filename?: string;
+      fileSize?: number;
       dropboxUrl?: string;
     }>;
     additionalFiles?: Array<{

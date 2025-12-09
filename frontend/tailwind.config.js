@@ -35,7 +35,12 @@ export default {
       },
       animation: {
         'gradient-x': 'gradient-x 15s ease infinite',
-        'blob': 'blob 7s infinite'
+        'blob': 'blob 7s infinite',
+        'pulse-glow': 'pulse-glow 4s ease-in-out infinite',
+        'aurora-pulse': 'aurora-pulse 6s ease-in-out infinite',
+        'breathing-glow': 'breathing-glow 8s ease-in-out infinite',
+        'gradient-shift': 'gradient-shift 3s ease-in-out infinite',
+        'shimmer-sweep': 'shimmer-sweep 2.5s ease-in-out infinite'
       },
       keyframes: {
         'gradient-x': {
@@ -60,6 +65,65 @@ export default {
           },
           '100%': {
             transform: 'translate(0px, 0px) scale(1)'
+          }
+        },
+        'pulse-glow': {
+          '0%, 100%': {
+            opacity: '0.6',
+            transform: 'scale(1)'
+          },
+          '50%': {
+            opacity: '1',
+            transform: 'scale(1.05)'
+          }
+        },
+        'aurora-pulse': {
+          '0%, 100%': {
+            opacity: '0.8',
+            transform: 'translateX(0%)'
+          },
+          '25%': {
+            opacity: '0.9',
+            transform: 'translateX(-2%)'
+          },
+          '50%': {
+            opacity: '1',
+            transform: 'translateX(2%)'
+          },
+          '75%': {
+            opacity: '0.9',
+            transform: 'translateX(-1%)'
+          }
+        },
+        'breathing-glow': {
+          '0%, 100%': {
+            opacity: '0.3',
+            transform: 'scale(0.95)'
+          },
+          '50%': {
+            opacity: '0.6',
+            transform: 'scale(1.02)'
+          }
+        },
+        'gradient-shift': {
+          '0%, 100%': {
+            'background-position': '0% 50%'
+          },
+          '50%': {
+            'background-position': '100% 50%'
+          }
+        },
+        'shimmer-sweep': {
+          '0%': {
+            transform: 'translateX(-100%) skewX(-12deg)',
+            opacity: '0'
+          },
+          '50%': {
+            opacity: '1'
+          },
+          '100%': {
+            transform: 'translateX(200%) skewX(-12deg)',
+            opacity: '0'
           }
         }
       }

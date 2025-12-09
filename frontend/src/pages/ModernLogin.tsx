@@ -76,7 +76,14 @@ export default function ModernLoginPage() {
   const location = useLocation();
   const isAuthenticated = useSafeStore(useAuthStore, (state) => state.isAuthenticated);
   const setAuth = useSafeStore(useAuthStore, (state) => state.setAuth);
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+
+  // Simple translation helper that works directly
+  const getText = (ko: string, en: string, ja: string) => {
+    if (language === 'ko') return ko;
+    if (language === 'ja') return ja;
+    return en;
+  };
   const popupRef = useRef<Window | null>(null);
 
   // Mouse position tracking for interactive effects
@@ -373,7 +380,7 @@ export default function ModernLoginPage() {
                   N3RVE Platform
                 </h1>
                 <p className="mt-2 text-gray-800 dark:text-gray-300 font-semibold">
-                  {t('auth.subtitle', '공식 음원 유통 플랫폼', 'Official Music Distribution Platform', '公式音楽配信プラットフォーム')}
+                  {getText('공식 음원 유통 플랫폼', 'Official Music Distribution Platform', '公式音楽配信プラットフォーム')}
                 </p>
               </motion.div>
 

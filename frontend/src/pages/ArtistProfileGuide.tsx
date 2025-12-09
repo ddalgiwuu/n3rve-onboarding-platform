@@ -1,6 +1,21 @@
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, User, Image, Link, Music, CheckCircle, AlertCircle, Star, ExternalLink, Apple } from 'lucide-react';
+import { ArrowLeft, User, Image, Link, Music, CheckCircle, AlertCircle, Star, ExternalLink } from 'lucide-react';
 import { useLanguageStore } from '@/store/language.store';
+
+// Custom Spotify Logo Component
+const SpotifyLogo = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2m4.062 14.462c-.157.252-.49.334-.743.177-2.037-1.244-4.597-1.527-7.615-.837-.293.067-.586-.113-.653-.407-.067-.293.113-.586.407-.653 3.3-.754 6.105-.435 8.361.971.252.157.334.49.177.743m1.062-2.362c-.196.314-.614.413-.928.217-2.33-1.434-5.88-1.848-8.634-.998-.366.113-.756-.089-.87-.455-.113-.366.089-.756.455-.87 3.144-.966 7.083-.495 9.76 1.178.313.196.413.614.217.928m.092-2.46C14.692 10.023 8.536 9.774 4.97 11.072c-.438.16-.925-.064-1.086-.503-.16-.438.064-.925.503-1.086 4.129-1.501 10.785-1.218 14.727 1.395.375.249.478.756.229 1.131-.249.375-.756.478-1.131.229z"/>
+  </svg>
+);
+
+// Custom Apple Music Logo Component
+const AppleMusicLogo = ({ className }: { className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M23.997 6.124c0-.738-.402-1.038-1.283-1.027l-8.466.041c-.536.003-.895.31-.896.817-.001.507.359.814.895.811l8.466-.041c.881-.003 1.284-.327 1.284-1.027V6.124zm0 8.998c0-.738-.402-1.038-1.283-1.027l-8.466.041c-.536.003-.895.31-.896.817-.001.507.359.814.895.811l8.466-.041c.881-.003 1.284-.327 1.284-1.027v-.574zM7.827 6.133c-4.411 0-7.797 3.386-7.797 7.797s3.386 7.797 7.797 7.797c4.411 0 7.797-3.386 7.797-7.797s-3.386-7.797-7.797-7.797z"/>
+    <circle cx="12" cy="12" r="4" fill="white"/>
+  </svg>
+);
 
 const ArtistProfileGuide = () => {
   const navigate = useNavigate();
@@ -147,23 +162,23 @@ const ArtistProfileGuide = () => {
         {/* Platform Verification Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Spotify Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border-l-4 border-[#1DB954]">
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-green-500 rounded-xl">
-                <Music className="w-6 h-6 text-white" />
+              <div className="p-3 bg-[#1DB954] rounded-xl shadow-lg">
+                <SpotifyLogo className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 Spotify for Artists
               </h2>
             </div>
 
             <div className="space-y-6">
               {verificationSteps.spotify.map((step, index) => (
-                <div key={index} className="border-l-4 border-green-500 pl-4">
-                  <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-2">
+                <div key={index} className="border-l-4 border-[#1DB954] pl-4 bg-[#1DB954]/5 dark:bg-[#1DB954]/10 rounded-r-lg py-3">
+                  <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
                     {index + 1}. {step.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-3">
+                  <p className="text-gray-700 dark:text-gray-300 mb-3">
                     {step.description}
                   </p>
                   {step.link && (
@@ -171,7 +186,7 @@ const ArtistProfileGuide = () => {
                       href={step.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300 font-medium"
+                      className="inline-flex items-center gap-2 text-[#1DB954] hover:text-[#1ed760] dark:text-[#1ed760] dark:hover:text-[#1DB954] font-medium transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" />
                       {step.linkText}
@@ -183,23 +198,23 @@ const ArtistProfileGuide = () => {
           </div>
 
           {/* Apple Music Section */}
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border-l-4 border-gradient-to-r from-[#FA2D48] to-[#FF6B35]" style={{ borderImage: 'linear-gradient(45deg, #FA2D48, #FF6B35) 1' }}>
             <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-gray-800 dark:bg-gray-700 rounded-xl">
-                <Apple className="w-6 h-6 text-white" />
+              <div className="p-3 bg-gradient-to-r from-[#FA2D48] to-[#FF6B35] rounded-xl shadow-lg">
+                <AppleMusicLogo className="w-6 h-6 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 Apple Music for Artists
               </h2>
             </div>
 
             <div className="space-y-6">
               {verificationSteps.apple.map((step, index) => (
-                <div key={index} className="border-l-4 border-gray-700 dark:border-gray-600 pl-4">
-                  <h3 className="font-semibold text-lg text-gray-900 dark:text-white mb-2">
+                <div key={index} className="border-l-4 border-[#FA2D48] pl-4 bg-gradient-to-r from-[#FA2D48]/5 to-[#FF6B35]/5 dark:from-[#FA2D48]/10 dark:to-[#FF6B35]/10 rounded-r-lg py-3">
+                  <h3 className="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-2">
                     {index + 1}. {step.title}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-3">
+                  <p className="text-gray-700 dark:text-gray-300 mb-3">
                     {step.description}
                   </p>
                   {step.link && (
@@ -207,7 +222,7 @@ const ArtistProfileGuide = () => {
                       href={step.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200 font-medium"
+                      className="inline-flex items-center gap-2 text-[#FA2D48] hover:text-[#FF6B35] dark:text-[#FF6B35] dark:hover:text-[#FA2D48] font-medium transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" />
                       {step.linkText}
@@ -221,7 +236,7 @@ const ArtistProfileGuide = () => {
 
         {/* Profile Elements */}
         <div className="space-y-6">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 text-center">
             {t('프로필 구성 요소', 'Profile Elements')}
           </h2>
 
@@ -238,10 +253,10 @@ const ArtistProfileGuide = () => {
                       <Icon className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">{section.title}</h3>
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">{section.title}</h3>
                       <ul className="space-y-2">
                         {section.items.map((item, itemIndex) => (
-                          <li key={itemIndex} className="flex items-start gap-2 text-gray-600 dark:text-gray-400">
+                          <li key={itemIndex} className="flex items-start gap-2 text-gray-700 dark:text-gray-300">
                             <span className="text-purple-500 mt-1">•</span>
                             {item}
                           </li>
@@ -257,7 +272,7 @@ const ArtistProfileGuide = () => {
 
         {/* Best Practices */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-lg">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6 flex items-center gap-3">
             <AlertCircle className="w-6 h-6 text-purple-500" />
             {t('모범 사례', 'Best Practices')}
           </h2>
@@ -265,7 +280,7 @@ const ArtistProfileGuide = () => {
             {bestPractices.map((practice, index) => (
               <div key={index} className="flex items-start gap-3">
                 <CheckCircle className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" />
-                <p className="text-gray-600 dark:text-gray-400">{practice}</p>
+                <p className="text-gray-700 dark:text-gray-300">{practice}</p>
               </div>
             ))}
           </div>
@@ -302,18 +317,18 @@ const ArtistProfileGuide = () => {
               href="https://artists.spotify.com/ko/claim"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-gray-900 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#1DB954] text-white rounded-lg hover:bg-[#1ed760] transition-colors font-medium shadow-lg"
             >
-              <Music className="w-5 h-5" />
+              <SpotifyLogo className="w-5 h-5" />
               Spotify for Artists
             </a>
             <a
               href="https://artists.apple.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors font-medium"
+              className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#FA2D48] to-[#FF6B35] text-white rounded-lg hover:from-[#FF6B35] hover:to-[#FA2D48] transition-all font-medium shadow-lg"
             >
-              <Apple className="w-5 h-5" />
+              <AppleMusicLogo className="w-5 h-5" />
               Apple Music for Artists
             </a>
           </div>

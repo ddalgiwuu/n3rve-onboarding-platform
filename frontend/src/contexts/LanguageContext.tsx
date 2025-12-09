@@ -24,28 +24,52 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   // Load from localStorage on mount
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const storedValue = localStorage.getItem('language-storage');
-        if (storedValue) {
-          const parsed = JSON.parse(storedValue);
-          // Handle legacy format from zustand/redux
-          if (parsed.state) {
-            setLanguageState({
-              language: parsed.state.language || 'ko',
-              _hasHydrated: true
-            });
+    const loadLanguageState = () => {
+      if (typeof window !== 'undefined') {
+        try {
+          const storedValue = localStorage.getItem('language-storage');
+          console.log('Language hydration - stored value:', storedValue);
+          if (storedValue) {
+            const parsed = JSON.parse(storedValue);
+            console.log('Language hydration - parsed value:', parsed);
+            // Handle legacy format from zustand/redux
+            if (parsed.state) {
+              console.log('Language hydration - using state format');
+              setLanguageState({
+                language: parsed.state.language || 'ko',
+                _hasHydrated: true
+              });
+            } else {
+              console.log('Language hydration - using direct format');
+              setLanguageState({ ...parsed, _hasHydrated: true });
+            }
           } else {
-            setLanguageState({ ...parsed, _hasHydrated: true });
+            console.log('Language hydration - no stored value, setting default');
+            setLanguageState(prev => ({ ...prev, _hasHydrated: true }));
           }
-        } else {
+        } catch (error) {
+          console.warn('Failed to load language from localStorage:', error);
+          console.log('Language hydration - error, setting hydrated true');
           setLanguageState(prev => ({ ...prev, _hasHydrated: true }));
         }
-      } catch (error) {
-        console.warn('Failed to load language from localStorage:', error);
-        setLanguageState(prev => ({ ...prev, _hasHydrated: true }));
       }
-    }
+    };
+
+    // Load immediately
+    loadLanguageState();
+
+    // Force hydration after 500ms if it hasn't happened yet
+    const timeoutId = setTimeout(() => {
+      setLanguageState(prev => {
+        if (!prev._hasHydrated) {
+          console.log('Language hydration - forcing hydration after timeout');
+          return { ...prev, _hasHydrated: true };
+        }
+        return prev;
+      });
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
   }, []);
 
   // Save to localStorage when language state changes
