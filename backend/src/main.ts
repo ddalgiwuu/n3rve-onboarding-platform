@@ -11,9 +11,10 @@ async function bootstrap() {
     cors: {
       origin: [
         'http://localhost:3000',
-        'http://localhost:5173', 
+        'http://localhost:5173',
         'https://n3rve-onboarding.com',
-        'http://n3rve-onboarding.com'
+        'http://n3rve-onboarding.com',
+        'https://n3rve-onboarding-platform.vercel.app' // Vercel frontend
       ],
       credentials: true,
       methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
@@ -27,9 +28,10 @@ async function bootstrap() {
   app.use(cors({
     origin: [
       'http://localhost:3000',
-      'http://localhost:5173', 
+      'http://localhost:5173',
       'https://n3rve-onboarding.com',
-      'http://n3rve-onboarding.com'
+      'http://n3rve-onboarding.com',
+      'https://n3rve-onboarding-platform.vercel.app' // Vercel frontend
     ],
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
