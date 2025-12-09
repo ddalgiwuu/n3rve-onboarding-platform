@@ -4,7 +4,7 @@ import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from
 import toast from 'react-hot-toast';
 import { useAuthStore } from '@/store/auth.store';
 import useSafeStore from '@/hooks/useSafeStore';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/useTranslationFixed';
 import LanguageToggle from '@/components/common/LanguageToggle';
 import { Mail, Lock, Eye, EyeOff, Music, Sparkles, Shield, ArrowRight, CheckCircle2 } from 'lucide-react';
 import api from '@/lib/api';
@@ -158,7 +158,7 @@ export default function ModernLoginPage() {
     // Store returnUrl in sessionStorage to persist across OAuth redirect
     sessionStorage.setItem('returnUrl', returnUrl);
 
-    const googleAuthUrl = `${import.meta.env.VITE_API_URL}/auth/google`;
+    const googleAuthUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/google`;
 
     // Safari-friendly approach: Use popup window for OAuth
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
@@ -372,7 +372,7 @@ export default function ModernLoginPage() {
                 <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
                   N3RVE Platform
                 </h1>
-                <p className="mt-2 text-gray-600 dark:text-gray-400">
+                <p className="mt-2 text-gray-800 dark:text-gray-300 font-semibold">
                   {t('auth.subtitle', '공식 음원 유통 플랫폼', 'Official Music Distribution Platform', '公式音楽配信プラットフォーム')}
                 </p>
               </motion.div>
@@ -505,7 +505,7 @@ export default function ModernLoginPage() {
                                   </motion.div>
                                 )}
                               </AnimatePresence>
-                              <span className="font-medium text-gray-900 dark:text-gray-100">
+                              <span className="font-medium text-gray-900 dark:text-gray-100 whitespace-nowrap">
                                 {t('auth.continueWithGoogle', 'Google로 계속하기', 'Continue with Google', 'Googleで続ける')}
                               </span>
                               <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 group-hover:translate-x-1 transition-transform" />
