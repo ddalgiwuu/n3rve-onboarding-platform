@@ -13,6 +13,7 @@ import { clsx } from 'clsx';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslationFixed';
 import { useAuthStore } from '@/store/auth.store';
+import api from '@/lib/api';
 
 interface ReleaseProject {
   id: string;
@@ -58,22 +59,14 @@ export default function ReleaseProjects() {
     queryFn: async () => {
       try {
         const endpoint = isAdmin
-          ? 'http://localhost:3001/api/admin/submissions'
-          : 'http://localhost:3001/api/submissions/user';
+          ? '/admin/submissions'
+          : '/submissions/user';
 
-        const response = await fetch(endpoint, {
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' }
-        });
-
-        if (!response.ok) {
-          if (response.status === 401) return [];
-          throw new Error('Failed to fetch projects');
-        }
-
-        return response.json();
+        const response = await api.get(endpoint);
+        return response.data;
       } catch (err) {
         console.error('Error fetching projects:', err);
+        if (err.response?.status === 401) return [];
         return [];
       }
     },
