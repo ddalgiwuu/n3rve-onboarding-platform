@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Building2, User, Mail, Lock, EyeOff, Phone, Music, Shield, Users, Sparkles, AlertCircle, Globe, Headphones, TrendingUp, Briefcase } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/useTranslationFixed';
 import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/auth.store';
 import toast from 'react-hot-toast';

@@ -16,6 +16,8 @@ import { SavedArtistsModule } from './saved-artists/saved-artists.module';
 import { DSPModule } from './dsp/dsp.module';
 import { DropboxModule } from './dropbox/dropbox.module';
 import { UserModule } from './user/user.module';
+import { DigitalProductsModule } from './digital-products/digital-products.module';
+import { FeatureReportsModule } from './feature-reports/feature-reports.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { UserModule } from './user/user.module';
     DSPModule,
     DropboxModule,
     UserModule,
+    DigitalProductsModule,
+    FeatureReportsModule,
   ],
   controllers: [AppController],
   providers: [

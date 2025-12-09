@@ -1,9 +1,9 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield, UserCog, Building2 } from 'lucide-react';
+import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield, UserCog, Building2, BarChart3, UserCircle, Folder } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/auth.store';
 import { useLanguageStore } from '@/store/language.store';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/useTranslationFixed';
 import useSafeStore from '@/hooks/useSafeStore';
 import { useEffect, useRef } from 'react';
 
@@ -21,7 +21,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isAdmin = user?.role === 'ADMIN';
   const isInAdminConsole = location.pathname.startsWith('/admin');
-
 
   // Color mapping function to avoid dynamic class concatenation
   const getIconColorClasses = (color: string, isActive: boolean) => {
@@ -116,7 +115,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const customerMenuItems = [
     { icon: Home, label: t('nav.dashboard'), path: '/dashboard', color: 'text-blue-600' },
     { icon: Upload, label: t('nav.newSubmission'), path: '/release-submission-modern', color: 'text-n3rve-main', badge: 'NEW' },
-    { icon: FolderOpen, label: t('nav.submissionHistory'), path: '/submissions', color: 'text-purple-600' },
+    { icon: Folder, label: 'Release Projects', path: '/release-projects', color: 'text-purple-600' },
+    { icon: BarChart3, label: 'Feature Reports', path: '/feature-reports', color: 'text-green-600' },
+    { icon: UserCircle, label: 'Artist Roster', path: '/artist-roster', color: 'text-pink-600' },
+    { icon: FolderOpen, label: t('nav.submissionHistory'), path: '/submissions', color: 'text-gray-600' },
     { icon: FileText, label: t('nav.guide'), path: '/guide', color: 'text-green-600' },
     { icon: Music, label: t('nav.artistProfile'), path: '/artist-profile-guide', color: 'text-pink-600' },
     { icon: Building2, label: t('nav.accountManagement'), path: '/account', color: 'text-indigo-600' },
@@ -147,25 +149,25 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         className={cn(
           'w-64 sm:w-72 h-screen',
           'fixed top-0 left-0 z-50',
-          'glass-effect-ultra backdrop-blur-2xl',
-          'border-r border-white/30 dark:border-white/20',
+          'bg-surface backdrop-blur-2xl',
+          'border-r border-modern',
           'shadow-2xl shadow-black/10 dark:shadow-black/30',
           isOpen ? 'translate-x-0' : '-translate-x-full',
           'transition-all duration-500 ease-in-out',
           'will-change-transform',
-          // Add subtle gradient overlay
-          'before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/10 before:via-transparent before:to-white/5',
-          'dark:before:from-white/5 dark:before:via-transparent dark:before:to-white/2',
+          // Add subtle gradient overlay with modern surface
+          'before:absolute before:inset-0 before:bg-gradient-to-b before:from-n3rve-500/5 before:via-transparent before:to-purple-500/5',
+          'dark:before:from-n3rve-400/5 dark:before:via-transparent dark:before:to-purple-400/5',
           'before:pointer-events-none before:z-0'
         )}
       >
         <div className="h-full flex flex-col relative z-10">
           {/* Header */}
-          <div className="p-6 border-b border-white/20 dark:border-white/10 bg-white/5 dark:bg-white/5 backdrop-blur-sm">
+          <div className="p-6 border-b border-modern bg-surface backdrop-blur-sm">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                {/* Logo with light/dark mode support and glass container */}
-                <div className="h-10 flex items-center p-2 rounded-xl glass-effect-light hover:glass-effect transition-all duration-300">
+                {/* Logo with light/dark mode support and modern glass container */}
+                <div className="h-10 flex items-center p-2 rounded-xl bg-surface border-modern-soft magnetic glass-shimmer transition-all duration-300">
                   <img
                     src="/assets/logos/n3rve-logo.svg"
                     alt="N3RVE"
@@ -182,7 +184,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               {/* Close button for mobile */}
               <button
                 onClick={onClose}
-                className="lg:hidden p-2.5 glass-effect-light hover:glass-effect-strong rounded-xl transition-all duration-300 hover:scale-105 active:scale-95"
+                className="lg:hidden p-2.5 bg-surface border-modern-soft hover:bg-gray-100 dark:hover:bg-gray-800/50 rounded-xl magnetic transition-all duration-300"
               >
                 <X className="w-6 h-6 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200" />
               </button>
@@ -190,16 +192,16 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </div>
 
           {/* User Profile Section */}
-          <div className="mx-4 my-4 p-4 glass-effect-light rounded-2xl border border-white/30 dark:border-white/20 hover:glass-effect transition-all duration-300 hover:shadow-lg">
+          <div className="mx-4 my-4 p-4 card-premium magnetic transition-all duration-300">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-n3rve-400 to-n3rve-600 rounded-full flex items-center justify-center ring-2 ring-white/20 dark:ring-white/10 shadow-lg">
+                <div className="w-10 h-10 bg-gradient-to-br from-n3rve-400 to-n3rve-600 rounded-full flex items-center justify-center ring-2 ring-n3rve-400/30 shadow-xl magnetic">
                   <span className="text-white font-semibold text-sm">
                     {user?.name?.charAt(0).toUpperCase() || 'U'}
                   </span>
                 </div>
-                {/* Online indicator */}
-                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-white dark:border-gray-800 animate-pulse"></div>
+                {/* Online indicator with glow */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-surface shadow-lg shadow-green-400/50 glow-pulse"></div>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
@@ -230,23 +232,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   className={({ isActive }) =>
                     cn(
                       'group flex items-center gap-3 px-4 py-4 rounded-2xl transition-all duration-300',
-                      'glass-effect-light hover:glass-effect-strong hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]',
-                      'border border-transparent hover:border-white/40 dark:hover:border-white/20',
-                      'hover:-translate-y-0.5 transform-gpu',
+                      'bg-surface border-modern-soft magnetic hover:shadow-xl transform-gpu',
+                      'hover:bg-gray-100 dark:hover:bg-gray-800/50',
                       'backdrop-blur-md',
-                      isActive && 'glass-purple border-n3rve-500/30 dark:border-n3rve-400/30 shadow-lg shadow-n3rve-500/20 dark:shadow-n3rve-400/20 scale-[1.02]'
+                      isActive && 'bg-n3rve-500/10 dark:bg-n3rve-400/10 border-n3rve-500/30 dark:border-n3rve-400/30 shadow-lg shadow-n3rve-500/20 dark:shadow-n3rve-400/20 scale-[1.02]'
                     )
                   }
                 >
                   {({ isActive }) => (
                     <>
                       <div className={cn(
-                        'p-3 rounded-xl transition-all duration-300 glass-effect-light',
-                        'group-hover:glass-effect-strong group-hover:scale-110 group-hover:shadow-lg',
+                        'p-3 rounded-xl transition-all duration-300 bg-surface border-modern-soft',
+                        'group-hover:scale-110 group-hover:shadow-lg magnetic',
                         'group-hover:backdrop-blur-lg',
                         isActive
                           ? 'bg-n3rve-500/20 dark:bg-n3rve-400/20 shadow-inner shadow-n3rve-500/30 dark:shadow-n3rve-400/30 scale-110'
-                          : 'group-hover:bg-white/30 dark:group-hover:bg-white/10'
+                          : 'group-hover:bg-gray-100 dark:group-hover:bg-gray-700/50'
                       )}>
                         <item.icon className={cn(
                           'w-5 h-5 transition-all duration-300 transform-gpu',
@@ -265,7 +266,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         {item.label}
                       </span>
                       {'badge' in item && item.badge && (
-                        <span className="inline-flex items-center gap-1 text-xs glass-effect-light bg-n3rve-main/20 text-n3rve-main px-3 py-1 rounded-full font-semibold animate-pulse border border-n3rve-main/30 shadow-lg shadow-n3rve-main/20">
+                        <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-n3rve-500 to-n3rve-600 text-white px-3 py-1 rounded-full font-semibold glow-pulse border border-n3rve-400/50 shadow-lg shadow-n3rve-500/30 magnetic">
                           <Sparkles className="w-3 h-3 animate-bounce" />
                           {item.badge}
                         </span>
@@ -289,9 +290,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       }, 150);
                     }
                   }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-2xl glass-effect-strong hover:glass-effect-ultra transition-all duration-300 hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] border border-red-500/20 hover:border-red-500/40 hover:-translate-y-0.5 transform-gpu"
+                  className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-surface border-modern-soft hover:bg-red-50 dark:hover:bg-red-900/20 magnetic transition-all duration-300 border border-red-500/20 hover:border-red-500/40 transform-gpu"
                 >
-                  <div className="p-3 bg-red-500/20 dark:bg-red-400/20 rounded-xl glass-effect-light hover:scale-110 transition-all duration-300 shadow-lg shadow-red-500/20">
+                  <div className="p-3 bg-red-500/20 dark:bg-red-400/20 rounded-xl bg-surface border-modern-soft magnetic hover:scale-110 transition-all duration-300 shadow-lg shadow-red-500/20">
                     <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
                   <span className="font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-all duration-300">
@@ -306,12 +307,12 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-white/20 dark:border-white/10 bg-white/5 dark:bg-white/5 backdrop-blur-sm">
+          <div className="p-4 border-t border-modern bg-surface backdrop-blur-sm">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl glass-effect-light hover:glass-effect-strong transition-all duration-300 group hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] border border-transparent hover:border-red-500/30 hover:-translate-y-0.5 transform-gpu"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-surface border-modern-soft hover:bg-red-50 dark:hover:bg-red-900/20 magnetic transition-all duration-300 group border border-transparent hover:border-red-500/30 transform-gpu"
             >
-              <div className="p-3 rounded-xl glass-effect-light group-hover:bg-red-500/20 dark:group-hover:bg-red-400/20 group-hover:scale-110 transition-all duration-300 shadow-lg group-hover:shadow-red-500/20">
+              <div className="p-3 rounded-xl bg-surface border-modern-soft group-hover:bg-red-500/20 dark:group-hover:bg-red-400/20 magnetic group-hover:scale-110 transition-all duration-300 shadow-lg group-hover:shadow-red-500/20">
                 <LogOut className="w-5 h-5 text-gray-500 group-hover:text-red-600 dark:group-hover:text-red-400 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-12" />
               </div>
               <span className="font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-all duration-300 group-hover:font-semibold">

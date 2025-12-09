@@ -34,6 +34,7 @@ import { SavedArtistsProvider } from '@/contexts/SavedArtistsContext';
 import TranslationInput from '@/components/TranslationInput';
 import TrackTranslationUI from '@/components/TrackTranslationUI';
 import TerritorySelector from '@/components/TerritorySelector';
+import LanguageSelector from '@/components/LanguageSelector';
 import Step11MarketingDetails from '@/components/steps/Step11MarketingDetails';
 import Step12GoalsExpectations from '@/components/steps/Step12GoalsExpectations';
 import SearchableMultiSelect from '@/components/ui/SearchableMultiSelect';
@@ -45,6 +46,7 @@ import ModernWaveform from '@/components/ModernWaveform';
 import AudioPlayer from '@/components/AudioPlayer';
 import { extractAudioMetadata, formatDuration, formatSampleRate, type AudioMetadata } from '@/utils/audioMetadata';
 import DolbyAtmosDecisionCard from '@/components/DolbyAtmosDecisionCard';
+import { FinalReviewContent } from '@/components/review';
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -161,12 +163,16 @@ interface Track {
   publishers?: Artist[]
   isrc?: string
   musicVideoISRC?: string
+  hasMusicVideo?: boolean  // Track-level flag for music video
+  musicVideoFile?: File    // Track-level music video file
+  musicVideoThumbnail?: File  // Track-level music video thumbnail
   duration?: string
   genre?: string
   subgenre?: string
   language?: string
   audioLanguage?: string
   lyrics?: string
+  lyricsFile?: File  // Track-level lyrics file
   explicit?: boolean
   explicitContent?: boolean
   remixVersion?: string
@@ -446,7 +452,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
   // Translation states
   const [showAlbumTranslations, setShowAlbumTranslations] = useState(false);
-  const [activeAlbumTranslations, setActiveAlbumTranslations] = useState<string[]>([]);
+  const [albumTranslationsArray, setAlbumTranslationsArray] = useState<Array<{id: string, language: string, title: string}>>([]);
   const [trackTranslations, setTrackTranslations] = useState<{ [trackId: string]: string[] }>({});
   const [showTrackTranslations, setShowTrackTranslations] = useState<{ [trackId: string]: boolean }>({});
 
@@ -482,6 +488,19 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
     const newDisplayArtist = generateDisplayArtist(formData.albumArtists, formData.albumFeaturingArtists);
     setFormData(prev => ({ ...prev, displayArtist: newDisplayArtist }));
   }, [formData.albumArtists, formData.albumFeaturingArtists]);
+
+  // Initialize albumTranslationsArray from formData.albumTitleTranslations on mount
+  // or when loading existing data (e.g., edit mode)
+  useEffect(() => {
+    if (Object.keys(formData.albumTitleTranslations || {}).length > 0 && albumTranslationsArray.length === 0) {
+      const translationsArray = Object.entries(formData.albumTitleTranslations).map(([lang, title]) => ({
+        id: `album-trans-${lang}`,
+        language: lang,
+        title: title
+      }));
+      setAlbumTranslationsArray(translationsArray);
+    }
+  }, [formData.albumTitleTranslations]);
 
   // Load existing submission data for edit/resubmit mode
   useEffect(() => {
@@ -646,9 +665,25 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   const updateTrack = useCallback((trackId: string, updates: Partial<Track>) => {
     setFormData(prev => ({
       ...prev,
-      tracks: prev.tracks.map(track =>
-        track.id === trackId ? { ...track, ...updates } : track
-      )
+      tracks: prev.tracks.map(track => {
+        if (track.id !== trackId) return track;
+
+        // Auto-update hasMusicVideo based on musicVideoFile
+        const updatedTrack = { ...track, ...updates };
+
+        // If musicVideoFile is being added, auto-check hasMusicVideo
+        if (updates.musicVideoFile !== undefined) {
+          updatedTrack.hasMusicVideo = updates.musicVideoFile ? true : false;
+
+          // If removing music video file, also clear ISRC and thumbnail
+          if (!updates.musicVideoFile) {
+            updatedTrack.musicVideoISRC = undefined;
+            updatedTrack.musicVideoThumbnail = undefined;
+          }
+        }
+
+        return updatedTrack;
+      })
     }));
   }, []);
 
@@ -905,6 +940,12 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
           highlightField('release-time-input');
           return false;
         }
+        // Validate Cover Art (files are now in Step 1)
+        if (!formData.coverArt) {
+          toast.error(t('커버 아트를 업로드해주세요', 'Please upload cover art', 'カバーアートをアップロードしてください'));
+          highlightField('cover-art-upload');
+          return false;
+        }
         return true;
 
       case 2: // Tracks
@@ -931,22 +972,28 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
           return false;
         }
 
-        return true;
-
-      case 3: // Files
-        if (!formData.coverArt) {
-          toast.error(t('커버 아트를 업로드해주세요', 'Please upload cover art', 'カバーアートをアップロードしてください'));
-          highlightField('cover-art-upload');
-          return false;
-        }
+        // Validate Audio Files (files are now in Step 2)
         if (formData.audioFiles.length !== formData.tracks.length) {
           toast.error(t('트랙 수와 오디오 파일 수가 일치해야 합니다', 'Number of tracks and audio files must match', 'トラック数とオーディオファイル数が一致する必要があります'));
           highlightField('audio-files-upload');
           return false;
         }
+
         return true;
 
-      case 4: // Marketing Details
+      case 3: // Distribution
+        if (formData.distributionType === 'selected' && formData.selectedStores.length === 0) {
+          toast.error(t('최소 1개 이상의 스토어를 선택해주세요', 'Please select at least one store', '少なくとも1つのストアを選択してください'));
+          highlightField('store-selection');
+          return false;
+        }
+        // Territory validation is handled by TerritorySelector component
+        return true;
+
+      case 4: // Final Review
+        return true;
+
+      case 99: // Marketing Details (REMOVED - keeping for reference)
         if (!formData.marketingInfo?.projectType) {
           toast.error(t('프로젝트 타입을 선택해주세요', 'Please select project type', 'プロジェクトタイプを選択してください'));
           return false;
@@ -977,7 +1024,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         }
         return true;
 
-      case 5: // Goals & Expectations
+      case 98: // Goals & Expectations (REMOVED)
         // Only require goals if priority is 5 (highest)
         if (formData.marketingInfo?.priorityLevel === 5) {
           if (!formData.marketingInfo?.campaignGoals || formData.marketingInfo.campaignGoals.length === 0) {
@@ -993,7 +1040,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         }
         return true;
 
-      case 6: // Distribution
+      case 97: // Distribution (REMOVED - now case 3)
         if (formData.distributionType === 'selected' && formData.selectedStores.length === 0) {
           toast.error(t('최소 1개 이상의 스토어를 선택해주세요', 'Please select at least one store', '少なくとも1つのストアを選択してください'));
           highlightField('store-selection');
@@ -1016,7 +1063,17 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
       }
 
       setCompletedSteps(prev => [...new Set([...prev, currentStep])]);
-      setCurrentStep(prev => prev + 1);
+
+      // Skip steps: Only use 1 (Album) → 2 (Tracks) → 6 (Distribution) → 7 (Review)
+      // Skip: 3 (Files - duplicate), 4 (Marketing), 5 (Goals)
+      let nextStep = currentStep + 1;
+      if (currentStep === 2) {
+        nextStep = 6; // Skip to Distribution after Tracks
+      } else if (currentStep === 6) {
+        nextStep = 7; // Go to Final Review after Distribution
+      }
+
+      setCurrentStep(nextStep);
     }
   };
 
@@ -1025,13 +1082,58 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
       setIsDolbyDecisionStep(false);
       return;
     }
-    setCurrentStep(prev => prev - 1);
+
+    // Skip steps when going back: 7 (Review) → 6 (Distribution) → 2 (Tracks) → 1 (Album)
+    let prevStep = currentStep - 1;
+    if (currentStep === 7) {
+      prevStep = 6; // From Review back to Distribution
+    } else if (currentStep === 6) {
+      prevStep = 2; // From Distribution back to Tracks
+    }
+
+    setCurrentStep(Math.max(1, prevStep));
   };
 
-  const handleStepClick = (step: number) => {
-    if (step <= currentStep || completedSteps.includes(step - 1)) {
-      setCurrentStep(step);
+  const handleStepClick = (displayStep: number) => {
+    // Map display step (1-4) to actual step (1, 2, 6, 7)
+    const stepMapping: Record<number, number> = {
+      1: 1, // Album Info
+      2: 2, // Tracks
+      3: 6, // Distribution
+      4: 7  // Final Review
+    };
+
+    const actualStep = stepMapping[displayStep];
+    if (actualStep && (displayStep <= getCurrentDisplayStep() || completedSteps.includes(actualStep - 1))) {
+      setCurrentStep(actualStep);
     }
+  };
+
+  // Handle edit navigation from Final Review
+  const handleEdit = (stepNumber: number) => {
+    // stepNumber is actual step (1, 2, 6)
+    // Convert to display step for handleStepClick
+    const reverseMapping: Record<number, number> = {
+      1: 1, // Album Info
+      2: 2, // Tracks
+      6: 3, // Distribution
+    };
+
+    const displayStep = reverseMapping[stepNumber];
+    if (displayStep) {
+      handleStepClick(displayStep);
+    }
+  };
+
+  // Get current display step (1-4) from actual step (1, 2, 6, 7)
+  const getCurrentDisplayStep = () => {
+    const reverseMapping: Record<number, number> = {
+      1: 1,
+      2: 2,
+      6: 3,
+      7: 4
+    };
+    return reverseMapping[currentStep] || 1;
   };
 
   // Calculate days until release
@@ -1212,19 +1314,32 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         submissionData.append('motionArtFile', formData.motionArtFile);
       }
 
-      // Add Music Video files
-      if (formData.musicVideoFiles) {
-        formData.musicVideoFiles.forEach((file) => {
-          submissionData.append('musicVideoFiles', file);
-        });
-      }
+      // Add Music Video files (track-level)
+      formData.tracks.forEach((track) => {
+        if (track.musicVideoFile) {
+          submissionData.append('musicVideoFiles', track.musicVideoFile);
+          // Add track ID as metadata for backend to associate file with track
+          submissionData.append(`musicVideoFile_trackId_${track.id}`, track.id);
+        }
+      });
 
-      // Add Music Video Thumbnails
-      if (formData.musicVideoThumbnails) {
-        formData.musicVideoThumbnails.forEach((file) => {
-          submissionData.append('musicVideoThumbnails', file);
-        });
-      }
+      // Add Music Video Thumbnails (track-level)
+      formData.tracks.forEach((track) => {
+        if (track.musicVideoThumbnail) {
+          submissionData.append('musicVideoThumbnails', track.musicVideoThumbnail);
+          // Add track ID as metadata for backend to associate thumbnail with track
+          submissionData.append(`musicVideoThumbnail_trackId_${track.id}`, track.id);
+        }
+      });
+
+      // Add Lyrics Files (track-level)
+      formData.tracks.forEach((track) => {
+        if (track.lyricsFile) {
+          submissionData.append('lyricsFiles', track.lyricsFile);
+          // Add track ID as metadata for backend to associate lyrics with track
+          submissionData.append(`lyricsFile_trackId_${track.id}`, track.id);
+        }
+      });
 
       // Add Lyrics files
       if (formData.lyricsFiles) {
@@ -1621,10 +1736,30 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                   </button>
                 </div>
 
-                {/* ISRC */}
+                {/* Music Video Toggle */}
+                <div className="col-span-2">
+                  <label className="flex items-center gap-3 cursor-pointer p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors">
+                    <input
+                      type="checkbox"
+                      checked={track.hasMusicVideo || false}
+                      onChange={(e) => updateTrack(track.id, { hasMusicVideo: e.target.checked })}
+                      className="w-5 h-5 text-purple-600 rounded focus:ring-2 focus:ring-purple-500"
+                    />
+                    <div className="flex items-center gap-2">
+                      <Film className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        {t('이 트랙에 뮤직비디오가 있습니다', 'This track has a music video', 'このトラックにはミュージックビデオがあります')}
+                      </span>
+                    </div>
+                  </label>
+                </div>
+
+                {/* ISRC - Label changes based on track's music video flag */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                ISRC
+                    {track.hasMusicVideo
+                      ? t('오디오 녹음 ISRC', 'Audio Recording ISRC', 'オーディオ録音ISRC')
+                      : 'ISRC'}
                   </label>
                   <input
                     type="text"
@@ -1635,37 +1770,124 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                   />
                 </div>
 
-                {/* Music Video ISRC */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('뮤직비디오 ISRC', 'Music Video ISRC', 'ミュージックビデオISRC')}
-                  </label>
-                  <input
-                    type="text"
-                    value={track.musicVideoISRC || ''}
-                    onChange={(e) => updateTrack(track.id, { musicVideoISRC: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                    placeholder="KR-XXX-YY-NNNNN"
-                  />
-                </div>
+                {/* Music Video ISRC - Only show when track has music video */}
+                {track.hasMusicVideo && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      {t('뮤직비디오 ISRC', 'Music Video ISRC', 'ミュージックビデオISRC')}
+                    </label>
+                    <input
+                      type="text"
+                      value={track.musicVideoISRC || ''}
+                      onChange={(e) => updateTrack(track.id, { musicVideoISRC: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                      placeholder="KR-XXX-YY-NNNNN"
+                    />
+                  </div>
+                )}
 
-                {/* Title Language */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    {t('제목 언어', 'Title Language', 'タイトル言語')}
-                  </label>
-                  <select
-                    value={track.titleLanguage || 'Korean'}
-                    onChange={(e) => updateTrack(track.id, { titleLanguage: e.target.value as any })}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="Korean">{t('한국어', 'Korean', '韓国語')}</option>
-                    <option value="English">{t('영어', 'English', '英語')}</option>
-                    <option value="Japanese">{t('일본어', 'Japanese', '日本語')}</option>
-                    <option value="Chinese">{t('중국어', 'Chinese', '中国語')}</option>
-                    <option value="Other">{t('기타', 'Other', 'その他')}</option>
-                  </select>
-                </div>
+                {/* Music Video File Upload - Only show when track has music video */}
+                {track.hasMusicVideo && (
+                  <div className="col-span-2 space-y-3">
+                    {/* Music Video File */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('뮤직비디오 파일', 'Music Video File', 'ミュージックビデオファイル')}
+                      </label>
+                      {track.musicVideoFile ? (
+                        <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-700">
+                          <Film className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              {track.musicVideoFile.name}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {(track.musicVideoFile.size / 1024 / 1024).toFixed(2)} MB
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => updateTrack(track.id, { musicVideoFile: undefined })}
+                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors">
+                          <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-6 h-6 text-gray-400 mb-2" />
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {t('클릭하여 뮤직비디오 업로드', 'Click to upload music video', 'クリックしてアップロード')}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                              MP4, MOV (max 500MB)
+                            </p>
+                          </div>
+                          <input
+                            type="file"
+                            accept="video/mp4,video/quicktime"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                updateTrack(track.id, { musicVideoFile: file });
+                              }
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+
+                    {/* Music Video Thumbnail */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('뮤직비디오 썸네일', 'Music Video Thumbnail', 'ミュージックビデオサムネイル')} {t('(선택사항)', '(Optional)', '(オプション)')}
+                      </label>
+                      {track.musicVideoThumbnail ? (
+                        <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-lg border border-purple-200 dark:border-purple-700">
+                          <Image className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                              {track.musicVideoThumbnail.name}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                              {(track.musicVideoThumbnail.size / 1024).toFixed(2)} KB
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => updateTrack(track.id, { musicVideoThumbnail: undefined })}
+                            className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1"
+                          >
+                            <X className="w-5 h-5" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-purple-500 dark:hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/10 transition-colors">
+                          <div className="flex flex-col items-center justify-center pt-4 pb-5">
+                            <Upload className="w-5 h-5 text-gray-400 mb-1" />
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              {t('썸네일 업로드', 'Upload thumbnail', 'サムネイルアップロード')}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
+                              JPG, PNG (1920x1080)
+                            </p>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/jpg"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                updateTrack(track.id, { musicVideoThumbnail: file });
+                              }
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Audio Language */}
                 <div>
@@ -1684,8 +1906,75 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                     <option value="Spanish">{t('스페인어', 'Spanish', 'スペイン語')}</option>
                     <option value="French">{t('프랑스어', 'French', 'フランス語')}</option>
                     <option value="German">{t('독일어', 'German', 'ドイツ語')}</option>
+                    <option value="Instrumental">{t('인스트루멘탈', 'Instrumental', 'インストゥルメンタル')}</option>
                     <option value="Other">{t('기타', 'Other', 'その他')}</option>
                   </select>
+                </div>
+
+                {/* Track Version */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    {t('트랙 버전', 'Track Version', 'トラックバージョン')} {t('(선택사항)', '(Optional)', '(オプション)')}
+                  </label>
+                  <input
+                    type="text"
+                    key={`remixVersion-${track.id}`}
+                    defaultValue={track.remixVersion || ''}
+                    onBlur={(e) => {
+                      updateTrack(track.id, { remixVersion: e.target.value });
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
+                    placeholder={t('예: Remix, Acoustic, Live', 'e.g., Remix, Acoustic, Live', '例: Remix, Acoustic, Live')}
+                  />
+                </div>
+
+                {/* Lyrics File Upload */}
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t('가사 파일', 'Lyrics File', '歌詞ファイル')} {t('(선택사항)', '(Optional)', '(オプション)')}
+                  </label>
+                  {track.lyricsFile ? (
+                    <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-700">
+                      <FileText className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                          {track.lyricsFile.name}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          {(track.lyricsFile.size / 1024).toFixed(2)} KB
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => updateTrack(track.id, { lyricsFile: undefined })}
+                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-1"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-20 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg cursor-pointer hover:border-green-500 dark:hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/10 transition-colors">
+                      <div className="flex flex-col items-center justify-center pt-4 pb-5">
+                        <Upload className="w-5 h-5 text-gray-400 mb-1" />
+                        <p className="text-xs text-gray-600 dark:text-gray-400">
+                          {t('가사 파일 업로드', 'Upload lyrics file', '歌詞ファイルアップロード')}
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
+                          TXT, LRC (max 1MB)
+                        </p>
+                      </div>
+                      <input
+                        type="file"
+                        accept=".txt,.lrc,.srt"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            updateTrack(track.id, { lyricsFile: file });
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
                 </div>
 
                 {/* Volume (for multi-volume albums) */}
@@ -1751,6 +2040,15 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
       prevProps.track.trackNumber === nextProps.track.trackNumber &&
       prevProps.track.titleLanguage === nextProps.track.titleLanguage &&
       prevProps.track.dolbyAtmos === nextProps.track.dolbyAtmos &&
+      prevProps.track.remixVersion === nextProps.track.remixVersion &&
+      prevProps.track.audioLanguage === nextProps.track.audioLanguage &&
+      prevProps.track.isrc === nextProps.track.isrc &&
+      prevProps.track.hasMusicVideo === nextProps.track.hasMusicVideo &&
+      prevProps.track.musicVideoISRC === nextProps.track.musicVideoISRC &&
+      prevProps.track.volume === nextProps.track.volume &&
+      prevProps.track.musicVideoFile?.name === nextProps.track.musicVideoFile?.name &&
+      prevProps.track.musicVideoThumbnail?.name === nextProps.track.musicVideoThumbnail?.name &&
+      prevProps.track.lyricsFile?.name === nextProps.track.lyricsFile?.name &&
       prevProps.index === nextProps.index &&
       prevProps.isTranslationOpen === nextProps.isTranslationOpen
       // onToggleTranslation is excluded from comparison since it's memoized with useCallback
@@ -2132,158 +2430,82 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                   showInlineWarnings={true}
                 />
 
-                {/* Album Title Translations - Modern Design */}
+                {/* Album Title Translations - Using TranslationInput Component */}
                 {showAlbumTranslations && (
-                  <div className="mt-4 animate-in slide-in-from-top-2">
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 rounded-2xl p-6 border border-purple-100 dark:border-purple-800/30">
+                  <div className="mt-4 animate-in slide-in-from-top-2 duration-300">
+                    <div className="bg-gradient-to-br from-purple-50 via-pink-50 to-purple-50 dark:from-purple-900/10 dark:via-pink-900/10 dark:to-purple-900/10 rounded-2xl p-6 border border-purple-200 dark:border-purple-800/30 shadow-sm hover:shadow-md transition-all duration-300">
 
-                      {/* Header with Animation */}
-                      <div className="flex items-center justify-between mb-4">
+                      {/* Header with Enhanced Design */}
+                      <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-                            <Globe className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                          <div className="relative">
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl blur opacity-40"></div>
+                            <div className="relative p-2.5 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+                              <Globe className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            </div>
                           </div>
                           <div>
-                            <h4 className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                            <h4 className="text-base font-bold text-gray-800 dark:text-gray-200 flex items-center gap-2">
                               {t('글로벌 번역', 'Global Translations', 'グローバル翻訳')}
+                              <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-full font-semibold">
+                                {Object.keys(formData.albumTitleTranslations || {}).length}
+                              </span>
                             </h4>
-                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                            <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                               {t('전 세계 팬들을 위한 다국어 지원', 'Multilingual support for global fans', 'グローバルファンのための多言語サポート')}
                             </p>
                           </div>
                         </div>
-                        <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">
-                          {activeAlbumTranslations.length}/{translationLanguages.length} {t('언어', 'languages', '言語')}
-                        </span>
-                      </div>
 
-                      {/* Translations Grid */}
-                      <div className="space-y-3">
-                        {activeAlbumTranslations.length === 0 ? (
-                          <div className="text-center py-8">
-                            <Languages className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
-                            <p className="text-sm text-gray-500 dark:text-gray-400">
-                              {t('아래에서 언어를 선택하여 번역을 추가하세요', 'Select a language below to add translations', '下から言語を選択して翻訳を追加してください')}
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="grid gap-3">
-                            {activeAlbumTranslations.map((langCode, index) => {
-                              const lang = translationLanguages.find(l => l.code === langCode);
-                              return (
-                                <div
-                                  key={langCode}
-                                  className="group bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200"
-                                  style={{ animationDelay: `${index * 50}ms` }}
-                                >
-                                  <div className="flex items-start gap-3">
-                                    {/* Language Flag/Icon */}
-                                    <div className="w-10 h-10 bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-800/20 dark:to-pink-800/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                                      <span className="text-sm font-bold text-purple-700 dark:text-purple-300">
-                                        {langCode.toUpperCase().slice(0, 2)}
-                                      </span>
-                                    </div>
-
-                                    {/* Input Area */}
-                                    <div className="flex-1">
-                                      <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1.5 block">
-                                        {lang?.name}
-                                      </label>
-                                      <input
-                                        type="text"
-                                        value={formData.albumTitleTranslations?.[langCode] || ''}
-                                        onChange={(e) => setFormData(prev => ({
-                                          ...prev,
-                                          albumTitleTranslations: {
-                                            ...prev.albumTitleTranslations,
-                                            [langCode]: e.target.value
-                                          }
-                                        }))}
-                                        onBlur={(e) => {
-                                          const result = validateAlbumTitle(e.target.value);
-                                          if (result.formattedValue && result.formattedValue !== e.target.value) {
-                                            setFormData(prev => ({
-                                              ...prev,
-                                              albumTitleTranslations: {
-                                                ...prev.albumTitleTranslations,
-                                                [langCode]: result.formattedValue
-                                              }
-                                            }));
-                                          }
-                                        }}
-                                        className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border-0 rounded-lg
-                                                 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:bg-white dark:focus:bg-gray-800
-                                                 transition-all duration-200 text-sm text-gray-900 dark:text-gray-100
-                                                 placeholder-gray-400 dark:placeholder-gray-500"
-                                        placeholder={t(`${lang?.name}로 번역`, `Translate to ${lang?.name}`, `${lang?.name}へ翻訳`)}
-                                      />
-                                    </div>
-
-                                    {/* Delete Button */}
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setActiveAlbumTranslations(activeAlbumTranslations.filter(l => l !== langCode));
-                                        const newTranslations = { ...formData.albumTitleTranslations };
-                                        delete newTranslations[langCode];
-                                        setFormData(prev => ({ ...prev, albumTitleTranslations: newTranslations }));
-                                      }}
-                                      className="mt-6 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20
-                                               rounded-lg transition-all duration-200 opacity-0 group-hover:opacity-100"
-                                    >
-                                      <X className="w-4 h-4" />
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                        {/* Translation Progress Badge */}
+                        {Object.keys(formData.albumTitleTranslations || {}).length > 0 && (
+                          <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-full">
+                            <CheckCircle className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                            <span className="text-xs font-semibold text-purple-700 dark:text-purple-300">
+                              {Object.keys(formData.albumTitleTranslations || {}).length} {t('개 언어', 'languages', '言語')}
+                            </span>
                           </div>
                         )}
+                      </div>
 
-                        {/* Language Selection */}
-                        <div className="mt-4 pt-4 border-t border-purple-100 dark:border-purple-800/30">
-                          <div className="flex flex-wrap gap-2">
-                            {translationLanguages
-                              .filter(lang => !activeAlbumTranslations.includes(lang.code))
-                              .slice(0, 6)
-                              .map(lang => (
-                                <button
-                                  key={lang.code}
-                                  type="button"
-                                  onClick={() => setActiveAlbumTranslations([...activeAlbumTranslations, lang.code])}
-                                  className="px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300
-                                           bg-purple-100 dark:bg-purple-900/30 hover:bg-purple-200 dark:hover:bg-purple-900/50
-                                           rounded-full transition-all duration-200"
-                                >
-                                  + {lang.name}
-                                </button>
-                              ))}
+                      {/* TranslationInput Component Integration */}
+                      <TranslationInput
+                        translations={albumTranslationsArray}
+                        onTranslationsChange={(translations) => {
+                          // Update array state (allows empty entries)
+                          setAlbumTranslationsArray(translations);
 
-                            {translationLanguages.filter(lang => !activeAlbumTranslations.includes(lang.code)).length > 6 && (
-                              <select
-                                value=""
-                                onChange={(e) => {
-                                  if (e.target.value) {
-                                    setActiveAlbumTranslations([...activeAlbumTranslations, e.target.value]);
-                                  }
-                                }}
-                                className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-400
-                                         bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700
-                                         rounded-full cursor-pointer transition-all duration-200 appearance-none pr-8"
-                                style={{ backgroundImage: 'url("data:image/svg+xml,%3csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3e%3cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'M6 8l4 4 4-4\'/%3e%3c/svg%3e")', backgroundPosition: 'right 0.5rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.5em 1.5em' }}
-                              >
-                                <option value="">{t('더 많은 언어...', 'More languages...', 'その他の言語...')}</option>
-                                {translationLanguages
-                                  .filter(lang => !activeAlbumTranslations.includes(lang.code))
-                                  .slice(6)
-                                  .map(lang => (
-                                    <option key={lang.code} value={lang.code}>
-                                      {lang.name}
-                                    </option>
-                                  ))}
-                              </select>
+                          // Sync to formData object (only entries with language)
+                          const translationsObj: { [key: string]: string } = {};
+                          translations.forEach(t => {
+                            if (t.language) {
+                              translationsObj[t.language] = t.title || '';
+                            }
+                          });
+                          setFormData(prev => ({
+                            ...prev,
+                            albumTitleTranslations: translationsObj
+                          }));
+                        }}
+                        language={language}
+                        placeholder={t(
+                          '선택한 언어로 앨범 제목 번역',
+                          'Album title in selected language',
+                          '選択した言語でアルバムタイトル'
+                        )}
+                      />
+
+                      {/* Help Text with Icon */}
+                      <div className="mt-4 pt-4 border-t border-purple-200 dark:border-purple-800/30">
+                        <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400">
+                          <Info className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
+                          <p>
+                            {t(
+                              '앨범 제목을 여러 언어로 번역하면 전 세계 스트리밍 플랫폼에서 더 쉽게 발견될 수 있습니다. 최대 70개 이상의 언어를 지원합니다.',
+                              'Translating your album title into multiple languages helps listeners discover your music on streaming platforms worldwide. Over 70 languages supported.',
+                              'アルバムタイトルを複数の言語に翻訳することで、世界中のストリーミングプラットフォームでより簡単に発見されます。70以上の言語をサポートしています。'
                             )}
-                          </div>
+                          </p>
                         </div>
                       </div>
                     </div>
@@ -3640,114 +3862,21 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
       case 7:
         return (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('최종 검토', 'Final Review')}
-            </h2>
+            {/* Comprehensive Final Review */}
+            <FinalReviewContent
+              formData={formData}
+              onEdit={handleEdit}
+              t={t}
+            />
 
-            {/* Summary */}
-            <div className="space-y-4">
-              {/* Album Info Summary */}
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <h3 className="font-semibold text-lg mb-2">{t('앨범 정보', 'Album Information')}</h3>
-                <dl className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <dt className="text-gray-600 dark:text-gray-400">{t('앨범명', 'Album Title')}:</dt>
-                    <dd className="font-medium">{formData.albumTitle}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-600 dark:text-gray-400">{t('아티스트', 'Artist')}:</dt>
-                    <dd className="font-medium">{formData.albumArtists.map(a => a.name).join(', ') || formData.albumArtist}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-600 dark:text-gray-400">{t('발매일', 'Release Date')}:</dt>
-                    <dd className="font-medium">{formData.releaseDate}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-gray-600 dark:text-gray-400">{t('장르', 'Genre')}:</dt>
-                    <dd className="font-medium">{formData.primaryGenre}</dd>
-                  </div>
-                </dl>
-              </div>
-
-              {/* Tracks Summary */}
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <h3 className="font-semibold text-lg mb-2">
-                  {t('트랙 목록', 'Track List')} ({formData.tracks.length})
-                </h3>
-                <ol className="list-decimal list-inside space-y-1 text-sm">
-                  {formData.tracks.map((track, index) => (
-                    <li key={track.id}>
-                      {track.title} - {track.artists.map(a => a.name).join(', ')}
-                      {track.dolbyAtmos && (
-                        <span className="ml-2 text-xs bg-purple-100 dark:bg-purple-900 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded">
-                          Dolby Atmos
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-
-              {/* Files Summary */}
-              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
-                <h3 className="font-semibold text-lg mb-2">{t('파일', 'Files')}</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span>{t('커버 아트', 'Cover Art')}: {formData.coverArt?.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span>{t('오디오 파일', 'Audio Files')}: {formData.audioFiles.length}개</span>
-                  </div>
-                  {formData.dolbyAtmosFiles && formData.dolbyAtmosFiles.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>{t('Dolby Atmos 파일', 'Dolby Atmos Files')}: {formData.dolbyAtmosFiles.length}개</span>
-                    </div>
-                  )}
-                  {formData.motionArtFile && (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>{t('모션 아트', 'Motion Art')}: {formData.motionArtFile.name}</span>
-                    </div>
-                  )}
-                  {formData.musicVideoFiles && formData.musicVideoFiles.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>{t('뮤직비디오', 'Music Videos')}: {formData.musicVideoFiles.length} {t('개 파일', 'files')}</span>
-                    </div>
-                  )}
-                  {formData.musicVideoThumbnails && formData.musicVideoThumbnails.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>{t('썸네일', 'Thumbnails')}: {formData.musicVideoThumbnails.length} {t('개 파일', 'files')}</span>
-                    </div>
-                  )}
-                  {formData.lyricsFiles && formData.lyricsFiles.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>{t('가사 파일', 'Lyrics Files')}: {formData.lyricsFiles.length} {t('개 파일', 'files')}</span>
-                    </div>
-                  )}
-                  {formData.marketingAssets && formData.marketingAssets.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>{t('마케팅 자료', 'Marketing Assets')}: {formData.marketingAssets.length} {t('개 파일', 'files')}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* QC Warnings */}
-              {showWarnings && validationResults && (
-                <QCWarnings
-                  warnings={validationResults.warnings}
-                  errors={validationResults.errors}
-                  onClose={() => setShowWarnings(false)}
-                />
-              )}
-            </div>
+            {/* QC Warnings */}
+            {showWarnings && validationResults && (
+              <QCWarnings
+                warnings={validationResults.warnings}
+                errors={validationResults.errors}
+                onClose={() => setShowWarnings(false)}
+              />
+            )}
 
             {/* Submit Button */}
             <div className="flex justify-center pt-4">
@@ -3755,7 +3884,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                className="px-8 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-lg"
               >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
@@ -3807,9 +3936,13 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
               <div className="flex items-center justify-between">
                 {steps.map((step, index) => {
                 const Icon = step.icon;
-                const isActive = currentStep === step.number;
-                const isCompleted = completedSteps.includes(step.number);
-                const isClickable = step.number <= currentStep || completedSteps.includes(step.number - 1);
+                const displayStep = getCurrentDisplayStep();
+                const isActive = displayStep === step.number;
+                // Map display step to actual step for completion check
+                const stepMapping = { 1: 1, 2: 2, 3: 6, 4: 7 };
+                const actualStep = stepMapping[step.number as keyof typeof stepMapping];
+                const isCompleted = completedSteps.includes(actualStep);
+                const isClickable = step.number <= displayStep || isCompleted;
 
                 return (
                   <div key={step.number} className="flex-1 relative">

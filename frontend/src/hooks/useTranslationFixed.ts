@@ -94,7 +94,7 @@ const translations = {
     'language.english': '영어',
     'language.japanese': '일본어'
   },
-  
+
   en: {
     // Auth translations
     'auth.welcomeTitle': 'Welcome to N3RVE Onboarding Platform',
@@ -187,7 +187,7 @@ const translations = {
     'language.english': 'English',
     'language.japanese': 'Japanese'
   },
-  
+
   ja: {
     // Auth translations
     'auth.welcomeTitle': 'N3RVEオンボーディングプラットフォームへようこそ',
@@ -284,20 +284,23 @@ const translations = {
 
 export function useTranslation() {
   const languageStore = useLanguageStore();
-  
+
   // Create translation function with explicit parameter handling
   const t = useMemo(() => (key?: string, ko?: string, en?: string, ja?: string): string => {
     // Get current language inside the function (not in closure)
     const language = languageStore._hasHydrated ? languageStore.language : 'ko';
-    
+
     // Handle undefined/null key
     if (!key || typeof key !== 'string') {
       console.warn('Translation key is undefined or not a string:', key);
       return String(key || '');
     }
 
+    // Determine how many explicit language strings were provided
+    const providedArgsCount = [ko, en, ja].filter(v => v !== undefined).length;
+
     // Pattern 1: Key-based translations (single parameter or key + fallback)
-    if (ko === undefined && en === undefined && ja === undefined) {
+    if (providedArgsCount === 0) {
       // Pure key lookup
       const lang = language as keyof typeof translations;
       const currentTranslations = translations[lang] || translations.en;
@@ -306,15 +309,15 @@ export function useTranslation() {
     }
 
     // Pattern 1b: Key + fallback (key, fallback)
-    if (ko !== undefined && en === undefined && ja === undefined) {
+    if (providedArgsCount === 1) {
       const lang = language as keyof typeof translations;
       const currentTranslations = translations[lang] || translations.en;
       const translatedText = currentTranslations[key as keyof typeof currentTranslations];
-      return translatedText || ko || key;
+      return translatedText || (ko as string) || key;
     }
 
     // Pattern 2: Direct language strings (new format: ko, en, ja)
-    if (arguments.length >= 3) {
+    if (providedArgsCount >= 2) {
       switch (language) {
         case 'ko':
           return ko || key;
@@ -328,16 +331,16 @@ export function useTranslation() {
     }
 
     // Pattern 3: Two parameter format - assume it's (key, fallback) or (ko, en)
-    if (arguments.length === 2 && ko) {
+    if (providedArgsCount === 1 && ko) {
       // Check if it's a translation key lookup with fallback
       const lang = language as keyof typeof translations;
       const currentTranslations = translations[lang] || translations.en;
       const translatedText = currentTranslations[key as keyof typeof currentTranslations];
-      
+
       if (translatedText) {
         return translatedText;
       }
-      
+
       // If no translation found, treat as (ko, en) format
       switch (language) {
         case 'ko':
@@ -356,6 +359,6 @@ export function useTranslation() {
 
   // Even before hydration, provide translation functionality with defaults
   const language = languageStore._hasHydrated ? languageStore.language : 'ko';
-  
+
   return { t, language };
 }

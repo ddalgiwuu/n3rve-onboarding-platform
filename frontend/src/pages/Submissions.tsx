@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus, Search, Clock, CheckCircle, XCircle,
-  Music, Calendar, Eye, Edit, Trash2, RefreshCw, Info
+  Music, Calendar, Eye, Edit, Trash2, RefreshCw, Info,
+  Grid, List, X, Filter
 } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/useTranslationFixed';
 import { format } from 'date-fns';
 import { submissionService } from '@/services/submission.service';
 import toast from 'react-hot-toast';
@@ -23,7 +24,18 @@ interface Submission {
 
 const Submissions = () => {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t: useT, language } = useTranslation();
+
+  // Simple translation function for direct text
+  const t = (ko: string, en: string, ja?: string) => {
+    switch (language) {
+      case 'ko': return ko;
+      case 'en': return en;
+      case 'ja': return ja || en;
+      default: return en;
+    }
+  };
+
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -55,7 +67,7 @@ const Submissions = () => {
       }
     } catch (error) {
       console.error('Error fetching submissions:', error);
-      toast.error(t('submissions.fetchError', '제출 내역을 불러오는데 실패했습니다', 'Failed to fetch submissions', '提出履歴の読み込みに失敗しました'));
+      toast.error(t('제출 내역을 불러오는데 실패했습니다', 'Failed to fetch submissions', '提出履歴の読み込みに失敗しました'));
       setSubmissions([]);
     } finally {
       setLoading(false);
@@ -73,12 +85,12 @@ const Submissions = () => {
     try {
       // TODO: Implement delete API call
       // await submissionService.deleteSubmission(deletingId);
-      toast.success(t('submissions.deleteSuccess', '제출이 삭제되었습니다', 'Submission deleted successfully', '提出が削除されました'));
+      toast.success(t('제출이 삭제되었습니다', 'Submission deleted successfully', '提出が削除されました'));
       setSubmissions(submissions.filter(s => s.id !== deletingId));
       setShowDeleteModal(false);
       setDeletingId(null);
     } catch (error) {
-      toast.error(t('submissions.deleteError', '삭제 중 오류가 발생했습니다', 'Error deleting submission', '削除中にエラーが発生しました'));
+      toast.error(t('삭제 중 오류가 발생했습니다', 'Error deleting submission', '削除中にエラーが発生しました'));
     }
   };
 
@@ -140,7 +152,7 @@ const Submissions = () => {
         <div className="glass-premium rounded-3xl p-6 md:p-8 animate-fade-in relative overflow-hidden group">
           {/* Background gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/8 via-pink-500/8 to-blue-500/8 opacity-60" />
-          
+
           {/* Floating particles */}
           <div className="absolute top-4 right-4 opacity-15">
             <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
@@ -171,7 +183,7 @@ const Submissions = () => {
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
             </div>
-            
+
             <div className="flex items-center justify-between mb-4 relative z-10">
               <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
                 <Music className="w-6 h-6 text-white" />
@@ -188,7 +200,7 @@ const Submissions = () => {
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
             </div>
-            
+
             <div className="flex items-center justify-between mb-4 relative z-10">
               <div className="p-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
                 <CheckCircle className="w-6 h-6 text-white" />
@@ -207,7 +219,7 @@ const Submissions = () => {
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
             </div>
-            
+
             <div className="flex items-center justify-between mb-4 relative z-10">
               <div className="p-4 rounded-xl bg-gradient-to-r from-yellow-500 to-orange-500 shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
                 <Clock className="w-6 h-6 text-white" />
@@ -226,7 +238,7 @@ const Submissions = () => {
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
             </div>
-            
+
             <div className="flex items-center justify-between mb-4 relative z-10">
               <div className="p-4 rounded-xl bg-gradient-to-r from-red-500 to-pink-500 shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
                 <XCircle className="w-6 h-6 text-white" />
@@ -241,37 +253,141 @@ const Submissions = () => {
           </div>
         </div>
 
-        {/* Filters and Search */}
-        <div className="glass-enhanced rounded-2xl p-4 md:p-6 animate-fade-in-delay hover:shadow-xl transition-all duration-300">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input
-                type="text"
-                placeholder={t('앨범명 또는 아티스트명으로 검색', 'Search by album or artist name', 'アルバム名またはアーティスト名で検索')}
-                className="w-full pl-10 pr-4 py-3 glass-form border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 hover:shadow-lg transition-all duration-300"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+        {/* Filters and Search - Modern Toolbar Layout */}
+        <div className="glass-enhanced rounded-2xl p-6 animate-fade-in-delay hover:shadow-xl transition-all duration-300 relative overflow-hidden">
+          {/* Gradient background accent */}
+          <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 via-pink-500/5 to-blue-500/5 opacity-50" />
+
+          <div className="relative z-10 space-y-4">
+            {/* Primary Toolbar: Search | Status | View Toggle */}
+            <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3">
+              {/* Search Input - Takes most space */}
+              <div className="flex-1 relative group">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 w-5 h-5 transition-colors duration-200" />
+                <input
+                  type="text"
+                  placeholder={t('앨범명 또는 아티스트명으로 검색', 'Search by album or artist name', 'アルバム名またはアーティスト名で検索')}
+                  className="w-full pl-12 pr-10 py-3.5 glass-form border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 hover:shadow-lg transition-all duration-300 text-gray-900 dark:text-white placeholder:text-gray-400"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200"
+                    aria-label={t('검색어 지우기', 'Clear search', '検索をクリア')}
+                  >
+                    <X className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                  </button>
+                )}
+              </div>
+
+              {/* Right Controls Group */}
+              <div className="flex items-center gap-3">
+                {/* Status Filter Dropdown */}
+                <div className="relative group min-w-[160px]">
+                  <Filter className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 group-focus-within:text-purple-500 w-4 h-4 transition-colors duration-200 pointer-events-none z-10" />
+                  <select
+                    className="w-full pl-11 pr-10 py-3.5 glass-form border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/50 hover:shadow-lg transition-all duration-300 appearance-none cursor-pointer text-gray-900 dark:text-white bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                  >
+                    <option value="all">{t('모든 상태', 'All Status', 'すべて')}</option>
+                    <option value="pending">{t('검토 중', 'Pending', '審査中')}</option>
+                    <option value="approved">{t('승인됨', 'Approved', '承認済み')}</option>
+                    <option value="rejected">{t('반려됨', 'Rejected', '却下')}</option>
+                  </select>
+                  <div className="absolute right-4 top-1/2 transform -translate-y-1/2 pointer-events-none z-10">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+
+                {/* View Mode Toggle - Compact */}
+                <div className="glass-form rounded-xl p-1 flex gap-1 border-0 bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2.5 rounded-lg transition-all duration-300 ${
+                      viewMode === 'list'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                    }`}
+                    title={t('리스트 보기', 'List View', 'リスト表示')}
+                    aria-label={t('리스트 보기', 'List View', 'リスト表示')}
+                  >
+                    <List className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2.5 rounded-lg transition-all duration-300 ${
+                      viewMode === 'grid'
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-white/50 dark:hover:bg-gray-700/50'
+                    }`}
+                    title={t('그리드 보기', 'Grid View', 'グリッド表示')}
+                    aria-label={t('그리드 보기', 'Grid View', 'グリッド表示')}
+                  >
+                    <Grid className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
             </div>
-            <div className="flex gap-2">
-              <select
-                className="px-4 py-3 glass-form border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 hover:shadow-lg transition-all duration-300"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="all">{t('모든 상태', 'All Status', 'すべてのステータス')}</option>
-                <option value="pending">{t('검토 중', 'Pending', '審査中')}</option>
-                <option value="approved">{t('승인됨', 'Approved', '承認済み')}</option>
-                <option value="rejected">{t('반려됨', 'Rejected', '却下')}</option>
-              </select>
-              <button
-                onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                className="px-4 py-3 glass-button-secondary rounded-xl hover:scale-105 active:scale-95 transition-all duration-300"
-              >
-                {viewMode === 'grid' ? '📋' : '📱'}
-              </button>
-            </div>
+
+            {/* Secondary Toolbar: Active Filters + Result Count */}
+            {(searchTerm || statusFilter !== 'all' || filteredSubmissions.length > 0) && (
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-gray-200/50 dark:border-gray-700/50">
+                {/* Active Filter Chips */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {searchTerm && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-sm font-medium border border-purple-200 dark:border-purple-800 animate-fade-in">
+                      <Search className="w-3.5 h-3.5" />
+                      <span className="max-w-[120px] truncate">{searchTerm}</span>
+                      <button
+                        onClick={() => setSearchTerm('')}
+                        className="ml-0.5 hover:bg-purple-200 dark:hover:bg-purple-800 rounded p-0.5 transition-colors"
+                        aria-label={t('검색 필터 제거', 'Remove search filter', '検索フィルタを削除')}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                  {statusFilter !== 'all' && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 text-sm font-medium border border-pink-200 dark:border-pink-800 animate-fade-in">
+                      <Filter className="w-3.5 h-3.5" />
+                      {getStatusText(statusFilter.toUpperCase())}
+                      <button
+                        onClick={() => setStatusFilter('all')}
+                        className="ml-0.5 hover:bg-pink-200 dark:hover:bg-pink-800 rounded p-0.5 transition-colors"
+                        aria-label={t('상태 필터 제거', 'Remove status filter', 'ステータスフィルタを削除')}
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  )}
+                </div>
+
+                {/* Result Count + Clear Button */}
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                    {filteredSubmissions.length} {t('개 결과', 'results', '件の結果')}
+                  </span>
+
+                  {(searchTerm || statusFilter !== 'all') && (
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setStatusFilter('all');
+                      }}
+                      className="text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      {t('초기화', 'Clear', 'クリア')}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   X, Plus, Trash2, Search, Music, User, Globe,
   Info, Link as LinkIcon, ChevronDown, ChevronUp,
@@ -20,6 +20,8 @@ import { ValidationProvider, useValidationContext } from '@/contexts/ValidationC
 const contributorRolesKo = contributorRolesKoData as { translations: Record<string, string> };
 const instrumentsKo = instrumentsKoData as { translations: Record<string, string> };
 import { v4 as uuidv4 } from 'uuid';
+import { useFuzzySearch } from '@/hooks/useFuzzySearch';
+import { prepareRolesForSearch, prepareInstrumentsForSearch } from '@/utils/searchDataPreparation';
 
 interface Translation {
   id: string
@@ -50,6 +52,15 @@ interface ContributorFormProps {
   trackId?: string
   isArtist?: boolean
 }
+
+import { languageOptions } from '@/constants/languages';
+
+// Language options imported from shared constants
+// const languageOptions = [
+// Moved to /src/constants/languages.ts for reuse
+// East Asian Languages
+// { code: 'ko', name: 'Korean', koName: '한국어', flag: '🇰🇷' },
+// Language options now imported from shared constants
 
 // Platform identifier types with descriptions
 const identifierTypes = {
@@ -82,23 +93,51 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
   const [formData, setFormData] = useState<Contributor>({
     id: contributor?.id || uuidv4(),
     name: contributor?.name || '',
-    translations: contributor?.translations || [],
-    roles: contributor?.roles || [],
-    instruments: contributor?.instruments || [],
-    identifiers: contributor?.identifiers || [
+    translations: Array.isArray(contributor?.translations) ? contributor.translations : [],
+    roles: Array.isArray(contributor?.roles) ? contributor.roles : [],
+    instruments: Array.isArray(contributor?.instruments) ? contributor.instruments : [],
+    identifiers: Array.isArray(contributor?.identifiers) ? contributor.identifiers : [
       { type: 'spotify', value: '' },
       { type: 'apple', value: '' }
     ],
     isNewArtist: contributor?.isNewArtist || false
   });
 
-  const [searchQuery, setSearchQuery] = useState({ roles: '', instruments: '' });
-  const [showDropdown, setShowDropdown] = useState({ roles: false, instruments: false });
+  const [searchQuery, setSearchQuery] = useState({ roles: '', instruments: '', languages: {} as Record<string, string> });
+  const [showDropdown, setShowDropdown] = useState({ roles: false, instruments: false, languages: {} as Record<string, boolean> });
   const [nameError, setNameError] = useState<string | null>(null);
   const { hasErrors, getFieldWarnings } = useValidationContext();
 
   const rolesRef = useRef<HTMLDivElement>(null);
   const instrumentsRef = useRef<HTMLDivElement>(null);
+  const languageRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // Prepare searchable data (memoized)
+  const preparedRoles = useMemo(() => prepareRolesForSearch(), []);
+  const preparedInstruments = useMemo(() => prepareInstrumentsForSearch(), []);
+
+  // Setup fuzzy search with Fuse.js
+  const fuzzySearchRoles = useFuzzySearch(preparedRoles, {
+    keys: [
+      { name: 'id', weight: 2.0 },
+      { name: 'name', weight: 1.5 },
+      { name: 'koName', weight: 1.0 },
+      { name: 'category', weight: 0.8 }
+    ],
+    threshold: 0.4,
+    distance: 100
+  });
+
+  const fuzzySearchInstruments = useFuzzySearch(preparedInstruments, {
+    keys: [
+      { name: 'id', weight: 2.0 },
+      { name: 'name', weight: 1.5 },
+      { name: 'koName', weight: 1.0 },
+      { name: 'category', weight: 0.8 }
+    ],
+    threshold: 0.35,
+    distance: 100
+  });
 
   // Check if contributor is a composer/lyricist
   const isComposerOrLyricist = () => {
@@ -116,51 +155,48 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
       if (instrumentsRef.current && !instrumentsRef.current.contains(event.target as Node)) {
         setShowDropdown(prev => ({ ...prev, instruments: false }));
       }
+
+      // Close language dropdowns when clicking outside
+      Object.keys(languageRefs.current).forEach(translationId => {
+        const ref = languageRefs.current[translationId];
+        if (ref && !ref.contains(event.target as Node)) {
+          setShowDropdown(prev => ({
+            ...prev,
+            languages: { ...prev.languages, [translationId]: false }
+          }));
+        }
+      });
     };
 
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Enhanced search with partial matching
-  const searchFilter = (text: string, searchTerm: string): boolean => {
-    const normalizedText = text.toLowerCase();
-    const normalizedSearch = searchTerm.toLowerCase();
+  // Fuzzy search with Fuse.js - handles typos and partial matching
+  const fuzzyRolesResults = useMemo(() => {
+    return fuzzySearchRoles(searchQuery.roles || '');
+  }, [fuzzySearchRoles, searchQuery.roles]);
 
-    // Check if search term matches start of any word in the text
-    const words = normalizedText.split(/[\s-]+/);
-    const startsWithMatch = words.some(word => word.startsWith(normalizedSearch));
+  const fuzzyInstrumentsResults = useMemo(() => {
+    return fuzzySearchInstruments(searchQuery.instruments || '');
+  }, [fuzzySearchInstruments, searchQuery.instruments]);
 
-    // Also check for general inclusion
-    return startsWithMatch || normalizedText.includes(normalizedSearch);
-  };
+  // Map fuzzy search results back to original role format
+  const filteredRoles = useMemo(() => {
+    if (!searchQuery.roles) return contributorRolesData.roles;
 
-  // Filter roles and instruments based on search
-  const filteredRoles = contributorRolesData.roles.filter(role => {
-    const searchTerm = (searchQuery.roles || '').toLowerCase();
-    if (!searchTerm) return true;
+    return fuzzyRolesResults
+      .map(searchableRole => contributorRolesData.roles.find(r => r.id === searchableRole.id))
+      .filter((role): role is typeof contributorRolesData.roles[0] => role !== undefined);
+  }, [fuzzyRolesResults, searchQuery.roles]);
 
-    const roleName = (role.name || '').toLowerCase();
-    const roleCategory = (role.category || '').toLowerCase();
-    const roleKo = contributorRolesKo.translations[role.id as string] || '';
+  const filteredInstruments = useMemo(() => {
+    if (!searchQuery.instruments) return instrumentsData.instruments;
 
-    return searchFilter(roleName, searchTerm) ||
-           searchFilter(roleCategory, searchTerm) ||
-           searchFilter(roleKo, searchTerm);
-  });
-
-  const filteredInstruments = instrumentsData.instruments.filter(instrument => {
-    const searchTerm = (searchQuery.instruments || '').toLowerCase();
-    if (!searchTerm) return true;
-
-    const instrumentName = (instrument.name || '').toLowerCase();
-    const instrumentCategory = (instrument.category || '').toLowerCase();
-    const instrumentKo = instrumentsKo.translations[instrument.id as string] || '';
-
-    return searchFilter(instrumentName, searchTerm) ||
-           searchFilter(instrumentCategory, searchTerm) ||
-           searchFilter(instrumentKo, searchTerm);
-  });
+    return fuzzyInstrumentsResults
+      .map(searchableInst => instrumentsData.instruments.find(i => i.id === searchableInst.id))
+      .filter((inst): inst is typeof instrumentsData.instruments[0] => inst !== undefined);
+  }, [fuzzyInstrumentsResults, searchQuery.instruments]);
 
   // Group by category
   const groupedRoles = filteredRoles.reduce((acc, role) => {
@@ -200,9 +236,14 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
   };
 
   // Update identifier value
-  const updateIdentifier = (index: number, value: string) => {
-    if (index === -1) {
-      // If identifier doesn't exist yet, we need to handle it differently
+  const updateIdentifier = (index: number, value: string, platformType?: string) => {
+    if (index === -1 && platformType) {
+      // If identifier doesn't exist yet, add it
+      const enumType = platformType === 'apple' ? 'APPLE_MUSIC' : 'SPOTIFY';
+      setFormData(prev => ({
+        ...prev,
+        identifiers: [...prev.identifiers, { type: enumType as any, value }]
+      }));
       return;
     }
     setFormData(prev => ({
@@ -268,12 +309,16 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
   // Validate identifiers
   const validateIdentifier = (type: keyof typeof identifierTypes, value: string): boolean => {
     const config = identifierTypes[type];
+    if (!config) return true; // Skip validation if type not recognized
     return config.pattern.test(value);
   };
 
   // Platform URL helper
   const getPlatformUrl = (identifier: PlatformIdentifier): string | null => {
-    switch (identifier.type) {
+    // Normalize type for case-insensitive matching
+    const normalizedType = identifier.type.toLowerCase().replace('_music', '');
+
+    switch (normalizedType) {
       case 'spotify':
         if (identifier.value) {
           const spotifyId = identifier.value.replace('spotify:artist:', '');
@@ -318,22 +363,31 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
     }
 
     // Validate identifiers
-    const invalidIdentifiers = formData.identifiers.filter((id) =>
-      id.value && !validateIdentifier(id.type as keyof typeof identifierTypes, id.value)
-    );
+    const invalidIdentifiers = formData.identifiers.filter((id) => {
+      if (!id.value) return false;
+      // Normalize type: SPOTIFY → spotify, APPLE_MUSIC → apple
+      const normalizedType = id.type.toLowerCase().replace('_music', '') as keyof typeof identifierTypes;
+      return !validateIdentifier(normalizedType, id.value);
+    });
 
     if (invalidIdentifiers.length > 0) {
       toast.error(t('올바르지 않은 식별자가 있습니다', 'There are invalid identifiers', '無効な識別子があります'));
       return;
     }
 
-    // Show guidance for Spotify/Apple Music registration
-    if (!formData.isNewArtist) {
+    // Show guidance for Spotify/Apple Music registration - only if identifiers exist
+    if (!formData.isNewArtist && formData.identifiers.some(id => id.value && id.value.trim() !== '')) {
       toast(t(
         '💡 아티스트 이름이 Spotify/Apple Music에 등록된 이름과 동일한지 확인하세요',
         '💡 Make sure the artist name matches the one registered on Spotify/Apple Music',
         '💡 アーティスト名がSpotify/Apple Musicに登録されている名前と一致することを確認してください'
-      ), { icon: '💡', duration: 4000 });
+      ), {
+        icon: '💡',
+        duration: 8000,
+        style: {
+          zIndex: 9999
+        }
+      });
     }
 
     onSave(formData);
@@ -502,50 +556,124 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {formData.translations.map((translation, index) => (
-                        <div key={translation.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
-                          <div className="flex items-center gap-3">
-                            <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-sm font-medium text-purple-700 dark:text-purple-300">
-                              {index + 1}
-                            </div>
-                            <select
-                              value={translation.language}
-                              onChange={(e) => updateTranslation(translation.id, 'language', e.target.value)}
-                              className="w-36 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500"
-                            >
-                              <option value="">{t('언어 선택', 'Select', '言語選択')}</option>
-                              <option value="en">🇺🇸 English</option>
-                              <option value="ja">🇯🇵 日本語</option>
-                              <option value="zh-CN">🇨🇳 中文(简体)</option>
-                              <option value="zh-TW">🇹🇼 中文(繁體)</option>
-                              <option value="es">🇪🇸 Español</option>
-                              <option value="fr">🇫🇷 Français</option>
-                              <option value="de">🇩🇪 Deutsch</option>
-                              <option value="it">🇮🇹 Italiano</option>
-                              <option value="pt">🇵🇹 Português</option>
-                              <option value="ru">🇷🇺 Русский</option>
-                            </select>
-                            <input
-                              type="text"
-                              value={translation.name}
-                              onChange={(e) => updateTranslation(translation.id, 'name', e.target.value)}
-                              onBlur={() => {
+                      {formData.translations.map((translation, index) => {
+                        const langQuery = searchQuery.languages[translation.id] || '';
+                        const filteredLanguages = languageOptions.filter(lang => {
+                          if (!langQuery) return true;
+                          const query = langQuery.toLowerCase();
+                          return lang.code.toLowerCase().includes(query) ||
+                                 lang.name.toLowerCase().includes(query) ||
+                                 lang.koName.toLowerCase().includes(query);
+                        });
+                        const selectedLang = languageOptions.find(l => l.code === translation.language);
+
+                        return (
+                          <div key={translation.id} className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm">
+                            <div className="flex items-center gap-3">
+                              <div className="flex-shrink-0 w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center text-sm font-medium text-purple-700 dark:text-purple-300">
+                                {index + 1}
+                              </div>
+
+                              {/* Searchable Language Selector */}
+                              <div
+                                className="relative w-48"
+                                ref={el => { languageRefs.current[translation.id] = el; }}
+                              >
+                                <div className="relative">
+                                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400 z-10" />
+                                  <input
+                                    type="text"
+                                    value={langQuery || (selectedLang ? `${selectedLang.flag} ${selectedLang.name} (${selectedLang.koName})` : '')}
+                                    onChange={(e) => {
+                                      setSearchQuery(prev => ({
+                                        ...prev,
+                                        languages: { ...prev.languages, [translation.id]: e.target.value }
+                                      }));
+                                      setShowDropdown(prev => ({
+                                        ...prev,
+                                        languages: { ...prev.languages, [translation.id]: true }
+                                      }));
+                                    }}
+                                    onFocus={() => {
+                                      setSearchQuery(prev => ({
+                                        ...prev,
+                                        languages: { ...prev.languages, [translation.id]: '' }
+                                      }));
+                                      setShowDropdown(prev => ({
+                                        ...prev,
+                                        languages: { ...prev.languages, [translation.id]: true }
+                                      }));
+                                    }}
+                                    placeholder={t('언어 검색', 'Search language', '言語を検索')}
+                                    className="w-full pl-8 pr-8 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowDropdown(prev => ({
+                                      ...prev,
+                                      languages: { ...prev.languages, [translation.id]: !prev.languages[translation.id] }
+                                    }))}
+                                    className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded"
+                                  >
+                                    {showDropdown.languages[translation.id] ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                                  </button>
+                                </div>
+
+                                {/* Language Dropdown */}
+                                {showDropdown.languages[translation.id] && filteredLanguages.length > 0 && (
+                                  <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                    <div className="p-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
+                                      {filteredLanguages.length} {t('개 결과', 'results', '件の結果')}
+                                    </div>
+                                    {filteredLanguages.map(lang => (
+                                      <button
+                                        key={lang.code}
+                                        type="button"
+                                        onClick={() => {
+                                          updateTranslation(translation.id, 'language', lang.code);
+                                          setSearchQuery(prev => ({
+                                            ...prev,
+                                            languages: { ...prev.languages, [translation.id]: '' }
+                                          }));
+                                          setShowDropdown(prev => ({
+                                            ...prev,
+                                            languages: { ...prev.languages, [translation.id]: false }
+                                          }));
+                                        }}
+                                        className="w-full px-3 py-2 text-left text-sm hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors flex items-center gap-2"
+                                      >
+                                        <span className="text-lg">{lang.flag}</span>
+                                        <span className="text-gray-700 dark:text-gray-300">
+                                          {lang.name} ({lang.koName})
+                                        </span>
+                                      </button>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+
+                              <input
+                                type="text"
+                                value={translation.name}
+                                onChange={(e) => updateTranslation(translation.id, 'name', e.target.value)}
+                                onBlur={() => {
                                 // Validation is now handled through the ValidatedInput component
                                 // No need for manual formatting here
-                              }}
-                              className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500"
-                              placeholder={translation.language === 'ja' ? 'カタカナまたはひらがな' : t('번역된 이름', 'Translated Name', '翻訳された名前')}
-                            />
-                            <button
-                              onClick={() => removeTranslation(translation.id)}
-                              className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                              title={t('삭제', 'Delete', '削除')}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                                }}
+                                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg dark:bg-gray-700 text-sm focus:ring-2 focus:ring-purple-500"
+                                placeholder={translation.language === 'ja' ? 'カタカナまたはひらがな' : t('번역된 이름', 'Translated Name', '翻訳された名前')}
+                              />
+                              <button
+                                onClick={() => removeTranslation(translation.id)}
+                                className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                title={t('삭제', 'Delete', '削除')}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -756,8 +884,15 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
               {/* Platform fields - Always show Spotify and Apple Music */}
               <div className="space-y-4">
                 {['spotify', 'apple'].map((platformType) => {
-                  const identifier = formData.identifiers.find(id => id.type === platformType) || { type: platformType, value: '' };
-                  const index = formData.identifiers.findIndex(id => id.type === platformType);
+                  // Match type case-insensitively: SPOTIFY/spotify, APPLE_MUSIC/apple
+                  const identifier = formData.identifiers.find(id => {
+                    const normalizedType = id.type.toLowerCase().replace('_music', '');
+                    return normalizedType === platformType;
+                  }) || { type: platformType, value: '' };
+                  const index = formData.identifiers.findIndex(id => {
+                    const normalizedType = id.type.toLowerCase().replace('_music', '');
+                    return normalizedType === platformType;
+                  });
                   const config = identifierTypes[platformType as keyof typeof identifierTypes];
                   const isValid = identifier.value ? validateIdentifier(platformType as keyof typeof identifierTypes, identifier.value) : true;
                   const platformUrl = getPlatformUrl(identifier as PlatformIdentifier);
@@ -779,7 +914,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                           <input
                             type="text"
                             value={identifier.value}
-                            onChange={(e) => updateIdentifier(index, e.target.value)}
+                            onChange={(e) => updateIdentifier(index, e.target.value, platformType)}
                             disabled={formData.isNewArtist}
                             className={`w-full px-4 py-3 border-2 rounded-lg dark:bg-gray-700 font-mono text-sm ${
                               !isValid ? 'border-red-500 focus:border-red-500' : 'border-gray-300 dark:border-gray-600 focus:border-purple-500'
@@ -804,7 +939,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                           <div className="flex items-start gap-2">
                             <Info className="w-4 h-4 mt-0.5 text-gray-500 flex-shrink-0" />
                             <div className="text-xs text-gray-600 dark:text-gray-400 whitespace-pre-line">
-                              {config.helpText[language as 'ko' | 'en']}
+                              {config.helpText[(language === 'ja' ? 'en' : language) as 'ko' | 'en']}
                             </div>
                           </div>
                         </div>

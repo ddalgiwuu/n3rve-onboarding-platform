@@ -39,7 +39,7 @@ export default function GlassCard({
     if (color === 'default') return '';
     const colorClasses = {
       purple: 'glass-purple',
-      blue: 'glass-blue', 
+      blue: 'glass-blue',
       pink: 'glass-pink',
       success: 'glass-success',
       warning: 'glass-warning',
@@ -71,12 +71,12 @@ export default function GlassCard({
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
         </div>
       )}
-      
+
       {/* Content container */}
       <div className="relative z-10">
         {children}
       </div>
-      
+
       {/* Floating animation dots for enhanced cards */}
       {variant === 'enhanced' && animate && (
         <div className="absolute top-4 right-4 opacity-20">
@@ -131,7 +131,7 @@ export const GlassButton = ({
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
         </div>
       )}
-      
+
       <span className="relative z-10 flex items-center gap-2">
         {icon && <span className="transition-transform duration-200 group-hover:scale-110">{icon}</span>}
         {children}

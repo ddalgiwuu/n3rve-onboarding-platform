@@ -47,7 +47,7 @@ export default function FormCard({
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
         </div>
       )}
-      
+
       {/* Header section */}
       {(title || icon) && (
         <div className="flex items-center gap-4 mb-6 pb-4 border-b border-white/20 dark:border-white/10 relative z-10">
@@ -60,8 +60,8 @@ export default function FormCard({
               {cloneElement(icon as ReactElement<any>, {
                 className: cn(
                   'w-6 h-6 transition-all duration-300',
-                  variant === 'premium' 
-                    ? 'text-purple-600 dark:text-purple-400 group-hover:scale-110' 
+                  variant === 'premium'
+                    ? 'text-purple-600 dark:text-purple-400 group-hover:scale-110'
                     : 'text-blue-600 dark:text-blue-400'
                 )
               })}
@@ -85,12 +85,12 @@ export default function FormCard({
           </div>
         </div>
       )}
-      
+
       {/* Content section */}
       <div className="relative z-10">
         {children}
       </div>
-      
+
       {/* Decorative elements for enhanced variant */}
       {variant === 'enhanced' && animate && (
         <div className="absolute bottom-4 right-4 opacity-10 pointer-events-none">
