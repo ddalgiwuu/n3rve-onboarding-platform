@@ -21,39 +21,34 @@ export default function Input({
 }: InputProps) {
   const getVariantStyles = () => {
     const baseStyles = 'w-full px-4 py-3 rounded-xl transition-all duration-300 font-medium';
-    
+
     switch (variant) {
       case 'glass':
         return cn(
           baseStyles,
-          'glass-effect-light backdrop-blur-xl',
-          'border border-gray-200/50 dark:border-gray-700/50',
-          'focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-transparent',
-          'hover:border-gray-300/60 dark:hover:border-gray-600/60'
+          'input-premium glass-shimmer',
+          'hover:animate-morphic-breath'
         );
       case 'glass-enhanced':
         return cn(
           baseStyles,
-          'glass-enhanced',
-          'border-0',
-          'focus:outline-none focus:ring-2 focus:ring-purple-500/30',
-          'hover:shadow-lg'
+          'glass-enhanced border-modern-soft',
+          'focus:outline-none focus:ring-2 focus:ring-n3rve-400/30 focus:border-n3rve-400/50',
+          'hover:shadow-lg hover:bg-surface-elevated glass-shimmer'
         );
       case 'premium':
         return cn(
           baseStyles,
-          'glass-premium',
-          'border-0',
-          'focus:outline-none focus:ring-4 focus:ring-purple-500/20',
-          'hover:shadow-xl'
+          'glass-premium border-modern neuro-inset',
+          'focus:outline-none focus:ring-4 focus:ring-n3rve-400/20 focus:neuro-raised',
+          'hover:shadow-xl hover:scale-[1.01] glass-shimmer',
+          'animate-morphic-breath'
         );
       default:
         return cn(
           baseStyles,
-          'glass-input',
-          'border border-gray-200 dark:border-gray-700',
-          'focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent',
-          'hover:border-gray-300 dark:hover:border-gray-600'
+          'input-premium',
+          'hover:animate-spring-in'
         );
     }
   };
@@ -72,7 +67,7 @@ export default function Input({
             {icon}
           </div>
         )}
-        
+
         {/* Input field */}
         <input
           className={cn(
@@ -86,7 +81,7 @@ export default function Input({
           )}
           {...props}
         />
-        
+
         {/* Enhanced focus indicator */}
         {variant !== 'premium' && (
           <div className={cn(
@@ -95,7 +90,7 @@ export default function Input({
             error && 'from-red-500 to-red-600'
           )} />
         )}
-        
+
         {/* Glass shimmer effect for premium variant */}
         {variant === 'premium' && (
           <div className="absolute inset-0 opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 pointer-events-none rounded-xl overflow-hidden">
@@ -103,14 +98,14 @@ export default function Input({
           </div>
         )}
       </div>
-      
+
       {hint && !error && (
         <p className="mt-2.5 text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
           <span className="w-1 h-1 bg-gray-400 rounded-full opacity-60"></span>
           {hint}
         </p>
       )}
-      
+
       {error && (
         <div className="mt-2.5 text-sm text-red-500 dark:text-red-400 flex items-center gap-2 animate-fade-in">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />

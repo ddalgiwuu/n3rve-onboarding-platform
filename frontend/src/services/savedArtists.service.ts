@@ -1,4 +1,4 @@
-import { authService } from './auth.service';
+import api from '@/lib/api';
 
 export interface SavedArtist {
   id: string
@@ -23,170 +23,55 @@ export interface SavedContributor {
 }
 
 class SavedArtistsService {
-  private baseUrl = `${import.meta.env.VITE_API_URL}/saved-artists`;
-
-  private async getHeaders() {
-    const token = await authService.getToken();
-    // Headers prepared with authentication
-
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json'
-    };
-
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    return headers;
-  }
+  private baseUrl = '/saved-artists';
 
   async getArtists(): Promise<SavedArtist[]> {
-    // Fetching artists from API
-
-    const response = await fetch(`${this.baseUrl}/artists`, {
-      method: 'GET',
-      headers: await this.getHeaders(),
-      credentials: 'include' // Include cookies if any
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to fetch artists: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const result = await response.json();
-    return result;
+    const response = await api.get(`${this.baseUrl}/artists`);
+    return response.data;
   }
 
   async addArtist(artist: Omit<SavedArtist, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedArtist> {
-    // Adding new artist to API
-
-    const response = await fetch(`${this.baseUrl}/artists`, {
-      method: 'POST',
-      headers: await this.getHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(artist)
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to add artist: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const result = await response.json();
-    return result;
+    const response = await api.post(`${this.baseUrl}/artists`, artist);
+    return response.data;
   }
 
   async updateArtist(id: string, updates: Partial<SavedArtist>): Promise<SavedArtist> {
-    const response = await fetch(`${this.baseUrl}/artists/${id}`, {
-      method: 'PUT',
-      headers: await this.getHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(updates)
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to update artist');
-    }
-
-    return await response.json();
+    const response = await api.post(`${this.baseUrl}/artists`, { ...updates, id });
+    return response.data;
   }
 
   async deleteArtist(id: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/artists/${id}`, {
-      method: 'DELETE',
-      headers: await this.getHeaders(),
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to delete artist');
-    }
+    await api.delete(`${this.baseUrl}/artists/${id}`);
   }
 
   async recordArtistUsage(id: string): Promise<SavedArtist> {
-    const response = await fetch(`${this.baseUrl}/artists/${id}/use`, {
-      method: 'PUT',
-      headers: await this.getHeaders(),
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to use artist');
-    }
-
-    return await response.json();
+    const response = await api.put(`${this.baseUrl}/artists/${id}/use`);
+    return response.data;
   }
 
   // Contributors
   async getContributors(): Promise<SavedContributor[]> {
-    const response = await fetch(`${this.baseUrl}/contributors`, {
-      method: 'GET',
-      headers: await this.getHeaders(),
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to fetch contributors: ${response.status} ${response.statusText}`);
-    }
-
-    return await response.json();
+    const response = await api.get(`${this.baseUrl}/contributors`);
+    return response.data;
   }
 
   async addContributor(contributor: Omit<SavedContributor, 'id' | 'createdAt' | 'lastUsed' | 'usageCount'>): Promise<SavedContributor> {
-    const response = await fetch(`${this.baseUrl}/contributors`, {
-      method: 'POST',
-      headers: await this.getHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(contributor)
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to add contributor');
-    }
-
-    return await response.json();
+    const response = await api.post(`${this.baseUrl}/contributors`, contributor);
+    return response.data;
   }
 
   async updateContributor(id: string, updates: Partial<SavedContributor>): Promise<SavedContributor> {
-    const response = await fetch(`${this.baseUrl}/contributors/${id}`, {
-      method: 'PUT',
-      headers: await this.getHeaders(),
-      credentials: 'include',
-      body: JSON.stringify(updates)
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to update contributor');
-    }
-
-    return await response.json();
+    const response = await api.post(`${this.baseUrl}/contributors`, { ...updates, id });
+    return response.data;
   }
 
   async deleteContributor(id: string): Promise<void> {
-    const response = await fetch(`${this.baseUrl}/contributors/${id}`, {
-      method: 'DELETE',
-      headers: await this.getHeaders(),
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to delete contributor');
-    }
+    await api.delete(`${this.baseUrl}/contributors/${id}`);
   }
 
   async recordContributorUsage(id: string): Promise<SavedContributor> {
-    const response = await fetch(`${this.baseUrl}/contributors/${id}/use`, {
-      method: 'PUT',
-      headers: await this.getHeaders(),
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to use contributor');
-    }
-
-    return await response.json();
+    const response = await api.put(`${this.baseUrl}/contributors/${id}/use`);
+    return response.data;
   }
 }
 

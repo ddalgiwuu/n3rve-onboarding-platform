@@ -21,16 +21,16 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const variants = {
-    primary: 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95',
-    secondary: 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 hover:bg-gray-300 dark:hover:bg-gray-600 hover:scale-105 active:scale-95',
-    ghost: 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:scale-105 active:scale-95',
-    danger: 'bg-red-500 text-white hover:bg-red-600 hover:scale-105 active:scale-95',
-    glass: 'glass-button-secondary hover:scale-105 active:scale-95',
-    'glass-primary': 'glass-btn-primary hover:scale-105 active:scale-95',
-    'glass-modern': 'glass-btn-modern text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white',
-    'glass-premium': 'glass-premium px-6 py-3 rounded-xl font-medium text-purple-700 dark:text-purple-300 hover:text-purple-900 dark:hover:text-purple-100',
-    'glass-success': 'glass-enhanced glass-success rounded-xl px-6 py-3 font-medium hover:scale-105 active:scale-95',
-    'glass-warning': 'glass-enhanced glass-warning rounded-xl px-6 py-3 font-medium hover:scale-105 active:scale-95'
+    primary: 'btn-premium-primary magnetic glass-shimmer animate-glow-pulse',
+    secondary: 'bg-surface-elevated border-modern text-gray-900 dark:text-gray-100 hover:bg-surface magnetic hover:border-n3rve-400/30',
+    ghost: 'btn-premium-ghost magnetic glass-shimmer',
+    danger: 'btn-premium bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 magnetic shadow-lg shadow-red-500/25',
+    glass: 'btn-premium-glass magnetic glass-shimmer',
+    'glass-primary': 'btn-premium-primary magnetic glass-shimmer',
+    'glass-modern': 'btn-premium-glass magnetic glass-shimmer',
+    'glass-premium': 'btn-premium-glass magnetic neuro-raised hover:neuro-inset',
+    'glass-success': 'btn-premium glass-success magnetic glass-shimmer',
+    'glass-warning': 'btn-premium glass-warning magnetic glass-shimmer'
   };
 
   const sizes = {
@@ -61,7 +61,7 @@ export default function Button({
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
         </div>
       )}
-      
+
       {/* Loading spinner */}
       {loading && (
         <svg
@@ -85,17 +85,17 @@ export default function Button({
           />
         </svg>
       )}
-      
+
       {/* Left icon */}
       {icon && iconPosition === 'left' && !loading && (
         <span className="mr-2 flex-shrink-0 transition-transform duration-200 group-hover:scale-110">
           {icon}
         </span>
       )}
-      
+
       {/* Button content */}
       <span className="relative z-10">{children}</span>
-      
+
       {/* Right icon */}
       {icon && iconPosition === 'right' && !loading && (
         <span className="ml-2 flex-shrink-0 transition-transform duration-200 group-hover:scale-110">

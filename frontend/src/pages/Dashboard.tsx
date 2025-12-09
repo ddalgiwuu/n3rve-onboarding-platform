@@ -68,14 +68,14 @@ export default function Dashboard() {
         <div className="glass-premium rounded-3xl p-8 animate-fade-in relative overflow-hidden group">
           {/* Background gradient */}
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 opacity-50" />
-          
+
           {/* Floating particles */}
           <div className="absolute top-4 right-4 opacity-20">
             <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
             <div className="w-1 h-1 bg-pink-400 rounded-full animate-bounce ml-6 -mt-1" style={{ animationDelay: '0.3s' }} />
             <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce ml-3 -mt-2" style={{ animationDelay: '0.6s' }} />
           </div>
-          
+
           <div className="flex items-center justify-between relative z-10">
             <div>
               <h1 className="text-3xl font-bold gradient-text mb-2 animate-fade-in">
@@ -109,12 +109,12 @@ export default function Dashboard() {
               >
                 {/* Gradient overlay */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-5 group-hover:opacity-10 transition-opacity duration-300`} />
-                
+
                 {/* Shimmer effect */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
                 </div>
-                
+
                 <div className="relative z-10">
                   <div className="flex items-start justify-between mb-4">
                     <div className={`p-4 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300`}>
@@ -200,7 +200,7 @@ export default function Dashboard() {
             <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
             </div>
-            
+
             <div className="relative z-10">
               <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg mb-4 mx-auto w-fit group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
                 <Upload className="w-8 h-8 text-white" />

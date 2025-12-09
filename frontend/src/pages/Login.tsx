@@ -317,7 +317,7 @@ export default function LoginPage() {
             {/* Multi-layer glassmorphic card */}
             <div className="relative">
               {/* Background glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl blur-xl opacity-30 dark:opacity-20 animate-pulse-glow" />
+              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-pink-600 rounded-3xl blur-lg opacity-15 dark:opacity-10 animate-pulse-glow" />
 
               {/* Main card with ultra-modern glassmorphism */}
               <div
@@ -352,21 +352,11 @@ export default function LoginPage() {
                     </div>
 
                     <div className="relative mb-3">
-                      {/* Multiple animated gradient layers */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/30 via-pink-500/30 to-blue-500/30 rounded-2xl blur-xl animate-pulse-glow opacity-60" />
-                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/20 via-purple-400/20 to-pink-400/20 rounded-2xl blur-lg animate-aurora-pulse opacity-80" />
-
-                      {/* Ambient breathing glow */}
-                      <div className="absolute -inset-4 bg-gradient-to-r from-purple-600/10 via-pink-600/10 to-blue-600/10 rounded-3xl animate-breathing-glow" />
-
                       <h1 className="relative text-4xl font-bold z-10">
-                        <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent animate-gradient-shift bg-[length:200%_200%]">
+                        <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(168,85,247,0.3)]">
                           N3RVE Platform
                         </span>
                       </h1>
-
-                      {/* Shimmer overlay effect */}
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer-sweep -skew-x-12 opacity-0 hover:opacity-100 transition-opacity duration-700" />
                     </div>
                     <p className="text-gray-600 dark:text-gray-400 font-medium">
                       {t('auth.subtitle', '공식 음원 유통 플랫폼', 'Official Music Distribution Platform', '公式音楽配信プラットフォーム')}
@@ -433,7 +423,7 @@ export default function LoginPage() {
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                           </svg>
-                          <span className="tracking-wide">{t('auth.googleLogin', 'Google 로그인', 'Google Login', 'Googleログイン')}</span>
+                          <span className="tracking-wide whitespace-nowrap">{t('auth.googleLogin', 'Google 로그인', 'Google Login', 'Googleログイン')}</span>
                         </span>
                       </button>
 
@@ -485,7 +475,7 @@ export default function LoginPage() {
 
                         <span className="relative z-10 flex items-center justify-center gap-3 transform transition-all duration-300 group-hover:scale-105">
                           <Mail className={`w-5 h-5 transition-all duration-300 ${loginMethod === 'email' ? 'scale-110' : 'group-hover:scale-110'}`} />
-                          <span className="tracking-wide">{t('auth.emailLogin', '이메일 로그인', 'Email Login', 'メールログイン')}</span>
+                          <span className="tracking-wide whitespace-nowrap">{t('auth.emailLogin', '이메일 로그인', 'Email Login', 'メールログイン')}</span>
                         </span>
                       </button>
                     </div>

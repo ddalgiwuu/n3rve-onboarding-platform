@@ -22,6 +22,20 @@ export interface SubmissionData {
       fileName?: string
       fileSize?: number
     }>
+    musicVideoFiles?: Array<{
+      trackId: string
+      file?: File
+      dropboxUrl?: string
+      fileName?: string
+      fileSize?: number
+    }>
+    musicVideoThumbnails?: Array<{
+      trackId: string
+      file?: File
+      dropboxUrl?: string
+      fileName?: string
+      fileSize?: number
+    }>
     additionalFiles?: any[]
   }
 }
@@ -149,6 +163,18 @@ export const submissionService = {
             fileName: af.fileName,
             fileSize: af.fileSize
           })),
+          musicVideoFiles: data.files.musicVideoFiles?.map(mv => ({
+            trackId: mv.trackId,
+            dropboxUrl: mv.dropboxUrl,
+            fileName: mv.fileName,
+            fileSize: mv.fileSize
+          })),
+          musicVideoThumbnails: data.files.musicVideoThumbnails?.map(mt => ({
+            trackId: mt.trackId,
+            dropboxUrl: mt.dropboxUrl,
+            fileName: mt.fileName,
+            fileSize: mt.fileSize
+          })),
           additionalFiles: data.files.additionalFiles?.map(f => {
             if (typeof f === 'object' && 'dropboxUrl' in f) {
               return {
@@ -233,6 +259,18 @@ export const submissionService = {
             dropboxUrl: af.dropboxUrl,
             fileName: af.fileName,
             fileSize: af.fileSize
+          })),
+          musicVideoFiles: data.files.musicVideoFiles?.map(mv => ({
+            trackId: mv.trackId,
+            dropboxUrl: mv.dropboxUrl,
+            fileName: mv.fileName,
+            fileSize: mv.fileSize
+          })),
+          musicVideoThumbnails: data.files.musicVideoThumbnails?.map(mt => ({
+            trackId: mt.trackId,
+            dropboxUrl: mt.dropboxUrl,
+            fileName: mt.fileName,
+            fileSize: mt.fileSize
           })),
           additionalFiles: data.files.additionalFiles?.map(f => {
             if (typeof f === 'object' && 'dropboxUrl' in f) {

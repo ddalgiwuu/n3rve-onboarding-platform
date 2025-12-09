@@ -352,4 +352,34 @@ export class SubmissionsService {
       totalPages: Math.ceil(total / options.limit),
     };
   }
+
+  async updateMarketing(id: string, marketingData: any) {
+    // Get current submission
+    const current = await this.prisma.submission.findUnique({ where: { id } });
+    if (!current) throw new Error('Submission not found');
+
+    // Update submission with marketing fields
+    const updateData: any = {};
+
+    if (marketingData.hook !== undefined) updateData.hook = marketingData.hook;
+    if (marketingData.mainPitch !== undefined) updateData.mainPitch = marketingData.mainPitch;
+    if (marketingData.moods !== undefined) updateData.moods = marketingData.moods;
+    if (marketingData.instruments !== undefined) updateData.instruments = marketingData.instruments;
+    if (marketingData.socialMediaPlan !== undefined) updateData.socialMediaPlan = marketingData.socialMediaPlan;
+    if (marketingData.marketingDrivers !== undefined) updateData.marketingDrivers = marketingData.marketingDrivers;
+    if (marketingData.tracks !== undefined) updateData.tracks = marketingData.tracks;
+
+    // Update release fields
+    if (marketingData.release) {
+      updateData.release = {
+        ...current.release,
+        ...marketingData.release
+      };
+    }
+
+    return this.prisma.submission.update({
+      where: { id },
+      data: updateData
+    });
+  }
 }

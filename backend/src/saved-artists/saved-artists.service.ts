@@ -111,10 +111,51 @@ export class SavedArtistsService {
   async createOrUpdateArtist(userId: string, data: any) {
     console.log('SavedArtistsService: createOrUpdateArtist called with userId:', userId);
     console.log('SavedArtistsService: createOrUpdateArtist data:', JSON.stringify(data, null, 2));
-    
+
     try {
       let existingArtist: any = null;
-      
+
+      // If ID is provided, this is an explicit update request
+      if (data.id) {
+        console.log('SavedArtistsService: Explicit update by ID:', data.id);
+        existingArtist = await this.prisma.savedArtist.findFirst({
+          where: {
+            id: data.id,
+            userId // Ensure user owns the artist
+          }
+        });
+
+        if (!existingArtist) {
+          throw new Error('Artist not found or access denied');
+        }
+
+        // Update the existing artist with new data
+        const updateData: any = {};
+
+        if (data.name !== undefined) updateData.name = data.name;
+        // For composite types in MongoDB, assign directly without { set: ... }
+        // Remove 'id' field from translations as Prisma schema only has language/name
+        if (data.translations !== undefined) {
+          updateData.translations = data.translations.map(({ language, name }: any) => ({
+            language,
+            name
+          }));
+        }
+        if (data.identifiers !== undefined) {
+          updateData.identifiers = data.identifiers.map(({ type, value, url }: any) => ({
+            type,
+            value,
+            url: url || null
+          }));
+        }
+
+        console.log('SavedArtistsService: Updating artist with data:', updateData);
+        return this.prisma.savedArtist.update({
+          where: { id: data.id },
+          data: updateData
+        });
+      }
+
       // Check if artist already exists - only if we have identifiers
       if (data.identifiers && data.identifiers.length > 0) {
         console.log('SavedArtistsService: Checking for existing artist with identifiers...');
@@ -178,26 +219,19 @@ export class SavedArtistsService {
       console.log('SavedArtistsService: Prisma data object:', JSON.stringify({
         userId,
         name: data.name,
-        translations: {
-          set: data.translations || []
-        },
-        identifiers: {
-          set: data.identifiers || []
-        }
+        translations: data.translations || [],
+        identifiers: data.identifiers || []
       }, null, 2));
-      
+
       let newArtist;
       try {
+        // For composite types in MongoDB, assign directly without { set: ... }
         newArtist = await this.prisma.savedArtist.create({
           data: {
             userId,
             name: data.name,
-            translations: {
-              set: data.translations || []
-            },
-            identifiers: {
-              set: data.identifiers || []
-            }
+            translations: data.translations || [],
+            identifiers: data.identifiers || []
           },
         });
         console.log('SavedArtistsService: Prisma create successful');
@@ -241,6 +275,48 @@ export class SavedArtistsService {
 
   // Create or update a contributor
   async createOrUpdateContributor(userId: string, data: any) {
+    // If ID is provided, this is an explicit update request
+    if (data.id) {
+      const existingContributor = await this.prisma.savedContributor.findFirst({
+        where: {
+          id: data.id,
+          userId // Ensure user owns the contributor
+        }
+      });
+
+      if (!existingContributor) {
+        throw new Error('Contributor not found or access denied');
+      }
+
+      // Update the existing contributor with new data
+      const updateData: any = {};
+
+      if (data.name !== undefined) updateData.name = data.name;
+      // For scalar arrays, use { set: ... }
+      if (data.roles !== undefined) updateData.roles = { set: data.roles };
+      if (data.instruments !== undefined) updateData.instruments = { set: data.instruments };
+      // For composite types in MongoDB, assign directly without { set: ... }
+      // Remove 'id' field from translations as Prisma schema only has language/name
+      if (data.translations !== undefined) {
+        updateData.translations = data.translations.map(({ language, name }: any) => ({
+          language,
+          name
+        }));
+      }
+      if (data.identifiers !== undefined) {
+        updateData.identifiers = data.identifiers.map(({ type, value, url }: any) => ({
+          type,
+          value,
+          url: url || null
+        }));
+      }
+
+      return this.prisma.savedContributor.update({
+        where: { id: data.id },
+        data: updateData
+      });
+    }
+
     // Check if contributor already exists
     const existingContributor = await this.prisma.savedContributor.findFirst({
       where: {
@@ -263,14 +339,14 @@ export class SavedArtistsService {
         updateData.instruments = { set: allInstruments };
       }
 
-      // Update identifiers if provided
+      // Update identifiers if provided (composite type - assign directly)
       if (data.identifiers?.length) {
-        updateData.identifiers = { set: data.identifiers };
+        updateData.identifiers = data.identifiers;
       }
 
-      // Update translations if provided
+      // Update translations if provided (composite type - assign directly)
       if (data.translations?.length) {
-        updateData.translations = { set: data.translations };
+        updateData.translations = data.translations;
       }
 
       return this.prisma.savedContributor.update({
@@ -286,12 +362,9 @@ export class SavedArtistsService {
         name: data.name,
         roles: data.roles || [],
         instruments: data.instruments || [],
-        translations: {
-          set: data.translations || []
-        },
-        identifiers: {
-          set: data.identifiers || []
-        }
+        // For composite types in MongoDB, assign directly without { set: ... }
+        translations: data.translations || [],
+        identifiers: data.identifiers || []
       },
     });
   }

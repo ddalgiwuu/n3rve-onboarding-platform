@@ -1,56 +1,38 @@
-# Build stage
+# Dockerfile for Fly.io (Simplified for NestJS)
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-COPY prisma ./prisma/
+COPY prisma ./prisma
 
 # Install dependencies
-RUN npm ci --only=production && \
-    npm install -g @nestjs/cli && \
-    npm install --save-dev @types/node
+RUN npm ci
 
 # Copy source code
 COPY . .
 
-# Generate Prisma client
-ENV MONGODB_URI="mongodb://localhost:27017/n3rve_platform"
-RUN npx prisma generate
-
-# Build the application
+# Build NestJS
 RUN npm run build
 
-# Production stage
+# Production image
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dumb-init for proper signal handling
-RUN apk add --no-cache dumb-init
+# Copy package files
+COPY package*.json ./
+COPY prisma ./prisma
 
-# Create app user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+# Install production dependencies only
+RUN npm ci --only=production
 
 # Copy built application
-COPY --from=builder --chown=nodejs:nodejs /app/dist ./dist
-COPY --from=builder --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=nodejs:nodejs /app/package*.json ./
-COPY --from=builder --chown=nodejs:nodejs /app/prisma ./prisma
-
-# Create uploads directory
-RUN mkdir -p /app/uploads && chown -R nodejs:nodejs /app/uploads
-
-# Switch to app user
-USER nodejs
+COPY --from=builder /app/dist ./dist
 
 # Expose port
-EXPOSE 3000
+EXPOSE 8080
 
-# Use dumb-init to handle signals properly
-ENTRYPOINT ["dumb-init", "--"]
-
-# Start the application
-CMD ["node", "dist/main"]
+# Start application (NestJS builds to dist/src/main.js)
+CMD ["node", "dist/src/main.js"]

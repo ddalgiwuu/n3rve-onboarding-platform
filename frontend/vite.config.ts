@@ -12,8 +12,9 @@ export default defineConfig({
       parserOpts: {
         plugins: ['jsx', 'typescript']
       },
-      // Add babel configuration for better compatibility
+      // Enable automatic memoization via React Compiler 1.0
       plugins: [
+        ['babel-plugin-react-compiler'],
         ['@babel/plugin-transform-react-jsx', { runtime: 'automatic' }]
       ]
     }
@@ -80,12 +81,23 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: 'http://localhost:5001',
-        changeOrigin: true,
-        secure: false
+        target: 'http://localhost:3001',
+        changeOrigin: false, // Keep original origin header
+        secure: false,
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req, res) => {
+            // Ensure Origin header is preserved
+            if (req.headers.origin) {
+              proxyReq.setHeader('Origin', req.headers.origin);
+            } else {
+              proxyReq.setHeader('Origin', 'http://localhost:3000');
+            }
+            console.log('Proxying:', req.method, req.url, 'Origin:', proxyReq.getHeader('Origin'));
+          });
+        }
       },
       '/socket.io': {
-        target: 'http://localhost:5001',
+        target: 'http://localhost:3001',
         ws: true
       }
     }

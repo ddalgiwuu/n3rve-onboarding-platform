@@ -38,7 +38,7 @@ class ErrorBoundaryClass extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       const { t } = this.props;
-      
+
       return (
         this.props.fallback || (
           <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -76,7 +76,7 @@ class ErrorBoundaryClass extends Component<Props, State> {
 // Functional component wrapper that provides translation
 export default function ErrorBoundary({ children, fallback }: Omit<Props, 't'>) {
   const { t } = useTranslation();
-  
+
   return (
     <ErrorBoundaryClass t={t} fallback={fallback}>
       {children}
