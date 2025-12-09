@@ -157,7 +157,7 @@ export default function LoginPage() {
     // Store returnUrl in sessionStorage to persist across OAuth redirect
     sessionStorage.setItem('returnUrl', returnUrl);
 
-    const googleAuthUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/auth/google`;
+    const googleAuthUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/auth/google`;
 
     // Safari-friendly approach: Use popup window for OAuth
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
