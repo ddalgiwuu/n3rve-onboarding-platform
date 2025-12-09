@@ -9,7 +9,7 @@ import { initializeSecurity } from './utils/security';
 
 // Lazy load pages
 const HomePage = lazy(() => import('./pages/Home'));
-const LoginPage = lazy(() => import('./pages/Login'));
+const LoginPage = lazy(() => import('./pages/Login')); // Using Login.tsx for production
 const DashboardPage = lazy(() => import('./pages/Dashboard'));
 const ImprovedReleaseSubmissionPage = lazy(() => import('./components/HydratedReleaseSubmission'));
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -34,6 +34,12 @@ const RoleSelectPage = lazy(() => import('./pages/RoleSelect'));
 const AccountSettingsPage = lazy(() => import('./pages/AccountSettings'));
 const RegisterPage = lazy(() => import('./pages/Register'));
 const RealtimeQCTestPage = lazy(() => import('./pages/RealtimeQCTest'));
+
+// FUGA SCORE Integration pages
+const FeatureReportsPage = lazy(() => import('./pages/FeatureReports'));
+const ArtistRosterPage = lazy(() => import('./pages/ArtistRoster'));
+const ReleaseProjectsPage = lazy(() => import('./pages/ReleaseProjects'));
+const MarketingSubmissionPage = lazy(() => import('./pages/MarketingSubmission'));
 
 function App() {
   const authStore = useAuthStore();
@@ -80,6 +86,14 @@ function App() {
 
   // Wait for both stores to hydrate
   if (!hasAuthHydrated || !hasLanguageHydrated) {
+    // Add debug logging to help identify stuck hydration
+    console.log('Hydration status:', {
+      hasAuthHydrated,
+      hasLanguageHydrated,
+      isAuthenticated,
+      user: authStore.user?.name,
+      timestamp: new Date().toISOString()
+    });
     return <LoadingSpinner fullScreen />;
   }
 
@@ -145,6 +159,20 @@ function App() {
             } />
             <Route path="/account" element={
               isAuthenticated ? <AccountSettingsPage /> : <Navigate to="/login" state={{ from: '/account' }} />
+            } />
+
+            {/* FUGA SCORE Integration routes */}
+            <Route path="/release-projects" element={
+              isAuthenticated ? <ReleaseProjectsPage /> : <Navigate to="/login" state={{ from: '/release-projects' }} />
+            } />
+            <Route path="/marketing-submission/:id" element={
+              isAuthenticated ? <MarketingSubmissionPage /> : <Navigate to="/login" state={{ from: '/marketing-submission' }} />
+            } />
+            <Route path="/feature-reports" element={
+              isAuthenticated ? <FeatureReportsPage /> : <Navigate to="/login" state={{ from: '/feature-reports' }} />
+            } />
+            <Route path="/artist-roster" element={
+              isAuthenticated ? <ArtistRosterPage /> : <Navigate to="/login" state={{ from: '/artist-roster' }} />
             } />
 
             {/* Admin routes */}
