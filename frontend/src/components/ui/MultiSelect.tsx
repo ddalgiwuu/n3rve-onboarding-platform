@@ -1,8 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
 import { X, ChevronDown, Check } from 'lucide-react';
 
+interface MultiSelectOption {
+  value: string;
+  label: string;
+}
+
 interface MultiSelectProps {
-  options: readonly string[];
+  options: readonly (string | MultiSelectOption)[];
   value: string[];
   onChange: (value: string[]) => void;
   placeholder?: string;
@@ -34,17 +39,29 @@ export default function MultiSelect({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const filteredOptions = options.filter(option =>
-    option.toLowerCase().includes(searchTerm.toLowerCase()) &&
-    !value.includes(option)
-  );
+  // Helper functions to handle both string and object options
+  const getOptionValue = (option: string | MultiSelectOption): string => {
+    return typeof option === 'string' ? option : option.value;
+  };
 
-  const handleSelect = (option: string) => {
-    if (!value.includes(option)) {
+  const getOptionLabel = (option: string | MultiSelectOption): string => {
+    return typeof option === 'string' ? option : option.label;
+  };
+
+  const filteredOptions = options.filter(option => {
+    const label = getOptionLabel(option);
+    const optionValue = getOptionValue(option);
+    return label.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      !value.includes(optionValue);
+  });
+
+  const handleSelect = (option: string | MultiSelectOption) => {
+    const optionValue = getOptionValue(option);
+    if (!value.includes(optionValue)) {
       if (max && value.length >= max) {
         return;
       }
-      onChange([...value, option]);
+      onChange([...value, optionValue]);
     }
     setSearchTerm('');
   };
@@ -102,10 +119,12 @@ export default function MultiSelect({
             </div>
           )}
           {filteredOptions.map((option) => {
-            const isSelected = value.includes(option);
+            const optionValue = getOptionValue(option);
+            const optionLabel = getOptionLabel(option);
+            const isSelected = value.includes(optionValue);
             return (
               <button
-                key={option}
+                key={optionValue}
                 type="button"
                 onClick={() => handleSelect(option)}
                 className={`w-full px-3 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between ${
@@ -114,7 +133,7 @@ export default function MultiSelect({
                 disabled={!!(max && value.length >= max && !isSelected)}
               >
                 <span className={max && value.length >= max && !isSelected ? 'opacity-50' : ''}>
-                  {option}
+                  {optionLabel}
                 </span>
                 {isSelected && <Check className="w-4 h-4 text-purple-600" />}
               </button>
