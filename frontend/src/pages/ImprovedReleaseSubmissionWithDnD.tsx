@@ -1231,7 +1231,37 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
       if (results.errors.length > 0) {
         setShowWarnings(true);
-        toast.error(t('QC 검증 실패: 오류를 수정해주세요', 'QC validation failed: Please fix the errors', 'QC検証失敗：エラーを修正してください'));
+
+        // Show detailed error message with count and first few errors
+        const errorCount = results.errors.length;
+        const firstErrors = results.errors.slice(0, 3);
+        const errorSummary = firstErrors.map((err, idx) =>
+          `${idx + 1}. ${err.field ? `[${err.field}] ` : ''}${err.message}`
+        ).join('\n');
+
+        const remainingCount = errorCount - 3;
+        const fullMessage = errorCount <= 3
+          ? t(
+              `QC 검증 실패 (${errorCount}개 오류):\n\n${errorSummary}`,
+              `QC Validation Failed (${errorCount} errors):\n\n${errorSummary}`,
+              `QC検証失敗 (${errorCount}件のエラー):\n\n${errorSummary}`
+            )
+          : t(
+              `QC 검증 실패 (${errorCount}개 오류):\n\n${errorSummary}\n\n...및 ${remainingCount}개 더 (아래 QC 경고 섹션 확인)`,
+              `QC Validation Failed (${errorCount} errors):\n\n${errorSummary}\n\n...and ${remainingCount} more (check QC Warnings section below)`,
+              `QC検証失敗 (${errorCount}件のエラー):\n\n${errorSummary}\n\n...他${remainingCount}件 (下記のQC警告セクションを確認)`
+            );
+
+        toast.error(fullMessage, { duration: 8000, style: { whiteSpace: 'pre-line' } });
+
+        // Scroll to QC warnings section
+        setTimeout(() => {
+          const warningsElement = document.querySelector('[data-qc-warnings]');
+          if (warningsElement) {
+            warningsElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }, 100);
+
         return;
       }
 
@@ -3871,11 +3901,13 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
             {/* QC Warnings */}
             {showWarnings && validationResults && (
-              <QCWarnings
-                warnings={validationResults.warnings}
-                errors={validationResults.errors}
-                onClose={() => setShowWarnings(false)}
-              />
+              <div data-qc-warnings className="scroll-mt-4">
+                <QCWarnings
+                  warnings={validationResults.warnings}
+                  errors={validationResults.errors}
+                  onClose={() => setShowWarnings(false)}
+                />
+              </div>
             )}
 
             {/* Submit Button */}
