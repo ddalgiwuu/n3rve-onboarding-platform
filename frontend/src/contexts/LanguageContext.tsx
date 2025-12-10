@@ -27,12 +27,9 @@ function getInitialLanguageState(): LanguageState {
 
   try {
     const storedValue = localStorage.getItem('language-storage');
-    console.log('Language INIT - stored value:', storedValue);
     if (storedValue) {
       const parsed = JSON.parse(storedValue);
-      console.log('Language INIT - parsed value:', parsed);
       if (parsed.state) {
-        console.log('Language INIT - using state format, setting hydrated true');
         return {
           language: parsed.state.language || 'ko',
           _hasHydrated: true
@@ -41,7 +38,7 @@ function getInitialLanguageState(): LanguageState {
       return { ...parsed, _hasHydrated: true };
     }
   } catch (error) {
-    console.log('Language INIT - error, using default with hydrated true');
+    // Silent error handling for security
   }
 
   return { ...initialState, _hasHydrated: true };
@@ -56,28 +53,22 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       if (typeof window !== 'undefined') {
         try {
           const storedValue = localStorage.getItem('language-storage');
-          console.log('Language hydration - stored value:', storedValue);
           if (storedValue) {
             const parsed = JSON.parse(storedValue);
-            console.log('Language hydration - parsed value:', parsed);
             // Handle legacy format from zustand/redux
             if (parsed.state) {
-              console.log('Language hydration - using state format');
               setLanguageState({
                 language: parsed.state.language || 'ko',
                 _hasHydrated: true
               });
             } else {
-              console.log('Language hydration - using direct format');
               setLanguageState({ ...parsed, _hasHydrated: true });
             }
           } else {
-            console.log('Language hydration - no stored value, setting default');
             setLanguageState(prev => ({ ...prev, _hasHydrated: true }));
           }
         } catch (error) {
-          console.warn('Failed to load language from localStorage:', error);
-          console.log('Language hydration - error, setting hydrated true');
+          // Silent error handling for security
           setLanguageState(prev => ({ ...prev, _hasHydrated: true }));
         }
       }
@@ -90,7 +81,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     const timeoutId = setTimeout(() => {
       setLanguageState(prev => {
         if (!prev._hasHydrated) {
-          console.log('Language hydration - forcing hydration after timeout');
           return { ...prev, _hasHydrated: true };
         }
         return prev;
