@@ -45,12 +45,9 @@ function getInitialAuthState(): AuthState {
 
   try {
     const storedValue = localStorage.getItem('auth-storage');
-    console.log('Auth INIT - stored value:', storedValue);
     if (storedValue) {
       const parsed = JSON.parse(storedValue);
-      console.log('Auth INIT - parsed value:', parsed);
       if (parsed.state) {
-        console.log('Auth INIT - using state format, setting hydrated true');
         return {
           ...parsed.state,
           _hasHydrated: true
@@ -59,7 +56,7 @@ function getInitialAuthState(): AuthState {
       return { ...parsed, _hasHydrated: true };
     }
   } catch (error) {
-    console.log('Auth INIT - error, using default with hydrated true');
+    // Silent error handling for security
   }
 
   return { ...initialState, _hasHydrated: true };
@@ -74,28 +71,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (typeof window !== 'undefined') {
         try {
           const storedValue = localStorage.getItem('auth-storage');
-          console.log('Auth hydration - stored value:', storedValue);
           if (storedValue) {
             const parsed = JSON.parse(storedValue);
-            console.log('Auth hydration - parsed value:', parsed);
             // Handle legacy format from zustand/redux
             if (parsed.state) {
-              console.log('Auth hydration - using state format');
               setAuthState({
                 ...parsed.state,
                 _hasHydrated: true
               });
             } else {
-              console.log('Auth hydration - using direct format');
               setAuthState({ ...parsed, _hasHydrated: true });
             }
           } else {
-            console.log('Auth hydration - no stored value, setting default');
             setAuthState(prev => ({ ...prev, _hasHydrated: true }));
           }
         } catch (error) {
           logger.warn('Failed to load auth from localStorage:', error);
-          console.log('Auth hydration - error, setting hydrated true');
           setAuthState(prev => ({ ...prev, _hasHydrated: true }));
         }
       }
@@ -108,7 +99,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const timeoutId = setTimeout(() => {
       setAuthState(prev => {
         if (!prev._hasHydrated) {
-          console.log('Auth hydration - forcing hydration after timeout');
           return { ...prev, _hasHydrated: true };
         }
         return prev;

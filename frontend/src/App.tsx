@@ -51,16 +51,6 @@ function App() {
   const isAuthenticated = authStore.isAuthenticated;
   const userRole = authStore.user?.role;
 
-  // DEBUGGING: Log App render
-  console.log('🎯 App.tsx rendering:', {
-    hasAuthHydrated,
-    hasLanguageHydrated,
-    isAuthenticated,
-    userRole,
-    userName: authStore.user?.name,
-    timestamp: new Date().toISOString()
-  });
-
   // Note: Hydration is handled automatically by individual contexts
 
   // Initialize dark mode on app load
@@ -98,29 +88,12 @@ function App() {
 
   // Wait for both stores to hydrate
   if (!hasAuthHydrated || !hasLanguageHydrated) {
-    // Add debug logging to help identify stuck hydration
-    console.log('⏳ Waiting for hydration:', {
-      hasAuthHydrated,
-      hasLanguageHydrated,
-      isAuthenticated,
-      user: authStore.user?.name,
-      timestamp: new Date().toISOString()
-    });
     return <LoadingSpinner fullScreen />;
   }
 
-  console.log('✅ Hydration complete, rendering app routes');
-
-  console.log('🚀 About to render Routes component');
-
   return (
     <div className="min-h-screen">
-      <Suspense fallback={
-        <>
-          {console.log('⏳ Suspense fallback triggered - lazy loading component')}
-          <LoadingSpinner fullScreen />
-        </>
-      }>
+      <Suspense fallback={<LoadingSpinner fullScreen />}>
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={
@@ -204,10 +177,7 @@ function App() {
               isAuthenticated && userRole === 'ADMIN' ? <AdminSubmissionsPage /> : <Navigate to="/login" />
             } />
             <Route path="/admin/submission-management" element={
-              <>
-                {console.log('🔍 Rendering /admin/submission-management route', { isAuthenticated, userRole })}
-                {isAuthenticated && userRole === 'ADMIN' ? <SubmissionManagementPage /> : <Navigate to="/login" />}
-              </>
+              isAuthenticated && userRole === 'ADMIN' ? <SubmissionManagementPage /> : <Navigate to="/login" />
             } />
             <Route path="/admin/customers" element={
               isAuthenticated && userRole === 'ADMIN' ? <AdminCustomersPage /> : <Navigate to="/login" />

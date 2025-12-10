@@ -22,27 +22,26 @@ export default class ReactErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // DEBUGGING: Alert error immediately
-    alert(`🚨 React Error Caught!\n\nError: ${error.message}\n\nComponent: ${errorInfo.componentStack?.split('\n')[1] || 'Unknown'}\n\nCheck console for details.`);
+    // Log React context specific errors in development only
+    if (import.meta.env.DEV) {
+      if (error.message.includes('createContext') ||
+          error.message.includes('useContext') ||
+          error.message.includes('Provider')) {
 
-    // Log React context specific errors
-    if (error.message.includes('createContext') ||
-        error.message.includes('useContext') ||
-        error.message.includes('Provider')) {
+        console.error('React Context Error:', error);
+        console.error('Error Info:', errorInfo);
+        console.error('This may be due to cached vendor files. Please clear browser cache and reload.');
 
-      console.error('React Context Error:', error);
-      console.error('Error Info:', errorInfo);
-      console.error('This may be due to cached vendor files. Please clear browser cache and reload.');
-
-      // Log additional context for debugging
-      console.error('Error Stack:', error.stack);
-      console.error('Component Stack:', errorInfo.componentStack);
-    } else {
-      // Log all other errors
-      console.error('React Error (Non-Context):', error);
-      console.error('Error Info:', errorInfo);
-      console.error('Error Stack:', error.stack);
-      console.error('Component Stack:', errorInfo.componentStack);
+        // Log additional context for debugging
+        console.error('Error Stack:', error.stack);
+        console.error('Component Stack:', errorInfo.componentStack);
+      } else {
+        // Log all other errors
+        console.error('React Error (Non-Context):', error);
+        console.error('Error Info:', errorInfo);
+        console.error('Error Stack:', error.stack);
+        console.error('Component Stack:', errorInfo.componentStack);
+      }
     }
   }
 
