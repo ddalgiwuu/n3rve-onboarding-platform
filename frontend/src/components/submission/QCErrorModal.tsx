@@ -1,5 +1,6 @@
 import { X, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface QCError {
   field: string;
@@ -35,8 +36,8 @@ export default function QCErrorModal({ errors, onClose, onFixError }: QCErrorMod
   const errorCount = errors.filter(e => e.severity === 'error').length;
   const warningCount = errors.filter(e => e.severity === 'warning').length;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 animate-in fade-in duration-200">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/60 backdrop-blur-sm"
@@ -160,4 +161,7 @@ export default function QCErrorModal({ errors, onClose, onFixError }: QCErrorMod
       </div>
     </div>
   );
+
+  // Render modal using Portal to ensure it's always on top
+  return createPortal(modalContent, document.body);
 }
