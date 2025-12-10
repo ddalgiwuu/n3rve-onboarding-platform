@@ -63,7 +63,9 @@ export default function ReleaseProjects() {
           : '/submissions/user';
 
         const response = await api.get(endpoint);
-        return response.data;
+        // Ensure we return an array
+        const data = response.data;
+        return Array.isArray(data) ? data : [];
       } catch (err) {
         console.error('Error fetching projects:', err);
         if (err.response?.status === 401) return [];
@@ -133,7 +135,7 @@ export default function ReleaseProjects() {
             <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
               {translate('전체 프로젝트', 'Total Projects', '全プロジェクト')}
             </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">{projects.length}</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white">{(Array.isArray(projects) ? projects : []).length}</p>
           </motion.div>
 
           <motion.div
@@ -146,7 +148,7 @@ export default function ReleaseProjects() {
               {translate('승인됨', 'Approved', '承認済み')}
             </p>
             <p className="text-3xl font-bold text-green-400">
-              {projects.filter((p: ReleaseProject) => p.status === 'APPROVED').length}
+              {(Array.isArray(projects) ? projects : []).filter((p: ReleaseProject) => p.status === 'APPROVED').length}
             </p>
           </motion.div>
 
@@ -160,7 +162,7 @@ export default function ReleaseProjects() {
               {translate('대기중', 'Pending', '保留中')}
             </p>
             <p className="text-3xl font-bold text-yellow-400">
-              {projects.filter((p: ReleaseProject) => p.status === 'PENDING').length}
+              {(Array.isArray(projects) ? projects : []).filter((p: ReleaseProject) => p.status === 'PENDING').length}
             </p>
           </motion.div>
 
@@ -174,7 +176,7 @@ export default function ReleaseProjects() {
               {translate('마케팅 완료', 'Marketing Complete', 'マーケティング完了')}
             </p>
             <p className="text-3xl font-bold text-purple-400">
-              {projects.filter((p: ReleaseProject) => p.hook && p.mainPitch).length}
+              {(Array.isArray(projects) ? projects : []).filter((p: ReleaseProject) => p.hook && p.mainPitch).length}
             </p>
           </motion.div>
         </div>
