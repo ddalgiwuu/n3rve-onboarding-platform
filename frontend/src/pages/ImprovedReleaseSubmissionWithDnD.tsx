@@ -20,6 +20,7 @@ import { useAuthStore } from '@/store/auth.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation';
 import QCWarnings from '@/components/submission/QCWarnings';
+import QCErrorModal from '@/components/submission/QCErrorModal';
 import DatePicker from '@/components/DatePicker';
 import { v4 as uuidv4 } from 'uuid';
 import MultiSelect from '@/components/ui/MultiSelect';
@@ -395,6 +396,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [showWarnings, setShowWarnings] = useState(false);
+  const [showQCErrorModal, setShowQCErrorModal] = useState(false);
   const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -1231,37 +1233,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
       if (results.errors.length > 0) {
         setShowWarnings(true);
-
-        // Show detailed error message with count and first few errors
-        const errorCount = results.errors.length;
-        const firstErrors = results.errors.slice(0, 3);
-        const errorSummary = firstErrors.map((err, idx) =>
-          `${idx + 1}. ${err.field ? `[${err.field}] ` : ''}${err.message}`
-        ).join('\n');
-
-        const remainingCount = errorCount - 3;
-        const fullMessage = errorCount <= 3
-          ? t(
-              `QC 검증 실패 (${errorCount}개 오류):\n\n${errorSummary}`,
-              `QC Validation Failed (${errorCount} errors):\n\n${errorSummary}`,
-              `QC検証失敗 (${errorCount}件のエラー):\n\n${errorSummary}`
-            )
-          : t(
-              `QC 검증 실패 (${errorCount}개 오류):\n\n${errorSummary}\n\n...및 ${remainingCount}개 더 (아래 QC 경고 섹션 확인)`,
-              `QC Validation Failed (${errorCount} errors):\n\n${errorSummary}\n\n...and ${remainingCount} more (check QC Warnings section below)`,
-              `QC検証失敗 (${errorCount}件のエラー):\n\n${errorSummary}\n\n...他${remainingCount}件 (下記のQC警告セクションを確認)`
-            );
-
-        toast.error(fullMessage, { duration: 8000, style: { whiteSpace: 'pre-line' } });
-
-        // Scroll to QC warnings section
-        setTimeout(() => {
-          const warningsElement = document.querySelector('[data-qc-warnings]');
-          if (warningsElement) {
-            warningsElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-          }
-        }, 100);
-
+        setShowQCErrorModal(true);
         return;
       }
 
@@ -4193,6 +4165,29 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
           );
         })()}
       </div>
+
+      {/* QC Error Modal */}
+      {showQCErrorModal && validationResults && validationResults.errors.length > 0 && (
+        <QCErrorModal
+          errors={validationResults.errors.map(err => ({
+            field: err.field || 'Unknown',
+            message: err.message,
+            severity: 'error' as const,
+            helpText: err.helpText
+          }))}
+          onClose={() => setShowQCErrorModal(false)}
+          onFixError={(field) => {
+            // Close modal and scroll to QC warnings
+            setShowQCErrorModal(false);
+            setTimeout(() => {
+              const warningsElement = document.querySelector('[data-qc-warnings]');
+              if (warningsElement) {
+                warningsElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }
+            }, 100);
+          }}
+        />
+      )}
     </SavedArtistsProvider>
   );
 };
