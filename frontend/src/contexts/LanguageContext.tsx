@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useState, ReactNode, useMemo } from 'react';
 
 type Language = 'ko' | 'en' | 'ja'
 
@@ -22,8 +22,8 @@ const initialState: LanguageState = {
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [languageState, setLanguageState] = useState<LanguageState>(initialState);
 
-  // Load from localStorage on mount
-  useEffect(() => {
+  // Load from localStorage on mount (using useLayoutEffect for synchronous execution)
+  useLayoutEffect(() => {
     const loadLanguageState = () => {
       if (typeof window !== 'undefined') {
         try {

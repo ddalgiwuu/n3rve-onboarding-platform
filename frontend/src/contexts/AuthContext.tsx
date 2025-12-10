@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode, useMemo } from 'react';
+import { createContext, useContext, useEffect, useLayoutEffect, useState, ReactNode, useMemo } from 'react';
 import { logger } from '@/utils/logger';
 
 interface User {
@@ -40,8 +40,8 @@ const initialState: AuthState = {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>(initialState);
 
-  // Load from localStorage on mount
-  useEffect(() => {
+  // Load from localStorage on mount (using useLayoutEffect for synchronous execution)
+  useLayoutEffect(() => {
     const loadAuthState = () => {
       if (typeof window !== 'undefined') {
         try {
