@@ -762,4 +762,5 @@ const SubmissionManagement: React.FC = () => {
   );
 };
 
-export default SubmissionManagement;
+// Explicit default export for React 19 + Vite compatibility
+export { SubmissionManagement as default };
