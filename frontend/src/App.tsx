@@ -49,6 +49,16 @@ function App() {
   const isAuthenticated = authStore.isAuthenticated;
   const userRole = authStore.user?.role;
 
+  // DEBUGGING: Log App render
+  console.log('🎯 App.tsx rendering:', {
+    hasAuthHydrated,
+    hasLanguageHydrated,
+    isAuthenticated,
+    userRole,
+    userName: authStore.user?.name,
+    timestamp: new Date().toISOString()
+  });
+
   // Note: Hydration is handled automatically by individual contexts
 
   // Initialize dark mode on app load
@@ -87,7 +97,7 @@ function App() {
   // Wait for both stores to hydrate
   if (!hasAuthHydrated || !hasLanguageHydrated) {
     // Add debug logging to help identify stuck hydration
-    console.log('Hydration status:', {
+    console.log('⏳ Waiting for hydration:', {
       hasAuthHydrated,
       hasLanguageHydrated,
       isAuthenticated,
@@ -96,6 +106,8 @@ function App() {
     });
     return <LoadingSpinner fullScreen />;
   }
+
+  console.log('✅ Hydration complete, rendering app routes');
 
   return (
     <div className="min-h-screen">

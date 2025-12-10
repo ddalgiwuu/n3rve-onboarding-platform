@@ -22,6 +22,9 @@ export default class ReactErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    // DEBUGGING: Alert error immediately
+    alert(`🚨 React Error Caught!\n\nError: ${error.message}\n\nComponent: ${errorInfo.componentStack?.split('\n')[1] || 'Unknown'}\n\nCheck console for details.`);
+
     // Log React context specific errors
     if (error.message.includes('createContext') ||
         error.message.includes('useContext') ||
@@ -32,6 +35,12 @@ export default class ReactErrorBoundary extends Component<Props, State> {
       console.error('This may be due to cached vendor files. Please clear browser cache and reload.');
 
       // Log additional context for debugging
+      console.error('Error Stack:', error.stack);
+      console.error('Component Stack:', errorInfo.componentStack);
+    } else {
+      // Log all other errors
+      console.error('React Error (Non-Context):', error);
+      console.error('Error Info:', errorInfo);
       console.error('Error Stack:', error.stack);
       console.error('Component Stack:', errorInfo.componentStack);
     }
