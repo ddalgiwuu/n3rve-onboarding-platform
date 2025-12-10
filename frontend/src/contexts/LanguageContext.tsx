@@ -19,8 +19,36 @@ const initialState: LanguageState = {
   _hasHydrated: false
 };
 
+// Initialize state from localStorage synchronously
+function getInitialLanguageState(): LanguageState {
+  if (typeof window === 'undefined') {
+    return initialState;
+  }
+
+  try {
+    const storedValue = localStorage.getItem('language-storage');
+    console.log('Language INIT - stored value:', storedValue);
+    if (storedValue) {
+      const parsed = JSON.parse(storedValue);
+      console.log('Language INIT - parsed value:', parsed);
+      if (parsed.state) {
+        console.log('Language INIT - using state format, setting hydrated true');
+        return {
+          language: parsed.state.language || 'ko',
+          _hasHydrated: true
+        };
+      }
+      return { ...parsed, _hasHydrated: true };
+    }
+  } catch (error) {
+    console.log('Language INIT - error, using default with hydrated true');
+  }
+
+  return { ...initialState, _hasHydrated: true };
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [languageState, setLanguageState] = useState<LanguageState>(initialState);
+  const [languageState, setLanguageState] = useState<LanguageState>(getInitialLanguageState);
 
   // Load from localStorage on mount (using useLayoutEffect for synchronous execution)
   useLayoutEffect(() => {

@@ -37,8 +37,36 @@ const initialState: AuthState = {
   _hasHydrated: false
 };
 
+// Initialize state from localStorage synchronously
+function getInitialAuthState(): AuthState {
+  if (typeof window === 'undefined') {
+    return initialState;
+  }
+
+  try {
+    const storedValue = localStorage.getItem('auth-storage');
+    console.log('Auth INIT - stored value:', storedValue);
+    if (storedValue) {
+      const parsed = JSON.parse(storedValue);
+      console.log('Auth INIT - parsed value:', parsed);
+      if (parsed.state) {
+        console.log('Auth INIT - using state format, setting hydrated true');
+        return {
+          ...parsed.state,
+          _hasHydrated: true
+        };
+      }
+      return { ...parsed, _hasHydrated: true };
+    }
+  } catch (error) {
+    console.log('Auth INIT - error, using default with hydrated true');
+  }
+
+  return { ...initialState, _hasHydrated: true };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [authState, setAuthState] = useState<AuthState>(initialState);
+  const [authState, setAuthState] = useState<AuthState>(getInitialAuthState);
 
   // Load from localStorage on mount (using useLayoutEffect for synchronous execution)
   useLayoutEffect(() => {
