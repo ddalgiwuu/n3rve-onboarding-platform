@@ -109,9 +109,16 @@ function App() {
 
   console.log('✅ Hydration complete, rendering app routes');
 
+  console.log('🚀 About to render Routes component');
+
   return (
     <div className="min-h-screen">
-      <Suspense fallback={<LoadingSpinner fullScreen />}>
+      <Suspense fallback={
+        <>
+          {console.log('⏳ Suspense fallback triggered - lazy loading component')}
+          <LoadingSpinner fullScreen />
+        </>
+      }>
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={
@@ -195,7 +202,10 @@ function App() {
               isAuthenticated && userRole === 'ADMIN' ? <AdminSubmissionsPage /> : <Navigate to="/login" />
             } />
             <Route path="/admin/submission-management" element={
-              isAuthenticated && userRole === 'ADMIN' ? <SubmissionManagementPage /> : <Navigate to="/login" />
+              <>
+                {console.log('🔍 Rendering /admin/submission-management route', { isAuthenticated, userRole })}
+                {isAuthenticated && userRole === 'ADMIN' ? <SubmissionManagementPage /> : <Navigate to="/login" />}
+              </>
             } />
             <Route path="/admin/customers" element={
               isAuthenticated && userRole === 'ADMIN' ? <AdminCustomersPage /> : <Navigate to="/login" />
