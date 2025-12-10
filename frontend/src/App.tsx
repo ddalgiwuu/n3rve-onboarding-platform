@@ -7,23 +7,25 @@ import LoadingSpinner from './components/common/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
 import { initializeSecurity } from './utils/security';
 
-// Lazy load pages
+// Admin pages - use direct imports to avoid React 19 lazy() compatibility issues
+import AdminDashboardPage from './pages/admin/AdminDashboard';
+import AdminSubmissionsPage from './pages/admin/AdminSubmissions';
+import SubmissionManagementPage from './pages/admin/SubmissionManagement';
+import AdminCustomersPage from './pages/admin/AdminCustomers';
+import AdminSettingsPage from './pages/admin/AdminSettings';
+import AdminAccountsPage from './pages/admin/AdminAccounts';
+
+// Lazy load non-admin pages
 const HomePage = lazy(() => import('./pages/Home'));
 const LoginPage = lazy(() => import('./pages/Login')); // Using Login.tsx for production
 const DashboardPage = lazy(() => import('./pages/Dashboard'));
 const ImprovedReleaseSubmissionPage = lazy(() => import('./components/HydratedReleaseSubmission'));
-const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboard'));
-const AdminSubmissionsPage = lazy(() => import('./pages/admin/AdminSubmissions'));
-const SubmissionManagementPage = lazy(() => import('./pages/admin/SubmissionManagement'));
 const ArtistProfileGuidePage = lazy(() => import('./pages/ArtistProfileGuide'));
 const TechnicalGuidePage = lazy(() => import('./components/submission/TechnicalGuide'));
 const SubmissionSuccessPage = lazy(() => import('./pages/submission/SubmissionSuccess'));
 const SubmissionsPage = lazy(() => import('./pages/Submissions'));
 const GuidePage = lazy(() => import('./pages/Guide'));
 const SettingsPage = lazy(() => import('./pages/Settings'));
-const AdminCustomersPage = lazy(() => import('./pages/admin/AdminCustomers'));
-const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettings'));
-const AdminAccountsPage = lazy(() => import('./pages/admin/AdminAccounts'));
 const DropboxCallbackPage = lazy(() => import('./pages/DropboxCallback'));
 const AuthCallbackPage = lazy(() => import('./pages/AuthCallback'));
 const ProfileCompletePage = lazy(() => import('./pages/ProfileComplete'));
