@@ -1,6 +1,8 @@
 import { useEffect, ReactNode } from 'react';
 import { X } from 'lucide-react';
 
+// Cache busting: Updated 2025-12-12 12:57 PM
+
 interface ModalWrapperProps {
   isOpen: boolean;
   onClose: () => void;
