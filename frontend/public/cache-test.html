@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>캐시 테스트 - N3RVE 플랫폼</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .instruction {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196F3;
+        }
+        .warning {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #ffc107;
+        }
+        .success {
+            background: #d4edda;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+        .step {
+            margin: 15px 0;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        .step-number {
+            font-weight: bold;
+            color: #2196F3;
+            margin-right: 10px;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1976D2;
+        }
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .cache-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 브라우저 캐시 삭제 가이드</h1>
+        
+        <div class="warning">
+            <strong>⚠️ 현재 상황:</strong><br>
+            코드가 수정되었지만 브라우저에서 여전히 이전 버전의 JavaScript를 사용하고 있습니다.
+        </div>
+
+        <div class="instruction">
+            <strong>📋 해결 방법:</strong><br>
+            브라우저 캐시를 완전히 삭제하면 최신 코드를 받을 수 있습니다.
+        </div>
+
+        <h2>방법 1: 키보드 단축키 (가장 빠름) ⚡</h2>
+        <div class="step">
+            <span class="step-number">Windows:</span>
+            <code>Ctrl + Shift + R</code> 또는 <code>Ctrl + F5</code>
+        </div>
+        <div class="step">
+            <span class="step-number">Mac:</span>
+            <code>Cmd + Shift + R</code> 또는 <code>Cmd + Option + R</code>
+        </div>
+
+        <h2>방법 2: 개발자 도구 사용</h2>
+        <div class="step">
+            <span class="step-number">1단계:</span>
+            개발자 도구 열기 (<code>F12</code> 또는 <code>Cmd/Ctrl + Shift + I</code>)
+        </div>
+        <div class="step">
+            <span class="step-number">2단계:</span>
+            Network 탭 클릭
+        </div>
+        <div class="step">
+            <span class="step-number">3단계:</span>
+            "Disable cache" 체크박스 선택
+        </div>
+        <div class="step">
+            <span class="step-number">4단계:</span>
+            새로고침 버튼 우클릭 → "Empty Cache and Hard Reload" 선택
+        </div>
+
+        <h2>방법 3: 시크릿/비공개 모드 (임시 테스트)</h2>
+        <div class="step">
+            <span class="step-number">Chrome/Edge:</span>
+            <code>Ctrl + Shift + N</code> (Windows) / <code>Cmd + Shift + N</code> (Mac)
+        </div>
+        <div class="step">
+            <span class="step-number">Firefox:</span>
+            <code>Ctrl + Shift + P</code> (Windows) / <code>Cmd + Shift + P</code> (Mac)
+        </div>
+        <div class="step">
+            <span class="step-number">Safari:</span>
+            <code>Cmd + Shift + N</code>
+        </div>
+
+        <h2>방법 4: 브라우저 설정에서 캐시 삭제</h2>
+        <div class="step">
+            <span class="step-number">Chrome/Edge:</span>
+            설정 → 개인정보 보호 및 보안 → 인터넷 사용 기록 삭제 → "캐시된 이미지 및 파일" 선택 → 삭제
+        </div>
+        <div class="step">
+            <span class="step-number">Firefox:</span>
+            설정 → 개인정보 보호 및 보안 → 쿠키 및 사이트 데이터 → 데이터 지우기
+        </div>
+        <div class="step">
+            <span class="step-number">Safari:</span>
+            개발자용 → 캐시 비우기 (또는 Safari → 기본 설정 → 고급 → "메뉴 막대에서 개발자용 메뉴 보기" 활성화)
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" onclick="testCache()">캐시 상태 확인</button>
+            <button class="btn-secondary" onclick="location.href='/'">메인 페이지로 이동</button>
+        </div>
+
+        <div id="status" class="status"></div>
+
+        <div class="cache-info">
+            <strong>💡 참고 정보:</strong><br>
+            • 최신 빌드 시간: <code id="buildTime">확인 중...</code><br>
+            • Vite dev server: 포트 5173에서 실행 중<br>
+            • 현재 URL: <code id="currentUrl"></code><br>
+            • User Agent: <code id="userAgent"></code>
+        </div>
+    </div>
+
+    <script>
+        // Display current information
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('userAgent').textContent = navigator.userAgent;
+        
+        // Check build time from main bundle
+        fetch('/assets/index-mtv5UPAt-1765511513722.js', { method: 'HEAD' })
+            .then(response => {
+                const lastModified = response.headers.get('last-modified');
+                document.getElementById('buildTime').textContent = lastModified || '알 수 없음';
+            })
+            .catch(() => {
+                document.getElementById('buildTime').textContent = '확인 실패';
+            });
+
+        function testCache() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status success';
+            statusDiv.innerHTML = `
+                <strong>✅ 캐시 테스트 완료</strong><br>
+                • 현재 시간: ${new Date().toLocaleString('ko-KR')}<br>
+                • 페이지 로드 시간: ${performance.now().toFixed(2)}ms<br>
+                • 캐시 정책: ${document.querySelector('meta[http-equiv="Cache-Control"]')?.content || '기본값'}<br>
+                <br>
+                <strong>다음 단계:</strong><br>
+                1. 위의 방법 중 하나로 캐시를 삭제하세요<br>
+                2. 메인 페이지로 돌아가서 정상 작동을 확인하세요<br>
+                3. 여전히 문제가 발생하면 시크릿 모드로 테스트하세요
+            `;
+        }
+    </script>
+</body>
+</html>
