@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { Music, ChevronDown, X } from 'lucide-react';
@@ -26,10 +27,40 @@ export function GenreSelector({
   const [showGenreDropdown, setShowGenreDropdown] = useState(false);
   const [showSubgenreDropdown, setShowSubgenreDropdown] = useState(false);
 
+  // Refs for dropdown positioning
+  const genreInputRef = useRef<HTMLDivElement>(null);
+  const subgenreInputRef = useRef<HTMLDivElement>(null);
+  const [genreDropdownPosition, setGenreDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+  const [subgenreDropdownPosition, setSubgenreDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
+
   const translate = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   // Get available subgenres for selected main genre
   const availableSubgenres = mainGenre ? GENRE_SUBGENRES[mainGenre as FugaGenre] || [] : [];
+
+  // Calculate genre dropdown position
+  useEffect(() => {
+    if (showGenreDropdown && genreInputRef.current) {
+      const rect = genreInputRef.current.getBoundingClientRect();
+      setGenreDropdownPosition({
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+  }, [showGenreDropdown]);
+
+  // Calculate subgenre dropdown position
+  useEffect(() => {
+    if (showSubgenreDropdown && subgenreInputRef.current) {
+      const rect = subgenreInputRef.current.getBoundingClientRect();
+      setSubgenreDropdownPosition({
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width,
+      });
+    }
+  }, [showSubgenreDropdown]);
 
   // Clear subgenres when main genre changes
   useEffect(() => {
@@ -59,7 +90,7 @@ export function GenreSelector({
           <span className="text-red-400 ml-1">*</span>
         </label>
 
-        <div className="relative">
+        <div ref={genreInputRef} className="relative">
           <button
             type="button"
             onClick={() => setShowGenreDropdown(!showGenreDropdown)}
@@ -81,16 +112,27 @@ export function GenreSelector({
             )} />
           </button>
 
-          {showGenreDropdown && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="
-                absolute z-10 w-full mt-2
-                bg-gray-900/95 backdrop-blur-xl
-                border border-white/10 rounded-xl
-                shadow-2xl shadow-black/50
-                max-h-64 overflow-y-auto
+          {showGenreDropdown && createPortal(
+            <>
+              <div
+                className="fixed inset-0 z-40"
+                onClick={() => setShowGenreDropdown(false)}
+              />
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                style={{
+                  position: 'fixed',
+                  top: `${genreDropdownPosition.top}px`,
+                  left: `${genreDropdownPosition.left}px`,
+                  width: `${genreDropdownPosition.width}px`,
+                  zIndex: 9999,
+                }}
+                className="
+                  bg-gray-900/95 backdrop-blur-xl
+                  border border-white/10 rounded-xl
+                  shadow-2xl shadow-black/50
+                  max-h-64 overflow-y-auto
               "
             >
               <div className="p-2">
@@ -114,6 +156,8 @@ export function GenreSelector({
                 ))}
               </div>
             </motion.div>
+            </>,
+            document.body
           )}
         </div>
 
@@ -160,7 +204,7 @@ export function GenreSelector({
           )}
 
           {/* Subgenre Dropdown */}
-          <div className="relative">
+          <div ref={subgenreInputRef} className="relative">
             <button
               type="button"
               onClick={() => setShowSubgenreDropdown(!showSubgenreDropdown)}
@@ -187,14 +231,25 @@ export function GenreSelector({
               )} />
             </button>
 
-            {showSubgenreDropdown && (
-              <motion.div
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="
-                  absolute z-10 w-full mt-2
-                  bg-gray-900/95 backdrop-blur-xl
-                  border border-white/10 rounded-xl
+            {showSubgenreDropdown && createPortal(
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowSubgenreDropdown(false)}
+                />
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  style={{
+                    position: 'fixed',
+                    top: `${subgenreDropdownPosition.top}px`,
+                    left: `${subgenreDropdownPosition.left}px`,
+                    width: `${subgenreDropdownPosition.width}px`,
+                    zIndex: 9999,
+                  }}
+                  className="
+                    bg-gray-900/95 backdrop-blur-xl
+                    border border-white/10 rounded-xl
                   shadow-2xl shadow-black/50
                   max-h-64 overflow-y-auto
                 "
@@ -225,6 +280,8 @@ export function GenreSelector({
                   )}
                 </div>
               </motion.div>
+              </>,
+              document.body
             )}
           </div>
 
