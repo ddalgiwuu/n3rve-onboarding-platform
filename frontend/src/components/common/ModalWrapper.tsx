@@ -66,7 +66,7 @@ export default function ModalWrapper({
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black/60 transition-opacity -z-10" />
+      <div className="fixed inset-0 bg-black/60 transition-opacity" />
 
       {/* Modal Content */}
       <div
