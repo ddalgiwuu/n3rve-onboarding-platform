@@ -30,16 +30,32 @@ export function PrimaryArtistSelector({
 
   const translate = (ko: string, en: string) => language === 'ko' ? ko : en;
 
-  // Calculate dropdown position (fixed position, no scroll offset needed)
+  // Calculate dropdown position dynamically with scroll/resize handling
   useEffect(() => {
-    if (showDropdown && inputRef.current) {
-      const rect = inputRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + 8, // Fixed position, no scrollY
-        left: rect.left,
-        width: rect.width,
-      });
-    }
+    if (!showDropdown || !inputRef.current) return;
+
+    const updatePosition = () => {
+      if (inputRef.current) {
+        const rect = inputRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + 8,
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    // Initial position
+    updatePosition();
+
+    // Update on scroll and resize
+    window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
+    window.addEventListener('resize', updatePosition, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, { capture: true });
+      window.removeEventListener('resize', updatePosition);
+    };
   }, [showDropdown]);
 
   useEffect(() => {

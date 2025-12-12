@@ -38,28 +38,54 @@ export function GenreSelector({
   // Get available subgenres for selected main genre
   const availableSubgenres = mainGenre ? GENRE_SUBGENRES[mainGenre as FugaGenre] || [] : [];
 
-  // Calculate genre dropdown position
+  // Calculate genre dropdown position dynamically
   useEffect(() => {
-    if (showGenreDropdown && genreInputRef.current) {
-      const rect = genreInputRef.current.getBoundingClientRect();
-      setGenreDropdownPosition({
-        top: rect.bottom + 8,
-        left: rect.left,
-        width: rect.width,
-      });
-    }
+    if (!showGenreDropdown || !genreInputRef.current) return;
+
+    const updatePosition = () => {
+      if (genreInputRef.current) {
+        const rect = genreInputRef.current.getBoundingClientRect();
+        setGenreDropdownPosition({
+          top: rect.bottom + 8,
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
+    window.addEventListener('resize', updatePosition, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, { capture: true });
+      window.removeEventListener('resize', updatePosition);
+    };
   }, [showGenreDropdown]);
 
-  // Calculate subgenre dropdown position
+  // Calculate subgenre dropdown position dynamically
   useEffect(() => {
-    if (showSubgenreDropdown && subgenreInputRef.current) {
-      const rect = subgenreInputRef.current.getBoundingClientRect();
-      setSubgenreDropdownPosition({
-        top: rect.bottom + 8,
-        left: rect.left,
-        width: rect.width,
-      });
-    }
+    if (!showSubgenreDropdown || !subgenreInputRef.current) return;
+
+    const updatePosition = () => {
+      if (subgenreInputRef.current) {
+        const rect = subgenreInputRef.current.getBoundingClientRect();
+        setSubgenreDropdownPosition({
+          top: rect.bottom + 8,
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
+    window.addEventListener('resize', updatePosition, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', updatePosition, { capture: true });
+      window.removeEventListener('resize', updatePosition);
+    };
   }, [showSubgenreDropdown]);
 
   // Clear subgenres when main genre changes
