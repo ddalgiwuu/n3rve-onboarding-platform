@@ -62,9 +62,17 @@ export default function ReleaseProjects() {
           ? '/admin/submissions'
           : '/submissions/user';
 
-        const response = await api.get(endpoint);
-        // Ensure we return an array
+        const response = await api.get(endpoint, {
+          params: { page: 1, limit: 100 }  // Load more data for projects view
+        });
+
+        // Handle paginated response format: {data: [], total: 0}
         const data = response.data;
+        if (data && typeof data === 'object' && 'data' in data) {
+          return Array.isArray(data.data) ? data.data : [];
+        }
+
+        // Fallback for direct array response
         return Array.isArray(data) ? data : [];
       } catch (err) {
         console.error('Error fetching projects:', err);
@@ -258,10 +266,21 @@ export default function ReleaseProjects() {
                         alt={project.albumTitle}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         loading="lazy"
+                        onError={(e) => {
+                          // Fallback to placeholder if image fails to load
+                          e.currentTarget.style.display = 'none';
+                          const parent = e.currentTarget.parentElement;
+                          if (parent && !parent.querySelector('.fallback-icon')) {
+                            const fallback = document.createElement('div');
+                            fallback.className = 'fallback-icon w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20';
+                            fallback.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
+                            parent.appendChild(fallback);
+                          }
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-                        <Music2 size={64} className="text-gray-600" />
+                        <Music2 size={64} className="text-gray-400" />
                       </div>
                     )}
 
@@ -293,25 +312,25 @@ export default function ReleaseProjects() {
                       <h3 className="font-semibold text-gray-900 dark:text-white text-lg mb-1 line-clamp-1">
                         {project.albumTitle}
                       </h3>
-                      <p className="text-sm text-gray-700 dark:text-gray-400">{project.artistName}</p>
+                      <p className="text-sm text-gray-800 dark:text-gray-200 font-medium">{project.artistName}</p>
                     </div>
 
                     {/* Metadata */}
                     <div className="space-y-2 text-xs">
                       {project.labelName && (
-                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                           <Building2 size={14} />
                           <span className="truncate">{project.labelName}</span>
                         </div>
                       )}
 
-                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                      <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                         <Calendar size={14} />
                         <span>{new Date(project.releaseDate).toLocaleDateString()}</span>
                       </div>
 
                       {project.release?.upc && (
-                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
                           <span className="font-mono">UPC: {project.release.upc}</span>
                         </div>
                       )}

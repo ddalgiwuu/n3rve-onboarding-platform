@@ -2,6 +2,54 @@ import { X, AlertTriangle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
+// Translation mapping for QC error messages
+const translateQCMessage = (key: string): { ko: string; en: string; help: string } => {
+  const translations: Record<string, { ko: string; en: string; help: string }> = {
+    'qc.error.missingLyricist': {
+      ko: '🎵 작사자(Lyricist)가 필요합니다',
+      en: 'Lyricist is required',
+      help: '트랙의 Contributors 섹션에서 "작사(Lyricist)" 역할을 가진 기여자를 추가해주세요'
+    },
+    'qc.error.missingComposer': {
+      ko: '🎼 작곡자(Composer)가 필요합니다',
+      en: 'Composer is required',
+      help: '트랙의 Contributors 섹션에서 "작곡(Composer)" 역할을 가진 기여자를 추가해주세요'
+    },
+    'qc.error.missingPerformingArtist': {
+      ko: '🎤 연주자/보컬이 필요합니다',
+      en: 'Performing artist is required',
+      help: '트랙의 Contributors 섹션에서 "보컬(Vocal)" 또는 "연주자(Performer)" 역할을 추가해주세요'
+    },
+    'qc.error.noContributors': {
+      ko: '👥 기여자 정보가 없습니다',
+      en: 'No contributors found',
+      help: '최소 한 명 이상의 기여자(작사자, 작곡자, 보컬 등)를 추가해주세요'
+    }
+  };
+
+  return translations[key] || {
+    ko: key,
+    en: key,
+    help: '상세 정보를 확인해주세요'
+  };
+};
+
+// Convert technical field names to user-friendly names
+const convertFieldName = (field: string): string => {
+  const match = field.match(/track\[(\d+)\]\.(.+)/);
+  if (match) {
+    const trackNum = parseInt(match[1]) + 1;
+    const fieldType = match[2];
+    return `트랙 ${trackNum} - ${fieldType === 'contributors' ? '기여자' : fieldType}`;
+  }
+
+  if (field === 'contributors') return '기여자';
+  if (field.startsWith('album')) return '앨범 정보';
+  if (field.startsWith('track')) return '트랙 정보';
+
+  return field;
+};
+
 interface QCError {
   field: string;
   message: string;
@@ -78,69 +126,79 @@ export default function QCErrorModal({ errors, onClose, onFixError }: QCErrorMod
           </p>
 
           <div className="space-y-3">
-            {errors.map((error, index) => (
-              <div
-                key={index}
-                className={`group relative p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-lg ${
-                  error.severity === 'error'
-                    ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700'
-                    : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 hover:border-amber-300 dark:hover:border-amber-700'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  {/* Error number badge */}
-                  <div
-                    className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${
-                      error.severity === 'error'
-                        ? 'bg-red-500 text-white'
-                        : 'bg-amber-500 text-white'
-                    }`}
-                  >
-                    {index + 1}
-                  </div>
+            {errors.map((error, index) => {
+              // Translate message and get help text
+              const translated = translateQCMessage(error.message);
+              const friendlyField = convertFieldName(error.field);
+              const displayMessage = translated.ko;
+              const helpText = error.helpText || translated.help;
 
-                  <div className="flex-1 min-w-0">
-                    {/* Field name */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <code className="px-2 py-0.5 text-xs font-mono bg-gray-900/10 dark:bg-white/10 rounded">
-                        {error.field}
-                      </code>
-                    </div>
-
-                    {/* Error message */}
-                    <p className={`text-sm font-medium mb-1 ${
-                      error.severity === 'error'
-                        ? 'text-red-900 dark:text-red-200'
-                        : 'text-amber-900 dark:text-amber-200'
-                    }`}>
-                      {error.message}
-                    </p>
-
-                    {/* Help text */}
-                    {error.helpText && (
-                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
-                        💡 {error.helpText}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Fix button */}
-                  {onFixError && (
-                    <button
-                      onClick={() => onFixError(error.field)}
-                      className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${
+              return (
+                <div
+                  key={index}
+                  className={`group relative p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-lg ${
+                    error.severity === 'error'
+                      ? 'border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 hover:border-red-300 dark:hover:border-red-700'
+                      : 'border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/30 hover:border-amber-300 dark:hover:border-amber-700'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {/* Error number badge */}
+                    <div
+                      className={`flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold ${
                         error.severity === 'error'
-                          ? 'bg-red-600 hover:bg-red-700 text-white'
-                          : 'bg-amber-600 hover:bg-amber-700 text-white'
+                          ? 'bg-red-500 text-white'
+                          : 'bg-amber-500 text-white'
                       }`}
                     >
-                      수정
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
-                  )}
+                      {index + 1}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      {/* Friendly field name */}
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="px-3 py-1 text-sm font-medium bg-gray-900/10 dark:bg-white/10 rounded-lg">
+                          {friendlyField}
+                        </span>
+                      </div>
+
+                      {/* Translated error message */}
+                      <p className={`text-base font-medium mb-2 ${
+                        error.severity === 'error'
+                          ? 'text-red-900 dark:text-red-200'
+                          : 'text-amber-900 dark:text-amber-200'
+                      }`}>
+                        {displayMessage}
+                      </p>
+
+                      {/* Help text */}
+                      <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg">
+                        <p className="text-sm text-blue-900 dark:text-blue-200">
+                          <span className="font-medium">💡 해결 방법:</span>
+                          <br />
+                          {helpText}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Fix button */}
+                    {onFixError && (
+                      <button
+                        onClick={() => onFixError(error.field)}
+                        className={`flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1 ${
+                          error.severity === 'error'
+                            ? 'bg-red-600 hover:bg-red-700 text-white'
+                            : 'bg-amber-600 hover:bg-amber-700 text-white'
+                        }`}
+                      >
+                        수정
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

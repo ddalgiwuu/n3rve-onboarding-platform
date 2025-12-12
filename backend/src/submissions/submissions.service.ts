@@ -101,12 +101,8 @@ export class SubmissionsService {
         explicitContent: track.explicitContent,
         dolbyAtmos: track.dolbyAtmos,
         genre: track.genre,
-        subgenre: track.subgenre,
-        audioFiles: track.audioFileUrl ? [{
-          trackId: track.id,
-          dropboxUrl: track.audioFileUrl,
-          fileName: `track_${track.id}.wav`
-        }] : []
+        subgenre: track.subgenre
+        // audioFiles removed - belongs in files section, not in Track type
       })) || [],
       
       // Files

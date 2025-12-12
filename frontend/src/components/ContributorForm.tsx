@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X, Plus, Trash2, Search, Music, User, Globe,
   Info, Link as LinkIcon, ChevronDown, ChevronUp,
@@ -146,7 +147,7 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
     );
   };
 
-  // Close dropdowns when clicking outside
+  // Close dropdowns when clicking outside or scrolling
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (rolesRef.current && !rolesRef.current.contains(event.target as Node)) {
@@ -168,8 +169,17 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
       });
     };
 
+    const handleScroll = () => {
+      // Close all dropdowns on scroll
+      setShowDropdown({ roles: false, instruments: false, languages: {} });
+    };
+
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('scroll', handleScroll, true); // Use capture to catch all scroll events
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll, true);
+    };
   }, []);
 
   // Fuzzy search with Fuse.js - handles typos and partial matching
@@ -620,8 +630,15 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                                 </div>
 
                                 {/* Language Dropdown */}
-                                {showDropdown.languages[translation.id] && filteredLanguages.length > 0 && (
-                                  <div className="absolute z-50 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                {showDropdown.languages[translation.id] && filteredLanguages.length > 0 && createPortal(
+                                  <div
+                                    className="fixed z-[100] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                                    style={{
+                                      top: languageRefs.current[translation.id] ? languageRefs.current[translation.id]!.getBoundingClientRect().bottom + window.scrollY + 4 : 0,
+                                      left: languageRefs.current[translation.id] ? languageRefs.current[translation.id]!.getBoundingClientRect().left + window.scrollX : 0,
+                                      width: languageRefs.current[translation.id] ? languageRefs.current[translation.id]!.getBoundingClientRect().width : 'auto'
+                                    }}
+                                  >
                                     <div className="p-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
                                       {filteredLanguages.length} {t('개 결과', 'results', '件の結果')}
                                     </div>
@@ -648,7 +665,8 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                                         </span>
                                       </button>
                                     ))}
-                                  </div>
+                                  </div>,
+                                  document.body
                                 )}
                               </div>
 
@@ -744,8 +762,15 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                 )}
 
                 {/* Role Dropdown */}
-                {showDropdown.roles && (
-                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {showDropdown.roles && createPortal(
+                  <div
+                    className="fixed z-[100] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                    style={{
+                      top: rolesRef.current ? rolesRef.current.getBoundingClientRect().bottom + window.scrollY + 4 : 0,
+                      left: rolesRef.current ? rolesRef.current.getBoundingClientRect().left + window.scrollX : 0,
+                      width: rolesRef.current ? rolesRef.current.getBoundingClientRect().width : 'auto'
+                    }}
+                  >
                     {Object.entries(groupedRoles).map(([category, roles]) => (
                       <div key={category}>
                         <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
@@ -772,7 +797,8 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                         ))}
                       </div>
                     ))}
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
             </div>
@@ -841,8 +867,15 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                 )}
 
                 {/* Instrument Dropdown */}
-                {showDropdown.instruments && (
-                  <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {showDropdown.instruments && createPortal(
+                  <div
+                    className="fixed z-[100] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                    style={{
+                      top: instrumentsRef.current ? instrumentsRef.current.getBoundingClientRect().bottom + window.scrollY + 4 : 0,
+                      left: instrumentsRef.current ? instrumentsRef.current.getBoundingClientRect().left + window.scrollX : 0,
+                      width: instrumentsRef.current ? instrumentsRef.current.getBoundingClientRect().width : 'auto'
+                    }}
+                  >
                     {Object.entries(groupedInstruments).map(([category, instruments]) => (
                       <div key={category}>
                         <div className="px-3 py-2 text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/50">
@@ -869,7 +902,8 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                         ))}
                       </div>
                     ))}
-                  </div>
+                  </div>,
+                  document.body
                 )}
               </div>
             </div>
