@@ -21,7 +21,7 @@ import { PrimaryArtistSelector } from '@/components/submission/PrimaryArtistSele
 import { GenreSelector } from '@/components/submission/GenreSelector';
 import { PlatformBudgetTable } from '@/components/submission/PlatformBudgetTable';
 import { MarketingDriversList } from '@/components/submission/MarketingDriversList';
-import EnhancedArtistModal from '@/components/submission/EnhancedArtistModal';
+import FugaArtistModal from '@/components/fuga/FugaArtistModal';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { PlatformBudget, FUGA_MOODS, FUGA_INSTRUMENTS } from '@/constants/fuga-data';
@@ -741,15 +741,14 @@ export default function MarketingSubmission() {
         </div>
       </div>
 
-      {/* Enhanced Artist Registration Modal */}
-      <EnhancedArtistModal
+      {/* Complete FUGA Artist Registration Modal */}
+      <FugaArtistModal
         isOpen={showArtistForm}
         onClose={() => setShowArtistForm(false)}
         onSave={(artist) => {
-          setPrimaryArtist(artist.primaryName);
+          setPrimaryArtist(artist.name);
           setShowArtistForm(false);
         }}
-        role="main"
         editingArtist={null}
       />
     </div>
