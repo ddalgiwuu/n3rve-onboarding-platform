@@ -634,8 +634,8 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                                   <div
                                     className="fixed z-[100] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                                     style={{
-                                      top: languageRefs.current[translation.id] ? languageRefs.current[translation.id]!.getBoundingClientRect().bottom + window.scrollY + 4 : 0,
-                                      left: languageRefs.current[translation.id] ? languageRefs.current[translation.id]!.getBoundingClientRect().left + window.scrollX : 0,
+                                      top: languageRefs.current[translation.id] ? languageRefs.current[translation.id]!.getBoundingClientRect().bottom + 4 : 0,
+                                      left: languageRefs.current[translation.id] ? languageRefs.current[translation.id]!.getBoundingClientRect().left : 0,
                                       width: languageRefs.current[translation.id] ? languageRefs.current[translation.id]!.getBoundingClientRect().width : 'auto'
                                     }}
                                   >
@@ -766,8 +766,8 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                   <div
                     className="fixed z-[100] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                     style={{
-                      top: rolesRef.current ? rolesRef.current.getBoundingClientRect().bottom + window.scrollY + 4 : 0,
-                      left: rolesRef.current ? rolesRef.current.getBoundingClientRect().left + window.scrollX : 0,
+                      top: rolesRef.current ? rolesRef.current.getBoundingClientRect().bottom + 4 : 0,
+                      left: rolesRef.current ? rolesRef.current.getBoundingClientRect().left : 0,
                       width: rolesRef.current ? rolesRef.current.getBoundingClientRect().width : 'auto'
                     }}
                   >
@@ -871,8 +871,8 @@ function ContributorFormContent({ contributor, onSave, onCancel }: ContributorFo
                   <div
                     className="fixed z-[100] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                     style={{
-                      top: instrumentsRef.current ? instrumentsRef.current.getBoundingClientRect().bottom + window.scrollY + 4 : 0,
-                      left: instrumentsRef.current ? instrumentsRef.current.getBoundingClientRect().left + window.scrollX : 0,
+                      top: instrumentsRef.current ? instrumentsRef.current.getBoundingClientRect().bottom + 4 : 0,
+                      left: instrumentsRef.current ? instrumentsRef.current.getBoundingClientRect().left : 0,
                       width: instrumentsRef.current ? instrumentsRef.current.getBoundingClientRect().width : 'auto'
                     }}
                   >
