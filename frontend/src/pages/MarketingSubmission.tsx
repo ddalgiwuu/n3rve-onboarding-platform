@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -22,6 +21,7 @@ import { PrimaryArtistSelector } from '@/components/submission/PrimaryArtistSele
 import { GenreSelector } from '@/components/submission/GenreSelector';
 import { PlatformBudgetTable } from '@/components/submission/PlatformBudgetTable';
 import { MarketingDriversList } from '@/components/submission/MarketingDriversList';
+import EnhancedArtistModal from '@/components/submission/EnhancedArtistModal';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { PlatformBudget, FUGA_MOODS, FUGA_INSTRUMENTS } from '@/constants/fuga-data';
@@ -741,66 +741,17 @@ export default function MarketingSubmission() {
         </div>
       </div>
 
-      {/* Artist Registration Modal */}
-      {showArtistForm && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-          onClick={() => setShowArtistForm(false)}
-        >
-          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-          <div
-            className="relative max-w-md w-full"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: '#ffffff',
-              padding: '32px',
-              borderRadius: '16px',
-              border: '2px solid #a855f7',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-            }}
-          >
-            <h3
-              style={{
-                fontSize: '24px',
-                fontWeight: 'bold',
-                color: '#1f2937',
-                marginBottom: '16px',
-              }}
-            >
-              {translate('새 아티스트 등록', 'Register New Artist')}
-            </h3>
-            <p
-              style={{
-                fontSize: '14px',
-                color: '#4b5563',
-                marginBottom: '24px',
-                lineHeight: '1.6',
-              }}
-            >
-              {translate(
-                '아티스트 등록 기능은 곧 추가됩니다. 현재는 아티스트 이름만 입력하시면 됩니다.',
-                'Artist registration feature coming soon. For now, you can just enter the artist name directly.'
-              )}
-            </p>
-            <button
-              onClick={() => setShowArtistForm(false)}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: 'linear-gradient(to right, #a855f7, #ec4899)',
-                color: '#ffffff',
-                borderRadius: '12px',
-                fontWeight: '500',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              {translate('확인', 'OK')}
-            </button>
-          </div>
-        </div>,
-        document.body
-      )}
+      {/* Enhanced Artist Registration Modal */}
+      <EnhancedArtistModal
+        isOpen={showArtistForm}
+        onClose={() => setShowArtistForm(false)}
+        onSave={(artist) => {
+          setPrimaryArtist(artist.primaryName);
+          setShowArtistForm(false);
+        }}
+        role="main"
+        editingArtist={null}
+      />
     </div>
   );
 }
