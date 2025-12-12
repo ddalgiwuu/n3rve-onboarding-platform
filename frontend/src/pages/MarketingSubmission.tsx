@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -741,15 +742,12 @@ export default function MarketingSubmission() {
       </div>
 
       {/* Artist Registration Modal */}
-      {showArtistForm && (
+      {showArtistForm && createPortal(
         <div
-          className="fixed inset-0 flex items-center justify-center p-4"
-          style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            zIndex: 10000,
-          }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
           onClick={() => setShowArtistForm(false)}
         >
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
           <div
             className="relative max-w-md w-full"
             onClick={(e) => e.stopPropagation()}
@@ -800,7 +798,8 @@ export default function MarketingSubmission() {
               {translate('확인', 'OK')}
             </button>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
