@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Search, Plus, Clock, Star, Music, Users, Languages, Link as LinkIcon, Edit2, Trash2, Check } from 'lucide-react';
 import { useLanguageStore } from '@/store/language.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import { useSavedArtistsStore, SavedArtist, SavedContributor } from '@/store/savedArtists.store';
 import ContributorForm from './ContributorForm';
+import EnhancedArtistModal from './submission/EnhancedArtistModal';
 
 interface ArtistSelectorProps {
   type: 'artist' | 'contributor'
@@ -417,22 +419,71 @@ export default function ArtistSelector({
 
       {/* Create New Form */}
       {showCreateForm && (
-        <ContributorForm
-          contributor={undefined}
-          onSave={handleCreateNew}
-          onCancel={() => setShowCreateForm(false)}
-          isArtist={type === 'artist'}
-        />
+        type === 'artist' ? (
+          <EnhancedArtistModal
+            isOpen={true}
+            onClose={() => setShowCreateForm(false)}
+            onSave={(artist) => {
+              // EnhancedArtistModal already saves to DB internally
+              // Just close the modal and refresh the list
+              setShowCreateForm(false);
+              fetchArtists(); // Refresh saved artists list
+            }}
+            role="main"
+          />
+        ) : createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
+            <div className="w-full max-w-4xl my-8 max-h-[90vh] overflow-y-auto">
+              <ContributorForm
+                contributor={undefined}
+                onSave={handleCreateNew}
+                onCancel={() => setShowCreateForm(false)}
+                isArtist={false}
+              />
+            </div>
+          </div>,
+          document.body
+        )
       )}
 
       {/* Edit Form */}
       {editingItem && (
-        <ContributorForm
-          contributor={editingItem as any}
-          onSave={handleUpdate}
-          onCancel={() => setEditingItem(null)}
-          isArtist={type === 'artist'}
-        />
+        type === 'artist' ? (
+          <EnhancedArtistModal
+            isOpen={true}
+            onClose={() => setEditingItem(null)}
+            onSave={(artist) => {
+              setEditingItem(null);
+              fetchArtists(); // Refresh saved artists list
+            }}
+            role="main"
+            editingArtist={{
+              id: editingItem.id,
+              primaryName: editingItem.name,
+              hasTranslation: (editingItem as any).translations?.length > 0,
+              translationLanguage: (editingItem as any).translations?.[0]?.language || '',
+              translatedName: (editingItem as any).translations?.[0]?.name || '',
+              isNewArtist: false,
+              customIdentifiers: [],
+              role: 'main' as const,
+              spotifyId: (editingItem as any).identifiers?.find((id: any) => id.type === 'SPOTIFY')?.value || '',
+              appleId: (editingItem as any).identifiers?.find((id: any) => id.type === 'APPLE_MUSIC')?.value || '',
+              youtubeChannelId: (editingItem as any).identifiers?.find((id: any) => id.type === 'YOUTUBE')?.value || ''
+            }}
+          />
+        ) : createPortal(
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4 overflow-y-auto">
+            <div className="w-full max-w-4xl my-8 max-h-[90vh] overflow-y-auto">
+              <ContributorForm
+                contributor={editingItem as any}
+                onSave={handleUpdate}
+                onCancel={() => setEditingItem(null)}
+                isArtist={false}
+              />
+            </div>
+          </div>,
+          document.body
+        )
       )}
     </>
   );

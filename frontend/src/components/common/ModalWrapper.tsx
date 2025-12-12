@@ -71,20 +71,17 @@ export default function ModalWrapper({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-hidden"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
     >
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" />
+      <div className="fixed inset-0 bg-black/60 transition-opacity -z-10" />
 
-      {/* Modal Container - Full height with padding for mobile */}
-      <div className="fixed inset-0 overflow-y-auto">
-        <div className="flex min-h-full items-center justify-center p-4">
-          {/* Modal Content */}
-          <div
-            className={`relative bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full ${maxWidth} max-h-[calc(100vh-2rem)] flex flex-col`}
-            onClick={(e) => e.stopPropagation()}
-          >
+      {/* Modal Content */}
+      <div
+        className={`relative bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] flex flex-col`}
+        onClick={(e) => e.stopPropagation()}
+      >
             {/* Header */}
             {(title || showCloseButton) && (
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -106,11 +103,9 @@ export default function ModalWrapper({
               </div>
             )}
 
-            {/* Content - Scrollable */}
-            <div className="flex-1 overflow-y-auto overscroll-contain">
-              {children}
-            </div>
-          </div>
+        {/* Content - Scrollable */}
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          {children}
         </div>
       </div>
     </div>

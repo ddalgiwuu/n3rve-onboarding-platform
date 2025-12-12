@@ -8,13 +8,22 @@ import {
   Music2,
   Calendar,
   Building2,
-  CheckCircle
+  CheckCircle,
+  User,
+  Disc,
+  Target
 } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslationFixed';
 import { MarketingSection } from '@/components/submission/MarketingSection';
 import { FocusTrackSelector } from '@/components/submission/FocusTrackSelector';
+import { PrimaryArtistSelector } from '@/components/submission/PrimaryArtistSelector';
+import { GenreSelector } from '@/components/submission/GenreSelector';
+import { PlatformBudgetTable } from '@/components/submission/PlatformBudgetTable';
+import { MarketingDriversList } from '@/components/submission/MarketingDriversList';
 import toast from 'react-hot-toast';
+import api from '@/lib/api';
+import { PlatformBudget, FUGA_MOODS, FUGA_INSTRUMENTS } from '@/constants/fuga-data';
 
 export default function MarketingSubmission() {
   const { id: urlId } = useParams<{ id: string }>();
@@ -32,7 +41,7 @@ export default function MarketingSubmission() {
     return en;
   };
 
-  // Marketing form state
+  // Marketing form state - Existing fields
   const [hook, setHook] = useState('');
   const [mainPitch, setMainPitch] = useState('');
   const [moods, setMoods] = useState<string[]>([]);
@@ -46,16 +55,41 @@ export default function MarketingSubmission() {
   const [motionArtwork, setMotionArtwork] = useState(false);
   const [focusTrackIds, setFocusTrackIds] = useState<string[]>([]);
 
+  // P0: Primary Artist (NEW)
+  const [primaryArtist, setPrimaryArtist] = useState('');
+  const [showArtistForm, setShowArtistForm] = useState(false);
+
+  // P1: Project Context (NEW)
+  const [frontlineOrCatalog, setFrontlineOrCatalog] = useState<'Frontline' | 'Catalog'>('Frontline');
+  const [moreProductsComing, setMoreProductsComing] = useState<'Yes' | 'No' | 'Maybe'>('No');
+  const [projectArtwork, setProjectArtwork] = useState<File | null>(null);
+
+  // P1: About The Music (NEW)
+  const [privateListeningLink, setPrivateListeningLink] = useState('');
+  const [mainGenre, setMainGenre] = useState('');
+  const [subgenres, setSubgenres] = useState<string[]>([]);
+  const [isSoundtrack, setIsSoundtrack] = useState(false);
+  const [dolbyAtmos, setDolbyAtmos] = useState(false);
+
+  // P2: Marketing Details (NEW)
+  const [marketingDrivers, setMarketingDrivers] = useState<string[]>([]);
+  const [platformBudgets, setPlatformBudgets] = useState<PlatformBudget[]>([]);
+  const [otherNotes, setOtherNotes] = useState('');
+
   // Fetch all submissions (for dropdown)
   const { data: allSubmissions = [] } = useQuery({
     queryKey: ['all-submissions'],
     queryFn: async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/submissions/user', {
-          credentials: 'include'
+        const response = await api.get('/submissions/user', {
+          params: { page: 1, limit: 100 }
         });
-        if (!response.ok) return [];
-        return response.json();
+        // Handle paginated response
+        const data = response.data;
+        if (data && typeof data === 'object' && 'data' in data) {
+          return Array.isArray(data.data) ? data.data : [];
+        }
+        return Array.isArray(data) ? data : [];
       } catch {
         return [];
       }
@@ -68,11 +102,8 @@ export default function MarketingSubmission() {
     queryKey: ['submission', selectedId],
     queryFn: async () => {
       if (!selectedId) return null;
-      const response = await fetch(`http://localhost:3001/api/submissions/${selectedId}`, {
-        credentials: 'include'
-      });
-      if (!response.ok) throw new Error('Failed to fetch submission');
-      return response.json();
+      const response = await api.get(`/submissions/${selectedId}`);
+      return response.data;
     },
     enabled: !!selectedId
   });
@@ -80,6 +111,7 @@ export default function MarketingSubmission() {
   // Load existing marketing data
   useEffect(() => {
     if (submission) {
+      // Existing fields
       setHook(submission.hook || '');
       setMainPitch(submission.mainPitch || '');
       setMoods(submission.moods || []);
@@ -91,9 +123,30 @@ export default function MarketingSubmission() {
       setYoutubeShorts(submission.release?.youtubeShortsPreviews || false);
       setThisIsPlaylist(submission.release?.thisIsPlaylist || false);
       setMotionArtwork(submission.release?.motionArtwork || false);
+
       // Focus tracks from Track.isFocusTrack
       const focusTracks = submission.tracks?.filter((t: any) => t.isFocusTrack).map((t: any) => t.id) || [];
       setFocusTrackIds(focusTracks);
+
+      // NEW: Primary Artist
+      setPrimaryArtist(submission.primaryArtist || '');
+
+      // NEW: Project Context
+      setFrontlineOrCatalog(submission.frontlineOrCatalog || 'Frontline');
+      setMoreProductsComing(submission.moreProductsComing || 'No');
+      // projectArtwork is File type, cannot be loaded from API
+
+      // NEW: About The Music
+      setPrivateListeningLink(submission.privateListeningLink || '');
+      setMainGenre(submission.mainGenre || '');
+      setSubgenres(submission.subgenres || []);
+      setIsSoundtrack(submission.isSoundtrack || false);
+      setDolbyAtmos(submission.dolbyAtmos || false);
+
+      // NEW: Marketing Details
+      setMarketingDrivers(submission.marketingDriversList || []);
+      setPlatformBudgets(submission.platformBudgets || []);
+      setOtherNotes(submission.otherNotes || '');
     }
   }, [submission]);
 
@@ -101,33 +154,56 @@ export default function MarketingSubmission() {
   const saveMutation = useMutation({
     mutationFn: async (isDraft: boolean) => {
       if (!selectedId) throw new Error('No submission selected');
-      const response = await fetch(`http://localhost:3001/api/submissions/${selectedId}/marketing`, {
-        method: 'PATCH',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          hook,
-          mainPitch,
-          moods,
-          instruments,
-          socialMediaPlan,
-          marketingDrivers: marketingSpend,
-          release: {
-            priorityLevel: priority,
-            factSheetsUrl: factSheetUrl,
-            youtubeShortsPreviews: youtubeShorts,
-            thisIsPlaylist,
-            motionArtwork
-          },
-          tracks: submission?.tracks.map((t: any) => ({
-            ...t,
-            isFocusTrack: focusTrackIds.includes(t.id)
-          }))
-        })
-      });
 
-      if (!response.ok) throw new Error('Failed to save');
-      return response.json();
+      // Prepare payload with ALL fields
+      const payload = {
+        // Existing fields
+        hook,
+        mainPitch,
+        moods,
+        instruments,
+        socialMediaPlan,
+        marketingDrivers: marketingSpend, // Legacy field name
+
+        // NEW: Primary Artist
+        primaryArtist,
+
+        // NEW: Project Context
+        frontlineOrCatalog,
+        moreProductsComing,
+        // projectArtwork would need separate file upload handling
+
+        // NEW: About The Music
+        privateListeningLink,
+        mainGenre,
+        subgenres,
+        isSoundtrack,
+        dolbyAtmos,
+
+        // NEW: Marketing Details
+        marketingDriversList: marketingDrivers,
+        platformBudgets,
+        otherNotes,
+
+        // Release nested data
+        release: {
+          priorityLevel: priority,
+          factSheetsUrl: factSheetUrl,
+          youtubeShortsPreviews: youtubeShorts,
+          thisIsPlaylist,
+          motionArtwork,
+          dolbyAtmos // Add to release as well
+        },
+
+        // Tracks with focus track flags
+        tracks: submission?.tracks.map((t: any) => ({
+          ...t,
+          isFocusTrack: focusTrackIds.includes(t.id)
+        }))
+      };
+
+      const response = await api.patch(`/submissions/${selectedId}/marketing`, payload);
+      return response.data;
     },
     onSuccess: (data, isDraft) => {
       queryClient.invalidateQueries({ queryKey: ['submission', id] });
@@ -345,6 +421,236 @@ export default function MarketingSubmission() {
 
         {/* Marketing Form */}
         <div className="space-y-8">
+          {/* NEW SECTION 0: Primary Artist */}
+          <div className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-blue-500/20 rounded-lg">
+                <User size={20} className="text-blue-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">
+                  {translate('주 아티스트', 'Primary Artist')}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {translate('이 릴리즈의 주 아티스트를 선택하세요', 'Select the primary artist for this release')}
+                </p>
+              </div>
+            </div>
+
+            <PrimaryArtistSelector
+              value={primaryArtist}
+              onChange={setPrimaryArtist}
+              onShowForm={() => setShowArtistForm(true)}
+            />
+          </div>
+
+          {/* NEW SECTION 1: Project Context */}
+          <div className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-green-500/20 rounded-lg">
+                <Disc size={20} className="text-green-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">
+                  {translate('프로젝트 컨텍스트', 'Project Context')}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {translate('릴리즈 유형 및 향후 계획', 'Release type and future plans')}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* Frontline or Catalog */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-3">
+                  {translate('릴리즈 타입', 'Release Type')}
+                  <span className="text-red-400 ml-1">*</span>
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setFrontlineOrCatalog('Frontline')}
+                    className={`
+                      px-4 py-3 rounded-xl border-2 transition-all
+                      ${frontlineOrCatalog === 'Frontline'
+                        ? 'bg-purple-500/20 border-purple-500 text-purple-300'
+                        : 'bg-white/5 border-white/10 text-gray-400 hover:border-purple-500/50'
+                      }
+                    `}
+                  >
+                    <span className="font-medium">Frontline</span>
+                    <p className="text-xs mt-1 opacity-80">
+                      {translate('신곡 릴리즈', 'New release')}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFrontlineOrCatalog('Catalog')}
+                    className={`
+                      px-4 py-3 rounded-xl border-2 transition-all
+                      ${frontlineOrCatalog === 'Catalog'
+                        ? 'bg-purple-500/20 border-purple-500 text-purple-300'
+                        : 'bg-white/5 border-white/10 text-gray-400 hover:border-purple-500/50'
+                      }
+                    `}
+                  >
+                    <span className="font-medium">Catalog</span>
+                    <p className="text-xs mt-1 opacity-80">
+                      {translate('카탈로그 항목', 'Catalog item')}
+                    </p>
+                  </button>
+                </div>
+              </div>
+
+              {/* More Products Coming */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-3">
+                  {translate('후속 작품 계획', 'More Products Coming')}
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {(['Yes', 'No', 'Maybe'] as const).map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setMoreProductsComing(option)}
+                      className={`
+                        px-4 py-3 rounded-xl border-2 transition-all
+                        ${moreProductsComing === option
+                          ? 'bg-purple-500/20 border-purple-500 text-purple-300'
+                          : 'bg-white/5 border-white/10 text-gray-400 hover:border-purple-500/50'
+                        }
+                      `}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* NEW SECTION 2: About The Music */}
+          <div className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-pink-500/20 rounded-lg">
+                <Music2 size={20} className="text-pink-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">
+                  {translate('음악 정보', 'About The Music')}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {translate('장르, 무드, 악기 등', 'Genre, mood, instruments, etc.')}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              {/* Genre Selector */}
+              <GenreSelector
+                mainGenre={mainGenre}
+                subgenres={subgenres}
+                onMainGenreChange={setMainGenre}
+                onSubgenresChange={setSubgenres}
+                maxSubgenres={3}
+              />
+
+              {/* Private Listening Link */}
+              <div>
+                <label className="block text-sm font-medium text-white mb-3">
+                  {translate('비공개 청취 링크', 'Private Listening Link')}
+                </label>
+                <input
+                  type="url"
+                  value={privateListeningLink}
+                  onChange={(e) => setPrivateListeningLink(e.target.value)}
+                  placeholder="https://..."
+                  className="
+                    w-full px-4 py-3 rounded-xl
+                    bg-white/5 backdrop-blur-md border border-white/10
+                    text-white placeholder-gray-500
+                    outline-none focus:ring-2 focus:ring-purple-500/50
+                    transition-all
+                  "
+                />
+              </div>
+
+              {/* Soundtrack & Dolby Atmos */}
+              <div className="grid grid-cols-2 gap-4">
+                <label className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:border-purple-500/30 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={isSoundtrack}
+                    onChange={(e) => setIsSoundtrack(e.target.checked)}
+                    className="w-5 h-5 rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-500/50"
+                  />
+                  <span className="text-sm text-white">
+                    {translate('사운드트랙/스코어', 'Soundtrack/Score')}
+                  </span>
+                </label>
+
+                <label className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer hover:border-purple-500/30 transition-all">
+                  <input
+                    type="checkbox"
+                    checked={dolbyAtmos}
+                    onChange={(e) => setDolbyAtmos(e.target.checked)}
+                    className="w-5 h-5 rounded bg-white/10 border-white/20 text-purple-500 focus:ring-purple-500/50"
+                  />
+                  <span className="text-sm text-white">
+                    {translate('Dolby Atmos', 'Dolby Atmos')}
+                  </span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          {/* NEW SECTION 3: Marketing Drivers */}
+          <div className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-orange-500/20 rounded-lg">
+                <Target size={20} className="text-orange-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">
+                  {translate('마케팅 드라이버', 'Marketing Drivers')}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {translate('주요 마케팅 전략 및 실행 계획', 'Key marketing strategies and execution plans')}
+                </p>
+              </div>
+            </div>
+
+            <MarketingDriversList
+              drivers={marketingDrivers}
+              onChange={setMarketingDrivers}
+              maxDrivers={10}
+            />
+          </div>
+
+          {/* NEW SECTION 4: Platform Budgets */}
+          <div className="p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl">
+            <div className="flex items-center gap-2 mb-6">
+              <div className="p-2 bg-cyan-500/20 rounded-lg">
+                <Target size={20} className="text-cyan-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-white">
+                  {translate('플랫폼별 예산', 'Platform Budgets')}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {translate('각 플랫폼의 마케팅 예산 계획', 'Marketing budget plan for each platform')}
+                </p>
+              </div>
+            </div>
+
+            <PlatformBudgetTable
+              budgets={platformBudgets}
+              onChange={setPlatformBudgets}
+            />
+          </div>
+
+          {/* EXISTING: Marketing Section (Pitch, Moods, Instruments, etc.) */}
           <MarketingSection
             hook={hook}
             onHookChange={setHook}
@@ -433,6 +739,69 @@ export default function MarketingSubmission() {
           </div>
         </div>
       </div>
+
+      {/* Artist Registration Modal */}
+      {showArtistForm && (
+        <div
+          className="fixed inset-0 flex items-center justify-center p-4"
+          style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            zIndex: 10000,
+          }}
+          onClick={() => setShowArtistForm(false)}
+        >
+          <div
+            className="relative max-w-md w-full"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#ffffff',
+              padding: '32px',
+              borderRadius: '16px',
+              border: '2px solid #a855f7',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            }}
+          >
+            <h3
+              style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                color: '#1f2937',
+                marginBottom: '16px',
+              }}
+            >
+              {translate('새 아티스트 등록', 'Register New Artist')}
+            </h3>
+            <p
+              style={{
+                fontSize: '14px',
+                color: '#4b5563',
+                marginBottom: '24px',
+                lineHeight: '1.6',
+              }}
+            >
+              {translate(
+                '아티스트 등록 기능은 곧 추가됩니다. 현재는 아티스트 이름만 입력하시면 됩니다.',
+                'Artist registration feature coming soon. For now, you can just enter the artist name directly.'
+              )}
+            </p>
+            <button
+              onClick={() => setShowArtistForm(false)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: 'linear-gradient(to right, #a855f7, #ec4899)',
+                color: '#ffffff',
+                borderRadius: '12px',
+                fontWeight: '500',
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              {translate('확인', 'OK')}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

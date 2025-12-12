@@ -783,13 +783,44 @@ export function validateContributorRequirements(contributors: any[]): QCValidati
     return results;
   }
 
-  // Check for required roles
-  const hasLyricist = contributors.some(c => c.role === 'lyricist');
-  const hasComposer = contributors.some(c => c.role === 'composer');
-  const hasPerformingArtist = contributors.some(c =>
-    ['featured-artist', 'featuring', 'vocalist', 'lead-vocalist', 'performer',
-      'instrumentalist', 'band', 'orchestra', 'soloist', 'mc', 'rap'].includes(c.role)
-  );
+  // Collect all roles from all contributors (support both 'role' string and 'roles' array)
+  const allRoles: string[] = contributors.flatMap(c => {
+    // Support single role (string)
+    if (c.role && typeof c.role === 'string') return [c.role.toLowerCase()];
+    // Support multiple roles (array)
+    if (c.roles && Array.isArray(c.roles)) return c.roles.map(r => r.toLowerCase());
+    return [];
+  });
+
+  // Check for required roles anywhere in all contributors
+  const hasLyricist = allRoles.includes('lyricist');
+  const hasComposer = allRoles.includes('composer');
+
+  // Performing artist: Anyone with instruments OR vocal-related roles
+  const hasPerformingArtist = contributors.some(c => {
+    // Has any instruments = performing artist
+    if (c.instruments && Array.isArray(c.instruments) && c.instruments.length > 0) {
+      return true;
+    }
+
+    // Or has performing-related roles
+    const performingRoles = [
+      // Vocals
+      'vocal', 'vocalist', 'lead-vocalist', 'backing-vocalist',
+      // General performance
+      'performer', 'instrumentalist',
+      // Groups
+      'band', 'orchestra', 'soloist',
+      // Other performers
+      'mc', 'rap', 'rapper', 'dj',
+      'featured-artist', 'featuring'
+    ];
+
+    const contributorRoles = c.roles || (c.role ? [c.role] : []);
+    return contributorRoles.some(role =>
+      performingRoles.includes(role.toLowerCase())
+    );
+  });
 
   if (!hasLyricist) {
     results.push({

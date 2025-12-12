@@ -16,11 +16,13 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { submissionService } from '@/services/submission.service';
+import api from '@/lib/api';
 import { useAuthStore } from '@/store/auth.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation';
 import QCWarnings from '@/components/submission/QCWarnings';
 import QCErrorModal from '@/components/submission/QCErrorModal';
+import PersistentErrorBanner from '@/components/submission/PersistentErrorBanner';
 import DatePicker from '@/components/DatePicker';
 import { v4 as uuidv4 } from 'uuid';
 import MultiSelect from '@/components/ui/MultiSelect';
@@ -48,6 +50,7 @@ import AudioPlayer from '@/components/AudioPlayer';
 import { extractAudioMetadata, formatDuration, formatSampleRate, type AudioMetadata } from '@/utils/audioMetadata';
 import DolbyAtmosDecisionCard from '@/components/DolbyAtmosDecisionCard';
 import { FinalReviewContent } from '@/components/review';
+import SubmissionSuccessModal from '@/components/SubmissionSuccessModal';
 
 // Modern Toggle Component
 const Toggle: React.FC<{
@@ -399,6 +402,8 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   const [showQCErrorModal, setShowQCErrorModal] = useState(false);
   const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [submittedReleaseData, setSubmittedReleaseData] = useState<{ id?: string; albumTitle?: string; artistName?: string }>({});
 
   // Form Data
   const [formData, setFormData] = useState<FormData>({
@@ -1214,7 +1219,8 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         albumArtist: formData.albumArtist || formData.albumArtists.find(a => a.role === 'main')?.name || '',
         tracks: formData.tracks.map(t => ({
           ...t,
-          artist: t.artists.map(a => a.name).join(', ')
+          artist: t.artists.map(a => a.name).join(', '),
+          contributors: t.contributors || []
         })),
         coverArt: formData.coverArt,
         audioFiles: formData.audioFiles,
@@ -1285,7 +1291,18 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         productionHolder: formData.productionHolder,
         productionYear: formData.productionYear,
         albumVersion: formData.albumVersion,
-        tracks: formData.tracks,
+        tracks: formData.tracks.map(t => ({
+          // Explicitly include only necessary fields (no file fields!)
+          id: t.id,
+          title: t.title,
+          artists: t.artists,
+          contributors: t.contributors,
+          isTitle: t.isTitle,
+          isrc: t.isrc,
+          explicitContent: t.explicitContent,
+          dolbyAtmos: t.dolbyAtmos,
+          audioLanguage: t.audioLanguage
+        })),
         distributionType: formData.distributionType,
         selectedStores: formData.selectedStores,
         excludedStores: formData.excludedStores,
@@ -1359,19 +1376,35 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
       // Submit based on mode
       if (isEditMode && editId) {
-        await submissionService.updateSubmission(editId, submissionData);
+        // Direct API call for FormData
+        await api.patch(`/submissions/${editId}`, submissionData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
         toast.success(t('릴리즈가 성공적으로 수정되었습니다!', 'Release updated successfully!', 'リリースが正常に更新されました！'));
       } else if (isResubmitMode && resubmitId) {
         // For resubmit, create a new submission but mark it as a resubmission
         submissionData.append('resubmittedFrom', resubmitId);
-        await submissionService.createSubmission(submissionData);
-        toast.success(t('릴리즈가 성공적으로 재제출되었습니다!', 'Release resubmitted successfully!', 'リリースが正常に再提出されました！'));
+        await api.post('/submissions', submissionData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        toast.success(t('릴리즈가 성공적으로 재제출되었습니다!', 'Release resubmitted successfully!', 'リリースが正常に재提출され었습니다！'));
       } else {
-        await submissionService.createSubmission(submissionData);
-        toast.success(t('릴리즈가 성공적으로 제출되었습니다!', 'Release submitted successfully!', 'リリースが正常に提出されました！'));
-      }
+        const response = await api.post('/submissions', submissionData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
 
-      navigate('/submissions');
+        // Store submission data for modal
+        setSubmittedReleaseData({
+          id: response.data?.id,
+          albumTitle: formData.albumTitle,
+          artistName: formData.albumArtist
+        });
+
+        toast.success(t('릴리즈가 성공적으로 제출되었습니다!', 'Release submitted successfully!', 'リリースが正常に提出されました！'));
+
+        // Show success modal instead of immediate redirect
+        setShowSuccessModal(true);
+      }
 
     } catch (error) {
       console.error('Submission error:', error);
@@ -3922,6 +3955,19 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
   return (
     <SavedArtistsProvider>
+      {/* Persistent Error Banner - Always visible at top when errors exist */}
+      {validationResults && validationResults.errors.length > 0 && (
+        <PersistentErrorBanner
+          errors={validationResults.errors.map(err => ({
+            field: err.field || 'Unknown',
+            message: err.message,
+            severity: 'error' as const
+          }))}
+          onDismiss={() => setValidationResults(null)}
+          onShowDetails={() => setShowQCErrorModal(true)}
+        />
+      )}
+
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
         <div className="max-w-6xl mx-auto px-4">
           {/* Header */}
@@ -4188,6 +4234,15 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
           }}
         />
       )}
+
+      {/* Success Modal */}
+      <SubmissionSuccessModal
+        isOpen={showSuccessModal}
+        onClose={() => setShowSuccessModal(false)}
+        submissionId={submittedReleaseData.id}
+        albumTitle={submittedReleaseData.albumTitle}
+        artistName={submittedReleaseData.artistName}
+      />
     </SavedArtistsProvider>
   );
 };
