@@ -1,7 +1,7 @@
 import { useEffect, ReactNode } from 'react';
 import { X } from 'lucide-react';
 
-// Cache busting: Updated 2025-12-12 12:57 PM
+// Cache busting: Updated 2025-12-12 01:15 PM - Fixed modal z-index stacking
 
 interface ModalWrapperProps {
   isOpen: boolean;
@@ -70,7 +70,7 @@ export default function ModalWrapper({
 
       {/* Modal Content */}
       <div
-        className={`relative bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] flex flex-col`}
+        className={`relative z-10 bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
             {/* Header */}
