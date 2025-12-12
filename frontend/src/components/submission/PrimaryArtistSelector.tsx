@@ -151,7 +151,7 @@ export function PrimaryArtistSelector({
           </div>
 
           {/* Dropdown - Using Portal */}
-          {showDropdown && createPortal(
+          {showDropdown && dropdownPosition.width > 0 && createPortal(
             <>
               {/* Backdrop to close dropdown */}
               <div

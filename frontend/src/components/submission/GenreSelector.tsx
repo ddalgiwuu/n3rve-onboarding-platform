@@ -138,7 +138,7 @@ export function GenreSelector({
             )} />
           </button>
 
-          {showGenreDropdown && createPortal(
+          {showGenreDropdown && genreDropdownPosition.width > 0 && createPortal(
             <>
               <div
                 className="fixed inset-0 z-40"
@@ -257,7 +257,7 @@ export function GenreSelector({
               )} />
             </button>
 
-            {showSubgenreDropdown && createPortal(
+            {showSubgenreDropdown && subgenreDropdownPosition.width > 0 && createPortal(
               <>
                 <div
                   className="fixed inset-0 z-40"
