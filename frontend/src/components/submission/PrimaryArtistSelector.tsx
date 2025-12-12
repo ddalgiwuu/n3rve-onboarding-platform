@@ -223,7 +223,10 @@ export function PrimaryArtistSelector({
                     type="button"
                     onClick={() => {
                       setShowDropdown(false);
-                      onShowForm();
+                      // Wait for dropdown animation to complete before opening modal
+                      setTimeout(() => {
+                        onShowForm?.();
+                      }, 100);
                     }}
                     className="
                       w-full flex items-center gap-2 p-3
