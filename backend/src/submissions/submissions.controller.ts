@@ -67,9 +67,16 @@ export class SubmissionsController {
       marketingAssets?: Express.Multer.File[];
     },
   ) {
-    // Handle both FormData and JSON payloads
-    let submissionData;
-    if (body.releaseData && typeof body.releaseData === 'string') {
+    try {
+      console.log('🔍 [CREATE SUBMISSION] Controller entered');
+      console.log('🔍 [CREATE SUBMISSION] User:', { id: user.id, email: user.email });
+      console.log('🔍 [CREATE SUBMISSION] Body keys:', Object.keys(body));
+      console.log('🔍 [CREATE SUBMISSION] Has files:', files ? Object.keys(files) : 'none');
+
+      // Handle both FormData and JSON payloads
+      let submissionData;
+      if (body.releaseData && typeof body.releaseData === 'string') {
+        console.log('🔍 [CREATE SUBMISSION] Parsing FormData submission');
       // FormData submission from consumer form - parse the JSON releaseData field
       const releaseData = JSON.parse(body.releaseData);
       submissionData = {
@@ -145,10 +152,24 @@ export class SubmissionsController {
     }
     // Process files - handle both local uploads and Dropbox URLs from the submission
     let processedFiles;
-    if (
-      submissionData.files &&
-      (submissionData.files.coverImageUrl || submissionData.files.audioFiles)
-    ) {
+
+    console.log('🔍 [FILES] submissionData.files:', submissionData.files);
+    console.log('🔍 [FILES] Multer files:', files ? Object.keys(files) : 'none');
+    console.log('🔍 [FILES] Has multer audioFiles:', !!files?.audioFiles);
+
+    // Check if we have Dropbox URLs from frontend OR need to process local files
+    const hasDropboxUrls = submissionData.files &&
+      (submissionData.files.coverImageUrl || submissionData.files.audioFiles?.length > 0);
+    const hasLocalFiles = files && (files.coverArt || files.audioFiles);
+
+    console.log('🔍 [FILES] Decision:', {
+      hasDropboxUrls,
+      hasLocalFiles,
+      willProcessLocal: !hasDropboxUrls && hasLocalFiles
+    });
+
+    if (hasDropboxUrls && !hasLocalFiles) {
+      console.log('✅ [FILES] Using Dropbox URLs from frontend');
       // Files already contain Dropbox URLs from frontend
       processedFiles = {
         coverImage: submissionData.files.coverImageUrl
@@ -167,8 +188,13 @@ export class SubmissionsController {
         additionalFiles: submissionData.files.additionalFiles || [],
       };
     } else {
+      console.log('🔍 [FILES] Processing local files');
+      console.log('🔍 [FILES] Dropbox configured:', this.dropboxService.isConfigured());
+      console.log('🔍 [FILES] Has files:', !!files);
+
       // Upload files to Dropbox if configured
       if (this.dropboxService.isConfigured() && files) {
+        console.log('🔍 [FILES] Using Dropbox upload path');
         try {
           const submissionId = Date.now().toString(); // Create a unique submission ID
           const artistName = submissionData.artist?.nameKo || 'Unknown Artist';
@@ -176,11 +202,12 @@ export class SubmissionsController {
           
           const dropboxFiles: { buffer: Buffer; fileName: string; fileType: string }[] = [];
           
-          // Upload cover image
-          if (files.coverImage?.[0]) {
+          // Upload cover image (check both coverArt and coverImage)
+          const coverFile = files.coverArt?.[0] || files.coverImage?.[0];
+          if (coverFile) {
             dropboxFiles.push({
-              buffer: files.coverImage[0].buffer,
-              fileName: files.coverImage[0].originalname,
+              buffer: coverFile.buffer,
+              fileName: coverFile.originalname,
               fileType: 'cover'
             });
           }
@@ -196,13 +223,16 @@ export class SubmissionsController {
           
           // Upload audio files
           if (files.audioFiles) {
-            files.audioFiles.forEach(file => {
+            console.log('🔍 [FILES] Processing audioFiles:', files.audioFiles.length);
+            files.audioFiles.forEach((file, index) => {
               dropboxFiles.push({
                 buffer: file.buffer,
                 fileName: file.originalname,
-                fileType: 'audio'
+                fileType: `audio_${index}`
               });
             });
+          } else {
+            console.log('⚠️ [FILES] No audioFiles in multer files');
           }
           
           // Upload motion art
@@ -240,13 +270,16 @@ export class SubmissionsController {
           }
           
           // Upload all files to Dropbox
+          console.log('🔍 [FILES] Uploading to Dropbox:', dropboxFiles.length, 'files');
           const dropboxResults = await this.dropboxService.uploadMultipleFiles(
             dropboxFiles,
             submissionId,
             artistName,
             albumTitle
           );
-          
+
+          console.log('🔍 [FILES] Dropbox upload results keys:', Object.keys(dropboxResults));
+
           // Process the results to match expected format
           processedFiles = {
             coverImage: dropboxResults.cover ? {
@@ -357,35 +390,40 @@ export class SubmissionsController {
 
       // Tracks with all fields from consumer form
       tracks:
-        submissionData.tracks?.map((track, index) => ({
-          id: track.id || `track-${index + 1}`,
-          titleKo: track.titleKo || track.title || '',
-          titleEn: track.titleEn || track.title || '',
-          composer: track.composer || '',
-          lyricist: track.lyricist || '',
-          arranger: track.arranger,
-          featuring: track.featuring || track.featuringArtists?.join(', '),
-          isTitle: track.isTitle || false,
-          explicitContent: track.explicitContent || false,
-          isrc: track.isrc,
-          genre: track.genre,
-          subgenre: track.subgenre,
-          alternateGenre: track.alternateGenre,
-          alternateSubgenre: track.alternateSubgenre,
-          lyrics: track.lyrics,
-          lyricsLanguage: track.lyricsLanguage,
-          audioLanguage: track.audioLanguage,
-          metadataLanguage: track.metadataLanguage,
-          dolbyAtmos: track.dolbyAtmos || false,
-          producer: track.producer,
-          mixer: track.mixer,
-          masterer: track.masterer,
-          previewStart: track.previewStart,
-          previewEnd: track.previewEnd,
-          trackVersion: track.trackVersion,
-          trackType: track.trackType?.toUpperCase() || 'AUDIO',
-          translations: track.translations || [],
-        })) || [],
+        submissionData.tracks?.map((track, index) => {
+          // Remove file-related fields that don't belong in Track type
+          const { audioFiles, musicVideoFile, musicVideoThumbnail, lyricsFile, ...trackData } = track;
+
+          return {
+            id: trackData.id || `track-${index + 1}`,
+            titleKo: trackData.titleKo || trackData.title || '',
+            titleEn: trackData.titleEn || trackData.title || '',
+            composer: trackData.composer || '',
+            lyricist: trackData.lyricist || '',
+            arranger: trackData.arranger,
+            featuring: trackData.featuring || trackData.featuringArtists?.join(', '),
+            isTitle: trackData.isTitle || false,
+            explicitContent: trackData.explicitContent || false,
+            isrc: trackData.isrc,
+            genre: trackData.genre,
+            subgenre: trackData.subgenre,
+            alternateGenre: trackData.alternateGenre,
+            alternateSubgenre: trackData.alternateSubgenre,
+            lyrics: trackData.lyrics,
+            lyricsLanguage: trackData.lyricsLanguage,
+            audioLanguage: trackData.audioLanguage,
+            metadataLanguage: trackData.metadataLanguage,
+            dolbyAtmos: trackData.dolbyAtmos || false,
+            producer: trackData.producer,
+            mixer: trackData.mixer,
+            masterer: trackData.masterer,
+            previewStart: trackData.previewStart,
+            previewEnd: trackData.previewEnd,
+            trackVersion: trackData.trackVersion,
+            trackType: trackData.trackType?.toUpperCase() || 'AUDIO',
+            translations: trackData.translations || []
+          };
+        }) || [],
 
       // Files
       files: {
@@ -401,15 +439,15 @@ export class SubmissionsController {
         musicVideoUrl:
           processedFiles.musicVideo?.dropboxUrl ||
           processedFiles.musicVideo?.path,
-        audioFiles: processedFiles.audioFiles.map((file: any) => ({
+        audioFiles: (processedFiles.audioFiles || []).map((file: any) => ({
           trackId:
             file.trackId ||
-            `track-${processedFiles.audioFiles.indexOf(file) + 1}`,
+            `track-${(processedFiles.audioFiles || []).indexOf(file) + 1}`,
           dropboxUrl: file.dropboxUrl,
           fileName: file.fileName || file.filename,
           fileSize: file.fileSize,
         })),
-        additionalFiles: processedFiles.additionalFiles.map((file: any) => ({
+        additionalFiles: (processedFiles.additionalFiles || []).map((file: any) => ({
           dropboxUrl: file.dropboxUrl,
           fileName: file.fileName || file.filename,
           fileType: file.fileType || file.mimetype,
@@ -505,7 +543,16 @@ export class SubmissionsController {
       adminNotes: body.submissionNotes,
     };
 
-    return this.submissionsService.create(user.id, prismaData);
+      console.log('🔍 [CREATE SUBMISSION] Calling submissionsService.create');
+      const result = await this.submissionsService.create(user.id, prismaData);
+      console.log('✅ [CREATE SUBMISSION] Success!', { id: result.id });
+      return result;
+    } catch (error) {
+      console.error('❌ [CREATE SUBMISSION] Error occurred:', error);
+      console.error('❌ [CREATE SUBMISSION] Error message:', error.message);
+      console.error('❌ [CREATE SUBMISSION] Error stack:', error.stack);
+      throw error;
+    }
   }
 
   @Get('user')

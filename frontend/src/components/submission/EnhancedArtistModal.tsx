@@ -205,12 +205,13 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
   };
 
   return (
-    <ModalWrapper
-      isOpen={isOpen}
-      onClose={onClose}
-      title={role === 'main' ? t('메인 아티스트 추가', 'Add Main Artist') : t('피처링 아티스트 추가', 'Add Featuring Artist')}
-      maxWidth="max-w-3xl"
-    >
+    <>
+      <ModalWrapper
+        isOpen={isOpen}
+        onClose={onClose}
+        title={role === 'main' ? t('메인 아티스트 추가', 'Add Main Artist') : t('피처링 아티스트 추가', 'Add Featuring Artist')}
+        maxWidth="max-w-3xl"
+      >
       {/* Content */}
       <div className="px-6 py-4">
           <div className="space-y-6">
@@ -533,10 +534,10 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
             {t('저장', 'Save')}
           </button>
         </div>
-      </div>
+    </ModalWrapper>
 
-      {/* Help Modals */}
-      {showHelpModal && (
+    {/* Help Modals */}
+    {showHelpModal && (
         <ModalWrapper
           isOpen={true}
           onClose={() => setShowHelpModal(null)}
@@ -581,6 +582,6 @@ export default function EnhancedArtistModal({ isOpen, onClose, onSave, role, edi
           </div>
         </ModalWrapper>
       )}
-    </ModalWrapper>
+    </>
   );
 }

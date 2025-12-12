@@ -141,9 +141,9 @@ export const submissionService = {
   // Create new submission
   async createSubmission(data: SubmissionData) {
     // Check if we have Dropbox URLs or local files
-    const hasDropboxFiles = data.files.coverImageUrl || data.files.artistPhotoUrl ||
-                           data.files.audioFiles.some(f => f.dropboxUrl) ||
-                           data.files.motionArtUrl || data.files.musicVideoUrl;
+    const hasDropboxFiles = data.files?.coverImageUrl || data.files?.artistPhotoUrl ||
+                           data.files?.audioFiles?.some(f => f.dropboxUrl) ||
+                           data.files?.motionArtUrl || data.files?.musicVideoUrl;
 
     if (hasDropboxFiles) {
       // Send as JSON with Dropbox URLs

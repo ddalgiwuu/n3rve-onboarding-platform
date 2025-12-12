@@ -4,6 +4,7 @@ import { TagMultiSelect } from '../ui/TagMultiSelect';
 import { StarRating } from '../ui/StarRating';
 import { CharLimitTextarea } from '../ui/CharLimitTextarea';
 import { Target, DollarSign, FileText, Settings2, Youtube, Music2, Image } from 'lucide-react';
+import { FUGA_MOODS, FUGA_INSTRUMENTS } from '@/constants/fuga-data';
 
 interface MarketingSectionProps {
   // Pitch fields
@@ -41,36 +42,53 @@ interface MarketingSectionProps {
   className?: string;
 }
 
-// Mood options (from FUGA SCORE)
-const MOOD_OPTIONS = [
-  { id: 'energetic', label: 'Energetic', category: 'Energy' },
-  { id: 'party', label: 'Party', category: 'Social' },
-  { id: 'fitness', label: 'Fitness', category: 'Activity' },
-  { id: 'chill', label: 'Chill', category: 'Energy' },
-  { id: 'melancholic', label: 'Melancholic', category: 'Emotion' },
-  { id: 'romantic', label: 'Romantic', category: 'Emotion' },
-  { id: 'empowering', label: 'Empowering', category: 'Emotion' },
-  { id: 'uplifting', label: 'Uplifting', category: 'Emotion' },
-  { id: 'dark', label: 'Dark', category: 'Mood' },
-  { id: 'dreamy', label: 'Dreamy', category: 'Mood' },
-  { id: 'aggressive', label: 'Aggressive', category: 'Energy' },
-  { id: 'peaceful', label: 'Peaceful', category: 'Energy' }
-];
+// Mood options (18 from FUGA)
+const MOOD_OPTIONS = FUGA_MOODS.map((mood) => ({
+  id: mood.toLowerCase().replace(/\s+/g, '-'),
+  label: mood,
+  category: getMoodCategory(mood)
+}));
 
-// Instrument options
-const INSTRUMENT_OPTIONS = [
-  { id: 'synthesizer', label: 'Synthesizer', category: 'Electronic' },
-  { id: 'drum-kit', label: 'Drum Kit', category: 'Percussion' },
-  { id: 'electric-guitar', label: 'Electric Guitar', category: 'String' },
-  { id: 'acoustic-guitar', label: 'Acoustic Guitar', category: 'String' },
-  { id: 'bass', label: 'Bass', category: 'String' },
-  { id: 'piano', label: 'Piano', category: 'Keyboard' },
-  { id: 'vocals', label: 'Vocals', category: 'Voice' },
-  { id: 'strings', label: 'Strings', category: 'Orchestra' },
-  { id: '808', label: '808', category: 'Electronic' },
-  { id: 'brass', label: 'Brass', category: 'Wind' },
-  { id: 'woodwind', label: 'Woodwind', category: 'Wind' }
-];
+function getMoodCategory(mood: string): string {
+  const energyMoods = ['Energetic', 'Fitness', 'Party', 'Motivation'];
+  const emotionMoods = ['Happy', 'Romantic', 'Sad', 'Feel Good', 'Fierce', 'Sexy'];
+  const relaxMoods = ['Chill', 'Meditative', 'Sleep', 'Focus'];
+  const nostalgicMoods = ['Throwback', 'Feeling Blue', 'Heartbreak'];
+
+  if (energyMoods.includes(mood)) return 'Energy';
+  if (emotionMoods.includes(mood)) return 'Emotion';
+  if (relaxMoods.includes(mood)) return 'Relaxation';
+  if (nostalgicMoods.includes(mood)) return 'Nostalgia';
+  return 'Other';
+}
+
+// Instrument options (45 from FUGA)
+const INSTRUMENT_OPTIONS = FUGA_INSTRUMENTS.map((instrument) => ({
+  id: instrument.toLowerCase().replace(/\s+/g, '-'),
+  label: instrument,
+  category: getInstrumentCategory(instrument)
+}));
+
+function getInstrumentCategory(instrument: string): string {
+  const strings = ['Acoustic Guitar', 'Electric Guitar', 'Bass Guitar', 'Classical Guitar', 'Banjo', 'Mandolin', 'Ukelele', 'Violin', 'Viola', 'Cello', 'Double Bass', 'Pedal Steel Guitar'];
+  const keyboards = ['Piano', 'Organ', 'Synthesizer', 'Harpsichord', 'Cembalo'];
+  const percussion = ['Drum Kit', 'Marimba', 'Vibraphone', 'Xylophone', 'Djembe', 'Steel Drum'];
+  const woodwinds = ['Flute', 'Clarinet', 'Oboe', 'Bassoon', 'Saxophone', 'Piccolo', 'Recorder', 'Bass Clarinet'];
+  const brass = ['Trumpet', 'Trombone', 'French Horn', 'Horn'];
+  const world = ['Sitar', 'Oud', 'Erhu', 'Buzuq'];
+  const vocal = ['Vocals'];
+  const other = ['Harp', 'Accordion', 'Harmonica', 'Orchestra', 'Samples'];
+
+  if (strings.includes(instrument)) return 'Strings';
+  if (keyboards.includes(instrument)) return 'Keyboards';
+  if (percussion.includes(instrument)) return 'Percussion';
+  if (woodwinds.includes(instrument)) return 'Woodwinds';
+  if (brass.includes(instrument)) return 'Brass';
+  if (world.includes(instrument)) return 'World';
+  if (vocal.includes(instrument)) return 'Vocal';
+  if (other.includes(instrument)) return 'Other';
+  return 'Miscellaneous';
+}
 
 // Priority descriptions
 const PRIORITY_DESCRIPTIONS = {

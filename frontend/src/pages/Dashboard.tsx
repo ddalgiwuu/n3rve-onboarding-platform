@@ -6,42 +6,72 @@ import { Music, FileText, Users, Upload, ChevronRight, Calendar, Building2 } fro
 import { Link } from 'react-router-dom';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useSafeStore from '@/hooks/useSafeStore';
+import { useQuery } from '@tanstack/react-query';
+import api from '@/lib/api';
 
 export default function Dashboard() {
   const isHydrated = useHydration();
   const user = useSafeStore(useAuthStore, (state) => state.user);
   const { t } = useTranslation();
 
+  // Fetch user submissions data - MUST be before early return!
+  const { data: submissionsData, isLoading: submissionsLoading } = useQuery({
+    queryKey: ['user-submissions'],
+    queryFn: async () => {
+      try {
+        const response = await api.get('/submissions/user', {
+          params: { page: 1, limit: 10 }
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching submissions:', error);
+        return { data: [], total: 0 };
+      }
+    },
+    enabled: isHydrated && !!user,
+    retry: 1
+  });
+
   // Show loading spinner until stores are hydrated
   if (!isHydrated) {
     return <LoadingSpinner />;
   }
 
+  // Calculate stats from fetched data
+  const submissions = submissionsData?.data || [];
+  const totalSubmissions = submissionsData?.total || 0;
+  const pendingCount = submissions.filter((s: any) => s.status === 'PENDING').length;
+
+  // Get unique artists from submissions
+  const uniqueArtists = new Set(submissions.map((s: any) => s.artistName));
+  const artistsCount = uniqueArtists.size;
+
   const stats = [
     {
       label: t('dashboard.totalReleases'),
-      value: '0',
+      value: totalSubmissions.toString(),
       icon: Music,
       color: 'from-purple-500 to-pink-500',
       description: t('dashboard.registeredAlbums')
     },
     {
       label: t('dashboard.pending'),
-      value: '0',
+      value: pendingCount.toString(),
       icon: FileText,
       color: 'from-blue-500 to-cyan-500',
       description: t('dashboard.awaitingReview')
     },
     {
       label: t('dashboard.artists'),
-      value: '0',
+      value: artistsCount.toString(),
       icon: Users,
       color: 'from-green-500 to-emerald-500',
       description: t('dashboard.registeredArtists')
     }
   ];
 
-  const recentSubmissions: any[] = [];
+  // Get recent submissions (max 5 for dashboard)
+  const recentSubmissions = submissions.slice(0, 5);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -152,39 +182,44 @@ export default function Dashboard() {
           </div>
 
           <div className="space-y-4">
-            {recentSubmissions.length === 0 ? (
+            {submissionsLoading ? (
+              <div className="text-center py-8">
+                <LoadingSpinner />
+              </div>
+            ) : recentSubmissions.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-gray-500 dark:text-gray-400">
                   {t('dashboard.noSubmittedTracks')}
                 </p>
               </div>
             ) : (
-              recentSubmissions.map((submission, index) => (
-                <div
+              recentSubmissions.map((submission: any, index: number) => (
+                <Link
                   key={submission.id}
-                  className="glass-effect p-4 rounded-xl hover:shadow-lg transition-all duration-300 animate-slide-in-left"
+                  to={`/release-projects`}
+                  className="glass-effect p-4 rounded-xl hover:shadow-lg transition-all duration-300 animate-slide-in-left block"
                   style={{ animationDelay: `${index * 100}ms` }}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900 dark:text-white">
-                        {submission.title}
+                        {submission.albumTitle || submission.albumTitleEn || 'Untitled'}
                       </h3>
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {submission.artist}
+                        {submission.artistName || submission.artistNameEn || 'Unknown Artist'}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
                         <Calendar className="w-4 h-4" />
-                        {submission.date}
+                        {new Date(submission.releaseDate || submission.createdAt).toLocaleDateString()}
                       </div>
-                      <span className={`badge-glass ${getStatusColor(submission.status)} px-3 py-1`}>
-                        {getStatusText(submission.status)}
+                      <span className={`badge-glass ${getStatusColor(submission.status?.toLowerCase() || 'pending')} px-3 py-1`}>
+                        {getStatusText(submission.status?.toLowerCase() || 'pending')}
                       </span>
                     </div>
                   </div>
-                </div>
+                </Link>
               ))
             )}
           </div>
