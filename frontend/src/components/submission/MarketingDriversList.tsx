@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Trash2, GripVertical, Info, AlertCircle } from 'lucide-react';
 import { Reorder } from 'framer-motion';
 import { useTranslation } from '@/hooks/useTranslationFixed';
 
@@ -87,18 +87,35 @@ export function MarketingDriversList({
           type="button"
           onClick={handleAdd}
           disabled={!newDriver.trim() || drivers.length >= maxDrivers}
-          className="
-            px-4 py-3 rounded-xl
-            bg-purple-500/10 hover:bg-purple-500/20
-            border border-purple-500/30 hover:border-purple-500/50
-            text-purple-400 hover:text-purple-300
-            font-medium
-            transition-all
-            disabled:opacity-50 disabled:cursor-not-allowed
-          "
+          title={!newDriver.trim()
+            ? translate('마케팅 포인트를 입력하세요', 'Enter marketing point first')
+            : translate('마케팅 드라이버 추가', 'Add marketing driver')
+          }
+          className={clsx(
+            'px-4 py-3 rounded-xl font-medium transition-all',
+            !newDriver.trim() || drivers.length >= maxDrivers
+              ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-50 text-gray-200'
+              : 'bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/30 hover:border-purple-500/50 text-purple-400 hover:text-purple-300 cursor-pointer shadow-lg hover:shadow-xl'
+          )}
         >
           <Plus size={20} />
         </button>
+      </div>
+
+      {/* Helper Text */}
+      <div className="mt-2 min-h-[20px]">
+        {!newDriver.trim() && drivers.length < maxDrivers && (
+          <p className="text-xs text-gray-400 flex items-center gap-1">
+            <Info size={12} />
+            {translate('마케팅 포인트를 입력 후 추가 버튼을 클릭하거나 Enter 키를 누르세요', 'Enter marketing point and click Add or press Enter')}
+          </p>
+        )}
+        {drivers.length >= maxDrivers && (
+          <p className="text-xs text-amber-500 dark:text-amber-400 flex items-center gap-1">
+            <AlertCircle size={12} />
+            {translate(`최대 ${maxDrivers}개까지만 추가할 수 있습니다`, `Maximum ${maxDrivers} items allowed`)}
+          </p>
+        )}
       </div>
 
       {/* List of drivers (reorderable) */}

@@ -1,4 +1,5 @@
 import { useEffect, ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 
 // Cache busting: Updated 2025-12-12 01:15 PM - Fixed modal z-index stacking
@@ -60,7 +61,7 @@ export default function ModalWrapper({
     }
   };
 
-  return (
+  return createPortal(
     <div
       className="fixed inset-0 z-[10000] flex items-center justify-center p-4"
       onClick={handleBackdropClick}
@@ -73,32 +74,33 @@ export default function ModalWrapper({
         className={`relative z-10 bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full ${maxWidth} max-h-[90vh] flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
-            {/* Header */}
-            {(title || showCloseButton) && (
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                {title && (
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                    {title}
-                  </h2>
-                )}
-                {showCloseButton && (
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    className="ml-auto p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-                    aria-label="Close modal"
-                  >
-                    <X className="w-5 h-5" />
-                  </button>
-                )}
-              </div>
+        {/* Header */}
+        {(title || showCloseButton) && (
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            {title && (
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                {title}
+              </h2>
             )}
+            {showCloseButton && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="ml-auto p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Content - Scrollable */}
         <div className="flex-1 overflow-y-auto overscroll-contain">
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

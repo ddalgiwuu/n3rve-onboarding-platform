@@ -45,15 +45,19 @@ export function PrimaryArtistSelector({
       }
     };
 
+    const onScroll = () => {
+      setShowDropdown(false);
+    };
+
     // Initial position
     updatePosition();
 
-    // Update on scroll and resize
-    window.addEventListener('scroll', updatePosition, { capture: true, passive: true });
+    // Close on scroll, update on resize
+    window.addEventListener('scroll', onScroll, { capture: true, passive: true });
     window.addEventListener('resize', updatePosition, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', updatePosition, { capture: true });
+      window.removeEventListener('scroll', onScroll, { capture: true });
       window.removeEventListener('resize', updatePosition);
     };
   }, [showDropdown]);
@@ -178,70 +182,70 @@ export function PrimaryArtistSelector({
                   scrollbar-thin scrollbar-thumb-purple-500/50 scrollbar-track-transparent
                 "
               >
-              {/* Search Results */}
-              {filteredArtists.length > 0 ? (
-                <div className="p-2">
-                  {filteredArtists.slice(0, 10).map((artist) => (
-                    <button
-                      key={artist.id}
-                      type="button"
-                      onClick={() => handleSelect(artist.id, artist.name)}
-                      className="
+                {/* Search Results */}
+                {filteredArtists.length > 0 ? (
+                  <div className="p-2">
+                    {filteredArtists.slice(0, 10).map((artist) => (
+                      <button
+                        key={artist.id}
+                        type="button"
+                        onClick={() => handleSelect(artist.id, artist.name)}
+                        className="
                         w-full flex items-center gap-3 p-3
                         rounded-lg hover:bg-white/10
                         text-left transition-all
                         group
                       "
-                    >
-                      <User size={16} className="text-gray-400 group-hover:text-purple-400" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-white truncate">
-                          {artist.name}
-                        </p>
-                        {artist.usageCount > 0 && (
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <Star size={10} className="text-yellow-400 fill-current" />
-                            <span className="text-xs text-gray-400">
-                              {translate(`${artist.usageCount}회 사용`, `Used ${artist.usageCount} times`)}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-4 text-center text-sm text-gray-400">
-                  {translate('검색 결과가 없습니다', 'No results found')}
-                </div>
-              )}
+                      >
+                        <User size={16} className="text-gray-400 group-hover:text-purple-400" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-white truncate">
+                            {artist.name}
+                          </p>
+                          {artist.usageCount > 0 && (
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <Star size={10} className="text-yellow-400 fill-current" />
+                              <span className="text-xs text-gray-400">
+                                {translate(`${artist.usageCount}회 사용`, `Used ${artist.usageCount} times`)}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 text-center text-sm text-gray-400">
+                    {translate('검색 결과가 없습니다', 'No results found')}
+                  </div>
+                )}
 
-              {/* Add New Artist Button */}
-              {onShowForm && (
-                <div className="border-t border-white/10 p-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowDropdown(false);
-                      // Wait for dropdown animation to complete before opening modal
-                      setTimeout(() => {
-                        onShowForm?.();
-                      }, 100);
-                    }}
-                    className="
+                {/* Add New Artist Button */}
+                {onShowForm && (
+                  <div className="border-t border-white/10 p-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowDropdown(false);
+                        // Wait for dropdown animation to complete before opening modal
+                        setTimeout(() => {
+                          onShowForm?.();
+                        }, 100);
+                      }}
+                      className="
                       w-full flex items-center gap-2 p-3
                       rounded-lg hover:bg-purple-500/10
                       text-purple-400 hover:text-purple-300
                       transition-all
                     "
-                  >
-                    <Plus size={16} />
-                    <span className="text-sm font-medium">
-                      {translate('새 아티스트 등록', 'Register New Artist')}
-                    </span>
-                  </button>
-                </div>
-              )}
+                    >
+                      <Plus size={16} />
+                      <span className="text-sm font-medium">
+                        {translate('새 아티스트 등록', 'Register New Artist')}
+                      </span>
+                    </button>
+                  </div>
+                )}
               </motion.div>
             </>,
             document.body
