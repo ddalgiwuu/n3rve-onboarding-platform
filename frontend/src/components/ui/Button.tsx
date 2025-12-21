@@ -1,107 +1,61 @@
-import React from 'react';
-import { cn } from '@/lib/utils';
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
 
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'ghost' | 'danger' | 'glass' | 'glass-primary' | 'glass-modern' | 'glass-premium' | 'glass-success' | 'glass-warning'
-  size?: 'sm' | 'md' | 'lg' | 'xl'
-  loading?: boolean
-  icon?: React.ReactNode
-  iconPosition?: 'left' | 'right'
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default:
+          "bg-white/15 dark:bg-white/10 text-white/90 hover:bg-white/20 dark:hover:bg-white/15 backdrop-blur-md saturate-0 border border-white/15 dark:border-white/10 shadow-lg shadow-black/10 dark:shadow-black/30 rounded-xl hover:scale-[1.02] hover:-translate-y-0.5",
+        glass:
+          "bg-white/[0.08] dark:bg-white/[0.06] backdrop-blur-xl saturate-0 border border-white/10 dark:border-white/8 border-t-white/15 border-l-white/15 shadow-[0_8px_32px_rgba(0,0,0,0.12),inset_0_1px_0_rgba(255,255,255,0.08)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)] text-gray-900 dark:text-white hover:bg-white/12 dark:hover:bg-white/10 hover:scale-[1.02] hover:-translate-y-0.5 rounded-xl",
+        destructive:
+          "bg-red-500/20 dark:bg-red-900/20 text-red-600 dark:text-red-400 backdrop-blur-md border border-red-500/30 hover:bg-red-500/30 rounded-xl",
+        outline:
+          "border border-white/15 dark:border-white/10 backdrop-blur-md bg-transparent text-gray-900 dark:text-white hover:bg-white/10 dark:hover:bg-white/8 rounded-xl",
+        secondary:
+          "bg-white/10 dark:bg-white/8 text-gray-900 dark:text-white backdrop-blur-sm border border-white/8 shadow-sm hover:bg-white/15 dark:hover:bg-white/12 rounded-xl",
+        ghost:
+          "text-gray-900 dark:text-white hover:bg-white/10 dark:hover:bg-white/8 backdrop-blur-sm rounded-xl",
+        link:
+          "text-gray-900 dark:text-white underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-10 px-4 py-2 text-sm",
+        sm: "h-9 px-3 text-xs rounded-lg",
+        lg: "h-12 px-6 text-base rounded-xl",
+        icon: "h-10 w-10",
+      },
+    },
+    defaultVariants: {
+      variant: "glass",
+      size: "default",
+    },
+  }
+)
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
+  asChild?: boolean
 }
 
-export default function Button({
-  children,
-  className = '',
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  disabled,
-  icon,
-  iconPosition = 'left',
-  ...props
-}: ButtonProps) {
-  const variants = {
-    primary: 'btn-premium-primary magnetic glass-shimmer animate-glow-pulse',
-    secondary: 'bg-surface-elevated border-modern text-gray-900 dark:text-gray-100 hover:bg-surface magnetic hover:border-n3rve-400/30',
-    ghost: 'btn-premium-ghost magnetic glass-shimmer',
-    danger: 'btn-premium bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700 magnetic shadow-lg shadow-red-500/25',
-    glass: 'btn-premium-glass magnetic glass-shimmer',
-    'glass-primary': 'btn-premium-primary magnetic glass-shimmer',
-    'glass-modern': 'btn-premium-glass magnetic glass-shimmer',
-    'glass-premium': 'btn-premium-glass magnetic neuro-raised hover:neuro-inset',
-    'glass-success': 'btn-premium glass-success magnetic glass-shimmer',
-    'glass-warning': 'btn-premium glass-warning magnetic glass-shimmer'
-  };
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button"
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
+Button.displayName = "Button"
 
-  const sizes = {
-    sm: 'px-3 py-2 text-sm min-h-[40px]',
-    md: 'px-4 py-3 text-base sm:text-sm min-h-[44px]',
-    lg: 'px-6 py-3.5 text-lg sm:text-base min-h-[48px]',
-    xl: 'px-8 py-4 text-xl min-h-[56px]'
-  };
-
-  return (
-    <button
-      className={cn(
-        'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-300',
-        'focus:outline-none focus:ring-4 sm:focus:ring-2 focus:ring-purple-500 focus:ring-offset-2',
-        'dark:focus:ring-offset-gray-900',
-        'disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none',
-        'relative overflow-hidden group',
-        variants[variant],
-        sizes[size],
-        className
-      )}
-      disabled={disabled || loading}
-      {...props}
-    >
-      {/* Glass shimmer effect */}
-      {variant.includes('glass') && (
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700" />
-        </div>
-      )}
-
-      {/* Loading spinner */}
-      {loading && (
-        <svg
-          className="animate-spin -ml-1 mr-2 h-4 w-4"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          />
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-          />
-        </svg>
-      )}
-
-      {/* Left icon */}
-      {icon && iconPosition === 'left' && !loading && (
-        <span className="mr-2 flex-shrink-0 transition-transform duration-200 group-hover:scale-110">
-          {icon}
-        </span>
-      )}
-
-      {/* Button content */}
-      <span className="relative z-10">{children}</span>
-
-      {/* Right icon */}
-      {icon && iconPosition === 'right' && !loading && (
-        <span className="ml-2 flex-shrink-0 transition-transform duration-200 group-hover:scale-110">
-          {icon}
-        </span>
-      )}
-    </button>
-  );
-}
+export { Button, buttonVariants }

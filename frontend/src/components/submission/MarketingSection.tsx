@@ -5,6 +5,8 @@ import { StarRating } from '../ui/StarRating';
 import { CharLimitTextarea } from '../ui/CharLimitTextarea';
 import { Target, DollarSign, FileText, Settings2, Youtube, Music2, Image } from 'lucide-react';
 import { FUGA_MOODS, FUGA_INSTRUMENTS } from '@/constants/fuga-data';
+import { MARKETING_TOOLTIPS } from '@/constants/marketing-tooltips';
+import { useTranslation } from '@/hooks/useTranslationFixed';
 
 interface MarketingSectionProps {
   // Pitch fields
@@ -124,6 +126,13 @@ export function MarketingSection({
   onMotionArtworkChange,
   className
 }: MarketingSectionProps) {
+  const { language } = useTranslation();
+  const translate = (ko: string, en: string, ja: string = en) => {
+    if (language === 'ko') return ko;
+    if (language === 'ja') return ja;
+    return en;
+  };
+
   return (
     <div className={clsx('space-y-8', className)}>
       {/* Section 1: Marketing Pitch */}
@@ -133,31 +142,33 @@ export function MarketingSection({
             <Target size={20} className="text-purple-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Marketing Pitch</h3>
-            <p className="text-sm text-gray-400">For DSP editorial teams</p>
+            <h3 className="text-lg font-semibold text-white">{translate('마케팅 피치', 'Marketing Pitch', 'マーケティングピッチ')}</h3>
+            <p className="text-sm text-gray-400">{translate('DSP 편집팀을 위한 내용', 'For DSP editorial teams', 'DSP編集チーム向け')}</p>
           </div>
         </div>
 
         <div className="space-y-6 p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl">
           <AIPitchEditor
-            label="What's Your Hook?"
+            label={translate('핵심 메시지 (Hook)', "What's Your Hook?", 'フック')}
             value={hook}
             onChange={onHookChange}
             minChars={50}
             maxChars={175}
-            placeholder="A powerful one-sentence essence of your release..."
-            helpText="DSP editors see this first. Make it compelling and concise."
+            placeholder={translate('릴리즈의 핵심을 한 문장으로...', 'A powerful one-sentence essence of your release...', 'リリースの本質を一文で...')}
+            helpText={translate('DSP 편집자들이 가장 먼저 보는 내용입니다. 간결하고 강력하게 작성하세요.', 'DSP editors see this first. Make it compelling and concise.', 'DSP編集者が最初に見る内容です。簡潔で強力に。')}
+            tooltip={MARKETING_TOOLTIPS.HOOK[language]}
           />
 
           <AIPitchEditor
-            label="The Main Pitch"
+            label={translate('메인 피치 (엘리베이터 피치)', 'The Main Pitch (Elevator Pitch)', 'メインピッチ (エレベーターピッチ)')}
             value={mainPitch}
             onChange={onMainPitchChange}
             maxChars={500}
             rows={8}
             required
-            placeholder="Describe your release, collaboration, and what makes it special..."
-            helpText="Comprehensive project summary for playlist curators and editors"
+            placeholder={translate('릴리즈, 협업, 특별한 점을 설명하세요...', 'Describe your release, collaboration, and what makes it special...', 'リリース、コラボレーション、特別な点を説明...')}
+            helpText={translate('플레이리스트 큐레이터와 편집자를 위한 종합 요약', 'Comprehensive project summary for playlist curators and editors', 'プレイリストキュレーターと編集者向けの総合要約')}
+            tooltip={MARKETING_TOOLTIPS.ELEVATOR_PITCH[language]}
           />
         </div>
       </div>
@@ -169,46 +180,46 @@ export function MarketingSection({
             <Music2 size={20} className="text-green-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Music Characterization</h3>
-            <p className="text-sm text-gray-400">Help DSPs categorize your release</p>
+            <h3 className="text-lg font-semibold text-white">{translate('음악 특성', 'Music Characterization', '音楽特性')}</h3>
+            <p className="text-sm text-gray-400">{translate('DSP가 릴리즈를 분류할 수 있도록 도와주세요', 'Help DSPs categorize your release', 'DSPがリリースを分類できるように')}</p>
           </div>
         </div>
 
         <div className="space-y-6 p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl">
           <TagMultiSelect
-            label="Mood(s)"
-            placeholder="Choose up to 3 moods..."
+            label={translate('무드', 'Mood(s)', 'ムード')}
+            placeholder={translate('최대 3개 선택...', 'Choose up to 3 moods...', '最大3つ選択...')}
             value={moods}
             onChange={onMoodsChange}
             options={MOOD_OPTIONS}
             maxSelections={3}
             required
-            helpText="Select moods that characterize this release"
+            helpText={translate('이 릴리즈를 특징짓는 무드를 선택하세요', 'Select moods that characterize this release', 'このリリースを特徴付けるムードを選択')}
             variant="glass-enhanced"
             groupByCategory
           />
 
           <TagMultiSelect
-            label="Instruments"
-            placeholder="Select instruments featured..."
+            label={translate('악기', 'Instruments', '楽器')}
+            placeholder={translate('주요 악기 선택...', 'Select instruments featured...', '主要楽器を選択...')}
             value={instruments}
             onChange={onInstrumentsChange}
             options={INSTRUMENT_OPTIONS}
             required
-            helpText="Main instruments featured in the release"
+            helpText={translate('릴리즈에 등장하는 주요 악기', 'Main instruments featured in the release', 'リリースに登場する主要楽器')}
             variant="glass-enhanced"
             groupByCategory
           />
 
           <StarRating
-            label="Release Priority"
+            label={translate('릴리즈 우선순위', 'Release Priority', 'リリース優先順位')}
             value={priority}
             onChange={onPriorityChange}
             max={5}
             variant="glass"
             size="lg"
             descriptions={PRIORITY_DESCRIPTIONS}
-            helpText="Internal importance indicator for your team"
+            helpText={translate('팀 내부 중요도 표시자', 'Internal importance indicator for your team', 'チーム内部重要度指標')}
           />
         </div>
       </div>
@@ -220,37 +231,39 @@ export function MarketingSection({
             <DollarSign size={20} className="text-blue-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Campaign Details</h3>
-            <p className="text-sm text-gray-400">Marketing strategy and resources</p>
+            <h3 className="text-lg font-semibold text-white">{translate('캠페인 상세정보', 'Campaign Details', 'キャンペーン詳細')}</h3>
+            <p className="text-sm text-gray-400">{translate('마케팅 전략 및 리소스', 'Marketing strategy and resources', 'マーケティング戦略とリソース')}</p>
           </div>
         </div>
 
         <div className="space-y-6 p-6 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl">
           <CharLimitTextarea
-            label="Social Media Rollout Plan"
+            label={translate('소셜 미디어 배포 계획', 'Social Media Rollout Plan', 'ソーシャルメディア展開計画')}
             value={socialMediaPlan}
             onChange={onSocialMediaPlanChange}
             maxChars={2000}
             rows={8}
             required
             variant="glass-enhanced"
-            helpText="Include: posting schedule, content types, hashtags, target audience, KPIs"
+            helpText={translate('포함 내용: 게시 일정, 콘텐츠 유형, 해시태그, 타겟 오디언스, KPI', 'Include: posting schedule, content types, hashtags, target audience, KPIs', '含む内容: 投稿スケジュール、コンテンツタイプ、ハッシュタグ、ターゲット、KPI')}
+            tooltip={MARKETING_TOOLTIPS.SOCIAL_MEDIA_PLAN[language]}
           />
 
           <CharLimitTextarea
-            label="Marketing Spend"
+            label={translate('마케팅 예산', 'Marketing Spend', 'マーケティング予算')}
             value={marketingSpend}
             onChange={onMarketingSpendChange}
             maxChars={1000}
             rows={6}
             variant="glass-enhanced"
             placeholder="Spotify: $X / TikTok: $X / Meta: $X / YouTube: $X / ..."
-            helpText="Platform-by-platform budget breakdown"
+            helpText={translate('플랫폼별 예산 분할', 'Platform-by-platform budget breakdown', 'プラットフォーム別予算分割')}
+            tooltip={MARKETING_TOOLTIPS.MARKETING_SPEND[language]}
           />
 
           <div>
             <label className="block text-sm font-medium text-white mb-2">
-              Fact Sheet / Project Deck URL
+              {translate('팩트 시트 / 프로젝트 덱 URL', 'Fact Sheet / Project Deck URL', 'ファクトシート / プロジェクトデックURL')}
             </label>
             <input
               type="url"
@@ -266,7 +279,7 @@ export function MarketingSection({
               "
             />
             <p className="mt-1 text-xs text-gray-400">
-              Link to detailed press materials, artist bio, or project deck
+              {translate('상세 보도자료, 아티스트 바이오, 프로젝트 덱 링크', 'Link to detailed press materials, artist bio, or project deck', '詳細なプレス資料、アーティストバイオ、プロジェクトデックへのリンク')}
             </p>
           </div>
         </div>
@@ -279,8 +292,8 @@ export function MarketingSection({
             <Settings2 size={20} className="text-pink-400" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-white">Distribution Preferences</h3>
-            <p className="text-sm text-gray-400">Platform-specific options</p>
+            <h3 className="text-lg font-semibold text-white">{translate('배포 설정', 'Distribution Preferences', '配信設定')}</h3>
+            <p className="text-sm text-gray-400">{translate('플랫폼별 옵션', 'Platform-specific options', 'プラットフォーム別オプション')}</p>
           </div>
         </div>
 
@@ -301,7 +314,7 @@ export function MarketingSection({
             <Youtube size={20} className={youtubeShorts ? 'text-purple-400' : 'text-gray-400'} />
             <div className="flex-1">
               <p className="text-sm font-medium text-white">YouTube Shorts</p>
-              <p className="text-xs text-gray-400">Enable short previews</p>
+              <p className="text-xs text-gray-400">{translate('쇼츠 프리뷰 활성화', 'Enable short previews', 'ショーツプレビュー有効化')}</p>
             </div>
             {youtubeShorts && (
               <div className="w-5 h-5 bg-purple-500 rounded flex items-center justify-center">
@@ -327,8 +340,8 @@ export function MarketingSection({
             />
             <Music2 size={20} className={thisIsPlaylist ? 'text-green-400' : 'text-gray-400'} />
             <div className="flex-1">
-              <p className="text-sm font-medium text-white">"This Is" Playlist</p>
-              <p className="text-xs text-gray-400">Spotify pinning</p>
+              <p className="text-sm font-medium text-white">{translate('"This Is" 플레이리스트', '"This Is" Playlist', '"This Is" プレイリスト')}</p>
+              <p className="text-xs text-gray-400">{translate('Spotify 고정', 'Spotify pinning', 'Spotify固定')}</p>
             </div>
             {thisIsPlaylist && (
               <div className="w-5 h-5 bg-green-500 rounded flex items-center justify-center">
@@ -354,8 +367,8 @@ export function MarketingSection({
             />
             <Image size={20} className={motionArtwork ? 'text-pink-400' : 'text-gray-400'} />
             <div className="flex-1">
-              <p className="text-sm font-medium text-white">Motion Artwork</p>
-              <p className="text-xs text-gray-400">Animated cover</p>
+              <p className="text-sm font-medium text-white">{translate('모션 아트워크', 'Motion Artwork', 'モーションアートワーク')}</p>
+              <p className="text-xs text-gray-400">{translate('애니메이션 커버', 'Animated cover', 'アニメーションカバー')}</p>
             </div>
             {motionArtwork && (
               <div className="w-5 h-5 bg-pink-500 rounded flex items-center justify-center">

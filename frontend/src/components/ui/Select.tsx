@@ -1,253 +1,191 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Search } from 'lucide-react';
-import { useTranslation } from '@/hooks/useTranslation';
-import { cn } from '@/lib/utils';
+import * as React from "react"
+import * as SelectPrimitive from "@radix-ui/react-select"
+import { Check, ChevronDown, ChevronUp } from "lucide-react"
 
-interface Option {
-  value: string;
-  label: string;
-  icon?: React.ReactNode;
-  description?: string;
-}
+import { cn } from "@/lib/utils"
 
-interface SelectProps extends Omit<React.SelectHTMLAttributes<HTMLSelectElement>, 'onChange'> {
-  label?: string;
-  error?: string;
-  options?: Array<{ value: string; label: string } | Option>;
-  placeholder?: string;
-  onChange?: (value: string) => void;
-  searchable?: boolean;
-  nativeOnMobile?: boolean;
-  hint?: string;
-}
+const Select = SelectPrimitive.Root
 
-export default function Select({
-  label,
-  error,
-  options = [],
-  className = '',
-  placeholder = 'Select an option',
-  value,
-  onChange,
-  disabled,
-  searchable = false,
-  nativeOnMobile = true,
-  ...props
-}: SelectProps) {
-  const { t } = useTranslation();
-  const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
-  const searchInputRef = useRef<HTMLInputElement>(null);
-  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+const SelectGroup = SelectPrimitive.Group
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        setSearchTerm('');
-      }
-    };
+const SelectValue = SelectPrimitive.Value
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+const SelectTrigger = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Trigger>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
+>(({ className, children, ...props }, ref) => (
+  <SelectPrimitive.Trigger
+    ref={ref}
+    className={cn(
+      // Monochrome Glass Select Trigger
+      "flex h-10 w-full items-center justify-between whitespace-nowrap rounded-xl px-4 py-3",
+      "bg-white/[0.08] dark:bg-white/[0.06]",
+      "backdrop-blur-md saturate-0",
+      "border border-white/10 dark:border-white/8",
+      "text-gray-900 dark:text-white text-base",
+      "data-[placeholder]:text-gray-500 dark:data-[placeholder]:text-gray-400",
+      "shadow-[0_4px_16px_rgba(0,0,0,0.08),inset_0_1px_0_rgba(255,255,255,0.08)]",
+      "dark:shadow-[0_4px_16px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06)]",
+      "transition-all duration-300",
+      "focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2",
+      "focus:border-white/20 dark:focus:border-white/15",
+      "hover:border-white/15 dark:hover:border-white/12",
+      "disabled:cursor-not-allowed disabled:opacity-50",
+      "[&>span]:line-clamp-1",
+      className
+    )}
+    {...props}
+  >
+    {children}
+    <SelectPrimitive.Icon asChild>
+      <ChevronDown className="h-4 w-4 opacity-50" />
+    </SelectPrimitive.Icon>
+  </SelectPrimitive.Trigger>
+))
+SelectTrigger.displayName = SelectPrimitive.Trigger.displayName
 
-  // Focus search input when dropdown opens
-  useEffect(() => {
-    if (isOpen && searchable && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [isOpen, searchable]);
+const SelectScrollUpButton = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.ScrollUpButton>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollUpButton>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.ScrollUpButton
+    ref={ref}
+    className={cn(
+      "flex cursor-default items-center justify-center py-1",
+      className
+    )}
+    {...props}
+  >
+    <ChevronUp className="h-4 w-4" />
+  </SelectPrimitive.ScrollUpButton>
+))
+SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
 
-  // Use native select on mobile if specified
-  if (nativeOnMobile && isMobile) {
-    return (
-      <div className="w-full">
-        {label && (
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {label}
-          </label>
-        )}
-        <div className="relative">
-          <select
-            className={cn(
-              'w-full px-4 py-3.5 pr-10 rounded-xl transition-all duration-200 min-h-[48px]',
-              'bg-gray-50 dark:bg-gray-900/50 backdrop-blur-sm',
-              'text-gray-900 dark:text-gray-100 font-medium',
-              'border-2 border-gray-200 dark:border-gray-700',
-              'hover:border-gray-300 dark:hover:border-gray-600',
-              'focus:border-transparent focus:ring-4 focus:ring-n3rve-500/20 focus:outline-none',
-              'focus:bg-white dark:focus:bg-gray-900',
-              'focus:shadow-lg focus:shadow-n3rve-500/10',
-              'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-100 dark:disabled:bg-gray-800',
-              'appearance-none cursor-pointer',
-              error && 'border-red-500 dark:border-red-500 hover:border-red-600 dark:hover:border-red-400 focus:ring-red-500/20 bg-red-50 dark:bg-red-900/10',
-              className
-            )}
-            value={value}
-            onChange={(e) => onChange?.(e.target.value)}
-            disabled={disabled}
-            {...props}
-          >
-            <option value="" disabled>
-              {placeholder}
-            </option>
-            {options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" />
-        </div>
-        {error && (
-          <p className="mt-1 text-sm text-red-500">{error}</p>
-        )}
-      </div>
-    );
-  }
+const SelectScrollDownButton = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.ScrollDownButton>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.ScrollDownButton>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.ScrollDownButton
+    ref={ref}
+    className={cn(
+      "flex cursor-default items-center justify-center py-1",
+      className
+    )}
+    {...props}
+  >
+    <ChevronDown className="h-4 w-4" />
+  </SelectPrimitive.ScrollDownButton>
+))
+SelectScrollDownButton.displayName =
+  SelectPrimitive.ScrollDownButton.displayName
 
-  const selectedOption = options.find(opt => opt.value === value);
-
-  const filteredOptions = searchTerm
-    ? options.filter(opt =>
-      opt.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        ('description' in opt && opt.description && opt.description.toLowerCase().includes(searchTerm.toLowerCase()))
-    )
-    : options;
-
-  const handleSelect = (optionValue: string) => {
-    onChange?.(optionValue);
-    setIsOpen(false);
-    setSearchTerm('');
-  };
-
-  return (
-    <div className="w-full">
-      {label && (
-        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2.5">
-          {label}
-          {props.required && <span className="text-red-500 ml-1">*</span>}
-        </label>
+const SelectContent = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
+>(({ className, children, position = "popper", ...props }, ref) => (
+  <SelectPrimitive.Portal>
+    <SelectPrimitive.Content
+      ref={ref}
+      className={cn(
+        // Monochrome Glass Dropdown
+        "relative z-50 max-h-[--radix-select-content-available-height] min-w-[8rem]",
+        "overflow-y-auto overflow-x-hidden rounded-xl",
+        "bg-white/[0.12] dark:bg-white/[0.08]",
+        "backdrop-blur-2xl saturate-0",
+        "border border-white/15 dark:border-white/10",
+        "shadow-[0_12px_40px_rgba(0,0,0,0.15),inset_0_1px_0_rgba(255,255,255,0.1)]",
+        "dark:shadow-[0_12px_40px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.08)]",
+        "text-gray-900 dark:text-white",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out",
+        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+        "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2",
+        "data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "origin-[--radix-select-content-transform-origin]",
+        position === "popper" &&
+          "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+        className
       )}
-      <div ref={dropdownRef} className="relative">
-        {/* Select Button */}
-        <button
-          type="button"
-          onClick={() => !disabled && setIsOpen(!isOpen)}
-          disabled={disabled}
-          className={cn(
-            'w-full flex items-center justify-between gap-2 px-4 py-3.5 min-h-[48px]',
-            'glass-input font-medium text-left group',
-            disabled ? 'cursor-not-allowed opacity-50 bg-gray-100/50 dark:bg-gray-800/50' : 'cursor-pointer',
-            isOpen ? 'glass-effect shadow-lg shadow-n3rve-500/10' : '',
-            !disabled && !isOpen && 'hover:border-gray-300 dark:hover:border-gray-600',
-            error && 'border-red-500 dark:border-red-500 hover:border-red-600 dark:hover:border-red-400 ring-red-500/20 bg-red-50/50 dark:bg-red-900/10',
-            className
-          )}
-        >
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            {selectedOption && 'icon' in selectedOption && selectedOption.icon && (
-              <div className="flex-shrink-0">{selectedOption.icon}</div>
-            )}
-            <span className={cn(
-              'truncate font-medium',
-              !selectedOption ? 'text-gray-400 dark:text-gray-500' : 'text-gray-900 dark:text-white'
-            )}>
-              {selectedOption ? selectedOption.label : placeholder}
-            </span>
-          </div>
-          <ChevronDown
-            className={cn(
-              'w-5 h-5 text-gray-400 dark:text-gray-500 transition-all duration-200 flex-shrink-0',
-              'group-hover:text-gray-600 dark:group-hover:text-gray-400',
-              isOpen && 'rotate-180 text-n3rve-500 dark:text-n3rve-400'
-            )}
-          />
-        </button>
-
-        {/* Dropdown */}
-        {isOpen && !disabled && (
-          <div className="absolute z-50 w-full mt-2 glass-dropdown overflow-hidden animate-in fade-in slide-in-from-top-1">
-            {/* Search Input */}
-            {searchable && (
-              <div className="p-3 border-b border-gray-200 dark:border-gray-700">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder={t('common.search', '검색...', 'Search...', '検索...')}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-n3rve-500/20 focus:border-n3rve-500 text-sm transition-all"
-                  />
-                </div>
-              </div>
-            )}
-
-            {/* Options List */}
-            <div className="max-h-60 overflow-y-auto">
-              {filteredOptions.length === 0 ? (
-                <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
-                  {t('common.noResults', '검색 결과가 없습니다', 'No results found', '検索結果がありません')}
-                </div>
-              ) : (
-                filteredOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handleSelect(option.value)}
-                    className={cn(
-                      'w-full px-4 py-3.5 flex items-center gap-3',
-                      'hover:bg-gray-50 dark:hover:bg-gray-700/50',
-                      'transition-all duration-150 text-left group/option',
-                      option.value === value && 'bg-gradient-to-r from-n3rve-50 to-purple-50 dark:from-n3rve-900/20 dark:to-purple-900/20'
-                    )}
-                  >
-                    {/* Option Icon */}
-                    {'icon' in option && option.icon && (
-                      <div className="flex-shrink-0">{option.icon}</div>
-                    )}
-
-                    {/* Option Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className={cn(
-                          'truncate font-medium transition-colors',
-                          'group-hover/option:text-n3rve-600 dark:group-hover/option:text-n3rve-400',
-                          option.value === value ? 'text-n3rve-600 dark:text-n3rve-400' : 'text-gray-900 dark:text-white'
-                        )}>
-                          {option.label}
-                        </span>
-                        {option.value === value && (
-                          <Check className="w-5 h-5 text-n3rve-500 flex-shrink-0 animate-in zoom-in duration-200" />
-                        )}
-                      </div>
-                      {'description' in option && option.description && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-                          {option.description}
-                        </p>
-                      )}
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
+      position={position}
+      {...props}
+    >
+      <SelectScrollUpButton />
+      <SelectPrimitive.Viewport
+        className={cn(
+          "p-1",
+          position === "popper" &&
+            "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)]"
         )}
-      </div>
-      {props.hint && !error && (
-        <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{props.hint}</p>
-      )}
-      {error && (
-        <p className="mt-2 text-sm text-red-500 dark:text-red-400 flex items-center gap-1.5">
-          <span className="w-1 h-1 bg-red-500 rounded-full" />
-          <span>{error}</span>
-        </p>
-      )}
-    </div>
-  );
+      >
+        {children}
+      </SelectPrimitive.Viewport>
+      <SelectScrollDownButton />
+    </SelectPrimitive.Content>
+  </SelectPrimitive.Portal>
+))
+SelectContent.displayName = SelectPrimitive.Content.displayName
+
+const SelectLabel = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Label>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Label>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.Label
+    ref={ref}
+    className={cn("px-2 py-1.5 text-sm font-semibold", className)}
+    {...props}
+  />
+))
+SelectLabel.displayName = SelectPrimitive.Label.displayName
+
+const SelectItem = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Item>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Item>
+>(({ className, children, ...props }, ref) => (
+  <SelectPrimitive.Item
+    ref={ref}
+    className={cn(
+      // Glass Select Item
+      "relative flex w-full cursor-default select-none items-center rounded-lg py-2 pl-3 pr-8 text-sm",
+      "outline-none transition-all duration-200",
+      "focus:bg-white/15 dark:focus:bg-white/10",
+      "hover:bg-white/10 dark:hover:bg-white/8",
+      "data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+      "text-gray-900 dark:text-white",
+      className
+    )}
+    {...props}
+  >
+    <span className="absolute right-2 flex h-3.5 w-3.5 items-center justify-center">
+      <SelectPrimitive.ItemIndicator>
+        <Check className="h-4 w-4" />
+      </SelectPrimitive.ItemIndicator>
+    </span>
+    <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+  </SelectPrimitive.Item>
+))
+SelectItem.displayName = SelectPrimitive.Item.displayName
+
+const SelectSeparator = React.forwardRef<
+  React.ElementRef<typeof SelectPrimitive.Separator>,
+  React.ComponentPropsWithoutRef<typeof SelectPrimitive.Separator>
+>(({ className, ...props }, ref) => (
+  <SelectPrimitive.Separator
+    ref={ref}
+    className={cn("-mx-1 my-1 h-px bg-muted", className)}
+    {...props}
+  />
+))
+SelectSeparator.displayName = SelectPrimitive.Separator.displayName
+
+export {
+  Select,
+  SelectGroup,
+  SelectValue,
+  SelectTrigger,
+  SelectContent,
+  SelectLabel,
+  SelectItem,
+  SelectSeparator,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
 }

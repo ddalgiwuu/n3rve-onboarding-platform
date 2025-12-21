@@ -19,8 +19,10 @@ interface Artist {
 interface ArtistManagementModalProps {
   isOpen: boolean
   onClose: () => void
-  artists: Artist[]
-  onSave: (artists: Artist[]) => void
+  artists?: Artist[]
+  artist?: any // Single artist for edit mode (SavedArtist type)
+  mode?: 'edit' | 'create'
+  onSave?: (artists: Artist[]) => void
   albumLevel?: boolean // true for album-level artists, false for track-level
   isFeaturing?: boolean // true when managing featuring artists
 }
@@ -43,6 +45,8 @@ export default function ArtistManagementModal({
   isOpen,
   onClose,
   artists: initialArtists,
+  artist,
+  mode = 'create',
   onSave,
   albumLevel = true,
   isFeaturing = false
@@ -58,7 +62,10 @@ export default function ArtistManagementModal({
 
   const savedArtistsStore = useSavedArtistsStore();
 
-  const [artists, setArtists] = useState<Artist[]>(initialArtists);
+  // Initialize artists: use initialArtists array, or convert single artist to array, or empty array
+  const [artists, setArtists] = useState<Artist[]>(
+    initialArtists || (artist ? [artist] : [])
+  );
   const [newArtist, setNewArtist] = useState<Partial<Artist>>({
     name: '',
     role: isFeaturing ? 'featured' : (albumLevel ? 'main' : 'additional'),
@@ -315,10 +322,10 @@ export default function ArtistManagementModal({
               </h3>
               <div className="flex items-center gap-2">
                 <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded-full text-sm font-medium">
-                  {t('현재 세션', 'Current Session', '現在のセッション')}: {artists.length}
+                  {t('현재 세션', 'Current Session', '現在のセッション')}: {artists?.length || 0}
                 </span>
                 <span className="px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium">
-                  {t('라이브러리', 'Library', 'ライブラリ')}: {savedArtistsStore.artists.length}
+                  {t('라이브러리', 'Library', 'ライブラリ')}: {savedArtistsStore?.artists?.length || 0}
                 </span>
               </div>
             </div>
@@ -339,7 +346,7 @@ export default function ArtistManagementModal({
 
               <div className="max-h-96 overflow-y-auto">
                 {/* Current Session Artists */}
-                {artists.length > 0 && (
+                {artists && artists.length > 0 && (
                   <>
                     <div className="px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 border-b border-gray-200 dark:border-gray-700">
                       <p className="text-xs font-medium text-purple-700 dark:text-purple-300 uppercase tracking-wider flex items-center gap-2">
@@ -601,7 +608,7 @@ export default function ArtistManagementModal({
                   </>
                 )}
 
-                {artists.length === 0 && savedArtistsStore.searchArtists(savedArtistSearch).length === 0 && (
+                {(!artists || artists.length === 0) && savedArtistsStore?.searchArtists(savedArtistSearch)?.length === 0 && (
                   <div className="text-center py-8">
                     <Users className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" />
                     <p className="text-gray-500 dark:text-gray-400 font-medium">

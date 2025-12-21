@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslationFixed';
 import { useAuthStore } from '@/store/auth.store';
 import api from '@/lib/api';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 
 interface ReleaseProject {
   id: string;
@@ -68,12 +69,26 @@ export default function ReleaseProjects() {
 
         // Handle paginated response format: {data: [], total: 0}
         const data = response.data;
+        let projectsData = [];
+
         if (data && typeof data === 'object' && 'data' in data) {
-          return Array.isArray(data.data) ? data.data : [];
+          projectsData = Array.isArray(data.data) ? data.data : [];
+        } else {
+          projectsData = Array.isArray(data) ? data : [];
         }
 
-        // Fallback for direct array response
-        return Array.isArray(data) ? data : [];
+        // Debug: Log cover image URLs
+        console.log('[ReleaseProjects] Fetched projects:', projectsData.length);
+        projectsData.forEach((p: any) => {
+          console.log(`[Project] ${p.albumTitle}:`, {
+            coverImageUrl: p.files?.coverImageUrl,
+            coverImage: p.files?.coverImage,
+            filesKeys: p.files ? Object.keys(p.files) : 'no files',
+            filesObject: p.files // Log entire files object
+          });
+        });
+
+        return projectsData;
       } catch (err) {
         console.error('Error fetching projects:', err);
         if (err.response?.status === 401) return [];
@@ -120,8 +135,8 @@ export default function ReleaseProjects() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-transparent p-6 relative overflow-hidden">
+      <div className="w-full space-y-6 relative z-10">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-3">
@@ -138,54 +153,66 @@ export default function ReleaseProjects() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-6 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl"
           >
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
-              {translate('전체 프로젝트', 'Total Projects', '全プロジェクト')}
-            </p>
-            <p className="text-3xl font-bold text-gray-900 dark:text-white">{(Array.isArray(projects) ? projects : []).length}</p>
+            <Card className="magnetic">
+              <CardContent className="p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+                  {translate('전체 프로젝트', 'Total Projects', '全プロジェクト')}
+                </p>
+                <p className="text-3xl font-bold text-gray-900 dark:text-white">{(Array.isArray(projects) ? projects : []).length}</p>
+              </CardContent>
+            </Card>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="p-6 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl"
           >
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
-              {translate('승인됨', 'Approved', '承認済み')}
-            </p>
-            <p className="text-3xl font-bold text-green-400">
-              {(Array.isArray(projects) ? projects : []).filter((p: ReleaseProject) => p.status === 'APPROVED').length}
-            </p>
+            <Card className="magnetic">
+              <CardContent className="p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+                  {translate('승인됨', 'Approved', '承認済み')}
+                </p>
+                <p className="text-3xl font-bold text-green-400">
+                  {(Array.isArray(projects) ? projects : []).filter((p: ReleaseProject) => p.status === 'APPROVED').length}
+                </p>
+              </CardContent>
+            </Card>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="p-6 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl"
           >
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
-              {translate('대기중', 'Pending', '保留中')}
-            </p>
-            <p className="text-3xl font-bold text-yellow-400">
-              {(Array.isArray(projects) ? projects : []).filter((p: ReleaseProject) => p.status === 'PENDING').length}
-            </p>
+            <Card className="magnetic">
+              <CardContent className="p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+                  {translate('대기중', 'Pending', '保留中')}
+                </p>
+                <p className="text-3xl font-bold text-yellow-400">
+                  {(Array.isArray(projects) ? projects : []).filter((p: ReleaseProject) => p.status === 'PENDING').length}
+                </p>
+              </CardContent>
+            </Card>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="p-6 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl"
           >
-            <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
-              {translate('마케팅 완료', 'Marketing Complete', 'マーケティング完了')}
-            </p>
-            <p className="text-3xl font-bold text-purple-400">
-              {(Array.isArray(projects) ? projects : []).filter((p: ReleaseProject) => p.hook && p.mainPitch).length}
-            </p>
+            <Card className="magnetic">
+              <CardContent className="p-6">
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-1">
+                  {translate('마케팅 완료', 'Marketing Complete', 'マーケティング完了')}
+                </p>
+                <p className="text-3xl font-bold text-purple-400">
+                  {(Array.isArray(projects) ? projects : []).filter((p: ReleaseProject) => p.hook && p.mainPitch).length}
+                </p>
+              </CardContent>
+            </Card>
           </motion.div>
         </div>
 
@@ -248,41 +275,45 @@ export default function ReleaseProjects() {
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.05 }}
-                  className="
-                    group relative overflow-hidden rounded-2xl
-                    bg-white/80 dark:bg-white/5 backdrop-blur-xl
-                    border border-gray-200 dark:border-white/10
-                    hover:border-purple-500 dark:hover:border-purple-500/30
-                    hover:bg-white dark:hover:bg-white/10
-                    transition-all cursor-pointer
-                  "
+                  className="cursor-pointer"
                   onClick={() => handleOpenDetails(project)}
                 >
-                  {/* Cover Image */}
-                  <div className="aspect-square relative overflow-hidden bg-gray-800">
-                    {project.files?.coverImageUrl ? (
-                      <img
-                        src={project.files.coverImageUrl}
-                        alt={project.albumTitle}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                        onError={(e) => {
-                          // Fallback to placeholder if image fails to load
-                          e.currentTarget.style.display = 'none';
-                          const parent = e.currentTarget.parentElement;
-                          if (parent && !parent.querySelector('.fallback-icon')) {
-                            const fallback = document.createElement('div');
-                            fallback.className = 'fallback-icon w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20';
-                            fallback.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
-                            parent.appendChild(fallback);
-                          }
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-500/20 to-pink-500/20">
-                        <Music2 size={64} className="text-gray-400" />
-                      </div>
-                    )}
+                  <Card className="magnetic group">
+                    {/* Cover Image */}
+                    <div className="aspect-square relative overflow-hidden bg-gray-800">
+                    {(() => {
+                      // Try multiple possible cover image URL fields
+                      const coverUrl = project.files?.coverImageUrl ||
+                                       project.files?.coverImage ||
+                                       (project as any).coverImageUrl;
+
+                      console.log(`[Card Render] ${project.albumTitle}: coverUrl =`, coverUrl);
+
+                      return coverUrl ? (
+                        <img
+                          src={coverUrl}
+                          alt={project.albumTitle}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          loading="lazy"
+                          onError={(e) => {
+                            console.error(`[Image Error] Failed to load cover for ${project.albumTitle}:`, coverUrl);
+                            // Fallback to placeholder if image fails to load
+                            e.currentTarget.style.display = 'none';
+                            const parent = e.currentTarget.parentElement;
+                            if (parent && !parent.querySelector('.fallback-icon')) {
+                              const fallback = document.createElement('div');
+                              fallback.className = 'fallback-icon w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800';
+                              fallback.innerHTML = '<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-gray-400"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>';
+                              parent.appendChild(fallback);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-800">
+                          <Music2 size={64} className="text-gray-400" />
+                        </div>
+                      );
+                    })()}
 
                     {/* Status badge */}
                     <div className="absolute top-3 right-3">
@@ -363,9 +394,10 @@ export default function ReleaseProjects() {
                       "
                     >
                       <ExternalLink size={18} />
-                      {translate('마케팅 정보 입력', 'Add Marketing Info', 'マーケティング情報を入力')}
+                      {translate('마케팅 정보 입력', 'Add Marketing Info', 'マーケティング情報を入력')}
                     </button>
                   </div>
+                  </Card>
                 </motion.div>
               );
             })}

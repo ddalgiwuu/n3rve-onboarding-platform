@@ -46,8 +46,8 @@ export default function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="h-16 glass-premium sticky top-0 z-50 border-b border-white/20 dark:border-white/10 shadow-lg shadow-purple-500/5 dark:shadow-black/20">
-      <div className="h-full max-w-[2000px] mx-auto px-4 sm:px-6 flex items-center justify-between gap-4">
+    <header className="h-16 bg-surface backdrop-blur-2xl border-modern sticky top-0 z-50 shadow-2xl shadow-black/10 dark:shadow-black/30">
+      <div className="h-full w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4">
 
         {/* Left Section - Menu + Logo */}
         <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-shrink-0">

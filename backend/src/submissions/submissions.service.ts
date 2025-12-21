@@ -87,23 +87,32 @@ export class SubmissionsService {
       translatedTitle: data.translatedTitle,
       
       // Tracks
-      tracks: data.tracks?.map((track: any) => ({
-        id: track.id,
-        titleKo: track.titleKo,
-        titleEn: track.titleEn,
-        artists: track.artists || [],
-        featuringArtists: track.featuringArtists || [],
-        composer: track.composer,
-        lyricist: track.lyricist,
-        arranger: track.arranger,
-        isTitle: track.isTitle,
-        isrc: track.isrc,
-        explicitContent: track.explicitContent,
-        dolbyAtmos: track.dolbyAtmos,
-        genre: track.genre,
-        subgenre: track.subgenre
-        // audioFiles removed - belongs in files section, not in Track type
-      })) || [],
+      tracks: data.tracks?.map((track: any) => {
+        // Deduplicate contributors by name within each track
+        const uniqueContributors = track.contributors ?
+          Array.from(
+            new Map(track.contributors.map((c: any) => [c.name, c])).values()
+          ) : [];
+
+        return {
+          id: track.id,
+          titleKo: track.titleKo,
+          titleEn: track.titleEn,
+          artists: track.artists || [],
+          featuringArtists: track.featuringArtists || [],
+          contributors: uniqueContributors,  // ✅ Added with deduplication
+          composer: track.composer,
+          lyricist: track.lyricist,
+          arranger: track.arranger,
+          isTitle: track.isTitle,
+          isrc: track.isrc,
+          explicitContent: track.explicitContent,
+          dolbyAtmos: track.dolbyAtmos,
+          genre: track.genre,
+          subgenre: track.subgenre
+          // audioFiles removed - belongs in files section, not in Track type
+        };
+      }) || [],
       
       // Files
       files: {
@@ -261,22 +270,31 @@ export class SubmissionsService {
     if (data.releaseDate) updateData.releaseDate = new Date(data.releaseDate);
     
     if (data.tracks) {
-      updateData.tracks = data.tracks.map((track: any) => ({
-        id: track.id,
-        titleKo: track.titleKo,
-        titleEn: track.titleEn,
-        artists: track.artists || [],
-        featuringArtists: track.featuringArtists || [],
-        composer: track.composer,
-        lyricist: track.lyricist,
-        arranger: track.arranger,
-        isTitle: track.isTitle,
-        isrc: track.isrc,
-        explicitContent: track.explicitContent,
-        dolbyAtmos: track.dolbyAtmos,
-        genre: track.genre,
-        subgenre: track.subgenre,
-      }));
+      updateData.tracks = data.tracks.map((track: any) => {
+        // Deduplicate contributors by name within each track
+        const uniqueContributors = track.contributors ?
+          Array.from(
+            new Map(track.contributors.map((c: any) => [c.name, c])).values()
+          ) : [];
+
+        return {
+          id: track.id,
+          titleKo: track.titleKo,
+          titleEn: track.titleEn,
+          artists: track.artists || [],
+          featuringArtists: track.featuringArtists || [],
+          contributors: uniqueContributors,  // ✅ Added with deduplication
+          composer: track.composer,
+          lyricist: track.lyricist,
+          arranger: track.arranger,
+          isTitle: track.isTitle,
+          isrc: track.isrc,
+          explicitContent: track.explicitContent,
+          dolbyAtmos: track.dolbyAtmos,
+          genre: track.genre,
+          subgenre: track.subgenre,
+        };
+      });
     }
     
     if (data.releaseInfo) {

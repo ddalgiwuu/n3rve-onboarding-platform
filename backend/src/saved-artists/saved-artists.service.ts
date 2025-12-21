@@ -156,36 +156,14 @@ export class SavedArtistsService {
         });
       }
 
-      // Check if artist already exists - only if we have identifiers
-      if (data.identifiers && data.identifiers.length > 0) {
-        console.log('SavedArtistsService: Checking for existing artist with identifiers...');
-        existingArtist = await this.prisma.savedArtist.findFirst({
-          where: {
-            userId,
-            name: data.name,
-            identifiers: {
-              some: {
-                type: data.identifiers[0].type,
-                value: data.identifiers[0].value
-              }
-            }
-          }
-        });
-      } else {
-        console.log('SavedArtistsService: No identifiers provided, checking for existing artist by name only...');
-        // For new artists without identifiers, we might still want to check by name
-        // but we'll be more lenient about creating duplicates
-        existingArtist = await this.prisma.savedArtist.findFirst({
-          where: {
-            userId,
-            name: data.name,
-            // Only match if both have no identifiers
-            identifiers: {
-              none: {}
-            }
-          }
-        });
-      }
+      // Check if artist already exists - BY NAME FIRST to prevent duplicates
+      console.log('SavedArtistsService: Checking for existing artist by name:', data.name);
+      existingArtist = await this.prisma.savedArtist.findFirst({
+        where: {
+          userId,
+          name: data.name
+        }
+      });
 
       console.log('SavedArtistsService: Existing artist found:', existingArtist ? 'Yes' : 'No');
       if (existingArtist) {
@@ -194,13 +172,32 @@ export class SavedArtistsService {
 
       if (existingArtist) {
         console.log('SavedArtistsService: Updating existing artist with ID:', existingArtist.id);
-        // Update usage count and last used
+
+        // Build update data - merge new information with existing
+        const updateData: any = {
+          usageCount: { increment: 1 },
+          lastUsed: new Date()
+        };
+
+        // Update identifiers if provided and non-empty
+        if (data.identifiers?.length) {
+          const hasValidIdentifiers = data.identifiers.some((id: any) => id.value && id.value.trim());
+          if (hasValidIdentifiers) {
+            updateData.identifiers = data.identifiers;
+          }
+        }
+
+        // Update translations if provided
+        if (data.translations?.length) {
+          updateData.translations = data.translations.map(({ language, name }: any) => ({
+            language,
+            name
+          }));
+        }
+
         const updatedArtist = await this.prisma.savedArtist.update({
           where: { id: existingArtist.id },
-          data: {
-            usageCount: { increment: 1 },
-            lastUsed: new Date()
-          },
+          data: updateData,
         });
         console.log('SavedArtistsService: Artist updated successfully:', updatedArtist);
         return updatedArtist;
@@ -317,23 +314,28 @@ export class SavedArtistsService {
       });
     }
 
-    // Check if contributor already exists
+    // Check if contributor already exists - BY NAME ONLY to prevent duplicates
     const existingContributor = await this.prisma.savedContributor.findFirst({
       where: {
         userId,
-        name: data.name,
-        roles: { hasEvery: data.roles || [] }
+        name: data.name
       }
     });
 
     if (existingContributor) {
-      // Update with new data
+      // Update with new data - merge roles and instruments
       const updateData: any = {
         usageCount: { increment: 1 },
         lastUsed: new Date()
       };
 
-      // Add new instruments if provided
+      // Merge roles if provided (deduplicate)
+      if (data.roles?.length) {
+        const allRoles = [...new Set([...existingContributor.roles, ...data.roles])];
+        updateData.roles = { set: allRoles };
+      }
+
+      // Merge instruments if provided (deduplicate)
       if (data.instruments?.length) {
         const allInstruments = [...new Set([...existingContributor.instruments, ...data.instruments])];
         updateData.instruments = { set: allInstruments };

@@ -1,6 +1,3 @@
-// This is your updated Prisma schema file
-// 모든 소비자 폼 데이터를 완벽하게 저장하기 위한 스키마 업데이트
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,989 +7,209 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// User model - 계정 관리 시스템 지원을 위해 업데이트
-model User {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-  email             String   @unique
-  googleId          String?  @unique
-  provider          Provider @default(GOOGLE)
-  role              Role     @default(USER)
-  name              String
-  profilePicture    String?
-  company           String?
-  phone             String?
-  isActive          Boolean  @default(true)
-  emailVerified     Boolean  @default(true)
-  isProfileComplete Boolean  @default(false)
-  lastLogin         DateTime?
-  
-  // Password support for email/password login
-  password          String?
-  
-  // Company account support
-  isCompanyAccount  Boolean  @default(false)
-  parentAccountId   String?  @db.ObjectId
-  parentAccount     User?    @relation("CompanySubAccounts", fields: [parentAccountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  subAccounts       User[]   @relation("CompanySubAccounts")
-  
-  // Preferences as embedded document
-  preferences       UserPreferences
-  
-  // Relations
-  submissions       Submission[]
-  reviewedSubmissions Submission[] @relation("ReviewedSubmissions")
-  savedArtists      SavedArtist[]
-  savedContributors SavedContributor[]
-  guides            Guide[]      @relation("GuideCreator")
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
-  @@index([role, isActive])
-  @@index([createdAt])
-  @@index([isProfileComplete])
+type SavedArtistIdentifiers {
+  type  String
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  url   Json?
+  value String
 }
 
-// User preferences type
-type UserPreferences {
-  language      Language @default(KO)
-  notifications NotificationSettings
-}
-
-type NotificationSettings {
-  email Boolean @default(true)
-  sms   Boolean @default(false)
-  push  Boolean @default(true)
-}
-
-// Submission model - 업데이트됨
-model Submission {
-  id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  status          SubmissionStatus @default(PENDING)
-  submitterEmail  String
-  submitterName   String
-  submitterId     String           @db.ObjectId
-  submitter       User             @relation(fields: [submitterId], references: [id])
-  
-  // Artist info - 다중 언어 번역 추가
-  artistName      String
-  artistNameEn    String?
-  artistTranslations Translation[]  // 추가: 아티스트 다중 언어 번역
-  labelName       String?
-  genre           String[]
-  biography       String?
-  socialLinks     SocialLinks?
-  artistType      ArtistType?
-  members         Member[]
-  
-  // Artist platform IDs
-  spotifyId       String?
-  appleMusicId    String?
-  youtubeChannelId String?
-  
-  // Album info - 추가 필드
-  albumTitle      String
-  albumTitleEn    String?
-  albumTranslations Translation[]
-  albumType       AlbumType
-  releaseDate     DateTime
-  albumDescription String?
-  albumVersion    String?
-  releaseVersion  String?
-  albumGenre      String[]
-  albumSubgenre   String[]
-  primaryTitle    String?         // 추가
-  hasTranslation  Boolean?        // 추가
-  translationLanguage String?     // 추가
-  translatedTitle String?         // 추가
-  albumContributors Contributor[]  // 추가: 앨범 레벨 기여자
-  
-  // Tracks
-  tracks          Track[]
-  
-  // Files
-  files           Files
-  
-  // Release info
-  release         ReleaseInfo
-  
-  // Marketing info
-  marketing       MarketingInfo?
-  
-  // Admin fields
-  adminNotes      String?
-  reviewedBy      String?          @db.ObjectId
-  reviewer        User?            @relation("ReviewedSubmissions", fields: [reviewedBy], references: [id])
-  reviewedAt      DateTime?
-
-  // FUGA SCORE Integration Relations
-  digitalProducts   DigitalProduct[]
-  marketingDrivers  MarketingDriver[]
-
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
-
-  @@index([status, createdAt])
-  @@index([submitterId, createdAt])
-  @@index([releaseDate], map: "approved_releases_index")
-  @@fulltext([artistName, albumTitle])
-}
-
-// Embedded types for Submission
-type SocialLinks {
-  instagram   String?
-  youtube     String?
-  spotify     String?
-  appleMusic  String?
-  twitter     String?
-  facebook    String?
-  tiktok      String?
-  website     String?
-}
-
-type Member {
-  name        String
-  role        String
-  spotifyUrl  String?  // 추가
-  appleMusicUrl String? // 추가
-}
-
-// Enhanced Translation type for albums and general content
-type Translation {
-  id       String
-  language String  // Language code (e.g., 'en', 'ko', 'ja')
-  title    String  // Translated title
-}
-
-// 추가: 기여자 타입
-type Contributor {
-  name          String
-  translations  Translation[]
-  roles         String[]
-  instruments   String[]
-  spotifyUrl    String?
-  appleMusicUrl String?
-}
-
-type Track {
-  id                    String
-  titleKo               String
-  titleEn               String
-  
-  // Multi-language translations for track titles
-  translations          Translation[]   // Array of translations for track title
-  
-  artists               String[]        // 추가
-  featuringArtists      String[]        // 추가
-  contributors          Contributor[]   // 추가
-  composer              String
-  lyricist              String
-  arranger              String?
-  featuring             String?
-  isTitle               Boolean @default(false)
-  isFocusTrack          Boolean @default(false)  // FUGA SCORE: Promotional focus track
-  promotionPriority     Int?    // 1-5 priority level for multiple focus tracks
-  isrc                  String?
-  explicitContent       Boolean @default(false)
-  
-  // Track version management (Instrumental, Remix, etc.)
-  trackVersion          String?         // Standard or custom version
-  versionType           TrackVersionType @default(ORIGINAL)
-  
-  lyricsLanguage        String?
-  producer              String?
-  mixer                 String?
-  masterer              String?
-  previewStart          Int?
-  previewEnd            Int?
-  genre                 String?
-  subgenre              String?
-  alternateGenre        String?
-  alternateSubgenre     String?
-  lyrics                String? @db.String
-  audioLanguage         String?
-  metadataLanguage      String?
-  playtimeStartShortClip Int?
-  previewLength         Int?
-  trackType             TrackType @default(AUDIO)
-  dolbyAtmos            Boolean @default(false)
-  stereo                Boolean @default(false)  // 추가
-  hasCustomReleaseDate  Boolean?                 // 추가
-  consumerReleaseDate   DateTime?                // 추가
-  releaseTime           String?                  // 추가
-}
-
-type Files {
-  coverImage        String?
-  artistPhoto       String?
-  audioFiles        AudioFile[]
-  additionalFiles   AdditionalFile[]
-  motionArt         String?
-  musicVideo        String?
-  coverImageUrl     String?
-  artistPhotoUrl    String?
-  motionArtUrl      String?
-  musicVideoUrl     String?
-}
-
-type AudioFile {
-  trackId     String
-  filename    String?
-  fileSize    Int?
-  duration    Int?
-  dropboxUrl  String?
-  fileName    String?
-}
-
-type AdditionalFile {
-  filename    String?
-  fileType    String?
-  fileSize    Int?
-  dropboxUrl  String?
-  fileName    String?
-}
-
-// 추가: 한국 DSP 정보 타입
-type KoreanDSPInfo {
-  lyricsAttached    Boolean
-  artistPageLink    String?
-  melonLink         String?
-  genieLink         String?
-  bugsLink          String?
-  vibeLink          String?
-  translation       KoreanTranslation?
-  newArtist         Boolean?
-  albumCredits      String?
-}
-
-type KoreanTranslation {
-  hasTranslation    Boolean
-  koreanTitle       String?
-  englishTitle      String?
-  artistNameKo      String?
-  artistNameEn      String?
-  labelNameKo       String?
-  labelNameEn       String?
-}
-
-type ReleaseInfo {
-  distributors              String[]
-  priceType                 PriceType @default(FREE)
-  price                     Float?
-  copyrightHolder           String?
-  copyrightYear             String
-  recordingCountry          String
-  recordingLanguage         String
-  upc                       String?
-  catalogNumber             String?
-  territories               String[]
-  notes                     String?
-  originalReleaseDate       String
-  consumerReleaseDate       String
-  releaseTime               String?
-  selectedTimezone          String?
-  // UTC 변환 필드들 추가
-  releaseUTC                DateTime?   // UTC로 변환된 정확한 발매일시
-  originalReleaseUTC        DateTime?   // UTC로 변환된 원본 발매일시
-  consumerReleaseUTC        DateTime?   // UTC로 변환된 소비자 발매일시
-  cRights                   String
-  pRights                   String
-  previewStart              Int?
-  territoryType             TerritoryType @default(WORLDWIDE)
-  albumNotes                String?
-  parentalAdvisory          ParentalAdvisory @default(NONE)
-  preOrderEnabled           Boolean @default(false)
-  preOrderDate              String?
-  releaseFormat             ReleaseFormat @default(STANDARD)
-  isCompilation             Boolean @default(false)
-  previouslyReleased        Boolean @default(false)
-  previousReleaseDate       String?
-  previousReleaseInfo       String?
-  trackGenres               Json?
-  dspProfileUpdate          DspProfileUpdate?
-  
-  // 추가: DSP별 지역 설정
-  dspTerritories            Json?
-  
-  // 추가: 한국 DSP 정보
-  koreanDSP                 KoreanDSPInfo?
-
-  // FUGA Distribution Preferences
-  youtubeShortsPreviews     Boolean @default(false)  // YouTube Shorts opt-in
-  thisIsPlaylist            Boolean @default(false)  // Spotify "This Is" playlist pinning
-  motionArtwork             Boolean @default(false)  // Enhanced artwork with motion
-
-  // 추가: FUGA 호환 마케팅 필드들
-  // Project Context
-  priorityLevel             Int?            // 1-5 성급 평가
-  projectType               ProjectType?    // Frontline 또는 Catalog
-  privateListeningLink      String?         // 비공개 청취 링크
-  factSheetsUrl             String?         // Fact Sheets/Project Deck URL
-  
-  // 기존 마케팅 필드들
-  albumIntroduction         String?
-  albumDescription          String?
-  marketingKeywords         String?
-  targetAudience            String?
-  promotionPlans            String?
-  toundatesUrl              String?
-  artistGender              String?
-  socialMovements           String?
-  artistBio                 String?
-  similarArtists            String?
-  hasSyncHistory            Boolean?
-  syncHistory               String?
-  spotifyArtistId           String?
-  appleMusicArtistId        String?
-  soundcloudArtistId        String?
-  artistUgcPriorities       String?
-  youtubeUrl                String?
-  tiktokUrl                 String?
-  facebookUrl               String?
-  instagramUrl              String?
-  xUrl                      String?
-  twitchUrl                 String?
-  threadsUrl                String?
-  moods                     String[]
-  instruments               String[]
-  hook                      String?
-  mainPitch                 String?
-  marketingDrivers          String?
-  socialMediaPlan           String?
-  artistName                String?
-  artistCountry             String?
-  artistCurrentCity         String?
-  artistHometown            String?
-  artistAvatar              String?
-  artistLogo                String?
-  pressShotUrl              String?
-  pressShotCredits          String?
-}
-
-type DspProfileUpdate {
-  updateProfile                Boolean @default(false)
-  internationalFormCompleted   Boolean?
-}
-
-// Enums - 변경 없음
-enum Provider {
-  GOOGLE
-  EMAIL
-}
-
-enum Role {
-  ADMIN
-  USER
-  CUSTOMER
-  SUB_ACCOUNT
-  GUEST
-}
-
-enum Language {
-  KO
-  EN
-  JA
-}
-
-enum SubmissionStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum ArtistType {
-  SOLO
-  GROUP
-  DUO
-  BAND
-  ORCHESTRA
-  CHOIR
-  DJ
-  PRODUCER
-}
-
-enum AlbumType {
-  SINGLE
-  EP
-  ALBUM
-}
-
-enum TrackType {
-  AUDIO
-  MUSIC_VIDEO
-}
-
-enum TrackVersionType {
-  ORIGINAL
-  INSTRUMENTAL
-  ACAPELLA
-  RADIO_EDIT
-  EXTENDED_MIX
-  CLUB_MIX
-  REMIX
-  ACOUSTIC
-  LIVE
-  DEMO
-  KARAOKE
-  CLEAN
-  EXPLICIT
-  REMASTERED
-  DELUXE
-  ALTERNATIVE
-  CUSTOM
-}
-
-enum PriceType {
-  FREE
-  PAID
-}
-
-enum TerritoryType {
-  WORLDWIDE
-  SELECT
-  EXCLUDE
-}
-
-enum ParentalAdvisory {
-  NONE
-  EXPLICIT
-  CLEAN
-}
-
-enum ReleaseFormat {
-  STANDARD
-  DELUXE
-  SPECIAL
-  REMASTERED
-  ANNIVERSARY
-}
-
-enum ProjectType {
-  FRONTLINE
-  CATALOG
-}
-
-// Marketing information type
-type MarketingInfo {
-  genre                     String
-  subgenre                  String?
-  tags                      String[]
-  similarArtists            String[]
-  marketingAngle            String?
-  pressRelease              String?
-  marketingBudget           String?
-  socialMediaCampaign       String?
-  spotifyPitching           String?
-  appleMusicPitching        String?
-  tiktokStrategy            String?
-  youtubeStrategy           String?
-  instagramStrategy         String?
-  facebookStrategy          String?
-  twitterStrategy           String?
-  influencerOutreach        String?
-  playlistTargets           String[]
-  radioTargets              String[]
-  pressTargets              String[]
-  tourDates                 TourDate[]
-  merchandising             String?
-  specialEditions           String?
-  musicVideoPlans           String?
-  behindTheScenes           String?
-  documentaryPlans          String?
-  nftStrategy               String?
-  metaverseActivations      String?
-  brandPartnerships         String?
-  syncOpportunities         String?
-  distributionPlatforms     DistributionPlatforms
-  pricing                   PricingInfo
-}
-
-type TourDate {
-  date      DateTime
-  venue     String
-  city      String
-}
-
-type DistributionPlatforms {
-  spotify       Boolean
-  appleMusic    Boolean
-  youtube       Boolean
-  amazonMusic   Boolean
-  tidal         Boolean
-  deezer        Boolean
-  soundcloud    Boolean
-  bandcamp      Boolean
-  audiomack     Boolean
-  kkbox         Boolean
-  lineMusic     Boolean
-  qq            Boolean
-  netease       Boolean
-  joox          Boolean
-  boomplay      Boolean
-  anghami       Boolean
-  yandex        Boolean
-  vk            Boolean
-  custom        String[]
-}
-
-type PricingInfo {
-  defaultPrice      String
-  currency          String
-  territoryPricing  Json?
-}
-
-// Saved Artist model - Enhanced for FUGA SCORE Artist Roster
-model SavedArtist {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId
-  user          User     @relation(fields: [userId], references: [id])
-
-  // Basic info
-  name          String
-  translations  ArtistTranslation[]
-  identifiers   ArtistIdentifier[]
-
-  // FUGA Artist Roster fields
-  fugaArtistId  String?  @unique
-  status        ArtistStatus @default(DRAFT)
-
-  // Geographic data
-  country       String?
-  currentCity   String?
-  hometown      String?
-
-  // Biography & Marketing
-  bio           String?  @db.String
-  gender        ArtistGender?
-  similarArtists String[] // Artist names
-  socialMovements String?
-  syncHistory   String?
-  syncHistoryDetails String?
-
-  // Media assets
-  pressPhotosUrl    String?  // Dropbox link to press shots
-  pressPhotoCredits String?
-  artistAvatarUrl   String?  // 1x1 ratio
-  artistBannerUrl   String?  // 3x2 ratio
-  artistLogoUrl     String?  // 1x1 ratio for logo
-
-  // DSP & Social profiles
-  dspProfiles       DspProfile[]
-  socialProfiles    SocialProfile[]
-
-  // Validation
-  missingFields     String[] // List of incomplete required fields
-  completionScore   Int      @default(0) // 0-100%
-
-  // Analytics
-  releaseCount      Int      @default(0)
-  lastReleaseDate   DateTime?
-  totalStreams      Int?
-
-  // Usage tracking
-  createdAt     DateTime @default(now())
-  lastUsed      DateTime @default(now())
-  usageCount    Int      @default(1)
-  updatedAt     DateTime? @updatedAt
-
-  @@index([userId, name])
-  @@index([userId, lastUsed])
-  @@index([status])
-  @@fulltext([name])
-}
-
-enum ArtistStatus {
-  DRAFT
-  COMPLETE
-  VERIFIED
-  PENDING_ENRICHMENT
-}
-
-enum ArtistGender {
-  MALE
-  FEMALE
-  NON_BINARY
-  BAND
-  GROUP
-  PREFER_NOT_TO_SAY
-}
-
-type DspProfile {
-  platform      String  // "spotify", "apple_music", "amazon_music", etc.
-  profileId     String?
-  profileUrl    String?
-  artistUri     String? // For Spotify URI format
-  verified      Boolean @default(false)
-  lastVerified  DateTime?
-  lastUpdated   DateTime?
-}
-
-type SocialProfile {
-  platform      String  // "instagram", "youtube", "tiktok", etc.
-  url           String
-  handle        String? // @username
-  verified      Boolean @default(false)
-  followerCount Int?
-  lastUpdated   DateTime?
-}
-
-// Saved Contributor model
-model SavedContributor {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId        String   @db.ObjectId
-  user          User     @relation(fields: [userId], references: [id])
-  name          String
-  roles         String[]
-  instruments   String[]
-  translations  ArtistTranslation[]
-  identifiers   ArtistIdentifier[]
-  createdAt     DateTime @default(now())
-  lastUsed      DateTime @default(now())
-  usageCount    Int      @default(1)
-  
-  @@index([userId, name])
-  @@index([userId, lastUsed])
-  @@index([userId, roles])
-  @@fulltext([name])
-}
-
-// Embedded types for SavedArtist and SavedContributor
-type ArtistTranslation {
+type SavedArtistTranslations {
   language String
   name     String
 }
 
-type ArtistIdentifier {
-  type  IdentifierType
-  value String
-  url   String?
+type SavedContributorTranslations {
+  language String
+  name     String
 }
 
-enum IdentifierType {
-  SPOTIFY
-  APPLE_MUSIC
-  YOUTUBE
-  ISNI
-  IPI
+type SubmissionFiles {
+  coverImageUrl           String?
+  artistPhotoUrl          String?
+  motionArtUrl            String?
+  musicVideoUrl           String?
+  audioFiles              AudioFile[]
+  additionalFiles         AdditionalFile[]
+  musicVideoFiles         MusicVideoFile[]
+  musicVideoThumbnails    MusicVideoThumbnail[]
 }
 
-// DSP (Digital Service Provider) model
-model DSP {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  dspId           String   @unique // Unique ID from FUGA
+type AudioFile {
+  trackId     String?
+  dropboxUrl  String
+  fileName    String?
+  fileSize    Int?
+}
+
+type AdditionalFile {
+  dropboxUrl  String
+  fileName    String?
+  fileType    String?
+  fileSize    Int?
+}
+
+type MusicVideoFile {
+  trackId     String?
+  dropboxUrl  String
+  fileName    String?
+}
+
+type MusicVideoThumbnail {
+  trackId     String?
+  dropboxUrl  String
+  fileName    String?
+}
+
+type SubmissionRelease {
+  artistName            String
+  cRights               String
+  consumerReleaseDate   String
+  consumerReleaseUTC    DateTime @db.Date
+  copyrightHolder       String
+  copyrightYear         String
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  distributors          Json?
+  hasSyncHistory        Boolean
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  instruments           Json?
+  isCompilation         Boolean
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  moods                 Json?
+  motionArtwork         Boolean
+  originalReleaseDate   String
+  originalReleaseUTC    DateTime @db.Date
+  pRights               String
+  parentalAdvisory      String
+  preOrderEnabled       Boolean
+  previouslyReleased    Boolean
+  priceType             String
+  recordingCountry      String
+  recordingLanguage     String
+  releaseFormat         String
+  releaseTime           String
+  releaseUTC            DateTime @db.Date
+  selectedTimezone      String
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  territories           Json?
+  territoryType         String
+  thisIsPlaylist        Boolean
+  upc                   String
+  youtubeShortsPreviews Boolean
+}
+
+type SubmissionTracks {
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  artists          Json?
+  composer         String
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  contributors     Json?
+  dolbyAtmos       Boolean
+  explicitContent  Boolean
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  featuringArtists Json?
+  id               String
+  isFocusTrack     Boolean
+  isTitle          Boolean
+  isrc             String
+  lyricist         String
+  stereo           Boolean
+  titleEn          String
+  titleKo          String
+  trackType        String
+  versionType      String
+}
+
+type UserPreferences {
+  language      String
+  notifications UserPreferencesNotifications
+}
+
+type UserPreferencesNotifications {
+  email Boolean
+  push  Boolean
+  sms   Boolean
+}
+
+model SavedArtist {
+  id              String                    @id @default(auto()) @map("_id") @db.ObjectId
+  completionScore BigInt
+  createdAt       DateTime                  @db.Date
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  dspProfiles     Json?
+  identifiers     SavedArtistIdentifiers[]
+  lastUsed        DateTime                  @db.Date
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  missingFields   Json?
   name            String
-  code            String?  // Short code like (A) or (via IIP-DDS)
-  description     String?  @db.String
-  contactEmail    String?
-  territories     String[] // e.g., ["World", "Americas (United States of America)"]
-  availability    String   // e.g., "Immediately"
-  isActive        Boolean  @default(true)
-  isHD            Boolean  @default(false) // For HD audio services
-  serviceType     ServiceType @default(STREAMING)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  @@index([isActive])
-  @@index([serviceType])
-  @@fulltext([name])
+  releaseCount    BigInt
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  similarArtists  Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  socialProfiles  Json?
+  status          String
+  translations    SavedArtistTranslations[]
+  updatedAt       DateTime                  @db.Date
+  usageCount      BigInt
+  userId          String                    @db.ObjectId
 }
 
-enum ServiceType {
-  STREAMING
-  DOWNLOAD
-  FINGERPRINTING
-  VIDEO
-  RADIO
-  SOCIAL
-  OTHER
+model SavedContributor {
+  id           String                         @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt    DateTime                       @db.Date
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  identifiers  Json?
+  instruments  String[]
+  lastUsed     DateTime                       @db.Date
+  name         String
+  roles        String[]
+  translations SavedContributorTranslations[]
+  usageCount   BigInt
+  userId       String                         @db.ObjectId
 }
 
-// Territory Selection model
-model TerritorySelection {
-  id               String   @id @default(auto()) @map("_id") @db.ObjectId
-  releaseId        String   @db.ObjectId // Reference to Submission
-  selectionType    TerritorySelectionType
-  selectedCountries String[] // Country codes (e.g., ["US", "JP", "KR"])
-  excludedCountries String[] // For worldwide with exclusions
-  
-  // Per-DSP territory customization
-  dspTerritories   DSPTerritory[]
-  
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  
-  @@index([releaseId])
+model Submission {
+  id             String             @id @default(auto()) @map("_id") @db.ObjectId
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  albumGenre     Json?
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  albumSubgenre  Json?
+  albumTitle     String
+  albumTitleEn   String
+  albumType      String
+  artistName     String
+  artistNameEn   String
+  createdAt      DateTime           @db.Date
+  files          SubmissionFiles
+  /// Could not determine type: the field only had null or empty values in the sample set.
+  genre          Json?
+  labelName      String
+  release        SubmissionRelease
+  releaseDate    DateTime           @db.Date
+  status         String
+  submitterEmail String
+  submitterId    String             @db.ObjectId
+  submitterName  String
+  tracks         SubmissionTracks[]
+  updatedAt      DateTime           @db.Date
 }
 
-// Per-DSP territory customization
-type DSPTerritory {
-  dspId           String   // Reference to DSP.dspId
-  dspName         String   // DSP name for display
-  selectionType   TerritorySelectionType
-  countries       String[] // Country codes for this specific DSP
-}
-
-enum TerritorySelectionType {
-  WORLDWIDE       // All countries
-  SPECIFIC        // Only selected countries
-  WORLDWIDE_EXCEPT // All countries except excluded ones
-}
-
-// ============================================================================
-// FUGA SCORE Integration Models
-// ============================================================================
-
-// Digital Product model - FUGA SCORE integration
-// Represents individual products (singles, EPs, albums, focus tracks) for distribution
-model DigitalProduct {
-  id              String   @id @default(auto()) @map("_id") @db.ObjectId
-  submissionId    String   @db.ObjectId
-  submission      Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-
-  // Product identification
-  upc             String
-  format          ProductFormat
-  title           String
-  artistName      String
-
-  // Linked track (for focus tracks)
-  linkedTrackId   String?
-  trackIndex      Int?    // Position in album
-
-  // Release information
-  releaseDate     DateTime
-  territories     String[]
-
-  // Status tracking
-  status          SubmissionStatus @default(PENDING)
-  submittedAt     DateTime?
-  approvedAt      DateTime?
-
-  // Marketing integration
-  marketingDriverIds String[] // References to MarketingDriver.id
-
-  // Relations
-  featureReport   FeatureReport?
-
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@index([submissionId])
-  @@index([upc])
-  @@index([status])
-  @@index([releaseDate])
-  @@fulltext([title, artistName])
-}
-
-enum ProductFormat {
-  SINGLE
-  EP
-  ALBUM
-  FOCUS_TRACK
-}
-
-// Feature Report model - Performance tracking
-model FeatureReport {
-  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
-  digitalProductId      String   @unique @db.ObjectId
-  digitalProduct        DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
-
-  upc                   String   @unique
-
-  // Auto-detected placements (from FUGA API or scraping)
-  autoPlaylists         PlaylistPlacement[]
-
-  // Admin-entered placements
-  adminPlaylists        AdminPlaylistPlacement[]
-
-  // Analytics
-  lastUpdated           DateTime @default(now())
-  reportStatus          ReportStatus @default(NEW)
-
-  // Metadata
-  genres                String[]
-  moods                 String[]
-
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-
-  @@index([reportStatus])
-  @@index([lastUpdated])
-}
-
-type PlaylistPlacement {
-  playlistId      String
-  playlistName    String
-  playlistUrl     String
-  platform        Platform
-  position        Int
-  followers       Int?
-  entryDate       DateTime
-  trend           PlacementTrend
-  lastChecked     DateTime
-}
-
-type AdminPlaylistPlacement {
-  id              String
-  playlistName    String
-  platform        Platform
-  position        Int?
-  playlistUrl     String?
-  curatorName     String?
-  followers       Int?
-  addedBy         String   // Admin user ID
-  addedAt         DateTime
-  notes           String?
-  verified        Boolean @default(false)
-}
-
-enum Platform {
-  SPOTIFY
-  APPLE_MUSIC
-  YOUTUBE_MUSIC
-  AMAZON_MUSIC
-  TIDAL
-  DEEZER
-  SOUNDCLOUD
-}
-
-enum PlacementTrend {
-  NEW
-  UP
-  DOWN
-  STABLE
-}
-
-enum ReportStatus {
-  NEW
-  UPDATED
-  STABLE
-  ARCHIVED
-}
-
-// Marketing Driver model - Campaign management
-model MarketingDriver {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  submissionId        String   @db.ObjectId
-  submission          Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-
-  // Campaign info
-  name                String   // Campaign name/hashtag
-  description         String   @db.String // Full campaign strategy
-
-  // Targeting
-  territories         String[] // Countries/regions
-  linkedProductUPCs   String[] // Which products this campaign promotes
-
-  // Timeline
-  startDate           DateTime?
-  endDate             DateTime?
-
-  // Budget & Resources
-  budget              Float?
-  channels            MarketingChannel[]
-
-  // Tracking
-  createdBy           String   @db.ObjectId
-  lastEditedBy        String?  @db.ObjectId
-  lastEditedAt        DateTime @default(now())
-
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-
-  @@index([submissionId])
-  @@index([territories])
-  @@fulltext([name, description])
-}
-
-type MarketingChannel {
-  name        String  // Social Media, Advertising, PR, Playlists, etc.
-  tactics     String[]
-  budget      Float?
-  kpis        KPI[]
-}
-
-type KPI {
-  metric      String  // e.g., "Spotify Monthly Listeners"
-  target      Float
-  actual      Float?
-  unit        String? // e.g., "count", "percentage"
-}
-
-// Guide model - Documentation system
-model Guide {
-  id                String   @id @default(auto()) @map("_id") @db.ObjectId
-
-  // Classification
-  category          GuideCategory
-  subcategory       String?
-  platform          String?  // e.g., "Meta", "Spotify"
-
-  // Content
-  title             String
-  slug              String   @unique
-  description       String
-  content           String   @db.String
-  contentType       ContentType
-
-  // Metadata
-  tags              String[]
-  relatedGuideIds   String[] @db.ObjectId
-  difficulty        DifficultyLevel @default(BEGINNER)
-  estimatedReadTime Int      // minutes
-
-  // Assets
-  coverImageUrl     String?
-  screenshotUrls    String[]
-  videoUrl          String?
-
-  // Search & Discovery
-  searchKeywords    String[]
-  popularityScore   Int      @default(0)
-  viewCount         Int      @default(0)
-
-  // Versioning
-  version           String   @default("1.0.0")
-  changelog         String?
-
-  // Status
-  published         Boolean  @default(false)
-  featured          Boolean  @default(false)
-
-  // Admin
-  createdBy         String   @db.ObjectId
-  creator           User     @relation("GuideCreator", fields: [createdBy], references: [id])
-  lastEditedBy      String?  @db.ObjectId
-
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-
-  @@index([category, published])
-  @@index([featured])
-  @@index([createdBy])
-  @@fulltext([title, description, searchKeywords])
-}
-
-enum GuideCategory {
-  SOCIAL_MEDIA
-  ADVERTISING
-  DSP
-  TERRITORY
-  TOOLS
-  GENERAL
-}
-
-enum ContentType {
-  VERIFICATION
-  PRODUCT
-  LYRICS
-  TIPS_TRICKS
-  TECHNICAL
-  HOW_TO
-}
-
-enum DifficultyLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
+model User {
+  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  company           String?
+  createdAt         DateTime        @db.Date
+  email             String          @unique
+  emailVerified     Boolean
+  googleId          String          @unique
+  isActive          Boolean
+  isCompanyAccount  Boolean?
+  isProfileComplete Boolean
+  lastLogin         DateTime?       @db.Date
+  name              String
+  phone             String?
+  preferences       UserPreferences
+  profilePicture    String
+  provider          String
+  role              String
+  updatedAt         DateTime        @db.Date
 }

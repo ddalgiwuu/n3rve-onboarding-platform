@@ -130,10 +130,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
           className={`
             relative p-2 text-sm rounded-xl transition-all duration-200 min-w-[36px] min-h-[36px]
             ${isSelected
-    ? 'bg-gradient-to-br from-n3rve-500 to-n3rve-600 text-white font-bold shadow-lg scale-110 ring-2 ring-n3rve-500/30'
+    ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-bold shadow-lg scale-110 ring-2 ring-gray-500/30'
     : isToday
-      ? 'bg-gradient-to-br from-n3rve-50 to-purple-50 dark:from-n3rve-900/20 dark:to-purple-900/20 text-n3rve-600 dark:text-n3rve-400 font-semibold border-2 border-n3rve-200 dark:border-n3rve-800'
-      : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+      ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white font-semibold border-2 border-gray-300 dark:border-gray-600'
+      : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-white hover:text-gray-900 dark:hover:text-white'
 }
             ${isDisabled
     ? 'opacity-30 cursor-not-allowed hover:scale-100'
@@ -199,10 +199,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 onClick={() => navigateMonth('prev')}
                 className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all hover:shadow-md group"
               >
-                <ChevronLeft className="w-4 h-4 group-hover:text-n3rve-500 transition-colors" />
+                <ChevronLeft className="w-4 h-4 text-gray-900 dark:text-white group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
               </button>
 
-              <h3 className="text-base font-bold bg-gradient-to-r from-n3rve-600 to-purple-600 dark:from-n3rve-400 dark:to-purple-400 bg-clip-text text-transparent">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white">
                 {displayMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
               </h3>
 
@@ -211,7 +211,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
                 onClick={() => navigateMonth('next')}
                 className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-xl transition-all hover:shadow-md group"
               >
-                <ChevronRight className="w-4 h-4 group-hover:text-n3rve-500 transition-colors" />
+                <ChevronRight className="w-4 h-4 text-gray-900 dark:text-white group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors" />
               </button>
             </div>
 
@@ -220,7 +220,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
               {/* Day labels */}
               <div className="grid grid-cols-7 gap-1 mb-3">
                 {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(day => (
-                  <div key={day} className="text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 text-center p-2">
+                  <div key={day} className="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300 text-center p-2">
                     {day}
                   </div>
                 ))}
@@ -241,7 +241,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
                   onChange(today);
                   setIsOpen(false);
                 }}
-                className="w-full py-2.5 px-4 bg-gradient-to-r from-n3rve-500 to-n3rve-600 hover:from-n3rve-600 hover:to-n3rve-700 text-white rounded-xl transition-all duration-200 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                className="w-full py-2.5 px-4 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 text-white dark:text-gray-900 rounded-xl transition-all duration-200 text-sm font-semibold shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
               >
               Select Today
               </button>

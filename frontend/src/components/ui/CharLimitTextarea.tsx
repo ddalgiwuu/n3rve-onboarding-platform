@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { clsx } from 'clsx';
 import { Sparkles } from 'lucide-react';
+import FieldTooltip from './FieldTooltip';
 
 interface CharLimitTextareaProps {
   label?: string;
@@ -17,6 +18,11 @@ interface CharLimitTextareaProps {
   variant?: 'default' | 'glass' | 'glass-enhanced';
   showAIButton?: boolean;
   onAIAssist?: () => void;
+  tooltip?: {
+    title: string;
+    description: string;
+    note?: string;
+  };
 }
 
 export function CharLimitTextarea({
@@ -32,7 +38,8 @@ export function CharLimitTextarea({
   className,
   variant = 'glass',
   showAIButton = false,
-  onAIAssist
+  onAIAssist,
+  tooltip
 }: CharLimitTextareaProps) {
   const [charCount, setCharCount] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
@@ -78,10 +85,19 @@ export function CharLimitTextarea({
       {/* Label */}
       {label && (
         <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-medium text-white">
-            {label}
-            {required && <span className="text-red-400 ml-1">*</span>}
-          </label>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-white">
+              {label}
+              {required && <span className="text-red-400 ml-1">*</span>}
+            </label>
+            {tooltip && (
+              <FieldTooltip
+                title={tooltip.title}
+                description={tooltip.description}
+                note={tooltip.note}
+              />
+            )}
+          </div>
 
           {showAIButton && onAIAssist && (
             <button

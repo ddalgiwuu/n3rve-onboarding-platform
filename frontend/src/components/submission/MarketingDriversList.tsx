@@ -4,6 +4,7 @@ import { clsx } from 'clsx';
 import { Plus, Trash2, GripVertical, Info, AlertCircle } from 'lucide-react';
 import { Reorder } from 'framer-motion';
 import { useTranslation } from '@/hooks/useTranslationFixed';
+import FieldTooltip from '../ui/FieldTooltip';
 
 interface MarketingDriver {
   id: string;
@@ -15,13 +16,19 @@ interface MarketingDriversListProps {
   onChange: (drivers: string[]) => void;
   maxDrivers?: number;
   className?: string;
+  tooltip?: {
+    title: string;
+    description: string;
+    note?: string;
+  };
 }
 
 export function MarketingDriversList({
   drivers = [],
   onChange,
   maxDrivers = 10,
-  className
+  className,
+  tooltip
 }: MarketingDriversListProps) {
   const { language } = useTranslation();
   const translate = (ko: string, en: string) => language === 'ko' ? ko : en;
@@ -58,12 +65,21 @@ export function MarketingDriversList({
 
   return (
     <div className={clsx('space-y-4', className)}>
-      <label className="block text-sm font-medium text-white">
-        {translate('마케팅 드라이버 (Marketing Drivers)', 'Marketing Drivers')}
-        <span className="text-gray-400 ml-2 text-xs">
-          ({translate(`최대 ${maxDrivers}개`, `Max ${maxDrivers}`)})
-        </span>
-      </label>
+      <div className="flex items-center gap-2">
+        <label className="block text-sm font-medium text-white">
+          {translate('마케팅 드라이버 (Marketing Drivers)', 'Marketing Drivers')}
+          <span className="text-gray-400 ml-2 text-xs">
+            ({translate(`최대 ${maxDrivers}개`, `Max ${maxDrivers}`)})
+          </span>
+        </label>
+        {tooltip && (
+          <FieldTooltip
+            title={tooltip.title}
+            description={tooltip.description}
+            note={tooltip.note}
+          />
+        )}
+      </div>
 
       {/* Input for new driver */}
       <div className="flex gap-2">

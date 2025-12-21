@@ -147,7 +147,7 @@ const Submissions = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50/50 via-white to-pink-50/50 dark:from-gray-900 dark:via-purple-900/10 dark:to-gray-900 p-4 md:p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+      <div className="w-full space-y-6">
         {/* Header */}
         <div className="glass-premium rounded-3xl p-6 md:p-8 animate-fade-in relative overflow-hidden group">
           {/* Background gradient */}
