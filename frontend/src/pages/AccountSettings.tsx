@@ -27,12 +27,16 @@ export default function AccountSettings() {
   const fetchAccountInfo = async () => {
     try {
       setLoading(true);
-      const [info, subs] = await Promise.all([
-        userService.getAccountInfo(),
-        userService.getSubAccounts().catch(() => [])
-      ]);
+      const info = await userService.getAccountInfo();
       setAccountInfo(info);
-      setSubAccounts(subs);
+
+      // Only fetch sub-accounts if user is a company account
+      if (info.isCompanyAccount) {
+        const subs = await userService.getSubAccounts().catch(() => []);
+        setSubAccounts(subs);
+      } else {
+        setSubAccounts([]);
+      }
     } catch (error) {
       console.error('Error fetching account info:', error);
       toast.error(t('계정 정보를 불러오는 중 오류가 발생했습니다.', 'Error loading account information', 'アカウント情報の読み込み中にエラーが発生しました'));

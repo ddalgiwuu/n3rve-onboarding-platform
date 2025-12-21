@@ -40,6 +40,7 @@ const RealtimeQCTestPage = lazy(() => import('./pages/RealtimeQCTest'));
 // FUGA SCORE Integration pages
 const FeatureReportsPage = lazy(() => import('./pages/FeatureReports'));
 const ArtistRosterPage = lazy(() => import('./pages/ArtistRoster'));
+const ArtistDetailPage = lazy(() => import('./pages/ArtistDetail'));
 const ReleaseProjectsPage = lazy(() => import('./pages/ReleaseProjects'));
 const MarketingSubmissionPage = lazy(() => import('./pages/MarketingSubmission'));
 
@@ -167,6 +168,9 @@ function App() {
             } />
             <Route path="/artist-roster" element={
               isAuthenticated ? <ArtistRosterPage /> : <Navigate to="/login" state={{ from: '/artist-roster' }} />
+            } />
+            <Route path="/artist-roster/:id" element={
+              isAuthenticated ? <ArtistDetailPage /> : <Navigate to="/login" state={{ from: '/artist-roster' }} />
             } />
 
             {/* Admin routes */}

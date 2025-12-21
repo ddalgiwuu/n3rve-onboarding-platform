@@ -51,7 +51,7 @@ const Settings = () => {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
+    <div className="min-h-screen bg-transparent p-6">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div className="glass-effect rounded-2xl p-8 animate-fade-in">

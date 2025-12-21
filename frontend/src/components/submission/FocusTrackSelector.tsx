@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion, Reorder } from 'framer-motion';
 import { clsx } from 'clsx';
 import { Star, GripVertical, Music, TrendingUp, Info } from 'lucide-react';
+import { useTranslation } from '@/hooks/useTranslationFixed';
 
 interface Track {
   id: string;
@@ -30,6 +31,13 @@ export function FocusTrackSelector({
   maxSelections = 3,
   className
 }: FocusTrackSelectorProps) {
+  const { language } = useTranslation();
+  const translate = (ko: string, en: string, ja: string = en) => {
+    if (language === 'ko') return ko;
+    if (language === 'ja') return ja;
+    return en;
+  };
+  
   const [hoveredTrack, setHoveredTrack] = useState<string | null>(null);
 
   const selectedTracks = value
@@ -74,13 +82,16 @@ export function FocusTrackSelector({
       <div className="space-y-2">
         <h3 className="text-lg font-semibold text-white flex items-center gap-2">
           <TrendingUp size={20} className="text-purple-400" />
-          Select Focus Track(s)
+          {translate('포커스 트랙 선택', 'Select Focus Track(s)', 'フォーカストラック選択')}
         </h3>
         <div className="flex items-start gap-2 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl">
           <Info size={16} className="text-blue-400 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-blue-200">
-            Focus tracks are promoted separately to playlists and DSP editors.
-            Select up to {maxSelections} tracks and drag to reorder by priority.
+            {translate(
+              `포커스 트랙은 플레이리스트와 DSP 편집자에게 별도로 홍보됩니다. 최대 ${maxSelections}개를 선택하고 드래그하여 우선순위를 조정하세요.`,
+              `Focus tracks are promoted separately to playlists and DSP editors. Select up to ${maxSelections} tracks and drag to reorder by priority.`,
+              `フォーカストラックはプレイリストとDSP編集者に個別にプロモートされます。最大${maxSelections}トラックを選択し、ドラッグして優先順位を調整してください。`
+            )}
           </p>
         </div>
       </div>
@@ -90,10 +101,10 @@ export function FocusTrackSelector({
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium text-gray-400 uppercase">
-              Focus Tracks ({selectedTracks.length}/{maxSelections})
+              {translate('포커스 트랙', 'Focus Tracks', 'フォーカストラック')} ({selectedTracks.length}/{maxSelections})
             </h4>
             <span className="text-xs text-gray-500">
-              Drag to reorder priority
+              {translate('드래그하여 우선순위 변경', 'Drag to reorder priority', 'ドラッグして優先順位変更')}
             </span>
           </div>
 
@@ -154,7 +165,7 @@ export function FocusTrackSelector({
                   {/* Title track badge */}
                   {track.isTitle && (
                     <div className="px-2 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded text-xs text-yellow-400 font-medium">
-                      Title
+                    {translate('타이틀곡', 'Title', 'タイトル曲')}
                     </div>
                   )}
 
@@ -184,7 +195,7 @@ export function FocusTrackSelector({
       {availableTracks.length > 0 && (
         <div className="space-y-3">
           <h4 className="text-sm font-medium text-gray-400 uppercase">
-            Available Tracks
+          {translate('선택 가능한 트랙', 'Available Tracks', '選択可能なトラック')}
           </h4>
 
           <div className="space-y-2">
@@ -222,7 +233,7 @@ export function FocusTrackSelector({
                 {/* Title track badge */}
                 {track.isTitle && (
                   <div className="px-2 py-1 bg-yellow-500/20 border border-yellow-500/30 rounded text-xs text-yellow-400 font-medium">
-                    Title
+                    {translate('타이틀곡', 'Title', 'タイトル曲')}
                   </div>
                 )}
 
@@ -254,7 +265,7 @@ export function FocusTrackSelector({
               animate={{ opacity: 1 }}
               className="text-sm text-yellow-400 text-center mt-2"
             >
-              Maximum {maxSelections} focus tracks selected. Remove one to add another.
+{translate(`최대 ${maxSelections}개의 포커스 트랙이 선택되었습니다. 다른 트랙을 추가하려면 하나를 제거하세요.`, `Maximum ${maxSelections} focus tracks selected. Remove one to add another.`, `最大${maxSelections}トラックが選択されました。別のトラックを追加するには1つ削除してください。`)}
             </motion.p>
           )}
         </div>
@@ -264,9 +275,9 @@ export function FocusTrackSelector({
       {tracks.length === 0 && (
         <div className="text-center py-12 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl">
           <Music size={48} className="mx-auto mb-4 text-gray-600" />
-          <p className="text-gray-400">No tracks available</p>
+          <p className="text-gray-400">{translate('사용 가능한 트랙이 없습니다', 'No tracks available', '利用可能なトラックがありません')}</p>
           <p className="text-sm text-gray-500 mt-2">
-            Add tracks in the previous step to select focus tracks
+            {translate('포커스 트랙을 선택하려면 이전 단계에서 트랙을 추가하세요', 'Add tracks in the previous step to select focus tracks', 'フォーカストラックを選択するには前のステップでトラックを追加してください')}
           </p>
         </div>
       )}
@@ -274,7 +285,7 @@ export function FocusTrackSelector({
       {/* Skip option */}
       {tracks.length > 0 && value.length === 0 && (
         <p className="text-sm text-gray-500 text-center">
-          You can skip this step if you don't want to designate focus tracks
+{translate('포커스 트랙을 지정하고 싶지 않으면 이 단계를 건너뛸 수 있습니다', "You can skip this step if you don't want to designate focus tracks", 'フォーカストラックを指定したくない場合は、このステップをスキップできます')}
         </p>
       )}
     </div>
