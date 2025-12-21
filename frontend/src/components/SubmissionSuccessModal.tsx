@@ -8,6 +8,9 @@ interface SubmissionSuccessModalProps {
   submissionId?: string;
   albumTitle?: string;
   artistName?: string;
+  releaseDate?: string;
+  timezone?: string;
+  releaseUTC?: Date | string;
 }
 
 export default function SubmissionSuccessModal({
@@ -15,7 +18,10 @@ export default function SubmissionSuccessModal({
   onClose,
   submissionId,
   albumTitle = 'Your Release',
-  artistName = 'Artist'
+  artistName = 'Artist',
+  releaseDate,
+  timezone,
+  releaseUTC
 }: SubmissionSuccessModalProps) {
   const navigate = useNavigate();
 
@@ -85,13 +91,28 @@ export default function SubmissionSuccessModal({
                   Release Submitted Successfully!
                 </p>
 
-                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl w-full">
-                  <p className="text-sm text-gray-700 dark:text-gray-300 mb-1">
+                <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl w-full space-y-2">
+                  <p className="text-sm text-gray-900 dark:text-white">
                     <span className="font-semibold">앨범:</span> {albumTitle}
                   </p>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <p className="text-sm text-gray-900 dark:text-white">
                     <span className="font-semibold">아티스트:</span> {artistName}
                   </p>
+                  {releaseDate && (
+                    <p className="text-sm text-gray-900 dark:text-white">
+                      <span className="font-semibold">발매일자:</span> {releaseDate}
+                    </p>
+                  )}
+                  {timezone && (
+                    <p className="text-sm text-gray-900 dark:text-white">
+                      <span className="font-semibold">타임존:</span> {timezone}
+                    </p>
+                  )}
+                  {releaseUTC && (
+                    <p className="text-sm text-gray-900 dark:text-white">
+                      <span className="font-semibold">UTC:</span> {new Date(releaseUTC).toISOString().replace('T', ' ').slice(0, 19)}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -101,10 +122,10 @@ export default function SubmissionSuccessModal({
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleMarketingSubmission}
-                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gray-900 dark:bg-white hover:bg-gray-800 dark:hover:bg-gray-100 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  <Megaphone className="w-5 h-5" />
-                  <span>마케팅 작업 시작하기 / Start Marketing Workflow</span>
+                  <Megaphone className="w-5 h-5 text-white dark:text-gray-900" />
+                  <span className="text-white dark:text-gray-900">마케팅 작업 시작하기 / Start Marketing Workflow</span>
                 </motion.button>
 
                 <motion.button

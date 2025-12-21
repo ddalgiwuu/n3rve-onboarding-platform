@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import {
   Users,
   Search,
@@ -14,6 +15,7 @@ import { clsx } from 'clsx';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslationFixed';
 import ArtistManagementModal from '@/components/ArtistManagementModal';
+import api from '@/lib/api';
 
 interface SavedArtist {
   id: string;
@@ -34,6 +36,7 @@ type ViewMode = 'bento' | 'grid' | 'list';
 
 export default function ArtistRoster() {
   const { t, language } = useTranslation();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'DRAFT' | 'COMPLETE' | 'VERIFIED'>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('bento');
@@ -47,27 +50,19 @@ export default function ArtistRoster() {
     return en;
   };
 
-  // Fetch artists from API
+  // Fetch artists from API using api client (includes auth headers)
   const { data: artists = [], isLoading, error } = useQuery({
     queryKey: ['saved-artists'],
     queryFn: async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/saved-artists/artists', {
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        if (!response.ok) {
-          if (response.status === 401) {
-            console.log('Not authenticated - showing empty state');
-            return [];
-          }
-          throw new Error('Failed to fetch artists');
-        }
-        return response.json();
-      } catch (err) {
+        const response = await api.get('/saved-artists/artists');
+        return response.data;
+      } catch (err: any) {
         console.error('Error fetching artists:', err);
+        if (err.response?.status === 401) {
+          console.log('Not authenticated - showing empty state');
+          return [];
+        }
         return [];
       }
     },
@@ -113,8 +108,8 @@ export default function ArtistRoster() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="min-h-screen bg-transparent p-6">
+      <div className="w-full space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
@@ -362,12 +357,12 @@ export default function ArtistRoster() {
                     {/* Open Details button */}
                     <div className="mt-4">
                       <button
-                        onClick={() => setEditingArtist(artist)}
+                        onClick={() => navigate(`/artist-roster/${artist.id}`)}
                         className="
                           w-full flex items-center justify-center gap-2
-                          px-4 py-2 rounded-lg
-                          bg-gradient-to-r from-purple-500 to-pink-500
-                          hover:shadow-lg hover:shadow-purple-500/50
+                          px-4 py-2.5 rounded-lg
+                          bg-white/10 hover:bg-white/20
+                          border border-white/20 hover:border-white/30
                           text-white font-medium text-sm
                           transition-all
                         "

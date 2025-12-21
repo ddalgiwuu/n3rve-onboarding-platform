@@ -31,14 +31,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         hover: 'group-hover:text-blue-600'
       },
       'text-n3rve-main': {
-        active: 'text-n3rve-main',
+        active: 'text-blue-500',
         inactive: 'text-gray-500 dark:text-gray-400',
-        hover: 'group-hover:text-n3rve-main'
+        hover: 'group-hover:text-blue-500'
       },
       'text-purple-600': {
-        active: 'text-purple-600',
+        active: 'text-gray-600',
         inactive: 'text-gray-500 dark:text-gray-400',
-        hover: 'group-hover:text-purple-600'
+        hover: 'group-hover:text-gray-600'
       },
       'text-green-600': {
         active: 'text-green-600',
@@ -46,9 +46,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         hover: 'group-hover:text-green-600'
       },
       'text-pink-600': {
-        active: 'text-pink-600',
+        active: 'text-gray-600',
         inactive: 'text-gray-500 dark:text-gray-400',
-        hover: 'group-hover:text-pink-600'
+        hover: 'group-hover:text-gray-600'
       },
       'text-gray-600': {
         active: 'text-gray-600',
@@ -61,9 +61,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         hover: 'group-hover:text-red-600'
       },
       'text-indigo-600': {
-        active: 'text-indigo-600',
+        active: 'text-gray-600',
         inactive: 'text-gray-500 dark:text-gray-400',
-        hover: 'group-hover:text-indigo-600'
+        hover: 'group-hover:text-gray-600'
       }
     };
 
@@ -114,22 +114,22 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // Make menu items reactive to language changes
   const customerMenuItems = [
     { icon: Home, label: t('nav.dashboard'), path: '/dashboard', color: 'text-blue-600' },
-    { icon: Upload, label: t('nav.newSubmission'), path: '/release-submission-modern', color: 'text-n3rve-main', badge: 'NEW' },
-    { icon: Folder, label: 'Release Projects', path: '/release-projects', color: 'text-purple-600' },
+    { icon: Upload, label: t('nav.newSubmission'), path: '/release-submission-modern', color: 'text-blue-600', badge: 'NEW' },
+    { icon: Folder, label: 'Release Projects', path: '/release-projects', color: 'text-gray-600' },
     { icon: BarChart3, label: 'Feature Reports', path: '/feature-reports', color: 'text-green-600' },
-    { icon: UserCircle, label: 'Artist Roster', path: '/artist-roster', color: 'text-pink-600' },
+    { icon: UserCircle, label: 'Artist Roster', path: '/artist-roster', color: 'text-gray-600' },
     { icon: FolderOpen, label: t('nav.submissionHistory'), path: '/submissions', color: 'text-gray-600' },
     { icon: FileText, label: t('nav.guide'), path: '/guide', color: 'text-green-600' },
-    { icon: Music, label: t('nav.artistProfile'), path: '/artist-profile-guide', color: 'text-pink-600' },
-    { icon: Building2, label: t('nav.accountManagement'), path: '/account', color: 'text-indigo-600' },
-    { icon: Settings, label: t('nav.settings'), path: '/settings', color: 'text-gray-600' }
+    { icon: Music, label: t('nav.artistProfile'), path: '/artist-profile-guide', color: 'text-gray-600' },
+    { icon: Settings, label: t('nav.settings'), path: '/settings', color: 'text-gray-600' },
+    { icon: Building2, label: t('nav.accountManagement'), path: '/account', color: 'text-gray-600' }
   ] as const;
 
   const adminMenuItems = [
     { icon: Shield, label: t('nav.adminDashboard'), path: '/admin', color: 'text-red-600' },
     { icon: ClipboardList, label: t('nav.submissionManagement'), path: '/admin/submission-management', color: 'text-blue-600' },
     { icon: Users, label: t('nav.customerManagement'), path: '/admin/customers', color: 'text-green-600' },
-    { icon: UserCog, label: t('nav.accountManagement'), path: '/admin/accounts', color: 'text-purple-600' },
+    { icon: UserCog, label: t('nav.accountManagement'), path: '/admin/accounts', color: 'text-gray-600' },
     { icon: Settings, label: t('nav.settings'), path: '/admin/settings', color: 'text-gray-600' }
   ] as const;
 
@@ -155,9 +155,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           isOpen ? 'translate-x-0' : '-translate-x-full',
           'transition-all duration-500 ease-in-out',
           'will-change-transform',
+          // Legacy: before:from-n3rve-500/5 before:to-purple-500/5
           // Add subtle gradient overlay with modern surface
-          'before:absolute before:inset-0 before:bg-gradient-to-b before:from-n3rve-500/5 before:via-transparent before:to-purple-500/5',
-          'dark:before:from-n3rve-400/5 dark:before:via-transparent dark:before:to-purple-400/5',
+          'before:absolute before:inset-0 before:bg-gradient-to-b before:from-gray-900/3 before:via-transparent before:to-gray-800/3',
+          'dark:before:from-gray-800/3 dark:before:via-transparent dark:before:to-gray-700/3',
           'before:pointer-events-none before:z-0'
         )}
       >
@@ -195,7 +196,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           <div className="mx-4 my-4 p-4 card-premium magnetic transition-all duration-300">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-n3rve-400 to-n3rve-600 rounded-full flex items-center justify-center ring-2 ring-n3rve-400/30 shadow-xl magnetic">
+                {/* Legacy: from-n3rve-400 to-n3rve-600 ring-n3rve-400/30 */}
+                <div className="w-10 h-10 bg-white/15 dark:bg-white/10 backdrop-blur-md rounded-full flex items-center justify-center ring-2 ring-white/20 dark:ring-white/15 shadow-xl magnetic">
                   <span className="text-white font-semibold text-sm">
                     {user?.name?.charAt(0).toUpperCase() || 'U'}
                   </span>
@@ -235,7 +237,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                       'bg-surface border-modern-soft magnetic hover:shadow-xl transform-gpu',
                       'hover:bg-gray-100 dark:hover:bg-gray-800/50',
                       'backdrop-blur-md',
-                      isActive && 'bg-n3rve-500/10 dark:bg-n3rve-400/10 border-n3rve-500/30 dark:border-n3rve-400/30 shadow-lg shadow-n3rve-500/20 dark:shadow-n3rve-400/20 scale-[1.02]'
+                      // Legacy: bg-n3rve-500/10 border-n3rve-500/30 shadow-n3rve-500/20
+                      isActive && 'bg-white/15 dark:bg-white/12 border-white/20 dark:border-white/15 shadow-lg shadow-black/10 dark:shadow-black/30 scale-[1.02]'
                     )
                   }
                 >
@@ -257,7 +260,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         )} />
                       </div>
                       <span className={cn(
-                        'font-medium flex-1 transition-all duration-300',
+                        'font-medium flex-1 transition-all duration-300 whitespace-nowrap',
                         'group-hover:font-semibold',
                         isActive
                           ? 'text-gray-900 dark:text-white font-semibold'

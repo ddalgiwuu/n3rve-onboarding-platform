@@ -141,8 +141,14 @@ export default function ContributorManagementModal({
       return;
     }
 
-    // Check if already in pending
-    if (pendingContributors.some(p => p.savedId === saved.id)) {
+    // Check if already in existing contributors (by name)
+    if (contributors.some(c => c.name === saved.name)) {
+      toast.error(t('이미 추가된 기여자입니다', 'Already added to this track'));
+      return;
+    }
+
+    // Check if already in pending - by both savedId AND name to prevent duplicates
+    if (pendingContributors.some(p => p.savedId === saved.id || p.name === saved.name)) {
       toast.error(t('이미 추가된 기여자입니다', 'Already added'));
       return;
     }
@@ -268,8 +274,11 @@ export default function ContributorManagementModal({
       isNewArtist: pending.isNewArtist
     }));
 
-    // 2. Add to track
-    const allContributors = [...contributors, ...newContributors];
+    // 2. Merge and deduplicate by name (keep existing contributors, add only new ones)
+    const existingNames = new Set(contributors.map(c => c.name));
+    const uniqueNewContributors = newContributors.filter(nc => !existingNames.has(nc.name));
+
+    const allContributors = [...contributors, ...uniqueNewContributors];
     onSave(allContributors);
 
     // 3. Update saved contributors/artists with new data (IDs, isNewArtist changes)
@@ -469,12 +478,16 @@ export default function ContributorManagementModal({
 
                       return uniqueArtists;
                     })().map(artist => {
+                      // Check both existing contributors and pending by name to prevent duplicates
+                      const alreadyInContributors = contributors.some(c => c.name === artist.name);
                       const alreadyPending = pendingContributors.some(p => p.name === artist.name);
+                      const isDisabled = alreadyInContributors || alreadyPending;
+
                       return (
                         <button
                           key={artist.id}
                           onClick={async () => {
-                            if (alreadyPending) return;
+                            if (isDisabled) return;
 
                             // Convert artist format (spotifyId/appleId) to identifiers array
                             // IMPORTANT: type must be uppercase enum (SPOTIFY, APPLE_MUSIC) for Prisma
@@ -622,9 +635,9 @@ export default function ContributorManagementModal({
                             // Now add to pending with proper saved ID and source flag
                             addToPending(savedArtist, isFromArtists);
                           }}
-                          disabled={alreadyPending}
+                          disabled={isDisabled}
                           className={`w-full p-3 rounded-lg border transition-all text-left ${
-                            alreadyPending
+                            isDisabled
                               ? 'bg-gray-100 dark:bg-gray-700/50 border-gray-300 opacity-50 cursor-not-allowed'
                               : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-blue-400 hover:shadow-md cursor-pointer'
                           }`}
@@ -639,7 +652,7 @@ export default function ContributorManagementModal({
                                 {artist.role === 'main' ? t('메인', 'Main') : t('피처링', 'Featuring')}
                               </span>
                             </div>
-                            {alreadyPending && (
+                            {isDisabled && (
                               <span className="text-xs text-green-600 dark:text-green-400">✓</span>
                             )}
                           </div>
@@ -669,14 +682,18 @@ export default function ContributorManagementModal({
                     {savedContributors
                       .sort((a, b) => b.usageCount - a.usageCount)
                       .map(saved => {
-                        const alreadyPending = pendingContributors.some(p => p.savedId === saved.id);
+                        // Check both existing contributors and pending by name to prevent duplicates
+                        const alreadyInContributors = contributors.some(c => c.name === saved.name);
+                        const alreadyPending = pendingContributors.some(p => p.savedId === saved.id || p.name === saved.name);
+                        const isDisabled = alreadyInContributors || alreadyPending;
+
                         return (
                           <button
                             key={saved.id}
-                            onClick={() => !alreadyPending && addToPending(saved)}
-                            disabled={alreadyPending}
+                            onClick={() => !isDisabled && addToPending(saved)}
+                            disabled={isDisabled}
                             className={`p-3 rounded-lg border transition-all text-left ${
-                              alreadyPending
+                              isDisabled
                                 ? 'bg-gray-100 dark:bg-gray-700/50 border-gray-300 dark:border-gray-600 opacity-50 cursor-not-allowed'
                                 : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-500 hover:shadow-md cursor-pointer'
                             }`}
@@ -690,7 +707,7 @@ export default function ContributorManagementModal({
                                   ({saved.usageCount} {t('회', 'uses')})
                                 </span>
                               </div>
-                              {alreadyPending && (
+                              {isDisabled && (
                                 <span className="text-xs text-green-600 dark:text-green-400">✓</span>
                               )}
                             </div>

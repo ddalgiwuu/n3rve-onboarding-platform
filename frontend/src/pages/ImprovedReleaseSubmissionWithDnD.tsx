@@ -403,7 +403,14 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
   const [validationResults, setValidationResults] = useState<QCValidationResults | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [submittedReleaseData, setSubmittedReleaseData] = useState<{ id?: string; albumTitle?: string; artistName?: string }>({});
+  const [submittedReleaseData, setSubmittedReleaseData] = useState<{
+    id?: string;
+    albumTitle?: string;
+    artistName?: string;
+    releaseDate?: string;
+    timezone?: string;
+    releaseUTC?: Date | string;
+  }>({});
 
   // Form Data
   const [formData, setFormData] = useState<FormData>({
@@ -1397,7 +1404,10 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         setSubmittedReleaseData({
           id: response.data?.id,
           albumTitle: formData.albumTitle,
-          artistName: formData.albumArtist
+          artistName: formData.albumArtist,
+          releaseDate: formData.consumerReleaseDate,
+          timezone: formData.timezone,
+          releaseUTC: response.data?.release?.releaseUTC || response.data?.release?.consumerReleaseUTC
         });
 
         toast.success(t('릴리즈가 성공적으로 제출되었습니다!', 'Release submitted successfully!', 'リリースが正常に提出されました！'));
@@ -3007,91 +3017,108 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                 </div>
               </div>
 
-              {/* UPC */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  UPC
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={formData.upc || ''}
-                    onChange={(e) => setFormData(prev => ({ ...prev, upc: e.target.value }))}
-                    className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                    placeholder={t('UPC 코드', 'UPC code', 'UPCコード')}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleGenerateUPC}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-                  >
-                    {t('생성', 'Generate', '生成')}
-                  </button>
+              {/* UPC & Copyright - Full Width Optimized Grid */}
+              <div className="md:col-span-2 space-y-6">
+                {/* UPC Row */}
+                <div className="flex gap-3 items-end">
+                  <div className="flex-1 max-w-md">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      UPC
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.upc || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, upc: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:text-white"
+                      placeholder={t('UPC 코드', 'UPC code', 'UPCコード')}
+                    />
+                  </div>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={handleGenerateUPC}
+                      className="px-6 py-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg hover:bg-gray-800 dark:hover:bg-gray-100 transition-colors font-medium whitespace-nowrap"
+                    >
+                      {t('생성', 'Generate', '生成')}
+                    </button>
+                  </div>
                 </div>
-              </div>
 
-              {/* Copyright Info (P&C) */}
-              <div className="md:col-span-2">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  {t('저작권 정보 (P&C)', 'Copyright Information (P&C)', '著作権情報 (P&C)')}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('© 저작권자 (Copyright)', '© Copyright Holder', '© 著作権者 (Copyright)')} *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.copyrightHolder}
-                      onChange={(e) => setFormData(prev => ({ ...prev, copyrightHolder: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                      placeholder={t('저작권 소유자명', 'Copyright holder name', '著作権所有者名')}
-                    />
+                {/* Copyright Info (P&C) */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                    {t('저작권 정보 (P&C)', 'Copyright Information (P&C)', '著作権情報 (P&C)')}
+                  </h3>
+
+                  {/* Optimized Grid: Name fields (3 cols) + Year fields (1 col each) */}
+                  <div className="grid grid-cols-8 gap-4">
+                    {/* Copyright Holder - 3 columns */}
+                    <div className="col-span-3">
+                      <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-base mr-2">©</span> {t('저작권자 (Copyright)', 'Copyright Holder', '著作権者 (Copyright)')} *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.copyrightHolder}
+                        onChange={(e) => setFormData(prev => ({ ...prev, copyrightHolder: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:text-white"
+                        placeholder={t('저작권 소유자명', 'Copyright holder name', '著作権所有者名')}
+                      />
+                    </div>
+
+                    {/* Copyright Year - 1 column */}
+                    <div className="col-span-1">
+                      <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <span className="inline-flex items-center justify-center w-5 h-5 text-base mr-2">©</span> {t('저작권 연도', 'Copyright Year', '著作権年')} *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.copyrightYear}
+                        onChange={(e) => setFormData(prev => ({ ...prev, copyrightYear: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:text-white text-center"
+                        placeholder="2025"
+                        maxLength={4}
+                      />
+                    </div>
+
+                    {/* Production Holder - 3 columns */}
+                    <div className="col-span-3">
+                      <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <span className="inline-flex items-center justify-center w-6 h-6 text-xl mr-2">℗</span> {t('제작권자 (Production)', 'Production Holder', '制作権者 (Production)')} *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.productionHolder}
+                        onChange={(e) => setFormData(prev => ({ ...prev, productionHolder: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:text-white"
+                        placeholder={t('음원 제작권 소유자명', 'Production rights holder name', '音源制作権所有者名')}
+                      />
+                    </div>
+
+                    {/* Production Year - 1 column */}
+                    <div className="col-span-1">
+                      <label className="flex items-center text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        <span className="inline-flex items-center justify-center w-6 h-6 text-xl mr-2">℗</span> {t('제작권 연도', 'Production Year', '制作権年')} *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.productionYear}
+                        onChange={(e) => setFormData(prev => ({ ...prev, productionYear: e.target.value }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 dark:bg-gray-700 dark:text-white text-center"
+                        placeholder="2025"
+                        maxLength={4}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('© 저작권 연도', '© Copyright Year', '© 著作権年')} *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.copyrightYear}
-                      onChange={(e) => setFormData(prev => ({ ...prev, copyrightYear: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="2024"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('℗ 제작권자 (Production)', '℗ Production Holder', '℗ 制作権者 (Production)')} *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.productionHolder}
-                      onChange={(e) => setFormData(prev => ({ ...prev, productionHolder: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                      placeholder={t('음원 제작권 소유자명', 'Production rights holder name', '音源制作権所有者名')}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      {t('℗ 제작권 연도', '℗ Production Year', '℗ 制作権年')} *
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.productionYear}
-                      onChange={(e) => setFormData(prev => ({ ...prev, productionYear: e.target.value }))}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 dark:bg-gray-700 dark:text-white"
-                      placeholder="2024"
-                    />
-                  </div>
+
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                    {t(
+                      '© (Copyright)는 작곡/작사 권리, ℗ (Production)는 녹음/제작 권리를 의미합니다',
+                      '© (Copyright) refers to composition/lyrics rights, ℗ (Production) refers to recording/production rights',
+                      '© (Copyright)は作曲/作詞権利、℗ (Production)は録音/制作権利を意味します'
+                    )}
+                  </p>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                  {t(
-                    '© (Copyright)는 작곡/작사 권리, ℗ (Production)는 녹음/제작 권리를 의미합니다',
-                    '© (Copyright) refers to composition/lyrics rights, ℗ (Production) refers to recording/production rights',
-                    '© (Copyright)は作曲/作詞権利、℗ (Production)は録音/制作権利を意味します'
-                  )}
-                </p>
               </div>
             </div>
           </div>
@@ -3819,7 +3846,7 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   {t('목표 설정 건너뛰기', 'Skip Goals & Expectations', '目標設定をスキップ')}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-6">
+                <p className="text-gray-600 dark:text-gray-400 mb-6 text-center">
                   {t(
                     '우선순위가 최고 레벨(5)이 아니므로 이 단계를 건너뜁니다. 다음을 클릭하여 계속하세요.',
                     'Since priority is not at the highest level (5), this step will be skipped. Click next to continue.',
@@ -3968,8 +3995,8 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         />
       )}
 
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
-        <div className="max-w-6xl mx-auto px-4">
+      <div className="min-h-screen bg-transparent py-8">
+        <div className="w-full px-6">
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
@@ -3982,30 +4009,32 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
 
           {/* Progress Bar - Hidden during Dolby decision */}
           {!isDolbyDecisionStep && (
-            <div className="mb-8">
-              <div className="flex items-center justify-between">
-                {steps.map((step, index) => {
-                const Icon = step.icon;
-                const displayStep = getCurrentDisplayStep();
-                const isActive = displayStep === step.number;
-                // Map display step to actual step for completion check
-                const stepMapping = { 1: 1, 2: 2, 3: 6, 4: 7 };
-                const actualStep = stepMapping[step.number as keyof typeof stepMapping];
-                const isCompleted = completedSteps.includes(actualStep);
-                const isClickable = step.number <= displayStep || isCompleted;
+            <div className="mb-8 w-full px-12">
+              <div className="relative">
+                {/* Background line */}
+                <div className="absolute top-6 left-0 right-0 h-0.5 bg-gray-300 dark:bg-gray-700" />
 
-                return (
-                  <div key={step.number} className="flex-1 relative">
-                    {index > 0 && (
-                      <div
-                        className={`absolute left-0 top-6 w-full h-0.5 -translate-x-1/2 ${
-                          completedSteps.includes(step.number - 1)
-                            ? 'bg-purple-600'
-                            : 'bg-gray-300 dark:bg-gray-700'
-                        }`}
-                      />
-                    )}
+                {/* Progress line */}
+                <div
+                  className="absolute top-6 left-0 h-0.5 bg-gray-900 dark:bg-white transition-all duration-300"
+                  style={{ width: `${((getCurrentDisplayStep() - 1) / (steps.length - 1)) * 100}%` }}
+                />
+
+                {/* Steps */}
+                <div className="relative flex items-start justify-between">
+                  {steps.map((step, index) => {
+                  const Icon = step.icon;
+                  const displayStep = getCurrentDisplayStep();
+                  const isActive = displayStep === step.number;
+                  // Map display step to actual step for completion check
+                  const stepMapping = { 1: 1, 2: 2, 3: 6, 4: 7 };
+                  const actualStep = stepMapping[step.number as keyof typeof stepMapping];
+                  const isCompleted = completedSteps.includes(actualStep);
+                  const isClickable = step.number <= displayStep || isCompleted;
+
+                  return (
                     <button
+                      key={step.number}
                       type="button"
                       onClick={() => handleStepClick(step.number)}
                       disabled={!isClickable}
@@ -4016,10 +4045,10 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                       <div
                         className={`w-12 h-12 rounded-full flex items-center justify-center transition-colors ${
                           isActive
-                            ? 'bg-purple-600 text-white'
+                            ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900 ring-4 ring-gray-900/20 dark:ring-white/20'
                             : isCompleted
-                              ? 'bg-purple-600 text-white'
-                              : 'bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                              ? 'bg-gray-900 dark:bg-white text-white dark:text-gray-900'
+                              : 'bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400'
                         }`}
                       >
                         {isCompleted ? (
@@ -4029,18 +4058,18 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
                         )}
                       </div>
                       <span
-                        className={`mt-2 text-sm ${
+                        className={`mt-2 text-sm whitespace-nowrap ${
                           isActive
-                            ? 'text-purple-600 font-medium'
+                            ? 'text-gray-900 dark:text-white font-semibold'
                             : 'text-gray-600 dark:text-gray-400'
                         }`}
                       >
                         {step.title}
                       </span>
                     </button>
-                  </div>
-                );
-                })}
+                  );
+                  })}
+                </div>
               </div>
             </div>
           )}
@@ -4242,6 +4271,9 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         submissionId={submittedReleaseData.id}
         albumTitle={submittedReleaseData.albumTitle}
         artistName={submittedReleaseData.artistName}
+        releaseDate={submittedReleaseData.releaseDate}
+        timezone={submittedReleaseData.timezone}
+        releaseUTC={submittedReleaseData.releaseUTC}
       />
     </SavedArtistsProvider>
   );

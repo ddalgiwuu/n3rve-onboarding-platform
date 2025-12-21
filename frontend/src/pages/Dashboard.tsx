@@ -2,12 +2,15 @@ import React from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useHydration } from '@/hooks/useHydration';
-import { Music, FileText, Users, Upload, ChevronRight, Calendar, Building2 } from 'lucide-react';
+import { Music, FileText, Users, Upload, ChevronRight, Calendar, Building2, TrendingUp, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useSafeStore from '@/hooks/useSafeStore';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
+import { Button } from '@/components/ui/Button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 export default function Dashboard() {
   const isHydrated = useHydration();
@@ -51,21 +54,24 @@ export default function Dashboard() {
       label: t('dashboard.totalReleases'),
       value: totalSubmissions.toString(),
       icon: Music,
-      color: 'from-purple-500 to-pink-500',
+      // Legacy: 'from-purple-500 to-pink-500'
+      color: 'bg-white/15 dark:bg-white/10',
       description: t('dashboard.registeredAlbums')
     },
     {
       label: t('dashboard.pending'),
       value: pendingCount.toString(),
       icon: FileText,
-      color: 'from-blue-500 to-cyan-500',
+      // Legacy: 'from-blue-500 to-cyan-500'
+      color: 'bg-white/12 dark:bg-white/8',
       description: t('dashboard.awaitingReview')
     },
     {
       label: t('dashboard.artists'),
       value: artistsCount.toString(),
       icon: Users,
-      color: 'from-green-500 to-emerald-500',
+      // Legacy: 'from-green-500 to-emerald-500'
+      color: 'bg-white/10 dark:bg-white/8',
       description: t('dashboard.registeredArtists')
     }
   ];
@@ -73,12 +79,12 @@ export default function Dashboard() {
   // Get recent submissions (max 5 for dashboard)
   const recentSubmissions = submissions.slice(0, 5);
 
-  const getStatusColor = (status: string) => {
+  const getStatusVariant = (status: string): "default" | "secondary" | "destructive" | "success" | "outline" => {
     switch (status) {
-      case 'approved': return 'bg-green-500/20 text-green-600 dark:text-green-400 border-green-500/30';
-      case 'pending': return 'bg-yellow-500/20 text-yellow-600 dark:text-yellow-400 border-yellow-500/30';
-      case 'review': return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30';
-      default: return 'bg-gray-500/20 text-gray-600 dark:text-gray-400 border-gray-500/30';
+      case 'approved': return 'success';
+      case 'pending': return 'secondary';
+      case 'review': return 'default';
+      default: return 'outline';
     }
   };
 
@@ -91,212 +97,226 @@ export default function Dashboard() {
     }
   };
 
+  // Sophisticated glass background with depth
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-purple-900/20 dark:to-gray-900 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Welcome Section */}
-        <div className="glass-premium rounded-3xl p-8 animate-fade-in relative overflow-hidden group">
-          {/* Background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-pink-500/10 to-blue-500/10 opacity-50" />
+    <div className="min-h-screen bg-transparent p-6 relative overflow-hidden">
+      {/* Monochrome gradient layers for subtle depth */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-white/[0.02] dark:bg-white/[0.03] rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-[600px] h-[600px] bg-white/[0.015] dark:bg-white/[0.025] rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-black/[0.02] dark:bg-black/[0.03] rounded-full blur-3xl" />
+      </div>
 
-          {/* Floating particles */}
-          <div className="absolute top-4 right-4 opacity-20">
-            <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0s' }} />
-            <div className="w-1 h-1 bg-pink-400 rounded-full animate-bounce ml-6 -mt-1" style={{ animationDelay: '0.3s' }} />
-            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce ml-3 -mt-2" style={{ animationDelay: '0.6s' }} />
-          </div>
+      {/* Noise texture for sophistication */}
+      <div
+        className="fixed inset-0 opacity-[0.015] dark:opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          mixBlendMode: 'overlay'
+        }}
+      />
 
-          <div className="flex items-center justify-between relative z-10">
-            <div>
-              <h1 className="text-3xl font-bold gradient-text mb-2 animate-fade-in">
-                {t('dashboard.welcome')}, {user?.name || user?.email}!
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 animate-fade-in-delay">
-                {t('dashboard.haveGreatDay')}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <Link
-                to="/release-submission-modern"
-                className="glass-btn-primary text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 px-6 py-3 rounded-xl font-medium flex items-center gap-2 hover:scale-105 active:scale-95 transition-all duration-300 shadow-lg hover:shadow-xl"
-              >
-                <Upload className="w-5 h-5" />
-                {t('dashboard.newRelease')}
-              </Link>
-            </div>
+      <div className="w-full space-y-6 relative z-10">
+        {/* Welcome Section - Compact */}
+        <div className="flex items-center justify-between animate-fade-in">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
+              {t('dashboard.welcome')}, {user?.name || user?.email}!
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {t('dashboard.haveGreatDay')}
+            </p>
           </div>
+          <Button asChild size="lg" variant="default">
+            <Link to="/release-submission-modern">
+              <Upload className="w-5 h-5" />
+              {t('dashboard.newRelease')}
+            </Link>
+          </Button>
         </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Stats Grid - Redesigned with shadcn Card */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
             return (
-              <div
+              <Card
                 key={index}
-                className="glass-enhanced rounded-2xl p-6 hover-glass-lift animate-fade-in group relative overflow-hidden"
-                style={{ animationDelay: `${index * 100}ms` }}
+                className="group animate-fade-in cursor-pointer magnetic"
+                style={{ animationDelay: `${index * 50}ms` }}
               >
-                {/* Gradient overlay */}
-                <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-5 group-hover:opacity-10 transition-opacity duration-300`} />
-
-                {/* Shimmer effect */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
-                </div>
-
-                <div className="relative z-10">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className={`p-4 rounded-xl bg-gradient-to-r ${stat.color} shadow-lg group-hover:scale-110 group-hover:shadow-xl transition-all duration-300`}>
-                      <Icon className="w-6 h-6 text-white" />
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1 flex-1">
+                      <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        {stat.label}
+                      </p>
+                      <p className="text-2xl font-bold text-gray-900 dark:text-white">
+                        {stat.value}
+                      </p>
+                      <p className="text-sm font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1">
+                        <TrendingUp className="w-3 h-3" />
+                        {stat.description}
+                      </p>
                     </div>
-                    <span className="text-3xl font-bold text-gray-900 dark:text-white group-hover:scale-110 transition-transform duration-300">
-                      {stat.value}
-                    </span>
+                    <div className={`p-3 rounded-xl ${stat.color} bg-surface border-modern-soft magnetic glass-shimmer group-hover:scale-110 transition-all duration-300`}>
+                      <Icon className="w-7 h-7 text-white" />
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors duration-300">
-                    {stat.label}
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                    {stat.description}
-                  </p>
-                </div>
-              </div>
+                </CardContent>
+              </Card>
             );
           })}
         </div>
 
-        {/* Recent Submissions */}
-        <div className="glass-enhanced rounded-2xl p-6 animate-fade-in-delay hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('dashboard.recentSubmissions')}
-            </h2>
-            <Link
-              to="/submissions"
-              className="glass-btn-modern text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 hover:scale-105"
-            >
-              {t('dashboard.viewAll')}
-              <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
+        {/* Recent Submissions - Redesigned */}
+        <Card className="animate-fade-in-delay">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-2xl">{t('dashboard.recentSubmissions')}</CardTitle>
+                <CardDescription className="mt-1">
+                  Track your latest release submissions
+                </CardDescription>
+              </div>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/submissions" className="flex items-center gap-1">
+                  {t('dashboard.viewAll')}
+                  <ChevronRight className="w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
+          </CardHeader>
 
-          <div className="space-y-4">
-            {submissionsLoading ? (
-              <div className="text-center py-8">
-                <LoadingSpinner />
-              </div>
-            ) : recentSubmissions.length === 0 ? (
-              <div className="text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400">
-                  {t('dashboard.noSubmittedTracks')}
-                </p>
-              </div>
-            ) : (
-              recentSubmissions.map((submission: any, index: number) => (
-                <Link
-                  key={submission.id}
-                  to={`/release-projects`}
-                  className="glass-effect p-4 rounded-xl hover:shadow-lg transition-all duration-300 animate-slide-in-left block"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
-                        {submission.albumTitle || submission.albumTitleEn || 'Untitled'}
-                      </h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {submission.artistName || submission.artistNameEn || 'Unknown Artist'}
-                      </p>
+          <CardContent>
+            <div className="space-y-2">
+              {submissionsLoading ? (
+                <div className="text-center py-12">
+                  <LoadingSpinner />
+                </div>
+              ) : recentSubmissions.length === 0 ? (
+                <div className="text-center py-12">
+                  <Music className="w-12 h-12 text-gray-400 dark:text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400 text-sm">
+                    {t('dashboard.noSubmittedTracks')}
+                  </p>
+                </div>
+              ) : (
+                recentSubmissions.map((submission: any, index: number) => (
+                  <Link
+                    key={submission.id}
+                    to={`/release-projects`}
+                    className="flex items-center justify-between p-4 rounded-xl bg-white/[0.04] dark:bg-white/[0.02] border border-white/5 dark:border-white/5 hover:bg-white/[0.08] dark:hover:bg-white/[0.06] hover:border-white/10 dark:hover:border-white/10 transition-all duration-200 group animate-slide-in-left"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="p-3 rounded-lg bg-white/10 dark:bg-white/8 group-hover:bg-white/15 dark:group-hover:bg-white/12 transition-colors">
+                        <Music className="w-5 h-5 text-gray-900 dark:text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-white truncate group-hover:text-gray-700 dark:group-hover:text-gray-100 transition-colors">
+                          {submission.albumTitle || submission.albumTitleEn || 'Untitled'}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 truncate">
+                          {submission.artistName || submission.artistNameEn || 'Unknown Artist'}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                        <Calendar className="w-4 h-4" />
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <div className="hidden md:flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-500">
+                        <Clock className="w-3.5 h-3.5" />
                         {new Date(submission.releaseDate || submission.createdAt).toLocaleDateString()}
                       </div>
-                      <span className={`badge-glass ${getStatusColor(submission.status?.toLowerCase() || 'pending')} px-3 py-1`}>
+                      <Badge variant={getStatusVariant(submission.status?.toLowerCase() || 'pending')}>
                         {getStatusText(submission.status?.toLowerCase() || 'pending')}
-                      </span>
+                      </Badge>
+                      <ChevronRight className="w-4 h-4 text-gray-400 dark:text-gray-600 group-hover:translate-x-0.5 transition-transform" />
                     </div>
-                  </div>
-                </Link>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Link
-            to="/release-submission-modern"
-            className="glass-premium rounded-2xl p-6 hover:-translate-y-2 hover:shadow-2xl text-center group animate-fade-in transition-all duration-500 relative overflow-hidden"
-          >
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-1000" />
+                  </Link>
+                ))
+              )}
             </div>
+          </CardContent>
+        </Card>
 
-            <div className="relative z-10">
-              <div className="p-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 shadow-lg mb-4 mx-auto w-fit group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
-                <Upload className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                {t('dashboard.registerNewRelease')}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                {t('dashboard.registerAndDistribute')}
-              </p>
-            </div>
-          </Link>
+        {/* Quick Actions - Unified Card */}
+        <Card className="magnetic">
+          <CardHeader>
+            <CardTitle>빠른 실행</CardTitle>
+            <CardDescription>자주 사용하는 기능에 빠르게 접근하세요</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+              <Link
+                to="/release-submission-modern"
+                className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-all duration-200 group"
+              >
+                <div className="p-3 rounded-lg bg-surface border-modern-soft magnetic glass-shimmer group-hover:scale-110 transition-all duration-300">
+                  <Upload className="w-6 h-6 text-gray-900 dark:text-white" />
+                </div>
+                <div className="text-center space-y-1">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                    {t('dashboard.registerNewRelease')}
+                  </h3>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {t('dashboard.registerAndDistribute')}
+                  </p>
+                </div>
+              </Link>
 
-          <Link
-            to="/guide"
-            className="glass-enhanced rounded-2xl p-6 hover-glass-lift text-center group animate-fade-in transition-all duration-300 relative overflow-hidden"
-            style={{ animationDelay: '100ms' }}
-          >
-            <div className="p-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 shadow-lg mb-4 mx-auto w-fit group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
-              <FileText className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-              {t('dashboard.viewGuide')}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t('dashboard.checkGuidelines')}
-            </p>
-          </Link>
+              <Link
+                to="/guide"
+                className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-all duration-200 group"
+              >
+                <div className="p-3 rounded-lg bg-surface border-modern-soft magnetic glass-shimmer group-hover:scale-110 transition-all duration-300">
+                  <FileText className="w-6 h-6 text-gray-900 dark:text-white" />
+                </div>
+                <div className="text-center space-y-1">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                    {t('dashboard.viewGuide')}
+                  </h3>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {t('dashboard.checkGuidelines')}
+                  </p>
+                </div>
+              </Link>
 
-          <Link
-            to="/artist-profile-guide"
-            className="glass-enhanced rounded-2xl p-6 hover-glass-lift text-center group animate-fade-in transition-all duration-300 relative overflow-hidden"
-            style={{ animationDelay: '200ms' }}
-          >
-            <div className="p-4 rounded-xl bg-gradient-to-r from-green-500 to-emerald-500 shadow-lg mb-4 mx-auto w-fit group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
-              <Users className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
-              {t('dashboard.artistProfile')}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t('dashboard.profileWritingGuide')}
-            </p>
-          </Link>
+              <Link
+                to="/artist-profile-guide"
+                className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-all duration-200 group"
+              >
+                <div className="p-3 rounded-lg bg-surface border-modern-soft magnetic glass-shimmer group-hover:scale-110 transition-all duration-300">
+                  <Users className="w-6 h-6 text-gray-900 dark:text-white" />
+                </div>
+                <div className="text-center space-y-1">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                    {t('dashboard.artistProfile')}
+                  </h3>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {t('dashboard.profileWritingGuide')}
+                  </p>
+                </div>
+              </Link>
 
-          <Link
-            to="/account"
-            className="glass-enhanced rounded-2xl p-6 hover-glass-lift text-center group animate-fade-in transition-all duration-300 relative overflow-hidden"
-            style={{ animationDelay: '300ms' }}
-          >
-            <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg mb-4 mx-auto w-fit group-hover:scale-110 group-hover:shadow-xl transition-all duration-300">
-              <Building2 className="w-8 h-8 text-white" />
+              <Link
+                to="/account"
+                className="flex flex-col items-center gap-3 p-4 rounded-lg hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-all duration-200 group"
+              >
+                <div className="p-3 rounded-lg bg-surface border-modern-soft magnetic glass-shimmer group-hover:scale-110 transition-all duration-300">
+                  <Building2 className="w-6 h-6 text-gray-900 dark:text-white" />
+                </div>
+                <div className="text-center space-y-1">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                    {t('dashboard.accountManagement')}
+                  </h3>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">
+                    {t('dashboard.manageSubAccounts')}
+                  </p>
+                </div>
+              </Link>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-              {t('dashboard.accountManagement')}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-              {t('dashboard.manageSubAccounts')}
-            </p>
-          </Link>
-        </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

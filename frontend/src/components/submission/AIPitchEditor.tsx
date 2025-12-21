@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Lightbulb
 } from 'lucide-react';
+import FieldTooltip from '../ui/FieldTooltip';
 
 interface AIPitchEditorProps {
   label?: string;
@@ -24,6 +25,11 @@ interface AIPitchEditorProps {
   rows?: number;
   className?: string;
   aiEndpoint?: string; // API endpoint for AI suggestions
+  tooltip?: {
+    title: string;
+    description: string;
+    note?: string;
+  };
 }
 
 interface AISuggestion {
@@ -44,7 +50,8 @@ export function AIPitchEditor({
   helpText,
   rows = 6,
   className,
-  aiEndpoint = '/api/ai-assist'
+  aiEndpoint = '/api/ai-assist',
+  tooltip
 }: AIPitchEditorProps) {
   const [charCount, setCharCount] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
@@ -129,10 +136,19 @@ export function AIPitchEditor({
           {/* Label */}
           {label && (
             <div className="flex items-center justify-between mb-2">
-              <label className="text-sm font-medium text-white">
-                {label}
-                {required && <span className="text-red-400 ml-1">*</span>}
-              </label>
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-medium text-white">
+                  {label}
+                  {required && <span className="text-red-400 ml-1">*</span>}
+                </label>
+                {tooltip && (
+                  <FieldTooltip
+                    title={tooltip.title}
+                    description={tooltip.description}
+                    note={tooltip.note}
+                  />
+                )}
+              </div>
 
               <button
                 type="button"
