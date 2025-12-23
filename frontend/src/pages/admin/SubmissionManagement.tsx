@@ -141,9 +141,8 @@ const SubmissionManagement: React.FC = () => {
     return submissions.filter(submission => {
       const matchesStatus = selectedStatus === 'all' || submission.status === selectedStatus;
       const matchesSearch = !searchQuery ||
-        submission.artist?.primaryName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        submission.album?.titleKo?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        submission.album?.titleEn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        submission.artistName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        submission.albumTitle?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         submission.id.toLowerCase().includes(searchQuery.toLowerCase());
 
       return matchesStatus && matchesSearch;
@@ -489,17 +488,17 @@ const SubmissionManagement: React.FC = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {submission.artist?.primaryName || '-'}
+                            {submission.artistName || '-'}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {submission.artist?.labelName || '-'}
+                            {submission.labelName || '-'}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <div>
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {submission.album?.titleKo || submission.album?.titleEn || '-'}
+                            {submission.albumTitle || '-'}
                           </div>
                           <div className="text-sm text-gray-500 dark:text-gray-400">
                             {submission.tracks?.length || 0} {t('트랙', 'tracks')}
