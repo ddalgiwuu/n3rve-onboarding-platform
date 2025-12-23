@@ -19,6 +19,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslationFixed';
 import { useAuthStore } from '@/store/auth.store';
 import { PlaylistSpreadsheetEditor } from '@/components/admin/PlaylistSpreadsheetEditor';
+import api from '@/lib/api';
 
 interface FeatureReport {
   id: string;
@@ -79,22 +80,14 @@ export default function FeatureReports() {
     queryKey: ['feature-reports'],
     queryFn: async () => {
       try {
-        const response = await fetch('http://localhost:3001/api/feature-reports', {
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        if (!response.ok) {
-          if (response.status === 401) {
-            console.log('Not authenticated - showing empty state');
-            return [];
-          }
-          throw new Error('Failed to fetch reports');
-        }
-        return response.json();
-      } catch (err) {
+        const response = await api.get('/feature-reports');
+        return response.data;
+      } catch (err: any) {
         console.error('Error fetching reports:', err);
+        if (err.response?.status === 401) {
+          console.log('Not authenticated - showing empty state');
+          return [];
+        }
         return [];
       }
     },
