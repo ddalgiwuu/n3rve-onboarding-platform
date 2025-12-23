@@ -210,8 +210,8 @@ export default function AdminDashboard() {
                   recentSubmissions.map((submission) => (
                     <tr key={submission.id} className="border-b border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
                       <td className="p-4 text-gray-700 dark:text-gray-200">{formatDate(submission.createdAt)}</td>
-                      <td className="p-4 text-gray-700 dark:text-gray-200">{submission.artist?.name || '-'}</td>
-                      <td className="p-4 text-gray-700 dark:text-gray-200">{submission.album?.title || '-'}</td>
+                      <td className="p-4 text-gray-700 dark:text-gray-200">{submission.artistName || '-'}</td>
+                      <td className="p-4 text-gray-700 dark:text-gray-200">{submission.albumTitle || '-'}</td>
                       <td className="p-4 text-gray-700 dark:text-gray-200">
                         <div>
                           <div className="text-sm">{submission.submitterName}</div>
@@ -219,13 +219,13 @@ export default function AdminDashboard() {
                         </div>
                       </td>
                       <td className="p-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(submission.status)}`}>
-                          {t(`admin.${submission.status}`)}
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(submission.status.toLowerCase())}`}>
+                          {t(`admin.${submission.status.toLowerCase()}`)}
                         </span>
                       </td>
                       <td className="p-4">
                         <button
-                          onClick={() => navigate(`/admin/submissions/${submission.id}`)}
+                          onClick={() => navigate('/admin/submission-management')}
                           className="px-3 py-1 bg-n3rve-500 hover:bg-n3rve-600 text-white rounded-lg text-sm flex items-center gap-1 transition-colors"
                         >
                           <Eye className="w-4 h-4" />
