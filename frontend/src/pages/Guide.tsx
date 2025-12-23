@@ -5,18 +5,28 @@ import {
   HelpCircle, Zap, Globe, ArrowRight, ChevronDown, ChevronUp, Play
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from '@/hooks/useTranslationFixed';
 
 export default function Guide() {
   const navigate = useNavigate();
+  const { language } = useTranslation();
   const [expandedGuide, setExpandedGuide] = useState<number | null>(null);
+
+  const t = (ko: string, en: string, ja?: string) => {
+    if (language === 'ko') return ko;
+    if (language === 'ja') return ja || en;
+    return en;
+  };
 
   const guides = [
     {
       icon: Upload,
       title: '음원 제출 가이드',
       titleEn: 'Submission Guide',
+      titleJa: '楽曲提出ガイド',
       description: '새로운 음원을 제출하는 방법과 필수 정보를 안내합니다',
       descriptionEn: 'Learn how to submit new releases and required information',
+      descriptionJa: '新しい楽曲を提出する方法と必須情報をご案内します',
       link: '/release-submission-modern',
       color: 'from-purple-500 to-pink-500',
       details: {
@@ -41,8 +51,10 @@ export default function Guide() {
       icon: Music,
       title: '아티스트 프로필 가이드',
       titleEn: 'Artist Profile Guide',
+      titleJa: 'アーティストプロフィールガイド',
       description: '아티스트 정보 작성 및 DSP 연동 방법을 안내합니다',
       descriptionEn: 'Complete artist information and DSP integration',
+      descriptionJa: 'アーティスト情報の作成とDSP連携方法をご案内します',
       link: '/artist-profile-guide',
       color: 'from-blue-500 to-cyan-500',
       details: {
@@ -65,8 +77,10 @@ export default function Guide() {
       icon: FileText,
       title: '기술 사양 가이드',
       titleEn: 'Technical Specifications',
+      titleJa: '技術仕様ガイド',
       description: '음원 파일 포맷과 기술 요구사항을 확인하세요',
       descriptionEn: 'Audio file formats and technical requirements',
+      descriptionJa: '音源ファイル形式と技術要件を確認してください',
       link: '/guide',
       color: 'from-green-500 to-emerald-500',
       details: {
@@ -91,8 +105,10 @@ export default function Guide() {
       icon: TrendingUp,
       title: '마케팅 가이드',
       titleEn: 'Marketing Guide',
+      titleJa: 'マーケティングガイド',
       description: '효과적인 음원 마케팅 전략을 알아보세요',
       descriptionEn: 'Effective music marketing strategies',
+      descriptionJa: '効果的な音楽マーケティング戦略をご覧ください',
       link: '/guide',
       color: 'from-orange-500 to-red-500',
       details: {
@@ -120,44 +136,76 @@ export default function Guide() {
       icon: CheckCircle,
       iconColor: 'text-green-500',
       title: '정확한 메타데이터',
-      text: '모든 필드를 정확하게 입력하면 승인이 빨라집니다'
+      titleEn: 'Accurate Metadata',
+      titleJa: '正確なメタデータ',
+      text: '모든 필드를 정확하게 입력하면 승인이 빨라집니다',
+      textEn: 'Complete all fields accurately for faster approval',
+      textJa: 'すべてのフィールドを正確に入力すると承認が早くなります'
     },
     {
       icon: Zap,
       iconColor: 'text-yellow-500',
       title: '고품질 오디오',
-      text: 'WAV 또는 FLAC 포맷, 최소 44.1kHz/16bit 권장'
+      titleEn: 'High Quality Audio',
+      titleJa: '高品質オーディオ',
+      text: 'WAV 또는 FLAC 포맷, 최소 44.1kHz/16bit 권장',
+      textEn: 'WAV or FLAC format, minimum 44.1kHz/16bit recommended',
+      textJa: 'WAVまたはFLAC形式、最低44.1kHz/16bit推奨'
     },
     {
       icon: Globe,
       iconColor: 'text-blue-500',
       title: '글로벌 배포',
-      text: '전 세계 주요 스트리밍 플랫폼에 자동 배포됩니다'
+      titleEn: 'Global Distribution',
+      titleJa: 'グローバル配信',
+      text: '전 세계 주요 스트리밍 플랫폼에 자동 배포됩니다',
+      textEn: 'Automatically distributed to major streaming platforms worldwide',
+      textJa: '世界中の主要ストリーミングプラットフォームに自動配信されます'
     },
     {
       icon: Users,
       iconColor: 'text-purple-500',
       title: '전문가 지원',
-      text: '궁금한 사항이 있으면 언제든지 문의하세요'
+      titleEn: 'Expert Support',
+      titleJa: '専門家サポート',
+      text: '궁금한 사항이 있으면 언제든지 문의하세요',
+      textEn: 'Contact us anytime if you have questions',
+      textJa: 'ご質問があればいつでもお問い合わせください'
     }
   ];
 
   const faqs = [
     {
       question: '음원 제출 후 승인까지 얼마나 걸리나요?',
-      answer: '일반적으로 2-3 영업일 소요됩니다. 복잡한 경우 최대 7일이 걸릴 수 있습니다.'
+      questionEn: 'How long does approval take?',
+      questionJa: '楽曲提出後、承認までどのくらいかかりますか？',
+      answer: '일반적으로 2-3 영업일 소요됩니다. 복잡한 경우 최대 7일이 걸릴 수 있습니다.',
+      answerEn: 'Typically 2-3 business days. Complex cases may take up to 7 days.',
+      answerJa: '通常2〜3営業日かかります。複雑な場合は最大7日かかることがあります。'
     },
     {
       question: '어떤 파일 형식을 지원하나요?',
-      answer: 'WAV, FLAC, MP3를 지원합니다. WAV 또는 FLAC를 권장합니다.'
+      questionEn: 'What file formats are supported?',
+      questionJa: 'どのファイル形式がサポートされていますか？',
+      answer: 'WAV, FLAC, MP3를 지원합니다. WAV 또는 FLAC를 권장합니다.',
+      answerEn: 'We support WAV, FLAC, and MP3. WAV or FLAC is recommended.',
+      answerJa: 'WAV、FLAC、MP3をサポートしています。WAVまたはFLACを推奨します。'
     },
     {
       question: '커버 아트 요구사항은 무엇인가요?',
-      answer: '최소 3000x3000px, JPG 또는 PNG 형식, 최대 5MB'
+      questionEn: 'What are the cover art requirements?',
+      questionJa: 'カバーアートの要件は何ですか？',
+      answer: '최소 3000x3000px, JPG 또는 PNG 형식, 최대 5MB',
+      answerEn: 'Minimum 3000x3000px, JPG or PNG format, maximum 5MB',
+      answerJa: '最小3000x3000px、JPGまたはPNG形式、最大5MB'
     },
     {
       question: '발매 후 수정이 가능한가요?',
-      answer: '발매 전까지는 자유롭게 수정 가능합니다. 발매 후에는 제한적입니다.'
+      questionEn: 'Can I edit after release?',
+      questionJa: 'リリース後に編集できますか？',
+      answer: '발매 전까지는 자유롭게 수정 가능합니다. 발매 후에는 제한적입니다.',
+      answerEn: 'Free editing before release. Limited editing after release.',
+      answerJa: 'リリース前は自由に編集できます。リリース後は制限があります。'
     }
   ];
 
@@ -172,10 +220,10 @@ export default function Guide() {
             </div>
             <div>
               <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
-                N3RVE 가이드
+                {t('N3RVE 가이드', 'N3RVE Guide', 'N3RVEガイド')}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                음원 배포를 위한 완벽한 가이드
+                {t('음원 배포를 위한 완벽한 가이드', 'Complete guide for music distribution', '音楽配信のための完璧なガイド')}
               </p>
             </div>
           </div>
@@ -200,8 +248,12 @@ export default function Guide() {
                         <Icon className="w-8 h-8 text-white" />
                       </div>
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">{guide.title}</h3>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm">{guide.description}</p>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-1">
+                          {language === 'ko' ? guide.title : language === 'ja' ? guide.titleJa : guide.titleEn}
+                        </h3>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm">
+                          {language === 'ko' ? guide.description : language === 'ja' ? guide.descriptionJa : guide.descriptionEn}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -333,10 +385,10 @@ export default function Guide() {
                               e.stopPropagation();
                               navigate(guide.link);
                             }}
-                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-lg font-medium transition-all shadow-lg hover:shadow-xl"
+                            className="flex items-center gap-2 px-5 py-2.5 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white rounded-lg font-medium transition-colors"
                           >
-                            <Play className="w-4 h-4" />
                             시작하기
+                            <ArrowRight className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
@@ -352,7 +404,7 @@ export default function Guide() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <Zap className="w-6 h-6 text-yellow-500" />
-            빠른 팁
+            {t('빠른 팁', 'Quick Tips', 'クイックヒント')}
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {quickTips.map((tip, index) => {
@@ -363,8 +415,12 @@ export default function Guide() {
                     <Icon className={`w-6 h-6 ${tip.iconColor}`} />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{tip.title}</h3>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">{tip.text}</p>
+                    <h3 className="font-semibold text-gray-900 dark:text-white mb-1">
+                      {language === 'ko' ? tip.title : language === 'ja' ? tip.titleJa : tip.titleEn}
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {language === 'ko' ? tip.text : language === 'ja' ? tip.textJa : tip.textEn}
+                    </p>
                   </div>
                 </div>
               );
@@ -376,16 +432,16 @@ export default function Guide() {
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-sm border border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
             <HelpCircle className="w-6 h-6 text-purple-500" />
-            자주 묻는 질문
+            {t('자주 묻는 질문', 'Frequently Asked Questions', 'よくある質問')}
           </h2>
           <div className="space-y-6">
             {faqs.map((faq, index) => (
               <div key={index} className="pb-6 border-b border-gray-200 dark:border-gray-700 last:border-0 last:pb-0">
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                  Q. {faq.question}
+                  Q. {language === 'ko' ? faq.question : language === 'ja' ? faq.questionJa : faq.questionEn}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-400">
-                  A. {faq.answer}
+                  A. {language === 'ko' ? faq.answer : language === 'ja' ? faq.answerJa : faq.answerEn}
                 </p>
               </div>
             ))}
@@ -394,13 +450,17 @@ export default function Guide() {
 
         {/* Contact Section */}
         <div className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl p-8 text-white text-center">
-          <h2 className="text-2xl font-bold mb-2">추가 도움이 필요하신가요?</h2>
-          <p className="mb-6 text-white/90">N3RVE 팀이 언제든지 도와드리겠습니다</p>
+          <h2 className="text-2xl font-bold mb-2">
+            {t('추가 도움이 필요하신가요?', 'Need More Help?', 'さらにサポートが必要ですか？')}
+          </h2>
+          <p className="mb-6 text-white/90">
+            {t('N3RVE 팀이 언제든지 도와드리겠습니다', 'N3RVE team is here to help anytime', 'N3RVEチームがいつでもお手伝いします')}
+          </p>
           <button
             onClick={() => window.location.href = 'mailto:support@n3rve.com'}
             className="px-6 py-3 bg-white text-purple-600 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
           >
-            문의하기
+            {t('문의하기', 'Contact Us', 'お問い合わせ')}
           </button>
         </div>
       </div>

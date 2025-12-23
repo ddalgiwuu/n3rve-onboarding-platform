@@ -119,8 +119,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { icon: BarChart3, label: 'Feature Reports', path: '/feature-reports', color: 'text-green-600' },
     { icon: UserCircle, label: 'Artist Roster', path: '/artist-roster', color: 'text-gray-600' },
     { icon: FolderOpen, label: t('nav.submissionHistory'), path: '/submissions', color: 'text-gray-600' },
-    { icon: FileText, label: t('nav.guide'), path: '/guide', color: 'text-green-600' },
     { icon: Music, label: t('nav.artistProfile'), path: '/artist-profile-guide', color: 'text-gray-600' },
+    { icon: FileText, label: t('nav.guide'), path: '/guide', color: 'text-green-600' },
     { icon: Settings, label: t('nav.settings'), path: '/settings', color: 'text-gray-600' },
     { icon: Building2, label: t('nav.accountManagement'), path: '/account', color: 'text-gray-600' }
   ] as const;
@@ -233,7 +233,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   }}
                   className={({ isActive }) =>
                     cn(
-                      'group flex items-center gap-3 px-4 py-4 rounded-2xl transition-all duration-300',
+                      'group relative flex items-center gap-3 px-4 py-4 rounded-2xl transition-all duration-300',
                       'bg-surface border-modern-soft magnetic hover:shadow-xl transform-gpu',
                       'hover:bg-gray-100 dark:hover:bg-gray-800/50',
                       'backdrop-blur-md',
@@ -260,7 +260,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         )} />
                       </div>
                       <span className={cn(
-                        'font-medium flex-1 transition-all duration-300 whitespace-nowrap',
+                        'font-medium transition-all duration-300 whitespace-nowrap',
                         'group-hover:font-semibold',
                         isActive
                           ? 'text-gray-900 dark:text-white font-semibold'
@@ -269,8 +269,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         {item.label}
                       </span>
                       {'badge' in item && item.badge && (
-                        <span className="inline-flex items-center gap-1 text-xs bg-gradient-to-r from-n3rve-500 to-n3rve-600 text-white px-3 py-1 rounded-full font-semibold glow-pulse border border-n3rve-400/50 shadow-lg shadow-n3rve-500/30 magnetic">
-                          <Sparkles className="w-3 h-3 animate-bounce" />
+                        <span className="absolute top-2 right-2 inline-flex items-center gap-1 text-[10px] bg-gradient-to-r from-n3rve-500 to-n3rve-600 text-white px-1.5 py-0.5 rounded-full font-bold">
+                          <Sparkles className="w-2 h-2" />
                           {item.badge}
                         </span>
                       )}
