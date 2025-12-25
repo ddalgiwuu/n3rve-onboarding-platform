@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronDown, Search } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -42,29 +41,6 @@ export function TagMultiSelect({
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-
-  // Update dropdown position when opened
-  useEffect(() => {
-    if (isOpen && containerRef.current) {
-      const updatePosition = () => {
-        const rect = containerRef.current!.getBoundingClientRect();
-        setDropdownPosition({
-          top: rect.bottom + 8, // 8px gap (no scrollY for fixed positioning)
-          left: rect.left,
-          width: rect.width
-        });
-      };
-
-      updatePosition();
-      window.addEventListener('scroll', updatePosition, true);
-      window.addEventListener('resize', updatePosition);
-
-      return () => {
-        window.removeEventListener('scroll', updatePosition, true);
-        window.removeEventListener('resize', updatePosition);
-      };
-    }
-  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -209,23 +185,17 @@ export function TagMultiSelect({
         <p className="mt-1 text-sm text-gray-400">{helpText}</p>
       )}
 
-      {/* Dropdown menu - rendered via Portal */}
+      {/* Dropdown menu */}
       <AnimatePresence>
-        {isOpen && createPortal(
+        {isOpen && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            style={{
-              position: 'fixed',
-              top: `${dropdownPosition.top}px`,
-              left: `${dropdownPosition.left}px`,
-              width: `${dropdownPosition.width}px`,
-              zIndex: 99999
-            }}
+            style={{ zIndex: 9999, position: 'absolute' }}
             className={clsx(
-              'rounded-xl border overflow-hidden',
+              'absolute top-full left-0 w-full mt-2 rounded-xl border overflow-hidden',
               'max-h-80 overflow-y-auto',
               variantClasses[variant],
               'shadow-2xl'
@@ -298,8 +268,7 @@ export function TagMultiSelect({
                 </div>
               ))}
             </div>
-          </motion.div>,
-          document.body
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
