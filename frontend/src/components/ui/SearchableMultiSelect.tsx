@@ -35,9 +35,23 @@ export default function SearchableMultiSelect({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Get solid background color based on theme
-  const isDark = document.documentElement.classList.contains('dark');
-  const dropdownBg = isDark ? '#111827' : '#ffffff'; // gray-900 : white
+  // Get solid background color based on theme - using useEffect to ensure proper detection
+  const [dropdownBg, setDropdownBg] = useState('#ffffff');
+
+  useEffect(() => {
+    const updateTheme = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setDropdownBg(isDark ? '#111827' : '#ffffff'); // gray-900 : white
+    };
+
+    updateTheme();
+
+    // Watch for theme changes
+    const observer = new MutationObserver(updateTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    return () => observer.disconnect();
+  }, []);
 
   // Filter options based on search term
   const filteredOptions = options.filter(option =>
@@ -137,7 +151,13 @@ export default function SearchableMultiSelect({
         {isOpen && (
           <div
             className="absolute z-50 w-full mt-1 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-auto"
-            style={{ backgroundColor: dropdownBg, opacity: 1 }}
+            style={{
+              backgroundColor: dropdownBg,
+              opacity: '1',
+              backgroundImage: 'none',
+              backdropFilter: 'none',
+              WebkitBackdropFilter: 'none'
+            }}
           >
             {/* Results count */}
             {searchTerm && (
@@ -156,7 +176,11 @@ export default function SearchableMultiSelect({
                   {Object.keys(groupedOptions).length > 1 && (
                     <div
                       className="px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-200"
-                      style={{ backgroundColor: isDark ? '#1f2937' : '#f9fafb', opacity: 1 }}
+                      style={{
+                        backgroundColor: dropdownBg === '#111827' ? '#1f2937' : '#f9fafb',
+                        opacity: '1',
+                        backgroundImage: 'none'
+                      }}
                     >
                       {category}
                     </div>
@@ -173,11 +197,12 @@ export default function SearchableMultiSelect({
                         disabled={isDisabled}
                         style={{
                           backgroundColor: isSelected
-                            ? (isDark ? '#14532d' : '#dcfce7')  // green-900 : green-100
+                            ? (dropdownBg === '#111827' ? '#14532d' : '#dcfce7')  // green-900 : green-100
                             : isDisabled
-                              ? (isDark ? '#1f2937' : '#f3f4f6')  // gray-800 : gray-100
-                              : (isDark ? '#111827' : '#ffffff'), // gray-900 : white
-                          opacity: 1
+                              ? (dropdownBg === '#111827' ? '#1f2937' : '#f3f4f6')  // gray-800 : gray-100
+                              : dropdownBg, // gray-900 : white
+                          opacity: '1',
+                          backgroundImage: 'none'
                         }}
                         className={`
                           w-full px-3 py-2 text-left text-sm flex items-center justify-between
