@@ -10,6 +10,7 @@ import { initializeSecurity } from './utils/security';
 // Admin pages - use direct imports to avoid React 19 lazy() compatibility issues
 import AdminDashboardPage from './pages/admin/AdminDashboard';
 import AdminSubmissionsPage from './pages/admin/AdminSubmissions';
+import SubmissionDetailPage from './pages/admin/SubmissionDetail';
 import SubmissionManagementPage from './pages/admin/SubmissionManagement';
 import AdminCustomersPage from './pages/admin/AdminCustomers';
 import AdminSettingsPage from './pages/admin/AdminSettings';
@@ -179,6 +180,9 @@ function App() {
             } />
             <Route path="/admin/submissions" element={
               isAuthenticated && userRole === 'ADMIN' ? <AdminSubmissionsPage /> : <Navigate to="/login" />
+            } />
+            <Route path="/admin/submissions/:id" element={
+              isAuthenticated && userRole === 'ADMIN' ? <SubmissionDetailPage /> : <Navigate to="/login" />
             } />
             <Route path="/admin/submission-management" element={
               isAuthenticated && userRole === 'ADMIN' ? <SubmissionManagementPage /> : <Navigate to="/login" />

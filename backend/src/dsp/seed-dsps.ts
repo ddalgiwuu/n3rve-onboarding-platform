@@ -11,12 +11,13 @@ async function seedDSPs() {
     const determineServiceType = (name: string, description?: string): ServiceType => {
       const text = `${name} ${description || ''}`.toLowerCase();
       
-      if (text.includes('fingerprint')) return ServiceType.FINGERPRINTING;
-      if (text.includes('video')) return ServiceType.VIDEO;
-      if (text.includes('download')) return ServiceType.DOWNLOAD;
-      if (text.includes('radio')) return ServiceType.RADIO;
-      if (text.includes('facebook') || text.includes('tiktok')) return ServiceType.SOCIAL;
-      if (text.includes('streaming') || text.includes('music')) return ServiceType.STREAMING;
+      // All non-standard types use OTHER as per Prisma schema
+      if (text.includes('spotify')) return ServiceType.SPOTIFY;
+      if (text.includes('apple')) return ServiceType.APPLE_MUSIC;
+      if (text.includes('youtube')) return ServiceType.YOUTUBE_MUSIC;
+      if (text.includes('amazon')) return ServiceType.AMAZON_MUSIC;
+      if (text.includes('tidal')) return ServiceType.TIDAL;
+      if (text.includes('deezer')) return ServiceType.DEEZER;
       
       return ServiceType.OTHER;
     };
@@ -30,22 +31,27 @@ async function seedDSPs() {
         const serviceType: ServiceType = (dspData.serviceType as ServiceType) || determineServiceType(dspData.name, dspData.description);
         
         const result = await prisma.dSP.upsert({
-          where: { dspId: dspData.dspId },
+          where: { name: dspData.name },
           update: {
-            name: dspData.name,
-            code: dspData.code,
-            description: dspData.description,
-            contactEmail: dspData.contactEmail,
-            territories: dspData.territories,
-            availability: dspData.availability,
-            isHD: dspData.isHD || false,
             serviceType,
+            logoUrl: (dspData as any).logoUrl,
+            websiteUrl: (dspData as any).websiteUrl,
+            apiEndpoint: (dspData as any).apiEndpoint,
+            territories: dspData.territories || [],
+            marketShare: (dspData as any).marketShare,
+            features: (dspData as any).features,
             isActive: true,
           },
           create: {
-            ...dspData,
+            name: dspData.name,
             serviceType,
-            isHD: dspData.isHD || false,
+            logoUrl: (dspData as any).logoUrl,
+            websiteUrl: (dspData as any).websiteUrl,
+            apiEndpoint: (dspData as any).apiEndpoint,
+            territories: dspData.territories || [],
+            marketShare: (dspData as any).marketShare,
+            features: (dspData as any).features,
+            isActive: true,
           }
         });
 

@@ -131,7 +131,7 @@ export default function SearchableMultiSelect({
 
         {/* Dropdown */}
         {isOpen && (
-          <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl max-h-60 overflow-auto">
             {/* Results count */}
             {searchTerm && (
               <div className="px-3 py-2 text-xs text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-700">
@@ -147,7 +147,7 @@ export default function SearchableMultiSelect({
               Object.entries(groupedOptions).map(([category, categoryOptions]) => (
                 <div key={category}>
                   {Object.keys(groupedOptions).length > 1 && (
-                    <div className="px-3 py-1 text-xs font-semibold text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50">
+                    <div className="px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700/80">
                       {category}
                     </div>
                   )}
@@ -167,7 +167,7 @@ export default function SearchableMultiSelect({
                         ? 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300'
                         : isDisabled
                           ? 'bg-gray-50 dark:bg-gray-700/50 text-gray-400 dark:text-gray-500 cursor-not-allowed'
-                          : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                          : 'text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50'
                       }
                         `}
                       >

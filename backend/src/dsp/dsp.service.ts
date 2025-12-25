@@ -3,15 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { Prisma, ServiceType } from '@prisma/client';
 
 export interface CreateDSPDto {
-  dspId: string;
   name: string;
-  code?: string;
-  description?: string;
-  contactEmail?: string;
-  territories: string[];
-  availability: string;
-  isHD?: boolean;
   serviceType?: ServiceType;
+  logoUrl?: string;
+  websiteUrl?: string;
+  apiEndpoint?: string;
+  territories: string[];
+  marketShare?: number;
+  features?: any;
 }
 
 export interface UpdateDSPDto extends Partial<CreateDSPDto> {
@@ -34,9 +33,7 @@ export class DSPService {
     
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-        { dspId: { contains: search, mode: 'insensitive' } }
+        { name: { contains: search, mode: 'insensitive' } }
       ];
     }
 
@@ -68,10 +65,10 @@ export class DSPService {
     });
   }
 
-  // Get a single DSP by FUGA ID
-  async findByDspId(dspId: string) {
+  // Get a single DSP by name
+  async findByName(name: string) {
     return this.prisma.dSP.findUnique({
-      where: { dspId }
+      where: { name }
     });
   }
 
@@ -80,7 +77,7 @@ export class DSPService {
     return this.prisma.dSP.create({
       data: {
         ...data,
-        serviceType: data.serviceType || this.determineServiceType(data.name, data.description)
+        serviceType: data.serviceType || this.determineServiceType(data.name, (data as any).description)
       }
     });
   }
@@ -105,21 +102,20 @@ export class DSPService {
   async bulkUpsert(dsps: CreateDSPDto[]) {
     const operations = dsps.map(dsp => 
       this.prisma.dSP.upsert({
-        where: { dspId: dsp.dspId },
+        where: { name: dsp.name },
         update: {
-          name: dsp.name,
-          code: dsp.code,
-          description: dsp.description,
-          contactEmail: dsp.contactEmail,
+          serviceType: dsp.serviceType || this.determineServiceType(dsp.name),
+          logoUrl: dsp.logoUrl,
+          websiteUrl: dsp.websiteUrl,
+          apiEndpoint: dsp.apiEndpoint,
           territories: dsp.territories,
-          availability: dsp.availability,
-          isHD: dsp.isHD,
-          serviceType: dsp.serviceType || this.determineServiceType(dsp.name, dsp.description),
+          marketShare: dsp.marketShare,
+          features: dsp.features,
           isActive: true,
         },
         create: {
           ...dsp,
-          serviceType: dsp.serviceType || this.determineServiceType(dsp.name, dsp.description)
+          serviceType: dsp.serviceType || this.determineServiceType(dsp.name)
         }
       })
     );
@@ -131,12 +127,13 @@ export class DSPService {
   private determineServiceType(name: string, description?: string): ServiceType {
     const text = `${name} ${description || ''}`.toLowerCase();
     
-    if (text.includes('fingerprint')) return ServiceType.FINGERPRINTING;
-    if (text.includes('video')) return ServiceType.VIDEO;
-    if (text.includes('download')) return ServiceType.DOWNLOAD;
-    if (text.includes('radio')) return ServiceType.RADIO;
-    if (text.includes('facebook') || text.includes('tiktok')) return ServiceType.SOCIAL;
-    if (text.includes('streaming') || text.includes('music')) return ServiceType.STREAMING;
+    // All non-standard types use OTHER as per Prisma schema
+    if (text.includes('spotify')) return ServiceType.SPOTIFY;
+    if (text.includes('apple')) return ServiceType.APPLE_MUSIC;
+    if (text.includes('youtube')) return ServiceType.YOUTUBE_MUSIC;
+    if (text.includes('amazon')) return ServiceType.AMAZON_MUSIC;
+    if (text.includes('tidal')) return ServiceType.TIDAL;
+    if (text.includes('deezer')) return ServiceType.DEEZER;
     
     return ServiceType.OTHER;
   }

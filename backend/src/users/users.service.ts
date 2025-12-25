@@ -58,7 +58,7 @@ export class UsersService {
         emailVerified: true,
         googleId: 'test-google-id',
         provider: 'GOOGLE' as const,
-        profilePicture: null,
+        profilePicture: '',
         company: null,
         phone: null,
         password: null,
@@ -94,7 +94,7 @@ export class UsersService {
           emailVerified: true,
           googleId: 'test-google-id',
           provider: 'GOOGLE' as const,
-          profilePicture: null,
+          profilePicture: '',
           company: null,
           phone: null,
           password: null,
@@ -118,7 +118,7 @@ export class UsersService {
   }
 
   async findUserByGoogleId(googleId: string) {
-    return this.prisma.user.findUnique({
+    return this.prisma.user.findFirst({
       where: { googleId },
     });
   }
