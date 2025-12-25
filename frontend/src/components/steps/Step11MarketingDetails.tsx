@@ -84,13 +84,13 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
       </div>
 
       {/* Moods & Instruments */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700" style={{ position: 'relative', zIndex: 1 }}>
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Music className="w-5 h-5 text-blue-600" />
           {t('음악 특성', 'Music Characteristics', '音楽特性')}
         </h3>
 
-        <div className="space-y-6" style={{ position: 'relative', zIndex: 'auto' }}>
+        <div className="space-y-6">
           <SearchableMultiSelect
             label={t('무드', 'Moods', 'ムード')}
             options={MOODS}
@@ -229,7 +229,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
       </div>
 
       {/* Social Media Plan */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 relative z-0">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Globe className="w-5 h-5 text-pink-600" />
           {t('소셜 미디어 계획', 'Social Media Rollout Plan', 'ソーシャルメディア計画')}
@@ -256,7 +256,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
       </div>
 
       {/* Additional Information */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 relative z-0">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Users className="w-5 h-5 text-indigo-600" />
           {t('추가 정보', 'Additional Information', '追加情報')}
