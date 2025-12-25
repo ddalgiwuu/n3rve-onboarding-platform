@@ -36,7 +36,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
       </div>
 
       {/* Project Context */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 relative z-0">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Target className="w-5 h-5 text-purple-600" />
           {t('프로젝트 컨텍스트', 'Project Context', 'プロジェクトコンテキスト')}
@@ -84,7 +84,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
       </div>
 
       {/* Moods & Instruments */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 relative z-10">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Music className="w-5 h-5 text-blue-600" />
           {t('음악 특성', 'Music Characteristics', '音楽特性')}
@@ -113,7 +113,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
       </div>
 
       {/* Elevator Pitch */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 relative z-0">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Megaphone className="w-5 h-5 text-green-600" />
           {t('엘리베이터 피치', 'Elevator Pitch', 'エレベーターピッチ')}
@@ -182,7 +182,7 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
       </div>
 
       {/* Marketing Drivers */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 relative z-0">
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Target className="w-5 h-5 text-orange-600" />
           {t('마케팅 드라이버', 'Marketing Drivers', 'マーケティングドライバー')}
