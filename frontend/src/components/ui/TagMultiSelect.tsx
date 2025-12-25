@@ -190,8 +190,9 @@ export function TagMultiSelect({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
+            style={{ zIndex: 9999, position: 'absolute' }}
             className={clsx(
-              'absolute z-50 w-full mt-2 rounded-xl border overflow-hidden',
+              'w-full mt-2 rounded-xl border overflow-hidden',
               'max-h-80 overflow-y-auto',
               variantClasses[variant],
               'shadow-2xl'
