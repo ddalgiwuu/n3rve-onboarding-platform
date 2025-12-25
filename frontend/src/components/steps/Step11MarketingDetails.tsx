@@ -84,13 +84,13 @@ export default function Step11MarketingDetails({ formData, onChange }: Step11Mar
       </div>
 
       {/* Moods & Instruments */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700" style={{ position: 'relative', zIndex: 1 }}>
         <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
           <Music className="w-5 h-5 text-blue-600" />
           {t('음악 특성', 'Music Characteristics', '音楽特性')}
         </h3>
 
-        <div className="space-y-6">
+        <div className="space-y-6" style={{ position: 'relative', zIndex: 'auto' }}>
           <SearchableMultiSelect
             label={t('무드', 'Moods', 'ムード')}
             options={MOODS}
