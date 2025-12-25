@@ -49,8 +49,8 @@ export function TagMultiSelect({
       const updatePosition = () => {
         const rect = containerRef.current!.getBoundingClientRect();
         setDropdownPosition({
-          top: rect.bottom + window.scrollY + 8, // 8px gap
-          left: rect.left + window.scrollX,
+          top: rect.bottom + 8, // 8px gap (no scrollY for fixed positioning)
+          left: rect.left,
           width: rect.width
         });
       };
