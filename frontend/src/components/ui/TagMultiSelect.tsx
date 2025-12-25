@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronDown, Search } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -38,8 +39,32 @@ export function TagMultiSelect({
 }: TagMultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Update dropdown position when opened
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const updatePosition = () => {
+        const rect = containerRef.current!.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + window.scrollY + 8, // 8px gap
+          left: rect.left + window.scrollX,
+          width: rect.width
+        });
+      };
+
+      updatePosition();
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    }
+  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -50,9 +75,11 @@ export function TagMultiSelect({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [isOpen]);
 
   // Filter options based on search
   const filteredOptions = options.filter(option =>
@@ -182,17 +209,23 @@ export function TagMultiSelect({
         <p className="mt-1 text-sm text-gray-400">{helpText}</p>
       )}
 
-      {/* Dropdown menu */}
+      {/* Dropdown menu - rendered via Portal */}
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && createPortal(
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
-            style={{ zIndex: 9999, position: 'absolute' }}
+            style={{
+              position: 'fixed',
+              top: `${dropdownPosition.top}px`,
+              left: `${dropdownPosition.left}px`,
+              width: `${dropdownPosition.width}px`,
+              zIndex: 99999
+            }}
             className={clsx(
-              'w-full mt-2 rounded-xl border overflow-hidden',
+              'rounded-xl border overflow-hidden',
               'max-h-80 overflow-y-auto',
               variantClasses[variant],
               'shadow-2xl'
@@ -265,7 +298,8 @@ export function TagMultiSelect({
                 </div>
               ))}
             </div>
-          </motion.div>
+          </motion.div>,
+          document.body
         )}
       </AnimatePresence>
     </div>
