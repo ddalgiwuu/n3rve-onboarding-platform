@@ -4,28 +4,21 @@ import { TerritorySelectionType } from '@prisma/client';
 import { TERRITORY_DATA, getAllCountries, getCountryByCode } from './territory-data';
 
 export interface CreateTerritorySelectionDto {
-  releaseId: string;
-  selectionType: TerritorySelectionType;
-  selectedCountries: string[];
-  excludedCountries: string[];
-  dspTerritories?: {
-    dspId: string;
-    dspName: string;
-    selectionType: TerritorySelectionType;
-    countries: string[];
-  }[];
+  name: string;
+  type: TerritorySelectionType;
+  territories: string[];
+  excludedTerritories: string[];
+  description?: string;
+  isDefault?: boolean;
 }
 
 export interface UpdateTerritorySelectionDto {
-  selectionType?: TerritorySelectionType;
-  selectedCountries?: string[];
-  excludedCountries?: string[];
-  dspTerritories?: {
-    dspId: string;
-    dspName: string;
-    selectionType: TerritorySelectionType;
-    countries: string[];
-  }[];
+  name?: string;
+  type?: TerritorySelectionType;
+  territories?: string[];
+  excludedTerritories?: string[];
+  description?: string;
+  isDefault?: boolean;
 }
 
 export interface TerritoryStats {
@@ -66,73 +59,54 @@ export class TerritoriesService {
     const allCountries = getAllCountries();
     const validCountryCodes = allCountries.map(c => c.code);
     
-    const invalidSelected = data.selectedCountries.filter(code => !validCountryCodes.includes(code));
-    const invalidExcluded = data.excludedCountries.filter(code => !validCountryCodes.includes(code));
+    const invalidSelected = data.territories.filter(code => !validCountryCodes.includes(code));
+    const invalidExcluded = data.excludedTerritories.filter(code => !validCountryCodes.includes(code));
     
     if (invalidSelected.length > 0) {
-      throw new Error(`Invalid country codes in selectedCountries: ${invalidSelected.join(', ')}`);
+      throw new Error(`Invalid country codes in territories: ${invalidSelected.join(', ')}`);
     }
     
     if (invalidExcluded.length > 0) {
-      throw new Error(`Invalid country codes in excludedCountries: ${invalidExcluded.join(', ')}`);
-    }
-
-    // Validate DSP territories if provided
-    if (data.dspTerritories) {
-      for (const dspTerritory of data.dspTerritories) {
-        const invalidDspCountries = dspTerritory.countries.filter(code => !validCountryCodes.includes(code));
-        if (invalidDspCountries.length > 0) {
-          throw new Error(`Invalid country codes for DSP ${dspTerritory.dspName}: ${invalidDspCountries.join(', ')}`);
-        }
-      }
+      throw new Error(`Invalid country codes in excludedTerritories: ${invalidExcluded.join(', ')}`);
     }
 
     return this.prisma.territorySelection.create({
       data: {
-        releaseId: data.releaseId,
-        selectionType: data.selectionType,
-        selectedCountries: data.selectedCountries,
-        excludedCountries: data.excludedCountries,
-        dspTerritories: data.dspTerritories || [],
+        name: data.name,
+        type: data.type,
+        territories: data.territories,
+        excludedTerritories: data.excludedTerritories,
+        description: data.description,
+        isDefault: data.isDefault || false,
       },
     });
   }
 
-  // Get territory selection by release ID
-  async getTerritorySelectionByReleaseId(releaseId: string) {
-    return this.prisma.territorySelection.findFirst({
-      where: { releaseId },
+  // Get territory selection by name
+  async getTerritorySelectionByName(name: string) {
+    return this.prisma.territorySelection.findUnique({
+      where: { name },
     });
   }
 
   // Update territory selection
   async updateTerritorySelection(id: string, data: UpdateTerritorySelectionDto) {
     // Validate country codes if provided
-    if (data.selectedCountries || data.excludedCountries || data.dspTerritories) {
+    if (data.territories || data.excludedTerritories) {
       const allCountries = getAllCountries();
       const validCountryCodes = allCountries.map(c => c.code);
-      
-      if (data.selectedCountries) {
-        const invalidSelected = data.selectedCountries.filter(code => !validCountryCodes.includes(code));
+
+      if (data.territories) {
+        const invalidSelected = data.territories.filter(code => !validCountryCodes.includes(code));
         if (invalidSelected.length > 0) {
-          throw new Error(`Invalid country codes in selectedCountries: ${invalidSelected.join(', ')}`);
-        }
-      }
-      
-      if (data.excludedCountries) {
-        const invalidExcluded = data.excludedCountries.filter(code => !validCountryCodes.includes(code));
-        if (invalidExcluded.length > 0) {
-          throw new Error(`Invalid country codes in excludedCountries: ${invalidExcluded.join(', ')}`);
+          throw new Error(`Invalid country codes in territories: ${invalidSelected.join(', ')}`);
         }
       }
 
-      // Validate DSP territories if provided
-      if (data.dspTerritories) {
-        for (const dspTerritory of data.dspTerritories) {
-          const invalidDspCountries = dspTerritory.countries.filter(code => !validCountryCodes.includes(code));
-          if (invalidDspCountries.length > 0) {
-            throw new Error(`Invalid country codes for DSP ${dspTerritory.dspName}: ${invalidDspCountries.join(', ')}`);
-          }
+      if (data.excludedTerritories) {
+        const invalidExcluded = data.excludedTerritories.filter(code => !validCountryCodes.includes(code));
+        if (invalidExcluded.length > 0) {
+          throw new Error(`Invalid country codes in excludedTerritories: ${invalidExcluded.join(', ')}`);
         }
       }
     }
@@ -164,14 +138,14 @@ export class TerritoriesService {
     const totalCountries = allCountries.length;
 
     let selectedCountries = 0;
-    let excludedCountries = selection.excludedCountries.length;
+    let excludedCountries = selection.excludedTerritories.length;
 
-    if (selection.selectionType === 'WORLDWIDE') {
+    if (selection.type === 'WORLDWIDE') {
       selectedCountries = totalCountries - excludedCountries;
-    } else if (selection.selectionType === 'SPECIFIC') {
-      selectedCountries = selection.selectedCountries.length;
+    } else if (selection.type === 'CUSTOM') {
+      selectedCountries = selection.territories.length;
       excludedCountries = 0;
-    } else if (selection.selectionType === 'WORLDWIDE_EXCEPT') {
+    } else if (selection.type === 'EXCLUDED') {
       selectedCountries = totalCountries - excludedCountries;
     }
 
@@ -181,20 +155,20 @@ export class TerritoriesService {
       let continentSelected = 0;
       let continentExcluded = 0;
 
-      if (selection.selectionType === 'WORLDWIDE') {
+      if (selection.type === 'WORLDWIDE') {
         continentSelected = continentCountries.length;
         continentExcluded = continentCountries.filter(code => 
-          selection.excludedCountries.includes(code)
+          selection.excludedTerritories.includes(code)
         ).length;
         continentSelected -= continentExcluded;
-      } else if (selection.selectionType === 'SPECIFIC') {
+      } else if (selection.type === 'CUSTOM') {
         continentSelected = continentCountries.filter(code => 
-          selection.selectedCountries.includes(code)
+          selection.territories.includes(code)
         ).length;
-      } else if (selection.selectionType === 'WORLDWIDE_EXCEPT') {
+      } else if (selection.type === 'EXCLUDED') {
         continentSelected = continentCountries.length;
         continentExcluded = continentCountries.filter(code => 
-          selection.excludedCountries.includes(code)
+          selection.excludedTerritories.includes(code)
         ).length;
         continentSelected -= continentExcluded;
       }
@@ -212,44 +186,39 @@ export class TerritoriesService {
       selectedCountries,
       excludedCountries,
       continentBreakdown,
-      dspCustomizations: selection.dspTerritories.length,
+      dspCustomizations: 0, // DSP territories not in schema
     };
+  }
+
+  // Get territory selection by release ID
+  async getTerritorySelectionByReleaseId(releaseId: string): Promise<{ id: string; name: string; type: string; territories: string[]; excludedTerritories: string[]; } | null> {
+    // TODO: Implement when release-territory relationship is added to schema
+    return null;
   }
 
   // Get effective countries for a release (considering DSP customizations)
   async getEffectiveCountriesForRelease(releaseId: string, dspId?: string) {
     const selection = await this.getTerritorySelectionByReleaseId(releaseId);
-    
+
     if (!selection) {
       return [];
     }
 
-    // If DSP specific customization exists, use that
-    if (dspId) {
-      const dspCustomization = selection.dspTerritories.find(dsp => dsp.dspId === dspId);
-      if (dspCustomization) {
-        if (dspCustomization.selectionType === 'WORLDWIDE') {
-          return getAllCountries().map(c => c.code);
-        } else if (dspCustomization.selectionType === 'SPECIFIC') {
-          return dspCustomization.countries;
-        } else if (dspCustomization.selectionType === 'WORLDWIDE_EXCEPT') {
-          return getAllCountries()
-            .filter(c => !dspCustomization.countries.includes(c.code))
-            .map(c => c.code);
-        }
-      }
-    }
+    // DSP customization not in current schema
+    // if (dspId) {
+    //   // Handle DSP-specific territory customization
+    // }
 
     // Use general release territory settings
-    if (selection.selectionType === 'WORLDWIDE') {
+    if (selection.type === 'WORLDWIDE') {
       return getAllCountries()
-        .filter(c => !selection.excludedCountries.includes(c.code))
+        .filter(c => !selection.excludedTerritories.includes(c.code))
         .map(c => c.code);
-    } else if (selection.selectionType === 'SPECIFIC') {
-      return selection.selectedCountries;
-    } else if (selection.selectionType === 'WORLDWIDE_EXCEPT') {
+    } else if (selection.type === 'CUSTOM') {
+      return selection.territories;
+    } else if (selection.type === 'EXCLUDED') {
       return getAllCountries()
-        .filter(c => !selection.excludedCountries.includes(c.code))
+        .filter(c => !selection.excludedTerritories.includes(c.code))
         .map(c => c.code);
     }
 
@@ -262,21 +231,12 @@ export class TerritoriesService {
 
     // Type-specific validations
     if ('selectionType' in data) {
-      if (data.selectionType === 'SPECIFIC' && (!data.selectedCountries || data.selectedCountries.length === 0)) {
+      if (data.selectionType === 'SPECIFIC' && (!data.territories || data.territories.length === 0)) {
         errors.push('SPECIFIC selection type requires at least one selected country');
       }
       
-      if (data.selectionType === 'WORLDWIDE_EXCEPT' && (!data.excludedCountries || data.excludedCountries.length === 0)) {
+      if (data.selectionType === 'WORLDWIDE_EXCEPT' && (!data.excludedTerritories || data.excludedTerritories.length === 0)) {
         errors.push('WORLDWIDE_EXCEPT selection type requires at least one excluded country');
-      }
-    }
-
-    // DSP territory validations
-    if (data.dspTerritories) {
-      for (const dspTerritory of data.dspTerritories) {
-        if (dspTerritory.selectionType === 'SPECIFIC' && dspTerritory.countries.length === 0) {
-          errors.push(`DSP ${dspTerritory.dspName} with SPECIFIC selection requires at least one country`);
-        }
       }
     }
 

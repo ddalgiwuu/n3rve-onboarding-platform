@@ -208,7 +208,11 @@ export default function AdminDashboard() {
                   </tr>
                 ) : (
                   recentSubmissions.map((submission) => (
-                    <tr key={submission.id} className="border-b border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+                    <tr
+                      key={submission.id}
+                      onClick={() => navigate(`/admin/submissions/${submission.id}`)}
+                      className="border-b border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                    >
                       <td className="p-4 text-gray-700 dark:text-gray-200">{formatDate(submission.createdAt)}</td>
                       <td className="p-4 text-gray-700 dark:text-gray-200">{submission.artistName || '-'}</td>
                       <td className="p-4 text-gray-700 dark:text-gray-200">{submission.albumTitle || '-'}</td>
@@ -224,13 +228,10 @@ export default function AdminDashboard() {
                         </span>
                       </td>
                       <td className="p-4">
-                        <button
-                          onClick={() => navigate('/admin/submission-management')}
-                          className="px-3 py-1 bg-n3rve-500 hover:bg-n3rve-600 text-white rounded-lg text-sm flex items-center gap-1 transition-colors"
-                        >
+                        <div className="flex items-center gap-1 text-n3rve-500 dark:text-n3rve-400 text-sm">
                           <Eye className="w-4 h-4" />
                           {t('admin.view')}
-                        </button>
+                        </div>
                       </td>
                     </tr>
                   ))

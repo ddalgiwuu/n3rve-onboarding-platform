@@ -2,10 +2,25 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDigitalProductDto } from './dto/create-digital-product.dto';
 import { UpdateDigitalProductDto } from './dto/update-digital-product.dto';
+import { ProductFormat } from '@prisma/client';
 
 @Injectable()
 export class DigitalProductsService {
   constructor(private prisma: PrismaService) {}
+
+  private mapToProductFormat(albumType: string): ProductFormat {
+    const normalized = albumType.toUpperCase();
+    switch (normalized) {
+      case 'SINGLE':
+      case 'FOCUS_TRACK':
+        return ProductFormat.SINGLE;
+      case 'EP':
+        return ProductFormat.EP;
+      case 'ALBUM':
+      default:
+        return ProductFormat.ALBUM;
+    }
+  }
 
   async create(createDto: CreateDigitalProductDto) {
     return this.prisma.digitalProduct.create({
@@ -16,8 +31,7 @@ export class DigitalProductsService {
         status: createDto.status || 'PENDING'
       },
       include: {
-        submission: true,
-        featureReport: true
+        submission: true
       }
     });
   }
@@ -43,14 +57,6 @@ export class DigitalProductsService {
             albumTitle: true,
             status: true
           }
-        },
-        featureReport: {
-          select: {
-            id: true,
-            reportStatus: true,
-            autoPlaylists: true,
-            adminPlaylists: true
-          }
         }
       },
       orderBy: {
@@ -63,12 +69,7 @@ export class DigitalProductsService {
     const product = await this.prisma.digitalProduct.findUnique({
       where: { id },
       include: {
-        submission: true,
-        featureReport: {
-          include: {
-            digitalProduct: true
-          }
-        }
+        submission: true
       }
     });
 
@@ -83,8 +84,7 @@ export class DigitalProductsService {
     return this.prisma.digitalProduct.findMany({
       where: { upc },
       include: {
-        submission: true,
-        featureReport: true
+        submission: true
       }
     });
   }
@@ -106,8 +106,7 @@ export class DigitalProductsService {
       where: { id },
       data,
       include: {
-        submission: true,
-        featureReport: true
+        submission: true
       }
     });
   }
@@ -140,12 +139,14 @@ export class DigitalProductsService {
     const mainProduct = await this.create({
       submissionId,
       upc: submission.release?.upc || '',
-      format: submission.albumType, // SINGLE, EP, or ALBUM
+      format: this.mapToProductFormat(submission.albumType),
       title: submission.albumTitle,
       artistName: submission.artistName,
       releaseDate: submission.releaseDate.toISOString(),
-      territories: submission.release?.territories || ['World'],
-      status: submission.status
+      territories: Array.isArray(submission.release?.territories) 
+        ? submission.release.territories as string[] 
+        : ['World'],
+      status: submission.status as any
     });
 
     products.push(mainProduct);
@@ -157,14 +158,16 @@ export class DigitalProductsService {
       const focusProduct = await this.create({
         submissionId,
         upc: submission.release?.upc || '',
-        format: 'FOCUS_TRACK',
+        format: 'SINGLE', // Focus tracks use SINGLE format (ProductFormat enum)
         title: track.titleKo,
         artistName: submission.artistName,
         linkedTrackId: track.id,
         trackIndex: submission.tracks.findIndex((t: any) => t.id === track.id),
         releaseDate: submission.releaseDate.toISOString(),
-        territories: submission.release?.territories || ['World'],
-        status: submission.status
+        territories: Array.isArray(submission.release?.territories) 
+        ? submission.release.territories as string[] 
+        : ['World'],
+        status: submission.status as any
       });
 
       products.push(focusProduct);

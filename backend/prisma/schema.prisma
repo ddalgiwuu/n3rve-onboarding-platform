@@ -7,9 +7,55 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==================== ENUMS ====================
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum ProductFormat {
+  SINGLE
+  ALBUM
+  EP
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  IN_REVIEW
+}
+
+enum ServiceType {
+  SPOTIFY
+  APPLE_MUSIC
+  YOUTUBE_MUSIC
+  AMAZON_MUSIC
+  TIDAL
+  DEEZER
+  OTHER
+}
+
+enum Platform {
+  SPOTIFY
+  APPLE_MUSIC
+  YOUTUBE
+  INSTAGRAM
+  TIKTOK
+  OTHER
+}
+
+enum TerritorySelectionType {
+  WORLDWIDE
+  CUSTOM
+  EXCLUDED
+}
+
+// ==================== COMPOSITE TYPES ====================
+
 type SavedArtistIdentifiers {
   type  String
-  /// Could not determine type: the field only had null or empty values in the sample set.
   url   Json?
   value String
 }
@@ -68,18 +114,17 @@ type SubmissionRelease {
   consumerReleaseUTC    DateTime @db.Date
   copyrightHolder       String
   copyrightYear         String
-  /// Could not determine type: the field only had null or empty values in the sample set.
   distributors          Json?
   hasSyncHistory        Boolean
-  /// Could not determine type: the field only had null or empty values in the sample set.
   instruments           Json?
   isCompilation         Boolean
-  /// Could not determine type: the field only had null or empty values in the sample set.
   moods                 Json?
   motionArtwork         Boolean
   originalReleaseDate   String
   originalReleaseUTC    DateTime @db.Date
   pRights               String
+  productionHolder      String?
+  productionYear        String?
   parentalAdvisory      String
   preOrderEnabled       Boolean
   previouslyReleased    Boolean
@@ -90,34 +135,63 @@ type SubmissionRelease {
   releaseTime           String
   releaseUTC            DateTime @db.Date
   selectedTimezone      String
-  /// Could not determine type: the field only had null or empty values in the sample set.
   territories           Json?
   territoryType         String
   thisIsPlaylist        Boolean
   upc                   String
+  catalogNumber         String?
   youtubeShortsPreviews Boolean
 }
 
 type SubmissionTracks {
-  /// Could not determine type: the field only had null or empty values in the sample set.
   artists          Json?
   composer         String
-  /// Could not determine type: the field only had null or empty values in the sample set.
   contributors     Json?
   dolbyAtmos       Boolean
   explicitContent  Boolean
-  /// Could not determine type: the field only had null or empty values in the sample set.
   featuringArtists Json?
   id               String
   isFocusTrack     Boolean
   isTitle          Boolean
   isrc             String
   lyricist         String
+  arranger         String?
   stereo           Boolean
   titleEn          String
   titleKo          String
+  titleTranslations Json?
   trackType        String
   versionType      String
+  genre            String?
+  subgenre         String?
+  alternateGenre   String?
+  alternateSubgenre String?
+  language         String?
+  audioLanguage    String?
+  lyricsLanguage   String?
+  metadataLanguage String?
+  lyrics           String?
+  musicVideoISRC   String?
+  hasMusicVideo    Boolean?
+  trackNumber      Int?
+  volume           Int?
+  discNumber       Int?
+  duration         String?
+  producer         String?
+  mixer            String?
+  masterer         String?
+  previewStart     String?
+  previewEnd       String?
+  trackVersion     String?
+  translations     Json?
+  publishers       Json?
+  titleLanguage    String?
+  featuring        String?
+  hasCustomReleaseDate Boolean?
+  customConsumerReleaseDate String?
+  customReleaseTime String?
+  playtimeStartShortClip String?
+  previewLength    Int?
 }
 
 type UserPreferences {
@@ -131,33 +205,31 @@ type UserPreferencesNotifications {
   sms   Boolean
 }
 
+// ==================== MODELS ====================
+
 model SavedArtist {
   id              String                    @id @default(auto()) @map("_id") @db.ObjectId
   completionScore BigInt
   createdAt       DateTime                  @db.Date
-  /// Could not determine type: the field only had null or empty values in the sample set.
   dspProfiles     Json?
   identifiers     SavedArtistIdentifiers[]
   lastUsed        DateTime                  @db.Date
-  /// Could not determine type: the field only had null or empty values in the sample set.
   missingFields   Json?
   name            String
   releaseCount    BigInt
-  /// Could not determine type: the field only had null or empty values in the sample set.
   similarArtists  Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
   socialProfiles  Json?
   status          String
   translations    SavedArtistTranslations[]
   updatedAt       DateTime                  @db.Date
   usageCount      BigInt
   userId          String                    @db.ObjectId
+  user            User                      @relation(fields: [userId], references: [id])
 }
 
 model SavedContributor {
   id           String                         @id @default(auto()) @map("_id") @db.ObjectId
   createdAt    DateTime                       @db.Date
-  /// Could not determine type: the field only had null or empty values in the sample set.
   identifiers  Json?
   instruments  String[]
   lastUsed     DateTime                       @db.Date
@@ -166,50 +238,178 @@ model SavedContributor {
   translations SavedContributorTranslations[]
   usageCount   BigInt
   userId       String                         @db.ObjectId
+  user         User                           @relation(fields: [userId], references: [id])
 }
 
 model Submission {
-  id             String             @id @default(auto()) @map("_id") @db.ObjectId
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  albumGenre     Json?
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  albumSubgenre  Json?
-  albumTitle     String
-  albumTitleEn   String
-  albumType      String
-  artistName     String
-  artistNameEn   String
-  createdAt      DateTime           @db.Date
-  files          SubmissionFiles
-  /// Could not determine type: the field only had null or empty values in the sample set.
-  genre          Json?
-  labelName      String
-  release        SubmissionRelease
-  releaseDate    DateTime           @db.Date
-  status         String
-  submitterEmail String
-  submitterId    String             @db.ObjectId
-  submitterName  String
-  tracks         SubmissionTracks[]
-  updatedAt      DateTime           @db.Date
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  albumGenre           Json?
+  albumSubgenre        Json?
+  albumTitle           String
+  albumTitleEn         String
+  albumType            String
+  artistName           String
+  artistNameEn         String
+  createdAt            DateTime           @db.Date
+  files                SubmissionFiles
+  genre                Json?
+  labelName            String
+  release              SubmissionRelease
+  releaseDate          DateTime           @db.Date
+  status               String
+  submitterEmail       String
+  submitterId          String             @db.ObjectId
+  submitterName        String
+  tracks               SubmissionTracks[]
+  updatedAt            DateTime           @db.Date
+
+  // Additional fields from CreateSubmissionDto
+  artistTranslations   Json?
+  biography            String?
+  socialLinks          Json?
+  artistType           String?
+  members              Json?
+  spotifyId            String?
+  appleMusicId         String?
+  youtubeChannelId     String?
+  albumTranslations    Json?
+  albumDescription     String?
+  albumVersion         String?
+  releaseVersion       String?
+  primaryTitle         String?
+  hasTranslation       Boolean?
+  translationLanguage  String?
+  translatedTitle      String?
+  albumContributors    Json?
+  albumFeaturingArtists Json?
+  totalVolumes         Int?
+  albumNote            String?
+  explicitContent      Boolean?
+  displayArtist        String?
+  marketing            Json?
+  reviewedBy           String?            @db.ObjectId
+  reviewedAt           DateTime?          @db.Date
+  adminNotes           String?
+
+  submitter            User               @relation("SubmitterSubmissions", fields: [submitterId], references: [id])
+  reviewer             User?              @relation("ReviewerSubmissions", fields: [reviewedBy], references: [id])
+  digitalProducts      DigitalProduct[]
+  featureReports       FeatureReport[]
 }
 
 model User {
-  id                String          @id @default(auto()) @map("_id") @db.ObjectId
+  id                String             @id @default(auto()) @map("_id") @db.ObjectId
   company           String?
-  createdAt         DateTime        @db.Date
-  email             String          @unique
-  emailVerified     Boolean
-  googleId          String          @unique
-  isActive          Boolean
+  createdAt         DateTime           @default(now()) @db.Date
+  email             String             @unique
+  emailVerified     Boolean            @default(false)
+  googleId          String             @default("")
+  isActive          Boolean            @default(true)
   isCompanyAccount  Boolean?
-  isProfileComplete Boolean
-  lastLogin         DateTime?       @db.Date
+  isProfileComplete Boolean            @default(false)
+  lastLogin         DateTime?          @db.Date
   name              String
   phone             String?
   preferences       UserPreferences
-  profilePicture    String
+  profilePicture    String             @default("")
   provider          String
   role              String
-  updatedAt         DateTime        @db.Date
+  updatedAt         DateTime           @updatedAt @db.Date
+
+  // Additional fields for password auth and account hierarchy
+  password          String?
+  parentAccountId   String?            @db.ObjectId
+
+  // Relations
+  parentAccount     User?              @relation("AccountHierarchy", fields: [parentAccountId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subAccounts       User[]             @relation("AccountHierarchy")
+  submissions       Submission[]       @relation("SubmitterSubmissions")
+  reviewedSubmissions Submission[]     @relation("ReviewerSubmissions")
+  savedArtists      SavedArtist[]
+  savedContributors SavedContributor[]
+}
+
+model DSP {
+  id              String       @id @default(auto()) @map("_id") @db.ObjectId
+  name            String       @unique
+  serviceType     ServiceType
+  logoUrl         String?
+  websiteUrl      String?
+  apiEndpoint     String?
+  isActive        Boolean      @default(true)
+  territories     String[]
+  marketShare     Float?
+  features        Json?
+  createdAt       DateTime     @default(now()) @db.Date
+  updatedAt       DateTime     @updatedAt @db.Date
+}
+
+model DigitalProduct {
+  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
+  submissionId        String           @db.ObjectId
+  upc                 String
+  format              ProductFormat
+  title               String
+  artistName          String
+  linkedTrackId       String?
+  trackIndex          Int?
+  releaseDate         DateTime         @db.Date
+  territories         String[]
+  status              SubmissionStatus @default(PENDING)
+  marketingDriverIds  String[]         @db.ObjectId
+  createdAt           DateTime         @default(now()) @db.Date
+  updatedAt           DateTime         @updatedAt @db.Date
+
+  submission          Submission       @relation(fields: [submissionId], references: [id])
+}
+
+model FeatureReport {
+  id                  String    @id @default(auto()) @map("_id") @db.ObjectId
+  submissionId        String    @db.ObjectId
+  platform            Platform
+  featureType         String
+  featureUrl          String?
+  scheduledDate       DateTime? @db.Date
+  actualDate          DateTime? @db.Date
+  metrics             Json?
+  adminPlaylists      Json?
+  notes               String?
+  createdAt           DateTime  @default(now()) @db.Date
+  updatedAt           DateTime  @updatedAt @db.Date
+
+  submission          Submission @relation(fields: [submissionId], references: [id])
+}
+
+model MarketingDriver {
+  id                  String           @id @default(auto()) @map("_id") @db.ObjectId
+  name                String           @unique
+  description         String?
+  category            String?
+  isActive            Boolean          @default(true)
+  createdAt           DateTime         @default(now()) @db.Date
+  updatedAt           DateTime         @updatedAt @db.Date
+}
+
+model TerritorySelection {
+  id                  String                  @id @default(auto()) @map("_id") @db.ObjectId
+  name                String                  @unique
+  type                TerritorySelectionType
+  territories         String[]
+  excludedTerritories String[]
+  description         String?
+  isDefault           Boolean                 @default(false)
+  createdAt           DateTime                @default(now()) @db.Date
+  updatedAt           DateTime                @updatedAt @db.Date
+}
+
+model Guide {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  category    String
+  content     String
+  language    String   @default("en")
+  order       Int      @default(0)
+  isPublished Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Date
+  updatedAt   DateTime @updatedAt @db.Date
 }

@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FilesService } from '../files/files.service';
 import { DropboxService } from '../dropbox/dropbox.service';
 import { Prisma, SubmissionStatus } from '@prisma/client';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class SubmissionsService {
@@ -65,26 +66,51 @@ export class SubmissionsService {
       submitterEmail: data.submitterEmail,
       submitterName: data.submitterName,
       status: SubmissionStatus.PENDING,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+
+      // Artist info - Extract from artist object or direct fields
+      artistName: data.artist?.nameKo || data.artistName || data.artist?.name || '',
+      artistNameEn: data.artist?.nameEn || data.artistNameEn || data.artist?.name || '',
+      labelName: data.artist?.labelName || data.labelName || '',
+      genre: data.artist?.genre || data.genre || [],
+
+      // Artist extended info - Extract from artist.artists array if present
+      artistTranslations: data.artist?.artists?.[0]?.translations || data.artistTranslations || [],
+      biography: data.artist?.biography || data.biography || '',
+      socialLinks: data.artist?.socialLinks || data.socialLinks || {},
+      artistType: data.artist?.type || data.artistType || 'SOLO',
+      members: data.artist?.members || data.members || [],
+
+      // Platform IDs - Extract from artist.artists[0].identifiers array
+      spotifyId: data.artist?.artists?.[0]?.identifiers?.find?.((id: any) => id.type === 'spotify')?.value ||
+                 data.artist?.spotifyId || data.spotifyId || '',
+      appleMusicId: data.artist?.artists?.[0]?.identifiers?.find?.((id: any) => id.type === 'apple' || id.type === 'appleMusic')?.value ||
+                    data.artist?.appleMusicId || data.appleMusicId || '',
+      youtubeChannelId: data.artist?.artists?.[0]?.identifiers?.find?.((id: any) => id.type === 'youtube')?.value ||
+                        data.artist?.youtubeChannelId || data.youtubeChannelId || '',
       
-      // Artist info
-      artistName: data.artistName,
-      artistNameEn: data.artistNameEn,
-      labelName: data.labelName,
-      genre: data.genre || [],
-      
-      // Album info
-      albumTitle: data.albumTitle,
-      albumTitleEn: data.albumTitleEn,
-      albumType: data.albumType,
-      releaseDate: new Date(data.releaseDate),
-      albumVersion: data.albumVersion,
-      releaseVersion: data.releaseVersion,
-      albumGenre: data.genre || [],
-      albumSubgenre: data.subgenre || [],
-      primaryTitle: data.primaryTitle,
-      hasTranslation: data.hasTranslation,
-      translationLanguage: data.translationLanguage,
-      translatedTitle: data.translatedTitle,
+      // Album info - Extract from album object or direct fields
+      albumTitle: data.album?.titleKo || data.albumTitle || '',
+      albumTitleEn: data.album?.titleEn || data.albumTitleEn || data.albumTitle || '',
+      albumType: data.album?.type?.toUpperCase() || data.albumType?.toUpperCase() || 'SINGLE',
+      releaseDate: new Date(data.album?.releaseDate || data.releaseDate || Date.now()),
+      albumVersion: data.album?.version || data.albumVersion || '',
+      releaseVersion: data.releaseVersion || '',
+      albumGenre: data.genre?.primary || data.primaryGenre || data.albumGenre || data.genre || [],
+      albumSubgenre: data.genre?.primarySub || data.primarySubgenre || data.albumSubgenre || data.subgenre || [],
+      albumDescription: data.album?.description || data.albumDescription || '',
+      albumTranslations: data.album?.translations || data.albumTranslations || {},
+      albumContributors: data.albumContributors || [],
+      primaryTitle: data.primaryTitle || '',
+      hasTranslation: data.hasTranslation || false,
+      translationLanguage: data.translationLanguage || '',
+      translatedTitle: data.translatedTitle || '',
+      albumFeaturingArtists: data.albumFeaturingArtists || [],
+      totalVolumes: data.totalVolumes || 1,
+      albumNote: data.albumNote || '',
+      explicitContent: data.explicitContent || false,
+      displayArtist: data.displayArtist || data.artistName || '',
       
       // Tracks
       tracks: data.tracks?.map((track: any) => {
@@ -95,31 +121,79 @@ export class SubmissionsService {
           ) : [];
 
         return {
-          id: track.id,
-          titleKo: track.titleKo,
-          titleEn: track.titleEn,
+          id: track.id || track._id || uuidv4(),
+          titleKo: track.titleKo || track.title || '',
+          titleEn: track.titleEn || track.titleTranslation || track.title || '',
+          titleTranslations: track.titleTranslations || {},
           artists: track.artists || [],
           featuringArtists: track.featuringArtists || [],
-          contributors: uniqueContributors,  // ✅ Added with deduplication
-          composer: track.composer,
-          lyricist: track.lyricist,
-          arranger: track.arranger,
-          isTitle: track.isTitle,
-          isrc: track.isrc,
-          explicitContent: track.explicitContent,
-          dolbyAtmos: track.dolbyAtmos,
-          genre: track.genre,
-          subgenre: track.subgenre
-          // audioFiles removed - belongs in files section, not in Track type
+          contributors: uniqueContributors,
+          composer: track.composer || '',
+          lyricist: track.lyricist || '',
+          arranger: track.arranger || '',
+          isTitle: track.isTitle || false,
+          isFocusTrack: track.isFocusTrack || false,
+          isrc: track.isrc || '',
+          musicVideoISRC: track.musicVideoISRC || '',
+          hasMusicVideo: track.hasMusicVideo || false,
+          explicitContent: track.explicitContent || track.explicit || false,
+          dolbyAtmos: track.dolbyAtmos || false,
+          stereo: track.stereo !== false,
+          trackType: track.trackType || 'AUDIO',
+          versionType: track.versionType || 'ORIGINAL',
+          genre: track.genre || '',
+          subgenre: track.subgenre || '',
+          alternateGenre: track.alternateGenre || '',
+          alternateSubgenre: track.alternateSubgenre || '',
+          language: track.language || '',
+          audioLanguage: track.audioLanguage || '',
+          lyricsLanguage: track.lyricsLanguage || '',
+          metadataLanguage: track.metadataLanguage || '',
+          lyrics: track.lyrics || '',
+          trackNumber: track.trackNumber,
+          volume: track.volume,
+          discNumber: track.discNumber,
+          duration: track.duration || '',
+          producer: track.producer || '',
+          mixer: track.mixer || '',
+          masterer: track.masterer || '',
+          previewStart: track.previewStart || '',
+          previewEnd: track.previewEnd || '',
+          trackVersion: track.trackVersion || '',
+          translations: track.translations || [],
+          publishers: track.publishers || [],
+          titleLanguage: track.titleLanguage || track.language || '',
+          featuring: track.featuring || (track.featuringArtists?.map?.((a: any) => a.name).join(', ')) || '',
+          hasCustomReleaseDate: track.hasCustomReleaseDate || false,
+          customConsumerReleaseDate: track.consumerReleaseDate || '',
+          customReleaseTime: track.releaseTime || '',
+          playtimeStartShortClip: track.playtimeStartShortClip || '',
+          previewLength: track.previewLength
         };
       }) || [],
       
-      // Files
+      // Files - Map all file fields
       files: {
         coverImageUrl: data.files?.coverImageUrl,
         artistPhotoUrl: data.files?.artistPhotoUrl,
-        coverImage: data.files?.coverImageUrl,
-        artistPhoto: data.files?.artistPhotoUrl,
+        motionArtUrl: data.files?.motionArtUrl,
+        musicVideoUrl: data.files?.musicVideoUrl,
+        audioFiles: data.files?.audioFiles?.map((af: any) => ({
+          trackId: af.trackId,
+          dropboxUrl: af.dropboxUrl || af.url,
+          fileName: af.fileName,
+          fileSize: af.fileSize
+        })) || [],
+        musicVideoFiles: data.files?.musicVideoFiles?.map((mvf: any) => ({
+          trackId: mvf.trackId,
+          dropboxUrl: mvf.dropboxUrl || mvf.url,
+          fileName: mvf.fileName
+        })) || [],
+        musicVideoThumbnails: data.files?.musicVideoThumbnails?.map((mvt: any) => ({
+          trackId: mvt.trackId,
+          dropboxUrl: mvt.dropboxUrl || mvt.url,
+          fileName: mvt.fileName
+        })) || [],
         additionalFiles: [
           data.files?.pressShotUrl && {
             dropboxUrl: data.files.pressShotUrl,
@@ -135,15 +209,14 @@ export class SubmissionsService {
             dropboxUrl: data.files.artistLogoUrl,
             fileType: 'logo',
             fileName: 'logo.png'
-          }
+          },
+          ...(data.files?.additionalFiles || [])
         ].filter(Boolean)
       },
       
       // Release info with all 31 marketing fields
       release: {
         // Basic release fields
-        copyrightHolder: data.release?.copyrightHolder || data.copyrightHolder,
-        copyrightYear: data.release?.copyrightYear || data.copyrightYear,
         recordingCountry: data.release?.recordingCountry || data.recordingCountry || 'KR',
         recordingLanguage: data.release?.recordingLanguage || data.recordingLanguage || 'ko',
         territories: data.release?.territories || data.territories || ['WORLDWIDE'],
@@ -155,59 +228,119 @@ export class SubmissionsService {
         releaseUTC: data.release?.releaseUTC || this.convertToUTC(data.release?.consumerReleaseDate || data.consumerReleaseDate || data.releaseDate, data.release?.releaseTime || data.releaseTime, data.release?.selectedTimezone || data.selectedTimezone),
         originalReleaseUTC: data.release?.originalReleaseUTC || this.convertToUTC(data.release?.originalReleaseDate || data.releaseDate, data.release?.releaseTime || data.releaseTime, data.release?.selectedTimezone || data.selectedTimezone),
         consumerReleaseUTC: data.release?.consumerReleaseUTC || this.convertToUTC(data.release?.consumerReleaseDate || data.consumerReleaseDate || data.releaseDate, data.release?.releaseTime || data.releaseTime, data.release?.selectedTimezone || data.selectedTimezone),
-        cRights: data.release?.cRights || data.cRights || data.release?.copyrightHolder || data.copyrightHolder || '',
-        pRights: data.release?.pRights || data.pRights || data.release?.productionHolder || data.productionHolder || '',
+        // Copyright fields - store both original and formatted
+        copyrightHolder: data.release?.copyrightHolder || data.copyrightHolder || '',
+        copyrightYear: data.release?.copyrightYear || data.copyrightYear || new Date().getFullYear().toString(),
+        productionHolder: data.release?.productionHolder || data.productionHolder || '',
+        productionYear: data.release?.productionYear || data.productionYear || new Date().getFullYear().toString(),
+        // Copyright transformation: combine holder + year
+        cRights: data.release?.cRights || data.cRights ||
+                 (data.release?.copyrightHolder || data.copyrightHolder
+                   ? `© ${data.release?.copyrightYear || data.copyrightYear || new Date().getFullYear()} ${data.release?.copyrightHolder || data.copyrightHolder}`
+                   : ''),
+        pRights: data.release?.pRights || data.pRights ||
+                 (data.release?.productionHolder || data.productionHolder
+                   ? `℗ ${data.release?.productionYear || data.productionYear || new Date().getFullYear()} ${data.release?.productionHolder || data.productionHolder}`
+                   : ''),
         upc: data.release?.upc || data.upc,
         catalogNumber: data.release?.catalogNumber || data.catalogNumber,
-        
-        // All 31 marketing fields - check both release and root level
-        albumIntroduction: data.release?.albumIntroduction || data.releaseInfo?.albumIntroduction || data.albumIntroduction,
-        albumDescription: data.release?.albumDescription || data.releaseInfo?.albumDescription || data.albumDescription,
-        marketingKeywords: data.release?.marketingKeywords || data.releaseInfo?.marketingKeywords || data.marketingKeywords,
-        targetAudience: data.release?.targetAudience || data.releaseInfo?.targetAudience || data.targetAudience,
-        promotionPlans: data.release?.promotionPlans || data.releaseInfo?.promotionPlans || data.promotionPlans,
-        toundatesUrl: data.release?.toundatesUrl || data.releaseInfo?.toundatesUrl || data.toundatesUrl,
-        artistGender: data.release?.artistGender || data.releaseInfo?.artistGender || data.artistGender,
-        socialMovements: data.release?.socialMovements || data.releaseInfo?.socialMovements || data.socialMovements,
-        artistBio: data.release?.artistBio || data.releaseInfo?.artistBio || data.artistBio || data.biography,
-        similarArtists: data.release?.similarArtists || data.releaseInfo?.similarArtists || data.similarArtists,
-        hasSyncHistory: data.release?.hasSyncHistory || data.releaseInfo?.hasSyncHistory || data.hasSyncHistory || false,
-        syncHistory: data.release?.syncHistory || data.releaseInfo?.syncHistory || data.syncHistory,
-        spotifyArtistId: data.release?.spotifyArtistId || data.releaseInfo?.spotifyArtistId || data.spotifyArtistId,
-        appleMusicArtistId: data.release?.appleMusicArtistId || data.releaseInfo?.appleMusicArtistId || data.appleMusicArtistId,
-        soundcloudArtistId: data.release?.soundcloudArtistId || data.releaseInfo?.soundcloudArtistId || data.soundcloudArtistId,
-        artistUgcPriorities: data.release?.artistUgcPriorities || data.releaseInfo?.artistUgcPriorities || data.artistUgcPriorities,
-        youtubeUrl: data.release?.youtubeUrl || data.releaseInfo?.youtubeUrl || data.youtubeUrl,
-        tiktokUrl: data.release?.tiktokUrl || data.releaseInfo?.tiktokUrl || data.tiktokUrl,
-        facebookUrl: data.release?.facebookUrl || data.releaseInfo?.facebookUrl || data.facebookUrl,
-        instagramUrl: data.release?.instagramUrl || data.releaseInfo?.instagramUrl || data.instagramUrl,
-        xUrl: data.release?.xUrl || data.releaseInfo?.xUrl || data.xUrl,
-        twitchUrl: data.release?.twitchUrl || data.releaseInfo?.twitchUrl || data.twitchUrl,
-        threadsUrl: data.release?.threadsUrl || data.releaseInfo?.threadsUrl || data.threadsUrl,
-        moods: data.release?.moods || data.releaseInfo?.moods || data.moods || [],
-        instruments: data.release?.instruments || data.releaseInfo?.instruments || data.instruments || [],
-        hook: data.release?.hook || data.releaseInfo?.hook || data.hook,
-        mainPitch: data.release?.mainPitch || data.releaseInfo?.mainPitch || data.mainPitch,
-        marketingDrivers: data.release?.marketingDrivers || data.releaseInfo?.marketingDrivers || data.marketingDrivers,
-        socialMediaPlan: data.release?.socialMediaPlan || data.releaseInfo?.socialMediaPlan || data.socialMediaPlan,
-        artistName: data.release?.artistName || data.releaseInfo?.artistName || data.artistName,
-        artistCountry: data.release?.artistCountry || data.releaseInfo?.artistCountry || data.artistCountry,
-        artistCurrentCity: data.release?.artistCurrentCity || data.releaseInfo?.artistCurrentCity || data.artistCurrentCity,
-        artistHometown: data.release?.artistHometown || data.releaseInfo?.artistHometown || data.artistHometown,
-        artistAvatar: data.release?.artistAvatar || data.releaseInfo?.artistAvatar || data.artistAvatar,
-        artistLogo: data.release?.artistLogo || data.releaseInfo?.artistLogo || data.artistLogo,
-        pressShotUrl: data.release?.pressShotUrl || data.releaseInfo?.pressShotUrl || data.pressShotUrl,
-        pressShotCredits: data.release?.pressShotCredits || data.releaseInfo?.pressShotCredits || data.pressShotCredits,
-        
+
         // Default values for required fields
+        artistName: data.release?.artistName || data.artistName || '',
         distributors: [],
         priceType: 'FREE',
         territoryType: 'WORLDWIDE',
         parentalAdvisory: 'NONE',
         releaseFormat: 'STANDARD',
+        hasSyncHistory: data.release?.hasSyncHistory || data.releaseInfo?.hasSyncHistory || data.hasSyncHistory || false,
+        isCompilation: data.release?.isCompilation || false,
+        motionArtwork: data.release?.motionArtwork || false,
+        preOrderEnabled: data.release?.preOrderEnabled || false,
+        previouslyReleased: data.release?.previouslyReleased || false,
+        thisIsPlaylist: data.release?.thisIsPlaylist || false,
+        youtubeShortsPreviews: data.release?.youtubeShortsPreviews || false,
+        moods: data.release?.moods || data.releaseInfo?.moods || data.moods || [],
+        instruments: data.release?.instruments || data.releaseInfo?.instruments || data.instruments || [],
+      },
+
+      // All marketing fields stored in marketing JSON field
+      // Note: data.marketingInfo can be empty object {}, so check if it has meaningful data
+      marketing: (data.marketingInfo && Object.keys(data.marketingInfo).length > 0)
+        ? {
+            ...data.marketingInfo,
+            // Merge with other sources for fields that might not be in marketingInfo
+            artistBio: data.marketingInfo.artistBio || data.biography || '',
+            spotifyArtistId: data.marketingInfo.artist_spotify_id || data.spotifyId || '',
+            appleMusicArtistId: data.marketingInfo.artist_apple_id || data.appleMusicId || '',
+            facebookUrl: data.marketingInfo.artist_facebook_url || data.socialLinks?.facebook || '',
+            instagramUrl: data.marketingInfo.artist_instagram_handle || data.socialLinks?.instagram || '',
+            youtubeUrl: data.marketingInfo.youtubeUrl || data.socialLinks?.youtube || '',
+            tiktokUrl: data.marketingInfo.tiktokUrl || data.socialLinks?.tiktok || '',
+          }
+        : {
+          // Fallback: extract from other sources if marketingInfo is empty
+          // Album marketing
+          albumIntroduction: data.marketingInfo?.albumIntroduction || data.release?.albumIntroduction || '',
+        albumDescription: data.marketingInfo?.albumDescription || data.release?.albumDescription || data.albumDescription || '',
+        marketingKeywords: data.marketingInfo?.marketingKeywords || data.release?.marketingKeywords || '',
+        targetAudience: data.marketingInfo?.targetAudience || data.release?.targetAudience || '',
+        promotionPlans: data.marketingInfo?.promotionPlans || data.release?.promotionPlans || '',
+
+        // Artist info
+        artistGender: data.marketingInfo?.artistGender || data.release?.artistGender || '',
+        artistBio: data.marketingInfo?.artistBio || data.release?.artistBio || data.biography || '',
+        artistCountry: data.marketingInfo?.artistCountry || data.release?.artistCountry || '',
+        artistCurrentCity: data.marketingInfo?.artistCurrentCity || data.release?.artistCurrentCity || '',
+        artistHometown: data.marketingInfo?.artistHometown || data.release?.artistHometown || '',
+        artistAvatar: data.marketingInfo?.artistAvatar || data.release?.artistAvatar || '',
+        artistLogo: data.marketingInfo?.artistLogo || data.release?.artistLogo || '',
+
+        // Social movements
+        socialMovements: data.marketingInfo?.socialMovements || data.release?.socialMovements || '',
+
+        // DSP IDs
+        spotifyArtistId: data.marketingInfo?.artist_spotify_id || data.spotifyId || '',
+        appleMusicArtistId: data.marketingInfo?.artist_apple_id || data.appleMusicId || '',
+        soundcloudArtistId: data.marketingInfo?.soundcloudArtistId || '',
+
+        // URLs
+        toundatesUrl: data.marketingInfo?.toundatesUrl || '',
+        youtubeUrl: data.marketingInfo?.youtubeUrl || data.socialLinks?.youtube || '',
+        tiktokUrl: data.marketingInfo?.tiktokUrl || data.socialLinks?.tiktok || '',
+        facebookUrl: data.marketingInfo?.artist_facebook_url || data.socialLinks?.facebook || '',
+        instagramUrl: data.marketingInfo?.artist_instagram_handle || data.socialLinks?.instagram || '',
+        xUrl: data.marketingInfo?.xUrl || data.socialLinks?.twitter || '',
+        twitchUrl: data.marketingInfo?.twitchUrl || data.socialLinks?.twitch || '',
+        threadsUrl: data.marketingInfo?.threadsUrl || '',
+
+        // Marketing content
+        hook: data.marketingInfo?.hook || '',
+        mainPitch: data.marketingInfo?.mainPitch || '',
+        similarArtists: data.marketingInfo?.similarArtists || '',
+        syncHistory: data.marketingInfo?.syncHistory || '',
+        artistUgcPriorities: data.marketingInfo?.artistUgcPriorities || '',
+        marketingDrivers: data.marketingInfo?.marketingDrivers || '',
+        socialMediaPlan: data.marketingInfo?.socialMediaPlan || '',
+
+        // Music characteristics
+        moods: data.marketingInfo?.moods || [],
+        instruments: data.marketingInfo?.instruments || [],
+
+        // Press materials
+        pressShotUrl: data.marketingInfo?.pressShotUrl || '',
+        pressShotCredits: data.marketingInfo?.pressShotCredits || '',
+
+        // Goals & project info
+        priorityLevel: data.marketingInfo?.priorityLevel,
+        projectType: data.marketingInfo?.projectType,
+        campaignGoals: data.marketingInfo?.campaignGoals || [],
+
+        // Internal notes
+        pr_line: data.marketingInfo?.pr_line || '',
+        internal_note: data.marketingInfo?.internal_note || ''
       }
     };
-    
+
     return this.prisma.submission.create({
       data: submissionData,
       include: {

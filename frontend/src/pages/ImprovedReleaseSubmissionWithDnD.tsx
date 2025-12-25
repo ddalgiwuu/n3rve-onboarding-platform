@@ -1298,17 +1298,50 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
         productionHolder: formData.productionHolder,
         productionYear: formData.productionYear,
         albumVersion: formData.albumVersion,
+        albumFeaturingArtists: formData.albumFeaturingArtists || [],
+        totalVolumes: formData.totalVolumes || 1,
+        albumNote: formData.albumNote || '',
+        explicitContent: formData.explicitContent || false,
+        displayArtist: formData.displayArtist || formData.albumArtist || '',
         tracks: formData.tracks.map(t => ({
-          // Explicitly include only necessary fields (no file fields!)
+          // Include ALL track fields (no file fields - those go separately)
           id: t.id,
           title: t.title,
-          artists: t.artists,
-          contributors: t.contributors,
-          isTitle: t.isTitle,
-          isrc: t.isrc,
-          explicitContent: t.explicitContent,
-          dolbyAtmos: t.dolbyAtmos,
-          audioLanguage: t.audioLanguage
+          titleKo: t.titleTranslations?.ko || t.title,
+          titleEn: t.titleTranslations?.en || t.titleTranslation || t.title,
+          titleTranslations: t.titleTranslations,
+          artists: t.artists?.filter(a => a.role === 'main' || a.role !== 'featured') || [],
+          featuringArtists: t.featuringArtists || t.artists?.filter(a => a.role === 'featured') || [],
+          contributors: t.contributors || [],
+          // Extract composers, lyricists, arrangers from contributors
+          composer: t.composers?.map(c => c.name).join(', ') ||
+                    t.contributors?.filter(c => c.role === 'composer').map(c => c.name).join(', ') || '',
+          lyricist: t.lyricists?.map(c => c.name).join(', ') ||
+                    t.contributors?.filter(c => c.role === 'lyricist').map(c => c.name).join(', ') || '',
+          arranger: t.arrangers?.map(c => c.name).join(', ') ||
+                    t.contributors?.filter(c => c.role === 'arranger').map(c => c.name).join(', ') || '',
+          isTitle: t.isTitle || false,
+          isFocusTrack: false, // TODO: Add field to Track interface if needed
+          isrc: t.isrc || '',
+          musicVideoISRC: t.musicVideoISRC || '',
+          hasMusicVideo: t.hasMusicVideo || false,
+          explicitContent: t.explicitContent || t.explicit || false,
+          dolbyAtmos: t.dolbyAtmos || false,
+          stereo: true, // Default to true, can add field if needed
+          trackType: 'AUDIO',
+          versionType: t.remixVersion ? 'REMIX' : 'ORIGINAL',
+          trackNumber: t.trackNumber,
+          genre: t.genre || '',
+          subgenre: t.subgenre || '',
+          language: t.language || formData.language,
+          audioLanguage: t.audioLanguage || formData.language,
+          lyrics: t.lyrics || '',
+          duration: t.duration,
+          volume: t.volume,
+          discNumber: t.discNumber,
+          publishers: t.publishers || [],
+          titleLanguage: t.titleLanguage || formData.language,
+          featuring: t.featuringArtists?.map?.(a => a.name).join(', ') || ''
         })),
         distributionType: formData.distributionType,
         selectedStores: formData.selectedStores,

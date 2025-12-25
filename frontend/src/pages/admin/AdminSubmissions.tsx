@@ -1,11 +1,54 @@
-import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Eye, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { useLanguageStore } from '@/store/language.store';
 import useSafeStore from '@/hooks/useSafeStore';
+import { adminService } from '@/services/admin.service';
+import { useNavigate } from 'react-router-dom';
+import { format } from 'date-fns';
+
+interface Submission {
+  id: string;
+  artistName: string;
+  albumTitle: string;
+  albumType: string;
+  releaseDate: string | Date;
+  submitterName: string;
+  submitterEmail: string;
+  status: string;
+  createdAt: string | Date;
+  updatedAt: string | Date;
+  tracks?: any[];
+  files?: any;
+  release?: any;
+  marketing?: any;
+  biography?: string;
+  socialLinks?: any;
+  artistType?: string;
+  members?: any;
+  spotifyId?: string;
+  appleMusicId?: string;
+  youtubeChannelId?: string;
+  albumTranslations?: any;
+  albumDescription?: string;
+  albumVersion?: string;
+  releaseVersion?: string;
+  primaryTitle?: string;
+  hasTranslation?: boolean;
+  translationLanguage?: string;
+  translatedTitle?: string;
+  albumContributors?: any;
+  reviewedBy?: string;
+  reviewedAt?: string | Date;
+  adminNotes?: string;
+}
 
 export default function AdminSubmissions() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string, ja?: string) => {
@@ -16,6 +59,77 @@ export default function AdminSubmissions() {
       default: return en;
     }
   };
+
+  // Load submissions data
+  useEffect(() => {
+    loadSubmissions();
+  }, [filterStatus]);
+
+  const loadSubmissions = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await adminService.getSubmissions({
+        status: filterStatus === 'all' ? undefined : filterStatus,
+        search: searchTerm || undefined
+      });
+      setSubmissions(response.submissions || []);
+    } catch (err: any) {
+      console.error('Failed to load submissions:', err);
+      setError(err.message || 'Failed to load submissions');
+      setSubmissions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    loadSubmissions();
+  };
+
+  const handleViewSubmission = (id: string) => {
+    navigate(`/admin/submissions/${id}`);
+  };
+
+  const getStatusBadge = (status: string) => {
+    const statusMap: Record<string, { icon: any, color: string, text: [string, string, string] }> = {
+      'PENDING': { icon: Clock, color: 'bg-yellow-100 text-yellow-800', text: ['검토중', 'Pending', '審査中'] },
+      'IN_REVIEW': { icon: Clock, color: 'bg-blue-100 text-blue-800', text: ['검토중', 'In Review', 'レビュー中'] },
+      'APPROVED': { icon: CheckCircle, color: 'bg-green-100 text-green-800', text: ['승인됨', 'Approved', '承認済み'] },
+      'REJECTED': { icon: XCircle, color: 'bg-red-100 text-red-800', text: ['반려됨', 'Rejected', '却下済み'] }
+    };
+    const config = statusMap[status] || statusMap['PENDING'];
+    const Icon = config.icon;
+    return (
+      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${config.color}`}>
+        <Icon className="w-3 h-3" />
+        {t(...config.text)}
+      </span>
+    );
+  };
+
+  const getFileCount = (files: any): number => {
+    if (!files) return 0;
+    let count = 0;
+    if (files.coverImageUrl) count++;
+    if (files.artistPhotoUrl) count++;
+    if (files.motionArtUrl) count++;
+    if (files.musicVideoUrl) count++;
+    if (files.audioFiles?.length) count += files.audioFiles.length;
+    if (files.musicVideoFiles?.length) count += files.musicVideoFiles.length;
+    if (files.musicVideoThumbnails?.length) count += files.musicVideoThumbnails.length;
+    if (files.additionalFiles?.length) count += files.additionalFiles.length;
+    return count;
+  };
+
+  const filteredSubmissions = submissions.filter(sub => {
+    if (!searchTerm) return true;
+    const search = searchTerm.toLowerCase();
+    return sub.artistName?.toLowerCase().includes(search) ||
+           sub.albumTitle?.toLowerCase().includes(search) ||
+           sub.submitterName?.toLowerCase().includes(search) ||
+           sub.submitterEmail?.toLowerCase().includes(search);
+  });
 
   return (
     <div className="p-8">
@@ -76,17 +190,76 @@ export default function AdminSubmissions() {
                 {t('상태', 'Status', 'ステータス')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {t('파일', 'Files', 'ファイル')}
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 {t('작업', 'Actions', 'アクション')}
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {/* TODO: API에서 데이터 가져와서 표시 / Fetch and display data from API / APIからデータを取得して表示 */}
-            <tr>
-              <td colSpan={8} className="px-6 py-4 text-center text-gray-500">
-                {t('데이터를 불러오는 중...', 'Loading data...', 'データを読み込み中...')}
-              </td>
-            </tr>
+            {loading ? (
+              <tr>
+                <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                  {t('데이터를 불러오는 중...', 'Loading data...', 'データを読み込み中...')}
+                </td>
+              </tr>
+            ) : error ? (
+              <tr>
+                <td colSpan={9} className="px-6 py-4 text-center text-red-500">
+                  {t('데이터를 불러오는데 실패했습니다', 'Failed to load data', 'データの読み込みに失敗しました')}: {error}
+                </td>
+              </tr>
+            ) : filteredSubmissions.length === 0 ? (
+              <tr>
+                <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                  {t('제출물이 없습니다', 'No submissions found', '提出物がありません')}
+                </td>
+              </tr>
+            ) : (
+              filteredSubmissions.map((submission) => (
+                <tr
+                  key={submission.id}
+                  onClick={() => handleViewSubmission(submission.id)}
+                  className="hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {format(new Date(submission.createdAt), 'yyyy-MM-dd')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {submission.artistName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {submission.albumTitle}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {submission.albumType}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {format(new Date(submission.releaseDate), 'yyyy-MM-dd')}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <div>{submission.submitterName}</div>
+                    <div className="text-xs text-gray-400">{submission.submitterEmail}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {getStatusBadge(submission.status)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <span className="inline-flex items-center gap-1">
+                      <span className="font-medium text-gray-900">{getFileCount(submission.files)}</span>
+                      {t('개', 'files', 'ファイル')}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="inline-flex items-center gap-1 text-purple-600">
+                      <Eye className="w-4 h-4" />
+                      {t('보기', 'View', '表示')}
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
