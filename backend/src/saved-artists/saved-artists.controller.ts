@@ -42,6 +42,7 @@ export class SavedArtistsController {
         limit ? parseInt(limit) : 50
       );
       console.log('SavedArtistsController: Found artists:', result.length);
+      // Result is already converted by service, safe to stringify
       console.log('SavedArtistsController: Artists data:', JSON.stringify(result, null, 2));
       return result;
     } catch (error) {
@@ -83,6 +84,7 @@ export class SavedArtistsController {
     
     try {
       const result = await this.savedArtistsService.createOrUpdateArtist(req.user.id, data);
+      // Result is already converted by service, safe to stringify
       console.log('SavedArtistsController: Artist created/updated successfully:', JSON.stringify(result, null, 2));
       console.log('SavedArtistsController: Result ID:', result.id);
       console.log('SavedArtistsController: Result userId:', result.userId);

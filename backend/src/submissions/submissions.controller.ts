@@ -92,6 +92,11 @@ export class SubmissionsController {
           type: releaseData.releaseType?.toLowerCase() || 'single',
           version: releaseData.albumVersion,
         },
+        albumFeaturingArtists: releaseData.albumFeaturingArtists || [],
+        totalVolumes: releaseData.totalVolumes || 1,
+        albumNote: releaseData.albumNote || '',
+        explicitContent: releaseData.explicitContent || false,
+        displayArtist: releaseData.displayArtist || releaseData.albumArtist || '',
         tracks: releaseData.tracks || [],
         release: {
           consumerReleaseDate: releaseData.consumerReleaseDate,
@@ -364,14 +369,29 @@ export class SubmissionsController {
       submitter: {
         connect: { id: user.id },
       },
+      status: 'PENDING',
+      createdAt: new Date(),
+      updatedAt: new Date(),
 
-      // Artist Information
-      artistName: submissionData.artist?.nameKo || '',
-      artistNameEn: submissionData.artist?.nameEn,
+      // Artist Information - Extract from albumArtists if available
+      artistName: submissionData.artist?.nameKo ||
+                  submissionData.artist?.artists?.[0]?.name || '',
+      artistNameEn: submissionData.artist?.nameEn ||
+                    submissionData.artist?.artists?.[0]?.name || '',
       labelName: submissionData.artist?.labelName,
       genre: submissionData.artist?.genre || [],
       biography: submissionData.artist?.biography,
-      artistType: 'SOLO', // Default, can be enhanced based on artist data
+      artistType: submissionData.artist?.type || 'SOLO',
+
+      // Extract platform IDs from albumArtists[0] if available
+      spotifyId: submissionData.artist?.artists?.[0]?.spotifyId || '',
+      appleMusicId: submissionData.artist?.artists?.[0]?.appleId || '',
+
+      // Extract translations from albumArtists[0]
+      artistTranslations: submissionData.artist?.artists?.[0]?.translations || {},
+
+      // Extract social links if available
+      socialLinks: submissionData.artist?.socialLinks || {},
 
       // Album Information
       albumTitle:
@@ -387,6 +407,11 @@ export class SubmissionsController {
           Date.now(),
       ),
       albumTranslations: submissionData.album?.translations || [],
+      albumFeaturingArtists: submissionData.albumFeaturingArtists || [],
+      totalVolumes: submissionData.totalVolumes || 1,
+      albumNote: submissionData.albumNote || '',
+      explicitContent: submissionData.explicitContent || false,
+      displayArtist: submissionData.displayArtist || submissionData.artist?.nameKo || '',
 
       // Tracks with all fields from consumer form
       tracks:
@@ -421,7 +446,28 @@ export class SubmissionsController {
             previewEnd: trackData.previewEnd,
             trackVersion: trackData.trackVersion,
             trackType: trackData.trackType?.toUpperCase() || 'AUDIO',
-            translations: trackData.translations || []
+            versionType: trackData.versionType || 'ORIGINAL',
+            stereo: trackData.stereo !== false,
+            isFocusTrack: trackData.isFocusTrack || false,
+            titleTranslations: trackData.titleTranslations || {},
+            language: trackData.language,
+            trackNumber: trackData.trackNumber,
+            volume: trackData.volume,
+            discNumber: trackData.discNumber,
+            duration: trackData.duration,
+            musicVideoISRC: trackData.musicVideoISRC,
+            hasMusicVideo: trackData.hasMusicVideo || false,
+            translations: trackData.translations || [],
+            artists: trackData.artists || [],
+            featuringArtists: trackData.featuringArtists || [],
+            contributors: trackData.contributors || [],
+            publishers: trackData.publishers || [],
+            titleLanguage: trackData.titleLanguage || trackData.language,
+            hasCustomReleaseDate: trackData.hasCustomReleaseDate || false,
+            customConsumerReleaseDate: trackData.consumerReleaseDate || '',
+            customReleaseTime: trackData.releaseTime || '',
+            playtimeStartShortClip: trackData.playtimeStartShortClip || '',
+            previewLength: trackData.previewLength
           };
         }) || [],
 
@@ -462,15 +508,25 @@ export class SubmissionsController {
           submissionData.release?.territoryType?.toUpperCase() || 'WORLDWIDE',
         distributors: submissionData.release?.distributors || [],
         priceType: submissionData.release?.priceType?.toUpperCase() || 'PAID',
-        price: submissionData.release?.price,
         copyrightHolder: submissionData.release?.copyrightHolder,
         copyrightYear:
           submissionData.release?.copyrightYear ||
           new Date().getFullYear().toString(),
+        productionHolder: submissionData.release?.productionHolder,
+        productionYear:
+          submissionData.release?.productionYear ||
+          new Date().getFullYear().toString(),
         recordingCountry: submissionData.release?.recordingCountry || 'KR',
         recordingLanguage: submissionData.release?.recordingLanguage || 'ko',
-        cRights: submissionData.release?.cRights || submissionData.release?.copyrightHolder || '',
-        pRights: submissionData.release?.pRights || submissionData.release?.productionHolder || '',
+        // Copyright transformation: combine holder + year into standard format
+        cRights: submissionData.release?.cRights ||
+                 (submissionData.release?.copyrightHolder
+                   ? `© ${submissionData.release?.copyrightYear || new Date().getFullYear()} ${submissionData.release?.copyrightHolder}`
+                   : ''),
+        pRights: submissionData.release?.pRights ||
+                 (submissionData.release?.productionHolder
+                   ? `℗ ${submissionData.release?.productionYear || new Date().getFullYear()} ${submissionData.release?.productionHolder}`
+                   : ''),
         originalReleaseDate:
           submissionData.release?.originalReleaseDate ||
           new Date().toISOString(),
@@ -484,22 +540,17 @@ export class SubmissionsController {
         originalReleaseUTC: submissionData.release?.originalReleaseUTC,
         upc: submissionData.release?.upc,
         catalogNumber: submissionData.release?.catalogNumber,
-        notes: submissionData.release?.notes,
-        albumNotes: submissionData.release?.albumNotes,
         parentalAdvisory:
           submissionData.release?.parentalAdvisory?.toUpperCase() || 'NONE',
         preOrderEnabled: submissionData.release?.preOrderEnabled || false,
-        preOrderDate: submissionData.release?.preOrderDate,
         releaseFormat:
           submissionData.release?.releaseFormat?.toUpperCase() || 'STANDARD',
         isCompilation: submissionData.release?.isCompilation || false,
         previouslyReleased: submissionData.release?.previouslyReleased || false,
-        previousReleaseDate: submissionData.release?.previousReleaseDate,
-        previousReleaseInfo: submissionData.release?.previousReleaseInfo,
-        trackGenres: submissionData.release?.trackGenres,
-        dspProfileUpdate: submissionData.release?.dspProfileUpdate,
-        
-        // All 31 marketing fields from marketingInfo
+      },
+      
+      // Marketing info stored separately (not in release object)
+      marketing: {
         albumIntroduction: submissionData.marketingInfo?.albumIntroduction,
         albumDescription: submissionData.marketingInfo?.albumDescription,
         marketingKeywords: submissionData.marketingInfo?.marketingKeywords,

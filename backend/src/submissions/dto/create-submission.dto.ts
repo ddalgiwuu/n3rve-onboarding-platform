@@ -48,6 +48,11 @@ export class CreateSubmissionDto {
   hasTranslation?: boolean;
   translationLanguage?: string;
   translatedTitle?: string;
+  albumFeaturingArtists?: any[];
+  totalVolumes?: number;
+  albumNote?: string;
+  explicitContent?: boolean;
+  displayArtist?: string;
   albumContributors?: Array<{
     id: string;
     name: string;
@@ -109,6 +114,22 @@ export class CreateSubmissionDto {
       language: string;
       title: string;
     }>;
+    titleTranslations?: any;
+    trackNumber?: number;
+    volume?: number;
+    discNumber?: number;
+    duration?: string;
+    producer?: string;
+    mixer?: string;
+    masterer?: string;
+    previewStart?: string;
+    previewEnd?: string;
+    publishers?: any[];
+    titleLanguage?: string;
+    isFocusTrack?: boolean;
+    trackType?: string;
+    versionType?: string;
+    language?: string;
   }>;
 
   // Files

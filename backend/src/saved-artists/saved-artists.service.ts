@@ -6,6 +6,25 @@ import { Prisma } from '@prisma/client';
 export class SavedArtistsService {
   constructor(private prisma: PrismaService) {}
 
+  // Helper to convert BigInt fields to Number for JSON serialization
+  private convertArtistBigInt(artist: any) {
+    if (!artist) return artist;
+    return {
+      ...artist,
+      completionScore: artist.completionScore ? Number(artist.completionScore) : 0,
+      releaseCount: artist.releaseCount ? Number(artist.releaseCount) : 0,
+      usageCount: artist.usageCount ? Number(artist.usageCount) : 0
+    };
+  }
+
+  private convertContributorBigInt(contributor: any) {
+    if (!contributor) return contributor;
+    return {
+      ...contributor,
+      usageCount: contributor.usageCount ? Number(contributor.usageCount) : 0
+    };
+  }
+
   // Get all saved artists for a user
   async findAllArtists(userId: string, search?: string, limit: number = 50) {
     console.log('SavedArtistsService: Finding artists for userId:', userId);
@@ -31,6 +50,7 @@ export class SavedArtistsService {
         createdAt: true
       }
     });
+    // Safe stringify - no BigInt fields in this select
     console.log('SavedArtistsService: Sample of all artists:', JSON.stringify(allArtists, null, 2));
     
     const where: Prisma.SavedArtistWhereInput = { userId };
@@ -59,10 +79,14 @@ export class SavedArtistsService {
       ],
       take: limit,
     });
-    
+
     console.log('SavedArtistsService: Found artists:', result.length);
-    console.log('SavedArtistsService: Result details:', JSON.stringify(result, null, 2));
-    return result;
+
+    // Convert BigInt fields to Number for JSON serialization
+    const serializable = result.map(artist => this.convertArtistBigInt(artist));
+
+    console.log('SavedArtistsService: Result details:', JSON.stringify(serializable, null, 2));
+    return serializable;
   }
 
   // Get all saved contributors for a user
@@ -96,7 +120,7 @@ export class SavedArtistsService {
       where.instruments = { hasEvery: instruments };
     }
 
-    return this.prisma.savedContributor.findMany({
+    const result = await this.prisma.savedContributor.findMany({
       where,
       orderBy: [
         { createdAt: 'desc' },  // Show recently created contributors first
@@ -105,6 +129,9 @@ export class SavedArtistsService {
       ],
       take: limit,
     });
+
+    // Convert BigInt fields to Number for JSON serialization
+    return result.map(contributor => this.convertContributorBigInt(contributor));
   }
 
   // Create or update an artist
@@ -167,7 +194,9 @@ export class SavedArtistsService {
 
       console.log('SavedArtistsService: Existing artist found:', existingArtist ? 'Yes' : 'No');
       if (existingArtist) {
-        console.log('SavedArtistsService: Existing artist details:', JSON.stringify(existingArtist, null, 2));
+        // Convert BigInt before stringify
+        const safeArtist = this.convertArtistBigInt(existingArtist);
+        console.log('SavedArtistsService: Existing artist details:', JSON.stringify(safeArtist, null, 2));
       }
 
       if (existingArtist) {
@@ -200,7 +229,8 @@ export class SavedArtistsService {
           data: updateData,
         });
         console.log('SavedArtistsService: Artist updated successfully:', updatedArtist);
-        return updatedArtist;
+        // Convert BigInt to Number
+        return this.convertArtistBigInt(updatedArtist);
       }
 
       // Create new artist
@@ -228,11 +258,20 @@ export class SavedArtistsService {
             userId,
             name: data.name,
             translations: data.translations || [],
-            identifiers: data.identifiers || []
+            identifiers: data.identifiers || [],
+            completionScore: BigInt(0),
+            createdAt: new Date(),
+            lastUsed: new Date(),
+            releaseCount: BigInt(0),
+            status: 'ACTIVE',
+            updatedAt: new Date(),
+            usageCount: BigInt(0),
           },
         });
         console.log('SavedArtistsService: Prisma create successful');
-        console.log('SavedArtistsService: New artist created successfully:', JSON.stringify(newArtist, null, 2));
+        // Convert BigInt before stringify
+        const safeNewArtist = this.convertArtistBigInt(newArtist);
+        console.log('SavedArtistsService: New artist created successfully:', JSON.stringify(safeNewArtist, null, 2));
       } catch (createError) {
         console.error('SavedArtistsService: Prisma create failed:', createError);
         console.error('SavedArtistsService: Create error message:', createError.message);
@@ -249,7 +288,9 @@ export class SavedArtistsService {
         });
         console.log('SavedArtistsService: Verification - artist exists in DB:', verifyArtist ? 'YES' : 'NO');
         if (verifyArtist) {
-          console.log('SavedArtistsService: Verified artist data:', JSON.stringify(verifyArtist, null, 2));
+          // Convert BigInt before stringify
+          const safeVerifyArtist = this.convertArtistBigInt(verifyArtist);
+          console.log('SavedArtistsService: Verified artist data:', JSON.stringify(safeVerifyArtist, null, 2));
         } else {
           console.warn('SavedArtistsService: WARNING - Artist created but not found in verification!');
         }
@@ -260,8 +301,9 @@ export class SavedArtistsService {
       // Also count total artists to confirm
       const totalAfterCreate = await this.prisma.savedArtist.count();
       console.log('SavedArtistsService: Total artists after create:', totalAfterCreate);
-      
-      return newArtist;
+
+      // Convert BigInt to Number
+      return this.convertArtistBigInt(newArtist);
     } catch (error) {
       console.error('SavedArtistsService: Error in createOrUpdateArtist:', error);
       console.error('SavedArtistsService: Error details:', error.message);
@@ -308,10 +350,11 @@ export class SavedArtistsService {
         }));
       }
 
-      return this.prisma.savedContributor.update({
+      const result = await this.prisma.savedContributor.update({
         where: { id: data.id },
         data: updateData
       });
+      return this.convertContributorBigInt(result);
     }
 
     // Check if contributor already exists - BY NAME ONLY to prevent duplicates
@@ -351,14 +394,15 @@ export class SavedArtistsService {
         updateData.translations = data.translations;
       }
 
-      return this.prisma.savedContributor.update({
+      const result = await this.prisma.savedContributor.update({
         where: { id: existingContributor.id },
         data: updateData,
       });
+      return this.convertContributorBigInt(result);
     }
 
     // Create new contributor
-    return this.prisma.savedContributor.create({
+    const result = await this.prisma.savedContributor.create({
       data: {
         userId,
         name: data.name,
@@ -366,15 +410,19 @@ export class SavedArtistsService {
         instruments: data.instruments || [],
         // For composite types in MongoDB, assign directly without { set: ... }
         translations: data.translations || [],
-        identifiers: data.identifiers || []
+        identifiers: data.identifiers || [],
+        createdAt: new Date(),
+        lastUsed: new Date(),
+        usageCount: BigInt(0),
       },
     });
+    return this.convertContributorBigInt(result);
   }
 
   // Update artist usage
   async updateArtistUsage(id: string, userId: string) {
-    return this.prisma.savedArtist.update({
-      where: { 
+    const result = await this.prisma.savedArtist.update({
+      where: {
         id,
         userId // Ensure user owns the artist
       },
@@ -383,12 +431,13 @@ export class SavedArtistsService {
         lastUsed: new Date()
       },
     });
+    return this.convertArtistBigInt(result);
   }
 
   // Update contributor usage
   async updateContributorUsage(id: string, userId: string) {
-    return this.prisma.savedContributor.update({
-      where: { 
+    const result = await this.prisma.savedContributor.update({
+      where: {
         id,
         userId // Ensure user owns the contributor
       },
@@ -397,6 +446,7 @@ export class SavedArtistsService {
         lastUsed: new Date()
       },
     });
+    return this.convertContributorBigInt(result);
   }
 
   // Delete artist

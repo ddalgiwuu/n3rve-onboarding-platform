@@ -10,31 +10,25 @@ export class FeatureReportsService {
     const where: any = {};
 
     if (userId) {
-      where.digitalProduct = {
-        submission: {
-          submitterId: userId
-        }
+      where.submission = {
+        submitterId: userId
       };
     }
 
     return this.prisma.featureReport.findMany({
       where,
       include: {
-        digitalProduct: {
-          include: {
-            submission: {
-              select: {
-                id: true,
-                artistName: true,
-                albumTitle: true,
-                status: true
-              }
-            }
+        submission: {
+          select: {
+            id: true,
+            artistName: true,
+            albumTitle: true,
+            status: true
           }
         }
       },
       orderBy: {
-        lastUpdated: 'desc'
+        updatedAt: 'desc'
       }
     });
   }
@@ -43,11 +37,7 @@ export class FeatureReportsService {
     const report = await this.prisma.featureReport.findUnique({
       where: { id },
       include: {
-        digitalProduct: {
-          include: {
-            submission: true
-          }
-        }
+        submission: true
       }
     });
 
@@ -59,16 +49,18 @@ export class FeatureReportsService {
   }
 
   async findByUPC(upc: string) {
-    return this.prisma.featureReport.findUnique({
-      where: { upc },
+    // Find feature reports by searching submissions with matching UPC
+    // Note: release is a composite type, not a relation
+    // We need to query through submission and filter in memory
+    const allReports = await this.prisma.featureReport.findMany({
       include: {
-        digitalProduct: {
-          include: {
-            submission: true
-          }
-        }
+        submission: true
       }
     });
+
+    return allReports.filter(report =>
+      (report.submission.release as any)?.upc === upc
+    );
   }
 
   // Admin: Add playlist placement
@@ -93,7 +85,7 @@ export class FeatureReportsService {
         adminPlaylists: {
           push: newPlaylist
         },
-        lastUpdated: new Date()
+        updatedAt: new Date()
       }
     });
   }
@@ -108,7 +100,11 @@ export class FeatureReportsService {
       throw new NotFoundException('Feature report not found');
     }
 
-    const updatedPlaylists = report.adminPlaylists.filter(
+    const adminPlaylists = Array.isArray(report.adminPlaylists) 
+      ? report.adminPlaylists 
+      : (report.adminPlaylists as any)?.playlists || [];
+    
+    const updatedPlaylists = adminPlaylists.filter(
       (p: any) => p.id !== playlistId
     );
 
@@ -116,7 +112,7 @@ export class FeatureReportsService {
       where: { id: reportId },
       data: {
         adminPlaylists: updatedPlaylists,
-        lastUpdated: new Date()
+        updatedAt: new Date()
       }
     });
   }
@@ -135,7 +131,11 @@ export class FeatureReportsService {
       throw new NotFoundException('Feature report not found');
     }
 
-    const updatedPlaylists = report.adminPlaylists.map((p: any) =>
+    const adminPlaylists = Array.isArray(report.adminPlaylists) 
+      ? report.adminPlaylists 
+      : (report.adminPlaylists as any)?.playlists || [];
+    
+    const updatedPlaylists = adminPlaylists.map((p: any) =>
       p.id === playlistId ? { ...p, ...updates } : p
     );
 
@@ -143,7 +143,7 @@ export class FeatureReportsService {
       where: { id: reportId },
       data: {
         adminPlaylists: updatedPlaylists,
-        lastUpdated: new Date()
+        updatedAt: new Date()
       }
     });
   }
@@ -170,7 +170,7 @@ export class FeatureReportsService {
         adminPlaylists: {
           push: newPlaylists
         },
-        lastUpdated: new Date()
+        updatedAt: new Date()
       }
     });
   }
@@ -188,16 +188,14 @@ export class FeatureReportsService {
 
     return this.prisma.featureReport.create({
       data: {
-        digitalProductId,
-        upc: product.upc,
-        autoPlaylists: [],
+        submissionId: product.submissionId,
+        platform: 'SPOTIFY', // Default platform
+        featureType: 'AUTO_PLAYLIST',
         adminPlaylists: [],
-        reportStatus: 'NEW',
-        genres: product.submission.albumGenre || [],
-        moods: product.submission.release.moods || []
+        metrics: {},
       },
       include: {
-        digitalProduct: true
+        submission: true
       }
     });
   }
