@@ -96,7 +96,7 @@ export function TagMultiSelect({
   const variantClasses = {
     default: 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-700',
     glass: 'bg-white/5 backdrop-blur-md border-white/10',
-    'glass-enhanced': 'bg-white/10 backdrop-blur-xl border-white/20 shadow-lg'
+    'glass-enhanced': 'bg-gray-800 dark:bg-gray-900 border-gray-600 dark:border-gray-700 shadow-lg'
   };
 
   return (
@@ -198,8 +198,8 @@ export function TagMultiSelect({
             )}
           >
             {/* Search input */}
-            <div className="sticky top-0 p-3 border-b border-white/10 bg-black/20 backdrop-blur-xl">
-              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5">
+            <div className="sticky top-0 p-3 border-b border-gray-700 bg-gray-800 dark:bg-gray-900">
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 dark:bg-gray-800">
                 <Search size={16} className="text-gray-400" />
                 <input
                   ref={inputRef}
@@ -217,7 +217,7 @@ export function TagMultiSelect({
               {Object.entries(groupedOptions).map(([category, categoryOptions]) => (
                 <div key={category} className="mb-3 last:mb-0">
                   {groupByCategory && categoryOptions.length > 0 && (
-                    <div className="text-xs text-gray-500 uppercase px-3 py-2 font-medium">
+                    <div className="text-xs text-gray-300 uppercase px-3 py-2 font-medium bg-gray-700 dark:bg-gray-800">
                       {category}
                     </div>
                   )}
@@ -234,7 +234,7 @@ export function TagMultiSelect({
                       className={clsx(
                         'w-full flex items-center justify-between gap-3',
                         'px-3 py-2 rounded-lg text-left text-sm',
-                        'hover:bg-white/10 transition-colors',
+                        'hover:bg-gray-700 dark:hover:bg-gray-800 transition-colors',
                         'disabled:opacity-50 disabled:cursor-not-allowed',
                         'text-white'
                       )}
