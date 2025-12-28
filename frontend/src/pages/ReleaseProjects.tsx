@@ -387,10 +387,11 @@ export default function ReleaseProjects() {
                       className="
                         w-full flex items-center justify-center gap-2
                         px-4 py-3 rounded-xl
-                        bg-gradient-to-r from-purple-500 to-pink-500
-                        hover:shadow-lg hover:shadow-purple-500/50
+                        bg-slate-800 border border-white/10
+                        hover:bg-slate-700 hover:border-white/20 hover:-translate-y-0.5
                         text-white font-medium
-                        transition-all
+                        shadow-sm
+                        transition-all duration-300
                       "
                     >
                       <ExternalLink size={18} />
