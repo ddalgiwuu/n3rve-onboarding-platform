@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronDown, Search } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -38,8 +39,21 @@ export function TagMultiSelect({
 }: TagMultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Calculate dropdown position when opened
+  useEffect(() => {
+    if (isOpen && containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      setDropdownPosition({
+        top: rect.bottom + 8,
+        left: rect.left,
+        width: rect.width
+      });
+    }
+  }, [isOpen]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -185,21 +199,25 @@ export function TagMultiSelect({
       )}
 
       {/* Dropdown menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            style={{ zIndex: 9999, position: 'absolute' }}
-            className={clsx(
-              'absolute top-full left-0 w-full mt-2 rounded-xl border overflow-hidden',
-              'max-h-80 overflow-y-auto',
-              variantClasses[variant],
-              'shadow-2xl'
-            )}
-          >
+      {isOpen && createPortal(
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.2 }}
+          style={{
+            position: 'fixed',
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`,
+            width: `${dropdownPosition.width}px`,
+            zIndex: 9999
+          }}
+          className={clsx(
+            'rounded-xl border overflow-hidden',
+            'max-h-80 overflow-y-auto',
+            variantClasses[variant],
+            'shadow-2xl'
+          )}
+        >
             {/* Search input */}
             <div className="sticky top-0 p-3 border-b border-gray-700 bg-gray-800 dark:bg-gray-900">
               <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-700 dark:bg-gray-800">
@@ -267,9 +285,9 @@ export function TagMultiSelect({
                 </div>
               ))}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </motion.div>,
+        document.body
+      )}
     </div>
   );
 }
