@@ -134,7 +134,7 @@ export default function HomePage() {
   const blobTransform = `translateY(${scrollY * 0.3}px)`;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 relative">
       {/* Floating particles */}
       <FloatingParticles />
 
@@ -301,7 +301,7 @@ export default function HomePage() {
           </h1>
 
           {/* Animated Description */}
-          <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animation-delay-600">
+          <p className="text-xl md:text-2xl text-gray-700 dark:text-gray-300 mb-12 max-w-3xl mx-auto leading-relaxed animate-fade-in-up animation-delay-600">
             {language === 'ko'
               ? 'N3RVE와 함께 당신의 음악을 전 세계 주요 플랫폼에 배포하세요. 복잡한 절차는 줄이고, 창작에만 집중할 수 있도록 돕습니다.'
               : language === 'ja'
@@ -315,27 +315,19 @@ export default function HomePage() {
             <div className="transform hover:scale-105 active:scale-95 transition-transform duration-200">
               <Link
                 to="/login"
-                className="group relative px-10 py-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full text-white font-bold text-lg overflow-hidden flex items-center gap-3 hover-lift shadow-xl shadow-purple-500/50"
+                className="group relative px-10 py-4 bg-purple-600 dark:bg-gradient-to-r dark:from-purple-500 dark:to-pink-500 rounded-full text-white font-bold text-lg overflow-hidden flex items-center gap-3 hover-lift shadow-xl shadow-purple-600/50 dark:shadow-purple-500/50 hover:bg-purple-700 dark:hover:bg-gradient-to-r dark:hover:from-purple-600 dark:hover:to-pink-600"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-600 transform -translate-x-full group-hover:translate-x-0 transition-transform duration-300"/>
-                <span
-                  className="relative z-10 text-white font-black text-xl drop-shadow-lg"
-                  style={{
-                    textShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                    color: '#ffffff',
-                    fontWeight: '900'
-                  }}
-                >
+                <span className="relative z-10 text-white font-black text-xl drop-shadow-lg">
                   {language === 'ko' ? '지금 시작하기' : language === 'ja' ? '今すぐ始める' : 'Start Now'}
                 </span>
-                <ArrowRight className="relative z-10 w-5 h-5 animate-bounce-x text-white drop-shadow-lg" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }} />
+                <ArrowRight className="relative z-10 w-5 h-5 text-white drop-shadow-lg" />
               </Link>
             </div>
 
             <div className="transform hover:scale-105 active:scale-95 transition-transform duration-200">
               <Link
                 to="/guide"
-                className="px-10 py-4 border-2 border-white/20 backdrop-blur-sm text-white rounded-full font-medium text-lg hover:bg-white/10 hover:border-white/40 transition-all duration-300"
+                className="px-10 py-4 border-2 border-purple-600 dark:border-white/20 backdrop-blur-sm text-purple-700 dark:text-white rounded-full font-medium text-lg hover:bg-purple-50 dark:hover:bg-white/10 hover:border-purple-700 dark:hover:border-white/40 transition-all duration-300"
               >
                 {language === 'ko' ? '이용 가이드' : language === 'ja' ? '利用ガイド' : 'User Guide'}
               </Link>
@@ -344,17 +336,17 @@ export default function HomePage() {
 
           {/* Trust Indicators with Stagger Animation */}
           <div className="mt-12 flex flex-wrap justify-center items-center gap-8 text-sm" ref={trustRef}>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/15 hover:scale-105 transition-all duration-300 animate-fade-in-up animation-delay-1000">
-              <CheckCircle className="w-4 h-4 text-green-400" />
-              <span className="text-white/80">{language === 'ko' ? '100% 보안 인증' : language === 'ja' ? '100%セキュア' : '100% Secure'}</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-white/10 backdrop-blur-sm rounded-full hover:bg-white dark:hover:bg-white/15 hover:scale-105 transition-all duration-300 animate-fade-in-up animation-delay-1000 border border-purple-200 dark:border-transparent">
+              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400" />
+              <span className="text-gray-800 dark:text-white/80 font-medium">{language === 'ko' ? '100% 보안 인증' : language === 'ja' ? '100%セキュア' : '100% Secure'}</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/15 hover:scale-105 transition-all duration-300 animate-fade-in-up animation-delay-1100">
-              <Star className="w-4 h-4 text-yellow-400" />
-              <span className="text-white/80">{language === 'ko' ? '업계 최고 수준' : language === 'ja' ? '業界最高水準' : 'Industry Leading'}</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-white/10 backdrop-blur-sm rounded-full hover:bg-white dark:hover:bg-white/15 hover:scale-105 transition-all duration-300 animate-fade-in-up animation-delay-1100 border border-purple-200 dark:border-transparent">
+              <Star className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+              <span className="text-gray-800 dark:text-white/80 font-medium">{language === 'ko' ? '업계 최고 수준' : language === 'ja' ? '業界最高水準' : 'Industry Leading'}</span>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/15 hover:scale-105 transition-all duration-300 animate-fade-in-up animation-delay-1200">
-              <Globe className="w-4 h-4 text-blue-400" />
-              <span className="text-white/80">{language === 'ko' ? '150+ 국가 지원' : language === 'ja' ? '150+ヶ国対応' : '150+ Countries'}</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-white/10 backdrop-blur-sm rounded-full hover:bg-white dark:hover:bg-white/15 hover:scale-105 transition-all duration-300 animate-fade-in-up animation-delay-1200 border border-purple-200 dark:border-transparent">
+              <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span className="text-gray-800 dark:text-white/80 font-medium">{language === 'ko' ? '150+ 국가 지원' : language === 'ja' ? '150+ヶ国対応' : '150+ Countries'}</span>
             </div>
           </div>
         </div>
@@ -363,12 +355,12 @@ export default function HomePage() {
       {/* Features Section with Scroll Animations */}
       <div className="container mx-auto px-4 py-20 relative">
         <AnimatedText delay={0}>
-          <h2 className="text-3xl md:text-4xl font-bold text-center text-white mb-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
             {language === 'ko' ? 'N3RVE가 특별한 이유' : language === 'ja' ? 'N3RVEを選ぶ理由' : 'Why Choose N3RVE'}
           </h2>
         </AnimatedText>
         <AnimatedText delay={0.1}>
-          <p className="text-center text-gray-400 mb-16 text-lg">
+          <p className="text-center text-gray-600 dark:text-gray-400 mb-16 text-lg">
             {language === 'ko' ? '아티스트를 위한 최고의 선택' : language === 'ja' ? 'アーティストのための最高の選択' : 'The Best Choice for Artists'}
           </p>
         </AnimatedText>
