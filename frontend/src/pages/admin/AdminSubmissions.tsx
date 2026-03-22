@@ -134,7 +134,7 @@ export default function AdminSubmissions() {
   return (
     <div className="p-8">
       <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">{t('제출 관리', 'Submission Management', '提出管理')}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('제출 관리', 'Submission Management', '提出管理')}</h1>
 
         <div className="flex gap-4">
           {/* 검색 / Search / 検索 */}
@@ -145,7 +145,7 @@ export default function AdminSubmissions() {
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
               placeholder={t('아티스트, 앨범명 검색...', 'Search artists, album names...', 'アーティスト、アルバム名を検索...')}
-              className="pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+              className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400"
             />
           </div>
 
@@ -153,7 +153,7 @@ export default function AdminSubmissions() {
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value)}
-            className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400"
           >
             <option value="all">{t('전체', 'All', '全て')}</option>
             <option value="pending">{t('검토중', 'Under Review', '審査中')}</option>
@@ -164,55 +164,55 @@ export default function AdminSubmissions() {
       </div>
 
       {/* 제출 목록 테이블 / Submission List Table / 提出リストテーブル */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-gray-900">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('제출일', 'Submission Date', '提出日')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('아티스트', 'Artist', 'アーティスト')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('앨범명', 'Album Name', 'アルバム名')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('앨범 유형', 'Album Type', 'アルバムタイプ')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('발매일', 'Release Date', 'リリース日')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('제출자', 'Submitter', '提出者')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('상태', 'Status', 'ステータス')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('파일', 'Files', 'ファイル')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 {t('작업', 'Actions', 'アクション')}
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
             {loading ? (
               <tr>
-                <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={9} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                   {t('데이터를 불러오는 중...', 'Loading data...', 'データを読み込み中...')}
                 </td>
               </tr>
             ) : error ? (
               <tr>
-                <td colSpan={9} className="px-6 py-4 text-center text-red-500">
+                <td colSpan={9} className="px-6 py-4 text-center text-red-500 dark:text-red-400">
                   {t('데이터를 불러오는데 실패했습니다', 'Failed to load data', 'データの読み込みに失敗しました')}: {error}
                 </td>
               </tr>
             ) : filteredSubmissions.length === 0 ? (
               <tr>
-                <td colSpan={9} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={9} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                   {t('제출물이 없습니다', 'No submissions found', '提出物がありません')}
                 </td>
               </tr>
@@ -221,38 +221,38 @@ export default function AdminSubmissions() {
                 <tr
                   key={submission.id}
                   onClick={() => handleViewSubmission(submission.id)}
-                  className="hover:bg-gray-50 cursor-pointer transition-colors"
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                     {format(new Date(submission.createdAt), 'yyyy-MM-dd')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                     {submission.artistName}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200">
                     {submission.albumTitle}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {submission.albumType}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     {format(new Date(submission.releaseDate), 'yyyy-MM-dd')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    <div>{submission.submitterName}</div>
-                    <div className="text-xs text-gray-400">{submission.submitterEmail}</div>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-gray-900 dark:text-gray-200">{submission.submitterName}</div>
+                    <div className="text-xs text-gray-400 dark:text-gray-500">{submission.submitterEmail}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {getStatusBadge(submission.status)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                     <span className="inline-flex items-center gap-1">
-                      <span className="font-medium text-gray-900">{getFileCount(submission.files)}</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-200">{getFileCount(submission.files)}</span>
                       {t('개', 'files', 'ファイル')}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="inline-flex items-center gap-1 text-purple-600">
+                    <div className="inline-flex items-center gap-1 text-purple-600 dark:text-purple-400">
                       <Eye className="w-4 h-4" />
                       {t('보기', 'View', '表示')}
                     </div>

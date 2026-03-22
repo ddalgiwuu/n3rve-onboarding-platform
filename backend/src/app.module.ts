@@ -18,6 +18,7 @@ import { DropboxModule } from './dropbox/dropbox.module';
 import { UserModule } from './user/user.module';
 import { DigitalProductsModule } from './digital-products/digital-products.module';
 import { FeatureReportsModule } from './feature-reports/feature-reports.module';
+import { ExternalModule } from './external/external.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { FeatureReportsModule } from './feature-reports/feature-reports.module';
     UserModule,
     DigitalProductsModule,
     FeatureReportsModule,
+    ExternalModule,
   ],
   controllers: [AppController],
   providers: [

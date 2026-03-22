@@ -5,6 +5,7 @@ import useSafeStore from '@/hooks/useSafeStore';
 import { v4 as uuidv4 } from 'uuid';
 import { validateField, type QCValidationResult } from '@/utils/fugaQCValidation';
 import QCWarnings from '@/components/submission/QCWarnings';
+import { useOpenClawQC } from '@/hooks/useOpenClawQC';
 import EnhancedArtistModal from '@/components/submission/EnhancedArtistModal';
 import { DatePicker } from '@/components/DatePicker';
 import TranslationInput from '@/components/TranslationInput';
@@ -1516,6 +1517,7 @@ const roleOptions: { value: ContributorRole, label: string, labelEn: string }[] 
 export default function Step3TrackInfo({ data, onNext }: Props) {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const { results: openClawResults, isChecking: openClawChecking, isConnected, sendQCRequest } = useOpenClawQC();
 
   console.log('Step3TrackInfo mounted, data:', data);
 
@@ -1876,6 +1878,23 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
 
     return results;
   }, [tracks]);
+
+  // OpenClaw AI QC
+  useEffect(() => {
+    if (tracks.length > 0 && tracks.some(t => t.titleKo || t.titleEn)) {
+      sendQCRequest(3, {
+        tracks: tracks.map(t => ({
+          titleKo: t.titleKo,
+          titleEn: t.titleEn,
+          isTitle: t.isTitle,
+          isrc: t.isrc,
+          explicitContent: t.explicitContent,
+          genre: t.genre,
+          artists: t.artists.map(a => ({ name: a.primaryName, role: a.role })),
+        }))
+      });
+    }
+  }, [tracks, sendQCRequest]);
 
   const validateAndHandleSubmit = () => {
     console.log('validateAndHandleSubmit called');
@@ -5436,8 +5455,13 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
           )}
 
           {/* QC Warnings */}
-          {qcValidationResults.length > 0 && (
-            <QCWarnings results={qcValidationResults} />
+          {(qcValidationResults.length > 0 || openClawResults.length > 0 || openClawChecking) && (
+            <QCWarnings
+              results={qcValidationResults}
+              openClawResults={openClawResults}
+              isChecking={openClawChecking}
+              isConnected={isConnected}
+            />
           )}
         </div>
       </div>

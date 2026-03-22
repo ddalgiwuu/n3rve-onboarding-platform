@@ -5,6 +5,7 @@ import type { SubmissionData } from '@/services/submission.service';
 import AdminEmailPreview from '@/components/submission/AdminEmailPreview';
 import { validateSubmission, type QCValidationResults } from '@/utils/fugaQCValidation';
 import QCWarnings, { QCStatusBadge } from '@/components/submission/QCWarnings';
+import { useOpenClawQC } from '@/hooks/useOpenClawQC';
 
 interface Props {
   data: Partial<SubmissionData>
@@ -24,6 +25,7 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [qcResults, setQcResults] = useState<QCValidationResults | null>(null);
   const { t } = useTranslation();
+  const { results: openClawResults, isChecking: openClawChecking, isConnected, sendQCRequest } = useOpenClawQC();
 
   useEffect(() => {
     // 검증 로직
@@ -122,6 +124,11 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
     setQcResults(qcValidation);
   }, [data]);
 
+  // OpenClaw AI QC — send full submission data
+  useEffect(() => {
+    sendQCRequest(6, data);
+  }, [data, sendQCRequest]);
+
   const toggleSection = (section: string) => {
     setExpandedSections(prev =>
       prev.includes(section)
@@ -130,7 +137,8 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
     );
   };
 
-  const hasErrors = validationIssues.some(issue => issue.type === 'error') || (qcResults?.errors.length ?? 0) > 0;
+  const openClawErrors = openClawResults.filter(r => r.severity === 'error');
+  const hasErrors = validationIssues.some(issue => issue.type === 'error') || (qcResults?.errors.length ?? 0) > 0 || openClawErrors.length > 0;
   const hasWarnings = validationIssues.some(issue => issue.type === 'warning') || (qcResults?.warnings.length ?? 0) > 0;
   const hasQcErrors = (qcResults?.errors.length ?? 0) > 0;
   const hasQcWarnings = (qcResults?.warnings.length ?? 0) > 0;
@@ -253,6 +261,29 @@ export default function Step6Confirmation({ data, onNext, isSubmitting }: Props)
                   </p>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* OpenClaw AI QC */}
+        {(openClawResults.length > 0 || openClawChecking) && (
+          <div className="mb-8 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/20 dark:to-blue-900/20 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-cyan-500 inline-block" />
+                {t('AI QC 리포트', 'AI QC Report')}
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                {t('OpenClaw AI 품질 검사 결과', 'OpenClaw AI quality check results')}
+              </p>
+            </div>
+            <div className="p-6">
+              <QCWarnings
+                results={[]}
+                openClawResults={openClawResults}
+                isChecking={openClawChecking}
+                isConnected={isConnected}
+              />
             </div>
           </div>
         )}
