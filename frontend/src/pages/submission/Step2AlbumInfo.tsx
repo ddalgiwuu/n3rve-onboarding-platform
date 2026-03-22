@@ -6,8 +6,9 @@ import useSafeStore from '@/hooks/useSafeStore';
 import { Disc, FileText, Info, Languages, AlertCircle, ChevronDown, Globe } from 'lucide-react';
 import { validateField } from '@/utils/fugaQCValidation';
 import QCWarnings from '@/components/submission/QCWarnings';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import ValidatedFormInput from '@/components/ValidatedFormInput';
+import { useOpenClawQC } from '@/hooks/useOpenClawQC';
 
 const createAlbumSchema = (t: (ko: string, en: string) => string) => z.object({
   primaryTitle: z.string().min(1, t('앨범 제목을 입력해주세요', 'Please enter the album title')),
@@ -53,6 +54,7 @@ interface Props {
 export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const { results: openClawResults, isChecking, isConnected, sendQCRequest } = useOpenClawQC();
   const { register, handleSubmit, formState: { errors }, watch, setValue } = useForm<AlbumForm>({
     resolver: zodResolver(createAlbumSchema(t)),
     defaultValues: data?.album || {
@@ -85,6 +87,13 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
 
     return results;
   }, [primaryTitle, translatedTitle]);
+
+  // OpenClaw AI QC
+  useEffect(() => {
+    if (primaryTitle) {
+      sendQCRequest(2, { album: { titleKo: primaryTitle, titleEn: translatedTitle, type: albumType } });
+    }
+  }, [primaryTitle, translatedTitle, albumType, sendQCRequest]);
 
   return (
     <form onSubmit={handleSubmit(
@@ -561,7 +570,12 @@ export default function Step2AlbumInfo({ data, onNext, onPrevious }: Props) {
                   </p>
                 </div>
               </div>
-              <QCWarnings results={qcValidationResults} />
+              <QCWarnings
+                results={qcValidationResults}
+                openClawResults={openClawResults}
+                isChecking={isChecking}
+                isConnected={isConnected}
+              />
             </div>
           )}
         </div>

@@ -295,6 +295,8 @@ model Submission {
   reviewer             User?              @relation("ReviewerSubmissions", fields: [reviewedBy], references: [id])
   digitalProducts      DigitalProduct[]
   featureReports       FeatureReport[]
+  qcLogs               QCLog[]
+  dspOverrides         DSPMetadataOverride[]
 }
 
 model User {
@@ -378,6 +380,46 @@ model FeatureReport {
   updatedAt           DateTime  @updatedAt @db.Date
 
   submission          Submission @relation(fields: [submissionId], references: [id])
+}
+
+model QCLog {
+  id            String    @id @default(auto()) @map("_id") @db.ObjectId
+  submissionId  String    @db.ObjectId
+  trackId       String?
+  source        String    // FUGA | INTERNAL | OPENCLAW | MANUAL
+  type          String    // QC_ERROR | QC_WARNING | DSP_OVERRIDE | NOTE | REQUEST
+  severity      String    // INFO | WARN | ERROR
+  dsp           String?   // SPOTIFY | APPLE_MUSIC | YOUTUBE_MUSIC etc.
+  title         String
+  description   String
+  beforeValue   String?
+  afterValue    String?
+  field         String?
+  status        String    @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED | DISMISSED
+  createdBy     String
+  resolvedBy    String?
+  resolvedAt    DateTime? @db.Date
+  createdAt     DateTime  @default(now()) @db.Date
+  updatedAt     DateTime  @updatedAt @db.Date
+
+  submission    Submission @relation(fields: [submissionId], references: [id])
+}
+
+model DSPMetadataOverride {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  submissionId   String   @db.ObjectId
+  trackId        String?
+  dsp            String
+  field          String
+  originalValue  String
+  overrideValue  String
+  reason         String?
+  appliedBy      String
+  appliedAt      DateTime @default(now()) @db.Date
+  createdAt      DateTime @default(now()) @db.Date
+  updatedAt      DateTime @updatedAt @db.Date
+
+  submission     Submission @relation(fields: [submissionId], references: [id])
 }
 
 model MarketingDriver {
