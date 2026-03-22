@@ -1,6 +1,7 @@
 import api from '@/lib/api';
 import { User } from '@/types/user';
 import { Submission } from '@/types/submission';
+import { QCLog, DSPMetadataOverride, CreateQCLogData, CreateDSPOverrideData } from '@/types/qclog';
 
 export interface DashboardStats {
   totalSubmissions: number;
@@ -90,6 +91,35 @@ export const adminService = {
       status,
       comments
     });
+    return data;
+  },
+
+  // QC Logs
+  async getQCLogs(submissionId: string, filters?: Record<string, string>): Promise<QCLog[]> {
+    const { data } = await api.get(`/admin/submissions/${submissionId}/qc-logs`, { params: filters });
+    return data;
+  },
+
+  async createQCLog(submissionId: string, logData: CreateQCLogData): Promise<QCLog> {
+    const { data } = await api.post(`/admin/submissions/${submissionId}/qc-logs`, logData);
+    return data;
+  },
+
+  async updateQCLogStatus(logId: string, status: string): Promise<QCLog> {
+    const { data } = await api.patch(`/admin/qc-logs/${logId}/status`, { status });
+    return data;
+  },
+
+  // DSP Overrides
+  async getDSPOverrides(submissionId: string, dsp?: string): Promise<DSPMetadataOverride[]> {
+    const { data } = await api.get(`/admin/submissions/${submissionId}/dsp-overrides`, {
+      params: dsp ? { dsp } : undefined
+    });
+    return data;
+  },
+
+  async createDSPOverride(submissionId: string, overrideData: CreateDSPOverrideData): Promise<DSPMetadataOverride> {
+    const { data } = await api.post(`/admin/submissions/${submissionId}/dsp-overrides`, overrideData);
     return data;
   },
 

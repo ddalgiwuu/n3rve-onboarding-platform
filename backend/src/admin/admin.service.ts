@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
+import { CreateQCLogDto } from './dto/create-qc-log.dto';
+import { CreateDSPOverrideDto } from './dto/create-dsp-override.dto';
 
 interface PaginationOptions {
   page?: number;
@@ -291,6 +293,12 @@ export class AdminService {
             email: true,
           },
         },
+        _count: {
+          select: {
+            qcLogs: true,
+            dspOverrides: true,
+          },
+        },
       },
     });
 
@@ -366,6 +374,78 @@ export class AdminService {
       where: { id: userId },
       data: {
         role: role.toUpperCase() as 'USER' | 'ADMIN',
+      },
+    });
+  }
+
+  async getQCLogs(submissionId: string, filters?: { source?: string; severity?: string; status?: string; dsp?: string }) {
+    const where: any = { submissionId };
+
+    if (filters?.source) where.source = filters.source;
+    if (filters?.severity) where.severity = filters.severity;
+    if (filters?.status) where.status = filters.status;
+    if (filters?.dsp) where.dsp = filters.dsp;
+
+    return this.prisma.qCLog.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createQCLog(submissionId: string, data: CreateQCLogDto, createdBy: string) {
+    return this.prisma.qCLog.create({
+      data: {
+        submissionId,
+        createdBy,
+        trackId: data.trackId,
+        source: data.source,
+        type: data.type,
+        severity: data.severity,
+        dsp: data.dsp,
+        title: data.title,
+        description: data.description,
+        beforeValue: data.beforeValue,
+        afterValue: data.afterValue,
+        field: data.field,
+      },
+    });
+  }
+
+  async updateQCLogStatus(logId: string, status: string, resolvedBy?: string) {
+    const data: any = { status };
+
+    if (status === 'RESOLVED') {
+      data.resolvedAt = new Date();
+      if (resolvedBy) data.resolvedBy = resolvedBy;
+    }
+
+    return this.prisma.qCLog.update({
+      where: { id: logId },
+      data,
+    });
+  }
+
+  async getDSPOverrides(submissionId: string, dsp?: string) {
+    const where: any = { submissionId };
+    if (dsp) where.dsp = dsp;
+
+    return this.prisma.dSPMetadataOverride.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async createDSPOverride(submissionId: string, data: CreateDSPOverrideDto, appliedBy: string) {
+    return this.prisma.dSPMetadataOverride.create({
+      data: {
+        submissionId,
+        appliedBy,
+        trackId: data.trackId,
+        dsp: data.dsp,
+        field: data.field,
+        originalValue: data.originalValue,
+        overrideValue: data.overrideValue,
+        reason: data.reason,
       },
     });
   }

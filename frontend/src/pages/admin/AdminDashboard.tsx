@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardList, Users, CheckCircle, XCircle, Music, Eye, Download, Search, Filter, Clock, Settings } from 'lucide-react';
+import { ClipboardList, Users, CheckCircle, XCircle, Music, Eye, Download, Search, Filter, Clock, Settings, ShieldAlert } from 'lucide-react';
 import { submissionService } from '@/services/submission.service';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -252,7 +252,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 빠른 링크 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
           <Link
             to="/admin/submissions"
             className="block bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-gray-200 dark:border-white/20 shadow-xl hover:bg-gray-50 dark:hover:bg-white/15 hover:scale-[1.02] transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-n3rve-500 focus:ring-offset-2 relative z-10"
@@ -293,6 +293,25 @@ export default function AdminDashboard() {
             </div>
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">{t('admin.platformSettings')}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">{t('admin.platformSettingsDesc')}</p>
+          </Link>
+
+          <Link
+            to="/admin/submissions"
+            state={{ openQCLogs: true }}
+            className="block bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-6 border border-orange-200 dark:border-orange-500/30 shadow-xl hover:bg-orange-50 dark:hover:bg-orange-500/10 hover:scale-[1.02] transition-all duration-300 text-left group cursor-pointer focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 relative z-10"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-orange-500/20 rounded-lg">
+                <ShieldAlert className="w-6 h-6 text-orange-400" />
+              </div>
+              <span className="text-gray-400 group-hover:text-orange-500 dark:group-hover:text-orange-400 transition-colors">→</span>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              {language === 'ko' ? 'QC 로그' : 'QC Logs'}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {language === 'ko' ? '제출물 선택 후 QC 탭에서 검수 이력 확인' : 'Select a submission to view QC check history'}
+            </p>
           </Link>
         </div>
       </div>

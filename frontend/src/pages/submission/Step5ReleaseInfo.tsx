@@ -8,6 +8,7 @@ import { Calendar, Globe, Music, Shield, Clock, FileText, Info, ChevronDown, Che
 import { continents, allCountries, getExcludedCountriesForDSPs, getCountryByCode, dspExclusions } from '@/data/territories';
 import { validateField } from '@/utils/fugaQCValidation';
 import QCWarnings from '@/components/submission/QCWarnings';
+import { useOpenClawQC } from '@/hooks/useOpenClawQC';
 import { useSubmissionStore } from '@/store/submission.store';
 import ValidatedFormInput from '@/components/ValidatedFormInput';
 
@@ -160,6 +161,7 @@ interface Props {
 export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const { results: openClawResults, isChecking: openClawChecking, isConnected, sendQCRequest } = useOpenClawQC();
   const { formData, updateFormData, setCurrentStep } = useSubmissionStore();
   const savedData = formData.release;
 
@@ -328,6 +330,22 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
 
     return results;
   }, [copyrightYear, cRights, pRights, consumerReleaseDate]);
+
+  // OpenClaw AI QC
+  useEffect(() => {
+    if (consumerReleaseDate || cRights || pRights) {
+      sendQCRequest(5, {
+        release: {
+          consumerReleaseDate,
+          cRights,
+          pRights,
+          copyrightYear,
+          recordingCountry: watch('recordingCountry'),
+          recordingLanguage: watch('recordingLanguage'),
+        }
+      });
+    }
+  }, [consumerReleaseDate, cRights, pRights, copyrightYear, sendQCRequest]);
 
   // Update DSP exclusions when distributors change
   useEffect(() => {
@@ -1608,7 +1626,12 @@ export default function Step5ReleaseInfo({ data, onNext, onPrevious }: Props) {
                 </p>
               </div>
             </div>
-            <QCWarnings results={qcValidationResults} />
+            <QCWarnings
+              results={qcValidationResults}
+              openClawResults={openClawResults}
+              isChecking={openClawChecking}
+              isConnected={isConnected}
+            />
           </div>
         )}
 

@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Param, UseGuards, ForbiddenException, Quer
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { CreateQCLogDto } from './dto/create-qc-log.dto';
+import { CreateDSPOverrideDto } from './dto/create-dsp-override.dto';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard)
@@ -157,5 +159,68 @@ export class AdminController {
       throw new ForbiddenException('Admin access required');
     }
     return this.adminService.updateSubmissionStatus(submissionId, body.status, user.id, body.adminNotes);
+  }
+
+  @Get('submissions/:id/qc-logs')
+  async getQCLogs(
+    @CurrentUser() user: any,
+    @Param('id') submissionId: string,
+    @Query('source') source?: string,
+    @Query('severity') severity?: string,
+    @Query('status') status?: string,
+    @Query('dsp') dsp?: string,
+  ) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    return this.adminService.getQCLogs(submissionId, { source, severity, status, dsp });
+  }
+
+  @Post('submissions/:id/qc-logs')
+  async createQCLog(
+    @CurrentUser() user: any,
+    @Param('id') submissionId: string,
+    @Body() body: CreateQCLogDto,
+  ) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    return this.adminService.createQCLog(submissionId, body, user.id);
+  }
+
+  @Patch('qc-logs/:logId/status')
+  async updateQCLogStatus(
+    @CurrentUser() user: any,
+    @Param('logId') logId: string,
+    @Body() body: { status: string; resolvedBy?: string },
+  ) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    return this.adminService.updateQCLogStatus(logId, body.status, body.resolvedBy);
+  }
+
+  @Get('submissions/:id/dsp-overrides')
+  async getDSPOverrides(
+    @CurrentUser() user: any,
+    @Param('id') submissionId: string,
+    @Query('dsp') dsp?: string,
+  ) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    return this.adminService.getDSPOverrides(submissionId, dsp);
+  }
+
+  @Post('submissions/:id/dsp-overrides')
+  async createDSPOverride(
+    @CurrentUser() user: any,
+    @Param('id') submissionId: string,
+    @Body() body: CreateDSPOverrideDto,
+  ) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    return this.adminService.createDSPOverride(submissionId, body, user.id);
   }
 }
