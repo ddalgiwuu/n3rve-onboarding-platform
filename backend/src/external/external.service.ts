@@ -326,4 +326,23 @@ export class ExternalService {
       return { action: 'created', submissionId: created.id, dropboxPath };
     }
   }
+
+  async bulkUpsertSubmissions(submissions: ExternalSubmissionDto[]) {
+    const results: Array<{ upc: string; action: string; submissionId?: string; error?: string }> = [];
+
+    for (const dto of submissions) {
+      try {
+        const result = await this.upsertSubmission(dto);
+        results.push({ upc: dto.upc, ...result });
+      } catch (err: any) {
+        results.push({ upc: dto.upc, action: 'error', error: err.message });
+      }
+    }
+
+    const created = results.filter((r) => r.action === 'created').length;
+    const updated = results.filter((r) => r.action === 'updated').length;
+    const errors = results.filter((r) => r.action === 'error').length;
+
+    return { total: submissions.length, created, updated, errors, results };
+  }
 }
