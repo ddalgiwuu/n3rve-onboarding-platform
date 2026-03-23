@@ -28,6 +28,19 @@ export class ExternalService {
   async pushLogs(dto: ExternalLogDto) {
     const submission = await this.findSubmissionByUPC(dto.upc);
 
+    // Auto-map label account if not set
+    if (!submission.labelAccountId && submission.labelName) {
+      const labelAccount = await this.prisma.user.findFirst({
+        where: { company: submission.labelName, isCompanyAccount: true },
+      });
+      if (labelAccount) {
+        await this.prisma.submission.update({
+          where: { id: submission.id },
+          data: { labelAccountId: labelAccount.id },
+        });
+      }
+    }
+
     const created = await Promise.all(
       dto.logs.map((log) =>
         this.prisma.qCLog.create({

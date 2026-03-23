@@ -94,6 +94,10 @@ export const adminService = {
     return data;
   },
 
+  async deleteSubmission(submissionId: string): Promise<void> {
+    await api.delete(`/admin/submissions/${submissionId}`);
+  },
+
   // QC Logs
   async getQCLogs(submissionId: string, filters?: Record<string, string>): Promise<QCLog[]> {
     const { data } = await api.get(`/admin/submissions/${submissionId}/qc-logs`, { params: filters });
@@ -120,6 +124,22 @@ export const adminService = {
 
   async createDSPOverride(submissionId: string, overrideData: CreateDSPOverrideData): Promise<DSPMetadataOverride> {
     const { data } = await api.post(`/admin/submissions/${submissionId}/dsp-overrides`, overrideData);
+    return data;
+  },
+
+  // Label accounts
+  async getLabelAccounts(): Promise<any[]> {
+    const { data } = await api.get('/admin/label-accounts');
+    return data;
+  },
+
+  async assignLabelAccount(submissionId: string, labelAccountId: string | null): Promise<any> {
+    const { data } = await api.patch(`/admin/submissions/${submissionId}/label-account`, { labelAccountId });
+    return data;
+  },
+
+  async autoMapLabels(): Promise<{ total: number; mapped: number }> {
+    const { data } = await api.post('/admin/submissions/auto-map-labels');
     return data;
   },
 
