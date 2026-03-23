@@ -293,6 +293,14 @@ export class AdminService {
             email: true,
           },
         },
+        labelAccount: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            company: true,
+          },
+        },
         _count: {
           select: {
             qcLogs: true,
@@ -448,6 +456,65 @@ export class AdminService {
         reason: data.reason,
       },
     });
+  }
+
+  async deleteSubmission(submissionId: string) {
+    return this.prisma.$transaction(async (tx) => {
+      await tx.qCLog.deleteMany({ where: { submissionId } });
+      await tx.dSPMetadataOverride.deleteMany({ where: { submissionId } });
+      await tx.digitalProduct.deleteMany({ where: { submissionId } });
+      await tx.featureReport.deleteMany({ where: { submissionId } });
+      return tx.submission.delete({ where: { id: submissionId } });
+    });
+  }
+
+  async assignLabelAccount(submissionId: string, labelAccountId: string | null) {
+    return this.prisma.submission.update({
+      where: { id: submissionId },
+      data: { labelAccountId },
+    });
+  }
+
+  async getSubmissionsByLabel(labelAccountId: string) {
+    return this.prisma.submission.findMany({
+      where: { labelAccountId },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async autoMapLabelAccounts() {
+    const unmapped = await this.prisma.submission.findMany({
+      where: { labelAccountId: null },
+    });
+
+    const companyAccounts = await this.prisma.user.findMany({
+      where: { isCompanyAccount: true },
+    });
+
+    let mapped = 0;
+    for (const submission of unmapped) {
+      if (!submission.labelName) continue;
+      const match = companyAccounts.find(
+        (account) => account.company?.toLowerCase() === submission.labelName.toLowerCase(),
+      );
+      if (match) {
+        await this.prisma.submission.update({
+          where: { id: submission.id },
+          data: { labelAccountId: match.id },
+        });
+        mapped++;
+      }
+    }
+    return { total: unmapped.length, mapped };
+  }
+
+  async getLabelAccounts() {
+    const accounts = await this.prisma.user.findMany({
+      where: { isCompanyAccount: true },
+      include: { _count: { select: { labelSubmissions: true } } },
+      orderBy: { company: 'asc' },
+    });
+    return accounts;
   }
 
   async createUser(createUserDto: {
