@@ -145,23 +145,26 @@ type SubmissionRelease {
 
 type SubmissionTracks {
   artists          Json?
-  composer         String
+  composer         String?
+  composers        String?
   contributors     Json?
-  dolbyAtmos       Boolean
-  explicitContent  Boolean
+  dolbyAtmos       Boolean?
+  explicitContent  Boolean?
   featuringArtists Json?
   id               String
-  isFocusTrack     Boolean
-  isTitle          Boolean
-  isrc             String
-  lyricist         String
+  isFocusTrack     Boolean?
+  isTitle          Boolean?
+  isrc             String?
+  lyricist         String?
+  lyricists        String?
   arranger         String?
-  stereo           Boolean
-  titleEn          String
+  arrangers        String?
+  stereo           Boolean?
+  titleEn          String?
   titleKo          String
   titleTranslations Json?
-  trackType        String
-  versionType      String
+  trackType        String?
+  versionType      String?
   genre            String?
   subgenre         String?
   alternateGenre   String?
