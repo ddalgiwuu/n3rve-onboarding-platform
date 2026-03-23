@@ -4,6 +4,7 @@ import { ApiKeyGuard } from './guards/api-key.guard';
 import { ExternalService } from './external.service';
 import { ExternalLogDto } from './dto/external-log.dto';
 import { ExternalMetadataDto } from './dto/external-metadata.dto';
+import { ExternalSubmissionDto } from './dto/external-submission.dto';
 
 @Public()
 @UseGuards(ApiKeyGuard)
@@ -14,6 +15,11 @@ export class ExternalController {
   @Post('logs')
   async pushLogs(@Body() body: ExternalLogDto) {
     return this.externalService.pushLogs(body);
+  }
+
+  @Post('submissions')
+  async upsertSubmission(@Body() body: ExternalSubmissionDto) {
+    return this.externalService.upsertSubmission(body);
   }
 
   @Patch('submissions/:upc/metadata')
