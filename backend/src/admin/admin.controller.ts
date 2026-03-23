@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, ForbiddenException, Query, Patch } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, ForbiddenException, Query, Patch, Delete } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -126,6 +126,12 @@ export class AdminController {
     return this.adminService.getSubmissionStats();
   }
 
+  @Post('submissions/auto-map-labels')
+  async autoMapLabels(@CurrentUser() user: any) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.adminService.autoMapLabelAccounts();
+  }
+
   @Get('submissions/:id')
   async getSubmissionById(
     @CurrentUser() user: any,
@@ -210,6 +216,40 @@ export class AdminController {
       throw new ForbiddenException('Admin access required');
     }
     return this.adminService.getDSPOverrides(submissionId, dsp);
+  }
+
+  @Patch('submissions/:id/label-account')
+  async assignLabelAccount(
+    @Param('id') id: string,
+    @Body() body: { labelAccountId: string | null },
+    @CurrentUser() user: any,
+  ) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.adminService.assignLabelAccount(id, body.labelAccountId);
+  }
+
+  @Get('label-accounts')
+  async getLabelAccounts(@CurrentUser() user: any) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.adminService.getLabelAccounts();
+  }
+
+  @Get('label-accounts/:id/submissions')
+  async getSubmissionsByLabel(@Param('id') id: string, @CurrentUser() user: any) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.adminService.getSubmissionsByLabel(id);
+  }
+
+  @Delete('submissions/:id')
+  async deleteSubmission(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+  ) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    await this.adminService.deleteSubmission(id);
+    return { message: 'Submission deleted successfully' };
   }
 
   @Post('submissions/:id/dsp-overrides')

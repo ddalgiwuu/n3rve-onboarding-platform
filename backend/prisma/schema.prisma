@@ -290,9 +290,11 @@ model Submission {
   reviewedBy           String?            @db.ObjectId
   reviewedAt           DateTime?          @db.Date
   adminNotes           String?
+  labelAccountId       String?            @db.ObjectId
 
   submitter            User               @relation("SubmitterSubmissions", fields: [submitterId], references: [id])
   reviewer             User?              @relation("ReviewerSubmissions", fields: [reviewedBy], references: [id])
+  labelAccount         User?              @relation("LabelSubmissions", fields: [labelAccountId], references: [id])
   digitalProducts      DigitalProduct[]
   featureReports       FeatureReport[]
   qcLogs               QCLog[]
@@ -327,6 +329,7 @@ model User {
   subAccounts       User[]             @relation("AccountHierarchy")
   submissions       Submission[]       @relation("SubmitterSubmissions")
   reviewedSubmissions Submission[]     @relation("ReviewerSubmissions")
+  labelSubmissions  Submission[]       @relation("LabelSubmissions")
   savedArtists      SavedArtist[]
   savedContributors SavedContributor[]
 }
