@@ -22,6 +22,11 @@ export class ExternalController {
     return this.externalService.upsertSubmission(body);
   }
 
+  @Post('submissions/bulk')
+  async bulkUpsertSubmissions(@Body() body: { submissions: ExternalSubmissionDto[] }) {
+    return this.externalService.bulkUpsertSubmissions(body.submissions);
+  }
+
   @Patch('submissions/:upc/metadata')
   async updateMetadata(
     @Param('upc') upc: string,
