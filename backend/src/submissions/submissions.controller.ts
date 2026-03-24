@@ -621,10 +621,15 @@ export class SubmissionsController {
 
     const skip = (pageNum - 1) * limitNum;
 
-    const result = await this.submissionsService.findByUser(user.id, {
-      page: pageNum,
-      limit: limitNum,
-    });
+    const result = user.isCompanyAccount
+      ? await this.submissionsService.findByLabelAccount(user.id, {
+          page: pageNum,
+          limit: limitNum,
+        })
+      : await this.submissionsService.findByUser(user.id, {
+          page: pageNum,
+          limit: limitNum,
+        });
 
     return {
       data: result.submissions,
@@ -636,11 +641,17 @@ export class SubmissionsController {
 
   @Get(':id')
   async findOne(@Param('id') id: string, @CurrentUser() user: User) {
-    const submission = await this.submissionsService.findOne(id, user.id, user.role === 'ADMIN');
+    const isAdmin = user.role === 'ADMIN';
+    const submission = await this.submissionsService.findOne(id, user.id, isAdmin);
 
-    // Users can only view their own submissions unless they're admin
-    if (submission.submitterId !== user.id && user.role !== 'ADMIN') {
-      throw new BadRequestException('Unauthorized to view this submission');
+    if (!isAdmin) {
+      const isOwner = user.isCompanyAccount
+        ? submission.labelAccountId === user.id
+        : submission.submitterId === user.id;
+
+      if (!isOwner) {
+        throw new BadRequestException('Unauthorized to view this submission');
+      }
     }
 
     return submission;
@@ -653,9 +664,17 @@ export class SubmissionsController {
     @CurrentUser() user: User
   ) {
     // Verify ownership
-    const submission = await this.submissionsService.findOne(id, user.id, user.role === 'ADMIN');
-    if (submission.submitterId !== user.id && user.role !== 'ADMIN') {
-      throw new BadRequestException('Unauthorized to update this submission');
+    const isAdmin = user.role === 'ADMIN';
+    const submission = await this.submissionsService.findOne(id, user.id, isAdmin);
+
+    if (!isAdmin) {
+      const isOwner = user.isCompanyAccount
+        ? submission.labelAccountId === user.id
+        : submission.submitterId === user.id;
+
+      if (!isOwner) {
+        throw new BadRequestException('Unauthorized to update this submission');
+      }
     }
 
     // Update marketing fields
