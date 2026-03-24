@@ -8,6 +8,7 @@ interface Props {
   submissions: any[];
   onDelete: (id: string) => void;
   onView: (id: string) => void;
+  readOnly?: boolean;
 }
 
 function getCoverUrl(url: string | undefined): string | null {
@@ -54,11 +55,13 @@ function SubmissionCard({
   submission,
   onDelete,
   onView,
+  readOnly,
   t,
 }: {
   submission: any;
   onDelete: (id: string) => void;
   onView: (id: string) => void;
+  readOnly?: boolean;
   t: (ko: string, en: string, ja?: string) => string;
 }) {
   const [imgError, setImgError] = useState(false);
@@ -151,23 +154,25 @@ function SubmissionCard({
           <Eye className="w-4 h-4" />
           {t('상세보기', 'View')}
         </button>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(submission.id);
-          }}
-          className="flex items-center gap-1.5 bg-red-600/90 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow transition-colors"
-          aria-label={t('삭제', 'Delete')}
-        >
-          <Trash2 className="w-4 h-4" />
-          {t('삭제', 'Delete')}
-        </button>
+        {!readOnly && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(submission.id);
+            }}
+            className="flex items-center gap-1.5 bg-red-600/90 hover:bg-red-600 text-white text-sm font-medium px-4 py-2 rounded-lg shadow transition-colors"
+            aria-label={t('삭제', 'Delete')}
+          >
+            <Trash2 className="w-4 h-4" />
+            {t('삭제', 'Delete')}
+          </button>
+        )}
       </div>
     </div>
   );
 }
 
-export default function SubmissionTileView({ submissions, onDelete, onView }: Props) {
+export default function SubmissionTileView({ submissions, onDelete, onView, readOnly }: Props) {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
   const t = (ko: string, en: string, ja?: string) => {
     switch (language) {
@@ -194,6 +199,7 @@ export default function SubmissionTileView({ submissions, onDelete, onView }: Pr
           submission={submission}
           onDelete={onDelete}
           onView={onView}
+          readOnly={readOnly}
           t={t}
         />
       ))}
