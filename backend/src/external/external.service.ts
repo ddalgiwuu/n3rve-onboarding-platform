@@ -241,7 +241,7 @@ export class ExternalService {
         hasCustomReleaseDate: t.hasCustomReleaseDate || false,
         customConsumerReleaseDate: t.customConsumerReleaseDate || '',
         customReleaseTime: t.customReleaseTime || '',
-        playtimeStartShortClip: 0,
+        playtimeStartShortClip: '0',
         // Artists
         artists: t.artists || [],
         featuringArtists: t.featuringArtists || [],
