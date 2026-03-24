@@ -82,7 +82,8 @@ export default function AdminSubmissions() {
       setError(null);
       const response = await adminService.getSubmissions({
         status: filterStatus === 'all' ? undefined : filterStatus,
-        search: searchTerm || undefined
+        search: searchTerm || undefined,
+        limit: 500
       });
       setSubmissions(response.submissions || []);
     } catch (err: any) {
