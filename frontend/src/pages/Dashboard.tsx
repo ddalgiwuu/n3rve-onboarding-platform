@@ -11,6 +11,7 @@ import api from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import LabelDashboard from '@/pages/LabelDashboard';
 
 export default function Dashboard() {
   const isHydrated = useHydration();
@@ -38,6 +39,11 @@ export default function Dashboard() {
   // Show loading spinner until stores are hydrated
   if (!isHydrated) {
     return <LoadingSpinner />;
+  }
+
+  // Label accounts (isCompanyAccount=true) get their own view
+  if (user?.isCompanyAccount) {
+    return <LabelDashboard />;
   }
 
   // Calculate stats from fetched data

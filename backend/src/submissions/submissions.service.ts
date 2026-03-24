@@ -500,6 +500,30 @@ export class SubmissionsService {
     };
   }
 
+  async findByLabelAccount(labelAccountId: string, options: { page: number; limit: number }) {
+    const skip = (options.page - 1) * options.limit;
+
+    const [submissions, total] = await Promise.all([
+      this.prisma.submission.findMany({
+        where: { labelAccountId },
+        skip,
+        take: options.limit,
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.submission.count({
+        where: { labelAccountId },
+      }),
+    ]);
+
+    return {
+      submissions,
+      total,
+      page: options.page,
+      limit: options.limit,
+      totalPages: Math.ceil(total / options.limit),
+    };
+  }
+
   async updateMarketing(id: string, marketingData: any) {
     // Get current submission
     const current = await this.prisma.submission.findUnique({ where: { id } });

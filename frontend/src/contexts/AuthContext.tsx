@@ -5,10 +5,12 @@ interface User {
   id: string
   email: string
   name: string
-  role: 'ADMIN' | 'CUSTOMER'
+  role: 'ADMIN' | 'CUSTOMER' | 'USER'
   companyName?: string
+  company?: string
   artistName?: string
   profilePicture?: string
+  isCompanyAccount?: boolean
 }
 
 interface AuthState {

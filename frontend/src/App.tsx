@@ -174,6 +174,11 @@ function App() {
               isAuthenticated ? <ArtistDetailPage /> : <Navigate to="/login" state={{ from: '/artist-roster' }} />
             } />
 
+            {/* Submission detail - accessible to all authenticated users (label view) */}
+            <Route path="/submissions/:id" element={
+              isAuthenticated ? <SubmissionDetailPage /> : <Navigate to="/login" state={{ from: '/submissions' }} />
+            } />
+
             {/* Admin routes */}
             <Route path="/admin" element={
               isAuthenticated && userRole === 'ADMIN' ? <AdminDashboardPage /> : <Navigate to="/login" />
