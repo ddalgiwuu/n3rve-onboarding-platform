@@ -175,7 +175,7 @@ export class ExternalService {
       marketing: dto.marketing || {},
       createdAt: new Date(),
       updatedAt: new Date(),
-      files: {
+      files: { set: {
         coverImageUrl: dto.files?.coverImageUrl || null,
         artistPhotoUrl: dto.files?.artistPhotoUrl || null,
         motionArtUrl: dto.files?.motionArtUrl || null,
@@ -197,8 +197,8 @@ export class ExternalService {
           dropboxUrl: f.dropboxUrl,
           fileName: f.fileName,
         })),
-      },
-      tracks: (dto.tracks || []).map((t, idx) => ({
+      } },
+      tracks: { set: (dto.tracks || []).map((t, idx) => ({
         id: `track-${idx + 1}`,
         trackNumber: t.trackNumber || idx + 1,
         titleKo: t.titleKo,
@@ -258,8 +258,8 @@ export class ExternalService {
         // Publishers
         publishers: t.publishers || [],
         translations: [],
-      })),
-      release: {
+      })) },
+      release: { set: {
         upc: dto.upc,
         catalogNumber: dto.catalogNumber || dto.upc,
         artistName: dto.artistName,
@@ -289,7 +289,11 @@ export class ExternalService {
         instruments: [],
         selectedTimezone: 'Asia/Seoul',
         releaseTime: '',
-      },
+        territoryType: dto.release?.territoryType || 'WORLDWIDE',
+        consumerReleaseUTC: new Date(dto.releaseDate),
+        originalReleaseUTC: new Date(dto.releaseDate),
+        releaseUTC: new Date(dto.releaseDate),
+      } },
       ...(labelAccountId && { labelAccountId }),
     };
 
