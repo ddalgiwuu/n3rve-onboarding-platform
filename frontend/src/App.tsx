@@ -38,6 +38,11 @@ const AccountSettingsPage = lazy(() => import('./pages/AccountSettings'));
 const RegisterPage = lazy(() => import('./pages/Register'));
 const RealtimeQCTestPage = lazy(() => import('./pages/RealtimeQCTest'));
 
+// Catalog pages
+const CatalogPage = lazy(() => import('./pages/Catalog'));
+const CatalogDetailPage = lazy(() => import('./pages/CatalogDetail'));
+const CatalogArtistsPage = lazy(() => import('./pages/CatalogArtists'));
+
 // FUGA SCORE Integration pages
 const FeatureReportsPage = lazy(() => import('./pages/FeatureReports'));
 const ArtistRosterPage = lazy(() => import('./pages/ArtistRoster'));
@@ -172,6 +177,17 @@ function App() {
             } />
             <Route path="/artist-roster/:id" element={
               isAuthenticated ? <ArtistDetailPage /> : <Navigate to="/login" state={{ from: '/artist-roster' }} />
+            } />
+
+            {/* Catalog routes */}
+            <Route path="/catalog" element={
+              isAuthenticated ? <Suspense fallback={<LoadingSpinner />}><CatalogPage /></Suspense> : <Navigate to="/login" state={{ from: '/catalog' }} />
+            } />
+            <Route path="/catalog/artists" element={
+              isAuthenticated ? <Suspense fallback={<LoadingSpinner />}><CatalogArtistsPage /></Suspense> : <Navigate to="/login" state={{ from: '/catalog/artists' }} />
+            } />
+            <Route path="/catalog/:id" element={
+              isAuthenticated ? <Suspense fallback={<LoadingSpinner />}><CatalogDetailPage /></Suspense> : <Navigate to="/login" state={{ from: '/catalog' }} />
             } />
 
             {/* Submission detail - accessible to all authenticated users (label view) */}
