@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Copy, ChevronDown, ChevronRight, Music, Album, FileText, Globe,
   Info, Users,
   CheckCircle, XCircle, AlertCircle,
-  Package, Download, Eye, Play
+  Package, Download, Eye, Play,
+  Disc3, Calendar, Shield, FileAudio, Video, Tag, Mic2, BarChart3
 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useLanguageStore } from '@/store/language.store';
@@ -689,172 +690,681 @@ const SubmissionDetailView: React.FC<Props> = ({ submission }) => {
 
   const sections = getSections();
 
+  // Derived stats for quick stat cards
+  const totalTracks = submission.tracks?.length || 0;
+  const dolbyTracks = submission.tracks?.filter((tr: any) => tr.dolbyAtmos).length || 0;
+  const explicitTracks = submission.tracks?.filter((tr: any) => tr.explicitContent).length || 0;
+  const totalFiles =
+    (submission.files?.coverImageUrl ? 1 : 0) +
+    (submission.files?.artistPhotoUrl ? 1 : 0) +
+    (submission.files?.audioFiles?.length || 0) +
+    (submission.files?.musicVideoFiles?.length || 0) +
+    (submission.files?.additionalFiles?.length || 0);
+
+  // Track expandable rows
+  const [expandedTracks, setExpandedTracks] = useState<Set<number>>(new Set());
+  const toggleTrack = (idx: number) =>
+    setExpandedTracks(prev => {
+      const next = new Set(prev);
+      next.has(idx) ? next.delete(idx) : next.add(idx);
+      return next;
+    });
+
+  // Show-more for info cards
+  const [showMoreRelease, setShowMoreRelease] = useState(false);
+  const [showMoreMarketing, setShowMoreMarketing] = useState(false);
+
+  const statusColor = (s: string) => {
+    const map: Record<string, string> = {
+      APPROVED: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+      PENDING:  'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300',
+      IN_REVIEW: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+      REJECTED: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+    };
+    return map[s?.toUpperCase()] || map['PENDING'];
+  };
+  const statusLabel = (s: string) => {
+    const map: Record<string, [string, string]> = {
+      APPROVED:  ['승인됨', 'Approved'],
+      PENDING:   ['검토 중', 'Pending'],
+      IN_REVIEW: ['검토 중', 'In Review'],
+      REJECTED:  ['반려됨', 'Rejected'],
+    };
+    const pair = map[s?.toUpperCase()] || map['PENDING'];
+    return t(pair[0], pair[1]);
+  };
+
+  const albumTypeColor = (type: string) => {
+    const map: Record<string, string> = {
+      SINGLE: 'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
+      EP:     'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+      ALBUM:  'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300',
+    };
+    return map[type?.toUpperCase()] || 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+  };
+
+  const releaseDate = submission.releaseDate
+    ? new Date(submission.releaseDate).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+    : '-';
+
+  const genres: string[] = Array.isArray(submission.genre)
+    ? submission.genre
+    : submission.genre
+      ? [submission.genre]
+      : [];
+
+  // Section data map for copy buttons (keyed by id)
+  const sectionMap = useMemo(() => {
+    const map: Record<string, Section> = {};
+    sections.forEach(s => { map[s.id] = s; });
+    return map;
+  }, [sections]);
+
+  const CopyBtn = ({ sectionId }: { sectionId: string }) => {
+    const sec = sectionMap[sectionId];
+    const isCopied = copiedSections.has(sectionId);
+    if (!sec) return null;
+    return (
+      <button
+        onClick={() => copyToClipboard(formatSectionForCopy(sec), sectionId)}
+        className={cn(
+          'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+          isCopied
+            ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+        )}
+      >
+        {isCopied ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+        {isCopied ? t('복사됨', 'Copied') : t('복사', 'Copy')}
+      </button>
+    );
+  };
+
+  const InfoRow = ({ label, value }: { label: string; value?: string | null }) => {
+    if (!value) return null;
+    return (
+      <div className="flex gap-2 py-1.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+        <span className="text-xs text-gray-500 dark:text-gray-400 w-32 shrink-0 pt-0.5">{label}</span>
+        <span className="text-xs text-gray-900 dark:text-gray-100 font-medium break-all select-all">{value}</span>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
-      {/* Header with Copy All Button */}
+
+      {/* ── Top bar: title + copy all ─────────────────────── */}
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
           {t('제출 상세 정보', 'Submission Details')}
         </h3>
         <button
           onClick={() => copyToClipboard(formatAllForCopy())}
-          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
         >
           <Copy className="w-4 h-4" />
           {t('전체 복사', 'Copy All')}
         </button>
       </div>
 
-      {/* Submission Status */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              {t('제출 상태', 'Submission Status')}:
-            </span>
-            <span className={cn(
-              'px-3 py-1 rounded-full text-sm font-medium',
-              submission.status === 'approved' && 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-              submission.status === 'pending' && 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-              submission.status === 'rejected' && 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
-            )}>
-              {submission.status === 'approved' && t('승인됨', 'Approved')}
-              {submission.status === 'pending' && t('검토 중', 'Under Review')}
-              {submission.status === 'rejected' && t('거절됨', 'Rejected')}
-            </span>
+      {/* ── Section 1: Hero ───────────────────────────────── */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex gap-6 flex-wrap sm:flex-nowrap">
+          {/* Cover art */}
+          <div className="shrink-0">
+            {submission.files?.coverImageUrl ? (
+              <div className="relative group w-48 h-48 sm:w-60 sm:h-60">
+                <img
+                  src={getDirectUrl(submission.files.coverImageUrl)}
+                  alt={t('커버 아트', 'Cover Art')}
+                  className="w-full h-full object-cover rounded-xl shadow-lg"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240"%3E%3Crect width="240" height="240" fill="%23e5e7eb"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="14"%3ENo Image%3C/text%3E%3C/svg%3E';
+                  }}
+                />
+                <button
+                  onClick={() => setPreviewImage(getDirectUrl(submission.files.coverImageUrl))}
+                  className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-xl transition-all flex items-center justify-center opacity-0 group-hover:opacity-100"
+                >
+                  <Eye className="w-8 h-8 text-white" />
+                </button>
+              </div>
+            ) : (
+              <div className="w-48 h-48 sm:w-60 sm:h-60 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <Disc3 className="w-16 h-16 text-gray-400 dark:text-gray-500" />
+              </div>
+            )}
           </div>
-          <div className="text-sm text-gray-500">
-            {t('제출일', 'Submission Date')}: {new Date(submission.createdAt).toLocaleDateString()}
+
+          {/* Album info */}
+          <div className="flex-1 min-w-0">
+            {/* Album type + genre badges */}
+            <div className="flex flex-wrap gap-2 mb-3">
+              {submission.albumType && (
+                <span className={cn('px-2.5 py-0.5 rounded-full text-xs font-bold tracking-wide uppercase', albumTypeColor(submission.albumType))}>
+                  {submission.albumType}
+                </span>
+              )}
+              {genres.slice(0, 3).map((g: string) => (
+                <span key={g} className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                  {g}
+                </span>
+              ))}
+            </div>
+
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white leading-tight mb-1">
+              {submission.albumTitle || submission.primaryTitle || t('제목 없음', 'No Title')}
+            </h2>
+            {submission.albumTitleEn && submission.albumTitleEn !== submission.albumTitle && (
+              <p className="text-base text-gray-500 dark:text-gray-400 mb-1">{submission.albumTitleEn}</p>
+            )}
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">
+              {submission.artistName}
+              {submission.artistNameEn && submission.artistNameEn !== submission.artistName && (
+                <span className="text-sm text-gray-400 dark:text-gray-500 ml-2">({submission.artistNameEn})</span>
+              )}
+            </p>
+
+            <div className="w-full border-t border-gray-200 dark:border-gray-700 mb-4" />
+
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2.5">
+              <div>
+                <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5">UPC</span>
+                <span className="text-sm font-mono text-gray-900 dark:text-gray-100 select-all">{submission.release?.upc || '-'}</span>
+              </div>
+              <div>
+                <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5">{t('카탈로그', 'Catalog')}</span>
+                <span className="text-sm font-mono text-gray-900 dark:text-gray-100 select-all">{submission.release?.catalogNumber || '-'}</span>
+              </div>
+              <div>
+                <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5">{t('레이블', 'Label')}</span>
+                <span className="text-sm text-gray-900 dark:text-gray-100">{submission.labelName || '-'}</span>
+              </div>
+              <div>
+                <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5">{t('발매일', 'Release')}</span>
+                <span className="text-sm text-gray-900 dark:text-gray-100 flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                  {releaseDate}
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5">{t('상태', 'Status')}</span>
+                <span className={cn('px-2 py-0.5 rounded-full text-xs font-medium inline-block', statusColor(submission.status))}>
+                  {statusLabel(submission.status)}
+                </span>
+              </div>
+              <div>
+                <span className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-wide block mb-0.5">{t('제출자', 'Submitter')}</span>
+                <span className="text-sm text-gray-900 dark:text-gray-100 truncate block">{submission.submitterName || '-'}</span>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Image preview lightbox */}
+        {previewImage && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+            onClick={() => setPreviewImage(null)}
+          >
+            <img src={previewImage} alt="Preview" className="max-w-2xl max-h-[80vh] rounded-xl shadow-2xl" />
+          </div>
+        )}
+
         {submission.adminNotes && (
-          <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded">
-            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-              {t('관리자 노트', 'Admin Notes')}:
+          <div className="mt-4 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <span className="text-xs font-semibold text-yellow-700 dark:text-yellow-400 uppercase tracking-wide">
+              {t('관리자 노트', 'Admin Notes')}
             </span>
-            <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{submission.adminNotes}</p>
+            <p className="text-sm text-yellow-800 dark:text-yellow-200 mt-1">{submission.adminNotes}</p>
           </div>
         )}
       </div>
 
-      {/* Sections */}
-      {sections.map((section) => {
-        const isExpanded = expandedSections.includes(section.id);
-        const isCopied = copiedSections.has(section.id);
+      {/* ── Section 2: Quick Stats ────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          { icon: <Music className="w-5 h-5 text-purple-500" />,  value: totalTracks,   label: t('총 트랙', 'Total Tracks') },
+          { icon: <Mic2 className="w-5 h-5 text-blue-500" />,     value: dolbyTracks,   label: 'Dolby Atmos' },
+          { icon: <Shield className="w-5 h-5 text-red-500" />,    value: explicitTracks, label: t('Explicit', 'Explicit') },
+          { icon: <FileAudio className="w-5 h-5 text-green-500" />, value: totalFiles,  label: t('파일', 'Files') },
+        ].map(({ icon, value, label }) => (
+          <div key={label} className="bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 flex items-center gap-3">
+            {icon}
+            <div>
+              <div className="text-xl font-bold text-gray-900 dark:text-white">{value}</div>
+              <div className="text-xs text-gray-500 dark:text-gray-400">{label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-        return (
-          <div
-            key={section.id}
-            className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
-          >
-            {/* Section Header */}
-            <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50">
-              <button
-                onClick={() => toggleSection(section.id)}
-                className="flex items-center gap-3 flex-1 text-left"
-              >
-                {isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-gray-500" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-500" />
-                )}
-                <div className="flex items-center gap-2">
-                  {section.icon}
-                  <h4 className="font-semibold text-gray-900 dark:text-white">
-                    {section.title}
-                  </h4>
-                </div>
-              </button>
-              <button
-                onClick={() => copyToClipboard(formatSectionForCopy(section), section.id)}
-                className={cn(
-                  'flex items-center gap-2 px-3 py-1 rounded text-sm transition-colors',
-                  isCopied
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-600 dark:text-gray-300 dark:hover:bg-gray-500'
-                )}
-              >
-                {isCopied ? (
-                  <>
-                    <CheckCircle className="w-4 h-4" />
-                    {t('복사됨', 'Copied')}
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    {t('섹션 복사', 'Copy Section')}
-                  </>
-                )}
+      {/* ── Section 3: Track List ─────────────────────────── */}
+      {totalTracks > 0 && (
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="flex items-center justify-between px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <button onClick={() => toggleSection('tracks-summary')} className="flex items-center gap-2">
+                {expandedSections.includes('tracks-summary') ? <ChevronDown className="w-4 h-4 text-gray-500" /> : <ChevronRight className="w-4 h-4 text-gray-500" />}
+                <Music className="w-4 h-4 text-purple-500" />
+                <span className="font-semibold text-gray-900 dark:text-white text-sm">
+                  {t('트랙 목록', 'Track List')} ({totalTracks})
+                </span>
               </button>
             </div>
+            <CopyBtn sectionId="tracks-summary" />
+          </div>
 
-            {/* Section Content */}
+          {expandedSections.includes('tracks-summary') && (
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[560px]">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 bg-gray-50/50 dark:bg-gray-700/30">
+                    <th className="px-4 py-2 w-8">#</th>
+                    <th className="px-4 py-2">{t('제목', 'Title')}</th>
+                    <th className="px-4 py-2">ISRC</th>
+                    <th className="px-4 py-2">{t('길이', 'Duration')}</th>
+                    <th className="px-4 py-2 w-8"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700/50">
+                  {submission.tracks?.map((track: any, idx: number) => {
+                    const isOpen = expandedTracks.has(idx);
+                    const audioFile = submission.files?.audioFiles?.find((af: any) => af.trackId === track.id || af.trackId === track._id);
+                    return (
+                      <React.Fragment key={idx}>
+                        <tr
+                          className="hover:bg-gray-50 dark:hover:bg-gray-700/30 cursor-pointer transition-colors"
+                          onClick={() => toggleTrack(idx)}
+                        >
+                          <td className="px-4 py-2.5 text-sm text-gray-400 dark:text-gray-500 font-mono">
+                            {track.trackNumber || idx + 1}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                {track.titleKo || track.title || t('제목 없음', 'Untitled')}
+                              </span>
+                              {track.titleEn && track.titleEn !== track.titleKo && (
+                                <span className="text-xs text-gray-400 dark:text-gray-500">{track.titleEn}</span>
+                              )}
+                              {track.explicitContent && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-600 dark:bg-red-900/40 dark:text-red-400">E</span>
+                              )}
+                              {track.dolbyAtmos && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400">Atmos</span>
+                              )}
+                              {track.isTitle && (
+                                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400">{t('타이틀', 'Title')}</span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-2.5 text-xs font-mono text-gray-500 dark:text-gray-400 select-all">
+                            {track.isrc || '-'}
+                          </td>
+                          <td className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400">
+                            {track.duration || '-'}
+                          </td>
+                          <td className="px-4 py-2.5">
+                            {isOpen ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                          </td>
+                        </tr>
+                        {isOpen && (
+                          <tr className="bg-gray-50/80 dark:bg-gray-700/20">
+                            <td colSpan={5} className="px-4 py-3">
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-1.5 text-xs">
+                                {track.composer && <span className="text-gray-500 dark:text-gray-400">{t('작곡', 'Composer')}: <span className="text-gray-800 dark:text-gray-200 font-medium">{track.composer}</span></span>}
+                                {track.lyricist && <span className="text-gray-500 dark:text-gray-400">{t('작사', 'Lyricist')}: <span className="text-gray-800 dark:text-gray-200 font-medium">{track.lyricist}</span></span>}
+                                {track.arranger && <span className="text-gray-500 dark:text-gray-400">{t('편곡', 'Arranger')}: <span className="text-gray-800 dark:text-gray-200 font-medium">{track.arranger}</span></span>}
+                                {track.producer && <span className="text-gray-500 dark:text-gray-400">{t('프로듀서', 'Producer')}: <span className="text-gray-800 dark:text-gray-200 font-medium">{track.producer}</span></span>}
+                                {track.lyricsLanguage && <span className="text-gray-500 dark:text-gray-400">{t('가사 언어', 'Lyrics Lang')}: <span className="text-gray-800 dark:text-gray-200 font-medium">{track.lyricsLanguage}</span></span>}
+                                {track.language && <span className="text-gray-500 dark:text-gray-400">{t('언어', 'Language')}: <span className="text-gray-800 dark:text-gray-200 font-medium">{track.language}</span></span>}
+                                {track.genre && <span className="text-gray-500 dark:text-gray-400">{t('장르', 'Genre')}: <span className="text-gray-800 dark:text-gray-200 font-medium">{track.genre}</span></span>}
+                                {track.previewStart && <span className="text-gray-500 dark:text-gray-400">{t('미리듣기 시작', 'Preview Start')}: <span className="text-gray-800 dark:text-gray-200 font-medium">{track.previewStart}</span></span>}
+                                {track.versionType && track.versionType !== 'ORIGINAL' && <span className="text-gray-500 dark:text-gray-400">{t('버전', 'Version')}: <span className="text-gray-800 dark:text-gray-200 font-medium">{track.versionType}</span></span>}
+                              </div>
+                              {/* Contributors */}
+                              {track.contributors?.length > 0 && (
+                                <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">{t('기여자', 'Contributors')}</span>
+                                  <div className="mt-1 flex flex-wrap gap-1.5">
+                                    {track.contributors.map((c: any, ci: number) => (
+                                      <span key={ci} className="text-xs bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded px-1.5 py-0.5">
+                                        {c.name}{c.role ? ` · ${c.role}` : ''}{c.instrument ? ` · ${c.instrument}` : ''}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {/* Audio player */}
+                              {audioFile?.dropboxUrl && (
+                                <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                                  {playingAudio === audioFile.dropboxUrl ? (
+                                    <div>
+                                      <audio controls autoPlay className="w-full h-8" src={getDirectUrl(audioFile.dropboxUrl)} />
+                                      <button onClick={() => setPlayingAudio(null)} className="mt-1 text-xs text-red-500 hover:text-red-700">{t('정지', 'Stop')}</button>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      onClick={() => setPlayingAudio(audioFile.dropboxUrl)}
+                                      className="flex items-center gap-1.5 text-xs text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 font-medium"
+                                    >
+                                      <Play className="w-3.5 h-3.5" /> {t('오디오 재생', 'Play Audio')}
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Section 4: Info Cards Grid ────────────────────── */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        {/* Release Info card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-indigo-500" />
+              <span className="font-semibold text-gray-900 dark:text-white text-sm">{t('릴리스 정보', 'Release Info')}</span>
+            </div>
+            <CopyBtn sectionId="distribution" />
+          </div>
+          <div className="px-4 py-3">
+            <InfoRow label={t('발매일', 'Release Date')} value={releaseDate} />
+            <InfoRow label={t('저작권 (©)', 'Copyright (©)')} value={submission.release?.cRights || (submission.release?.copyrightYear ? `© ${submission.release.copyrightYear} ${submission.release.copyrightHolder || ''}` : undefined)} />
+            <InfoRow label={t('저작권 (℗)', 'Copyright (℗)')} value={submission.release?.pRights || (submission.release?.productionYear ? `℗ ${submission.release.productionYear} ${submission.release.productionHolder || ''}` : undefined)} />
+            <InfoRow label={t('배급 지역', 'Territories')} value={
+              submission.release?.territoryType === 'WORLDWIDE'
+                ? t('전 세계', 'WORLDWIDE')
+                : Array.isArray(submission.release?.territories)
+                  ? submission.release.territories.slice(0, 5).join(', ') + (submission.release.territories.length > 5 ? ` +${submission.release.territories.length - 5}` : '')
+                  : undefined
+            } />
+            <InfoRow label={t('릴리스 포맷', 'Format')} value={submission.release?.releaseFormat} />
+            {showMoreRelease && (
+              <>
+                <InfoRow label={t('녹음 국가', 'Recording Country')} value={submission.release?.recordingCountry} />
+                <InfoRow label={t('녹음 언어', 'Recording Language')} value={submission.release?.recordingLanguage} />
+                <InfoRow label={t('가격 유형', 'Price Type')} value={submission.release?.priceType} />
+                <InfoRow label={t('원본 릴리스일', 'Original Release')} value={submission.release?.originalReleaseDate} />
+              </>
+            )}
+            <button
+              onClick={() => setShowMoreRelease(v => !v)}
+              className="mt-2 text-xs text-purple-600 dark:text-purple-400 hover:underline"
+            >
+              {showMoreRelease ? t('접기', 'Show less') : t('더보기', 'Show more')}
+            </button>
+          </div>
+        </div>
+
+        {/* Artist Info card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-pink-500" />
+              <span className="font-semibold text-gray-900 dark:text-white text-sm">{t('아티스트 정보', 'Artist Info')}</span>
+            </div>
+            <CopyBtn sectionId="artist" />
+          </div>
+          <div className="px-4 py-3">
+            <InfoRow label={t('아티스트', 'Artist')} value={submission.artistName} />
+            <InfoRow label={t('영문명', 'English Name')} value={submission.artistNameEn} />
+            <InfoRow label={t('유형', 'Type')} value={submission.artistType} />
+            <InfoRow label="Spotify" value={submission.spotifyId} />
+            <InfoRow label="Apple Music" value={submission.appleMusicId} />
+            {(() => {
+              const socialLinks = submission.socialLinks || {};
+              const instagram = socialLinks.instagram || (submission.marketing || {}).instagramUrl || (submission.release || {}).instagramUrl;
+              return <InfoRow label="Instagram" value={instagram} />;
+            })()}
+          </div>
+        </div>
+
+        {/* Files card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <FileAudio className="w-4 h-4 text-green-500" />
+              <span className="font-semibold text-gray-900 dark:text-white text-sm">{t('파일', 'Files')}</span>
+            </div>
+            <CopyBtn sectionId="files" />
+          </div>
+          <div className="px-4 py-3 space-y-2">
+            {/* Cover art status */}
+            <div className="flex items-center gap-2">
+              {submission.files?.coverImageUrl
+                ? <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                : <XCircle className="w-4 h-4 text-red-400 shrink-0" />}
+              <span className="text-xs text-gray-700 dark:text-gray-300">
+                {t('커버 아트', 'Cover Art')}
+                {submission.files?.coverImageUrl && (
+                  <button
+                    onClick={() => setPreviewImage(getDirectUrl(submission.files.coverImageUrl))}
+                    className="ml-2 text-purple-600 dark:text-purple-400 hover:underline"
+                  >{t('미리보기', 'Preview')}</button>
+                )}
+              </span>
+            </div>
+            {/* Audio files */}
+            <div className="flex items-center gap-2">
+              {(submission.files?.audioFiles?.length || 0) === totalTracks && totalTracks > 0
+                ? <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                : <AlertCircle className="w-4 h-4 text-yellow-500 shrink-0" />}
+              <span className="text-xs text-gray-700 dark:text-gray-300">
+                {t('오디오 파일', 'Audio Files')}: {submission.files?.audioFiles?.length || 0} / {totalTracks}
+              </span>
+            </div>
+            {/* Music video */}
+            <div className="flex items-center gap-2">
+              {submission.files?.musicVideoUrl || (submission.files?.musicVideoFiles?.length || 0) > 0
+                ? <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                : <Info className="w-4 h-4 text-gray-300 dark:text-gray-600 shrink-0" />}
+              <span className="text-xs text-gray-700 dark:text-gray-300">
+                {t('뮤직 비디오', 'Music Video')}: {(submission.files?.musicVideoFiles?.length || 0) > 0 ? (submission.files?.musicVideoFiles?.length) : (submission.files?.musicVideoUrl ? 1 : 0)}
+              </span>
+            </div>
+            {/* Dropbox link */}
+            {submission.files?.coverImageUrl && (
+              <a
+                href={submission.files.coverImageUrl.split('/n3rve-submissions/')[0] + '/n3rve-submissions/'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 flex items-center gap-1.5 text-xs text-blue-600 dark:text-blue-400 hover:underline"
+              >
+                <Download className="w-3.5 h-3.5" />
+                {t('Dropbox에서 보기', 'View in Dropbox')}
+              </a>
+            )}
+            {/* Full file viewer button */}
+            <button
+              onClick={() => toggleSection('files')}
+              className="mt-1 text-xs text-purple-600 dark:text-purple-400 hover:underline"
+            >
+              {expandedSections.includes('files') ? t('파일 숨기기', 'Hide files') : t('모든 파일 보기', 'View all files')}
+            </button>
+            {expandedSections.includes('files') && (
+              <div className="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                {renderFileSection()}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Marketing card */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-orange-500" />
+              <span className="font-semibold text-gray-900 dark:text-white text-sm">{t('마케팅', 'Marketing')}</span>
+            </div>
+            <CopyBtn sectionId="marketing" />
+          </div>
+          <div className="px-4 py-3">
+            {(() => {
+              const md = submission.marketing || {};
+              const rd = submission.release || {};
+              return (
+                <>
+                  <InfoRow label={t('앨범 소개', 'Description')} value={(md.albumIntroduction || rd.albumIntroduction || md.albumDescription || submission.albumDescription || '').slice(0, 120) || undefined} />
+                  <InfoRow label={t('키워드', 'Keywords')} value={md.marketingKeywords || rd.marketingKeywords} />
+                  <InfoRow label={t('타겟 대상', 'Target')} value={md.targetAudience || rd.targetAudience} />
+                  <InfoRow label={t('무드', 'Mood')} value={(md.moods || rd.moods || []).join?.(', ') || undefined} />
+                  <InfoRow label={t('악기', 'Instruments')} value={(md.instruments || rd.instruments || []).join?.(', ') || undefined} />
+                  {showMoreMarketing && (
+                    <>
+                      <InfoRow label={t('유사 아티스트', 'Similar Artists')} value={md.similarArtists || rd.similarArtists} />
+                      <InfoRow label={t('훅', 'Hook')} value={md.hook || rd.hook} />
+                      <InfoRow label={t('메인 피치', 'Main Pitch')} value={md.mainPitch || rd.mainPitch} />
+                      <InfoRow label={t('프로모션 계획', 'Promo Plans')} value={md.promotionPlans || rd.promotionPlans} />
+                    </>
+                  )}
+                  <button
+                    onClick={() => setShowMoreMarketing(v => !v)}
+                    className="mt-2 text-xs text-purple-600 dark:text-purple-400 hover:underline"
+                  >
+                    {showMoreMarketing ? t('접기', 'Show less') : t('더보기', 'Show more')}
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Section 5: Remaining collapsible sections ─────── */}
+      {(['product', 'artist', 'distribution', 'review', 'marketing'] as const).map((id) => {
+        const section = sectionMap[id];
+        if (!section) return null;
+        const isExpanded = expandedSections.includes(id);
+        const isCopied = copiedSections.has(id);
+        return (
+          <div key={id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+              <button onClick={() => toggleSection(id)} className="flex items-center gap-2 flex-1 text-left">
+                {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                <span className="text-gray-500 dark:text-gray-400">{section.icon}</span>
+                <span className="font-semibold text-gray-900 dark:text-white text-sm">{section.title}</span>
+              </button>
+              <button
+                onClick={() => copyToClipboard(formatSectionForCopy(section), id)}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+                  isCopied
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                )}
+              >
+                {isCopied ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {isCopied ? t('복사됨', 'Copied') : t('섹션 복사', 'Copy Section')}
+              </button>
+            </div>
             {isExpanded && (
               <div className="p-4">
-                {section.id === 'files' ? (
-                  renderFileSection()
-                ) : (
-                  // Regular section content
-                  <dl className="grid grid-cols-1 gap-3">
-                    {Object.entries(section.data).map(([key, value]) => {
-                      if (value === null || value === undefined || value === '') return null;
-
-                      return (
-                        <div key={key} className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          <dt className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                            {key}:
-                          </dt>
-                          <dd className="text-sm text-gray-900 dark:text-gray-100 font-mono select-all">
-                            {formatValue(value)}
-                          </dd>
-                        </div>
-                      );
-                    })}
-                  </dl>
-                )}
+                <dl className="grid grid-cols-1 gap-2">
+                  {Object.entries(section.data).map(([key, value]) => {
+                    if (value === null || value === undefined || value === '') return null;
+                    return (
+                      <div key={key} className="grid grid-cols-1 sm:grid-cols-2 gap-1 py-1.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+                        <dt className="text-xs font-medium text-gray-500 dark:text-gray-400">{key}</dt>
+                        <dd className="text-xs text-gray-900 dark:text-gray-100 font-mono select-all whitespace-pre-wrap break-all">{formatValue(value)}</dd>
+                      </div>
+                    );
+                  })}
+                </dl>
               </div>
             )}
           </div>
         );
       })}
 
-      {/* Validation Status */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-        <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
-          <Package className="w-5 h-5" />
-          {t('제출 검증 상태', 'Submission Validation Status')}
+      {/* Individual track sections (collapsed by default) */}
+      {submission.tracks?.map((_: any, index: number) => {
+        const section = sectionMap[`track-${index}`];
+        if (!section) return null;
+        const isExpanded = expandedSections.includes(`track-${index}`);
+        const isCopied = copiedSections.has(`track-${index}`);
+        return (
+          <div key={`track-section-${index}`} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+              <button onClick={() => toggleSection(`track-${index}`)} className="flex items-center gap-2 flex-1 text-left">
+                {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                <Music className="w-4 h-4 text-purple-400" />
+                <span className="font-semibold text-gray-900 dark:text-white text-sm">{section.title}</span>
+              </button>
+              <button
+                onClick={() => copyToClipboard(formatSectionForCopy(section), `track-${index}`)}
+                className={cn(
+                  'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors',
+                  isCopied
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:hover:bg-gray-600'
+                )}
+              >
+                {isCopied ? <CheckCircle className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                {isCopied ? t('복사됨', 'Copied') : t('섹션 복사', 'Copy Section')}
+              </button>
+            </div>
+            {isExpanded && (
+              <div className="p-4">
+                <dl className="grid grid-cols-1 gap-2">
+                  {Object.entries(section.data).map(([key, value]) => {
+                    if (value === null || value === undefined || value === '') return null;
+                    return (
+                      <div key={key} className="grid grid-cols-1 sm:grid-cols-2 gap-1 py-1.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0">
+                        <dt className="text-xs font-medium text-gray-500 dark:text-gray-400">{key}</dt>
+                        <dd className="text-xs text-gray-900 dark:text-gray-100 font-mono select-all whitespace-pre-wrap break-all">{formatValue(value)}</dd>
+                      </div>
+                    );
+                  })}
+                </dl>
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* ── Validation Status ─────────────────────────────── */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700">
+        <h4 className="font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2 text-sm">
+          <Package className="w-4 h-4 text-gray-500" />
+          {t('제출 검증 상태', 'Submission Validation')}
         </h4>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <CheckCircle className="w-4 h-4 text-green-500" />
-            <span className="text-sm">{t('모든 필수 메타데이터 필드 입력됨', 'All required metadata fields completed')}</span>
+            <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+            <span className="text-xs text-gray-700 dark:text-gray-300">{t('모든 필수 메타데이터 필드 입력됨', 'All required metadata fields completed')}</span>
           </div>
           <div className="flex items-center gap-2">
-            {submission.files?.coverImageUrl ? (
-              <CheckCircle className="w-4 h-4 text-green-500" />
-            ) : (
-              <XCircle className="w-4 h-4 text-red-500" />
-            )}
-            <span className="text-sm">{t('커버 아트 업로드됨', 'Cover art uploaded')}</span>
+            {submission.files?.coverImageUrl
+              ? <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+              : <XCircle className="w-4 h-4 text-red-500 shrink-0" />}
+            <span className="text-xs text-gray-700 dark:text-gray-300">{t('커버 아트 업로드됨', 'Cover art uploaded')}</span>
           </div>
           <div className="flex items-center gap-2">
-            {submission.files?.audioFiles?.length === submission.tracks?.length ? (
-              <CheckCircle className="w-4 h-4 text-green-500" />
-            ) : (
-              <AlertCircle className="w-4 h-4 text-yellow-500" />
-            )}
-            <span className="text-sm">
-              {t('오디오 파일', 'Audio Files')}: {submission.files?.audioFiles?.length || 0} / {submission.tracks?.length || 0} {t('트랙', 'Tracks')}
+            {(submission.files?.audioFiles?.length || 0) === totalTracks && totalTracks > 0
+              ? <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+              : <AlertCircle className="w-4 h-4 text-yellow-500 shrink-0" />}
+            <span className="text-xs text-gray-700 dark:text-gray-300">
+              {t('오디오 파일', 'Audio Files')}: {submission.files?.audioFiles?.length || 0} / {totalTracks} {t('트랙', 'Tracks')}
             </span>
           </div>
           <div className="flex items-center gap-2">
-            {submission.album?.dolbyAtmos ? (
-              <CheckCircle className="w-4 h-4 text-green-500" />
-            ) : (
-              <Info className="w-4 h-4 text-gray-400" />
-            )}
-            <span className="text-sm">
-              Dolby Atmos: {submission.album?.dolbyAtmos ? t('지원', 'Supported') : t('미지원', 'Not Supported')}
+            {dolbyTracks > 0
+              ? <CheckCircle className="w-4 h-4 text-blue-500 shrink-0" />
+              : <Info className="w-4 h-4 text-gray-300 dark:text-gray-600 shrink-0" />}
+            <span className="text-xs text-gray-700 dark:text-gray-300">
+              Dolby Atmos: {dolbyTracks > 0 ? `${dolbyTracks} ${t('트랙', 'tracks')}` : t('미지원', 'Not Supported')}
             </span>
           </div>
         </div>
