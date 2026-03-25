@@ -19,6 +19,7 @@ services:
       CORS_ORIGIN: ${CORS_ORIGIN:-https://n3rve-onboarding.com}
       DROPBOX_ACCESS_TOKEN: ${DROPBOX_ACCESS_TOKEN}
       VITE_DROPBOX_ACCESS_TOKEN: ${VITE_DROPBOX_ACCESS_TOKEN}
+      CATALOG_API_KEY: ${CATALOG_API_KEY}
     volumes:
       - ./backend/uploads:/app/backend/uploads
       - /etc/letsencrypt:/etc/letsencrypt:ro

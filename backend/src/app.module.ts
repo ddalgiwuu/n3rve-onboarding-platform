@@ -19,6 +19,7 @@ import { UserModule } from './user/user.module';
 import { DigitalProductsModule } from './digital-products/digital-products.module';
 import { FeatureReportsModule } from './feature-reports/feature-reports.module';
 import { ExternalModule } from './external/external.module';
+import { CatalogModule } from './catalog/catalog.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ExternalModule } from './external/external.module';
     DigitalProductsModule,
     FeatureReportsModule,
     ExternalModule,
+    CatalogModule,
   ],
   controllers: [AppController],
   providers: [

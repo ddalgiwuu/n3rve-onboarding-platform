@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield, UserCog, Building2, BarChart3, UserCircle, Folder } from 'lucide-react';
+import { Home, FolderOpen, Upload, FileText, Settings, Users, ClipboardList, Music, X, LogOut, Sparkles, Shield, UserCog, Building2, BarChart3, UserCircle, Folder, Disc3 } from 'lucide-react';
 import { cn } from '@/utils/cn';
 import { useAuthStore } from '@/store/auth.store';
 import { useLanguageStore } from '@/store/language.store';
@@ -119,6 +119,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { icon: BarChart3, label: 'Feature Reports', path: '/feature-reports', color: 'text-green-600' },
     { icon: UserCircle, label: 'Artist Roster', path: '/artist-roster', color: 'text-gray-600' },
     { icon: FolderOpen, label: t('nav.submissionHistory'), path: '/submissions', color: 'text-gray-600' },
+    { icon: Disc3, label: 'Catalog', path: '/catalog', color: 'text-purple-600' },
+    { icon: Users, label: 'Artists', path: '/catalog/artists', color: 'text-indigo-600' },
     { icon: Music, label: t('nav.artistProfile'), path: '/artist-profile-guide', color: 'text-gray-600' },
     { icon: FileText, label: t('nav.guide'), path: '/guide', color: 'text-green-600' },
     { icon: Settings, label: t('nav.settings'), path: '/settings', color: 'text-gray-600' },
