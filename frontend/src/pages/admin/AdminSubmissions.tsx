@@ -288,8 +288,8 @@ export default function AdminSubmissions() {
 
       {!loading && !error && viewMode === 'table' && (
         /* 제출 목록 테이블 / Submission List Table / 提出リストテーブル */
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-          <table className="w-full">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-x-auto">
+          <table className="w-full min-w-[1000px]">
             <thead className="bg-gray-50 dark:bg-gray-900">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -342,15 +342,15 @@ export default function AdminSubmissions() {
                     </td>
                     <td
                       onClick={() => handleViewSubmission(submission.id)}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200"
+                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 max-w-[200px]"
                     >
-                      {submission.artistName}
+                      <span className="block truncate">{submission.artistName}</span>
                     </td>
                     <td
                       onClick={() => handleViewSubmission(submission.id)}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200"
+                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-200 max-w-[200px]"
                     >
-                      {submission.albumTitle}
+                      <span className="block truncate">{submission.albumTitle}</span>
                     </td>
                     <td
                       onClick={() => handleViewSubmission(submission.id)}
@@ -366,10 +366,10 @@ export default function AdminSubmissions() {
                     </td>
                     <td
                       onClick={() => handleViewSubmission(submission.id)}
-                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400"
+                      className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 max-w-[200px]"
                     >
-                      <div className="text-gray-900 dark:text-gray-200">{submission.submitterName}</div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500">{submission.submitterEmail}</div>
+                      <div className="text-gray-900 dark:text-gray-200 truncate">{submission.submitterName}</div>
+                      <div className="text-xs text-gray-400 dark:text-gray-500 truncate">{submission.submitterEmail}</div>
                     </td>
                     <td
                       onClick={() => handleViewSubmission(submission.id)}
