@@ -367,7 +367,7 @@ model Submission {
   labelAccountId       String?            @db.ObjectId
 
   catalogProductId     String?            @db.ObjectId
-  fugaSyncStatus       String?            @default("NOT_SYNCED")
+  fugaSyncStatus       FugaSyncStatus?    @default(NOT_SYNCED)
 
   submitter            User               @relation("SubmitterSubmissions", fields: [submitterId], references: [id])
   reviewer             User?              @relation("ReviewerSubmissions", fields: [reviewedBy], references: [id])

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
+import { timingSafeEqual } from 'crypto';
 import { IS_API_KEY } from '../decorators/api-key.decorator';
 
 @Injectable()
@@ -40,7 +41,9 @@ export class ApiKeyGuard implements CanActivate {
       throw new UnauthorizedException('API key not configured');
     }
 
-    if (apiKey !== validKey) {
+    const isValid = apiKey.length === validKey.length &&
+      timingSafeEqual(Buffer.from(apiKey), Buffer.from(validKey));
+    if (!isValid) {
       throw new UnauthorizedException('Invalid API key');
     }
 
