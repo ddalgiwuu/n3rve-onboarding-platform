@@ -3,14 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Search, Music, Users, Disc3, Building2, Link2, Unlink } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
+import { formatDuration } from '../utils/format';
 import type { CatalogProduct } from '../types/catalog';
-
-function formatDuration(seconds?: number) {
-  if (!seconds) return '-';
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
 
 function StatCard({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
   return (
