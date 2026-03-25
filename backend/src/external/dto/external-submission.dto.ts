@@ -73,6 +73,18 @@ export class ExternalSubmissionDto {
     appleMusicUrl?: string;
   }>;
 
+  // Artist extended (from FUGA artist page)
+  @IsOptional() @IsString() artistIsni?: string;
+  @IsOptional() @IsString() artistIpn?: string;
+  @IsOptional() @IsString() artistContactDetails?: string;
+  @IsOptional() @IsString() artistBookingAgent?: string;
+  @IsOptional() @IsString() artistCountryOfOrigin?: string;
+  @IsOptional() @IsArray() artistLabels?: string[];
+  @IsOptional() @IsArray() artistGenres?: string[];
+  @IsOptional() @IsArray() artistSubgenres?: string[];
+  @IsOptional() @IsString() youtubeOfficialArtistChannel?: string;
+  @IsOptional() @IsBoolean() spotifyDjMixesOptIn?: boolean;
+
   // ===== Files (Dropbox URLs) =====
   @IsOptional() @IsObject() files?: {
     coverImageUrl?: string;
@@ -84,6 +96,18 @@ export class ExternalSubmissionDto {
       fileName: string;
       dropboxUrl: string;
       fileSize?: number;
+    }>;
+    dolbyAtmosFiles?: Array<{
+      trackId?: string;
+      fileName: string;
+      dropboxUrl: string;
+      fileSize?: number;
+    }>;
+    lyricsFiles?: Array<{
+      trackId?: string;
+      fileName: string;
+      dropboxUrl: string;
+      language?: string;
     }>;
     musicVideoFiles?: Array<{
       trackId?: string;
@@ -142,13 +166,49 @@ export class ExternalSubmissionDto {
     // Audio
     dolbyAtmos?: boolean;
     stereo?: boolean;
+    sampleRate?: string;    // "44100", "48000"
+    bitDepth?: string;      // "16", "24"
+    audioFormat?: string;   // "WAV", "FLAC"
     previewStart?: string;
     previewEnd?: string;
     previewLength?: number;
+    youtubeShortPreview?: boolean;
+    displayArtist?: string;
 
     // Video
     hasMusicVideo?: boolean;
     musicVideoISRC?: string;
+
+    // Identifiers
+    iswc?: string;
+
+    // Copyright & Rights (Asset level)
+    assetCopyright?: string;    // ℗ Line
+    assetRightsClaim?: string;
+    rightsHolder?: string;
+    rightsOwnership?: string;
+    rightsContractBeginDate?: string;
+    countryOfRecording?: string;
+    countryOfCommissioning?: string;
+    recordingYear?: string;
+    recordingLocation?: string;
+    assetCatalogTier?: string;
+    assetReleaseDate?: string;
+
+    // Availability & Preorder (track level)
+    availability?: Record<string, any>;
+    preorderEnabled?: boolean;
+    preorderDate?: string;
+
+    // Territories (asset level)
+    assetTerritories?: Record<string, any>;
+
+    // Tags & Extra Fields
+    tags?: string[];
+    extraFields?: Record<string, string>;  // { "1": "...", "2": "...", ... "10": "..." }
+
+    // Lyrics file
+    lyricsFileUrl?: string;
 
     // Custom release
     hasCustomReleaseDate?: boolean;

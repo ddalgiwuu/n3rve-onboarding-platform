@@ -76,9 +76,18 @@ type SubmissionFiles {
   motionArtUrl            String?
   musicVideoUrl           String?
   audioFiles              AudioFile[]
+  dolbyAtmosFiles         AudioFile[]
+  lyricsFiles             LyricsFile[]
   additionalFiles         AdditionalFile[]
   musicVideoFiles         MusicVideoFile[]
   musicVideoThumbnails    MusicVideoThumbnail[]
+}
+
+type LyricsFile {
+  trackId     String?
+  dropboxUrl  String
+  fileName    String?
+  language    String?
 }
 
 type AudioFile {
@@ -144,57 +153,108 @@ type SubmissionRelease {
 }
 
 type SubmissionTracks {
-  artists          Json?
+  // === Basic ===
+  id               String
+  trackNumber      Int?
+  volume           Int?
+  discNumber       Int?
+  titleKo          String
+  titleEn          String?
+  titleTranslations Json?   // { "ja": "...", "zh": "..." }
+  titleLanguage    String?
+  trackType        String?  // ORIGINAL | COVER | REMIX | LIVE
+  versionType      String?
+  trackVersion     String?  // "Version Title" from FUGA Main section
+  displayArtist    String?
+  duration         String?
+  isTitle          Boolean?
+  isFocusTrack     Boolean?
+
+  // === People ===
+  artists          Json?    // [{ name, nameEn, type: PRIMARY|FEATURING, spotifyId, appleMusicId }]
+  featuringArtists Json?
+  featuring        String?
+  contributors     Json?    // [{ name, nameEn, roles: [Composer,Lyricist,...], instruments, spotifyId, appleMusicId, appleId, isni, ipn }]
+  publishers       Json?    // [{ name, role }]
   composer         String?
   composers        String?
-  contributors     Json?
-  dolbyAtmos       Boolean?
-  explicitContent  Boolean?
-  featuringArtists Json?
-  id               String
-  isFocusTrack     Boolean?
-  isTitle          Boolean?
-  isrc             String?
   lyricist         String?
   lyricists        String?
   arranger         String?
   arrangers        String?
+  producer         String?
+  mixer            String?
+  masterer         String?
+
+  // === Audio ===
+  dolbyAtmos       Boolean?
   stereo           Boolean?
-  titleEn          String?
-  titleKo          String
-  titleTranslations Json?
-  trackType        String?
-  versionType      String?
-  genre            String?
-  subgenre         String?
-  alternateGenre   String?
-  alternateSubgenre String?
+  sampleRate       String?   // "44100", "48000", "96000"
+  bitDepth         String?   // "16", "24", "32"
+  audioFormat      String?   // "WAV", "FLAC"
+
+  // === Content ===
+  explicitContent  Boolean?
+  lyrics           String?
+  lyricsFileUrl    String?   // Dropbox URL to .lrc/.txt lyrics file
   language         String?
   audioLanguage    String?
   lyricsLanguage   String?
   metadataLanguage String?
-  lyrics           String?
-  musicVideoISRC   String?
+
+  // === Genre ===
+  genre            String?
+  subgenre         String?
+  alternateGenre   String?
+  alternateSubgenre String?
+
+  // === Video ===
   hasMusicVideo    Boolean?
-  trackNumber      Int?
-  volume           Int?
-  discNumber       Int?
-  duration         String?
-  producer         String?
-  mixer            String?
-  masterer         String?
+  musicVideoISRC   String?
+
+  // === ISRC & Identifiers ===
+  isrc             String?
+  iswc             String?   // International Standard Musical Work Code
+
+  // === Copyright & Rights (Asset level) ===
+  assetCopyright   String?   // ℗ Line
+  assetRightsClaim String?
+  rightsHolder     String?
+  rightsOwnership  String?
+  rightsContractBeginDate String?
+  countryOfRecording      String?
+  countryOfCommissioning  String?
+  recordingYear    String?
+  recordingLocation String?
+  assetCatalogTier String?
+  assetReleaseDate String?
+
+  // === Playtime & Preview ===
   previewStart     String?
   previewEnd       String?
-  trackVersion     String?
-  translations     Json?
-  publishers       Json?
-  titleLanguage    String?
-  featuring        String?
+  previewLength    Int?
+  playtimeStartShortClip String?
+  youtubeShortPreview Boolean?
+
+  // === Availability & Preorder (track level) ===
+  availability     Json?     // track-level availability settings
+  preorderEnabled  Boolean?
+  preorderDate     String?
+
+  // === Release ===
   hasCustomReleaseDate Boolean?
   customConsumerReleaseDate String?
   customReleaseTime String?
-  playtimeStartShortClip String?
-  previewLength    Int?
+
+  // === Territories (asset level) ===
+  assetTerritories Json?     // track-level territory overrides
+
+  // === Tags & Extra Fields ===
+  tags             Json?     // string[]
+  extraFields      Json?     // { "1": "...", "2": "...", ... "10": "..." }
+
+  // === Translations ===
+  translations     Json?     // [{ language, title }]
 }
 
 type UserPreferences {
@@ -275,6 +335,17 @@ model Submission {
   spotifyId            String?
   appleMusicId         String?
   youtubeChannelId     String?
+  // Artist extended (from FUGA artist page)
+  artistIsni           String?    // ISNI identifier
+  artistIpn            String?    // IPN identifier
+  artistContactDetails String?
+  artistBookingAgent   String?
+  artistCountryOfOrigin String?
+  artistLabels         Json?      // string[]
+  artistGenres         Json?      // string[]
+  artistSubgenres      Json?      // string[]
+  youtubeOfficialArtistChannel String?
+  spotifyDjMixesOptIn  Boolean?
   albumTranslations    Json?
   albumDescription     String?
   albumVersion         String?
