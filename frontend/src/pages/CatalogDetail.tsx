@@ -6,14 +6,8 @@ import {
   ExternalLink, Disc3, Users, FileText,
 } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
+import { formatDuration } from '../utils/format';
 import type { CatalogAsset, CatalogContributor } from '../types/catalog';
-
-function formatDuration(seconds?: number) {
-  if (!seconds) return '-';
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
 
 function DspLink({ url, type }: { url?: string | null; type: 'spotify' | 'apple' }) {
   if (!url) return null;

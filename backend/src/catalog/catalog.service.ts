@@ -87,7 +87,7 @@ export class CatalogService {
           results.created++;
         }
       } catch (error) {
-        // skip duplicates silently
+        console.warn(`Failed to upsert artist ${entry.id}: ${error.message}`);
       }
     }
 
@@ -460,7 +460,7 @@ export class CatalogService {
           await this.prisma.catalogArtist.create({ data });
         }
       } catch (error) {
-        // skip
+        console.warn(`Failed to upsert artist ${artist.id}: ${error.message}`);
       }
     }
   }
