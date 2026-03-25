@@ -20,7 +20,63 @@ interface Submission {
   releaseDate: string;
   albumGenre?: string[];
   adminNotes?: string;
+  fugaSyncStatus?: 'NOT_SYNCED' | 'SYNCED' | 'MISMATCH';
+  catalogProductId?: string;
 }
+
+const FugaSyncBadge = ({
+  fugaSyncStatus,
+  catalogProductId,
+  navigate,
+  t,
+}: {
+  fugaSyncStatus?: string;
+  catalogProductId?: string;
+  navigate: (path: string) => void;
+  t: (ko: string, en: string, ja?: string) => string;
+}) => {
+  if (!fugaSyncStatus || fugaSyncStatus === 'NOT_SYNCED') {
+    return (
+      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400 border border-gray-200 dark:border-gray-600">
+        {t('미연결', 'Not Synced', '未連携')}
+      </span>
+    );
+  }
+
+  if (fugaSyncStatus === 'SYNCED') {
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (catalogProductId) {
+            navigate(`/catalog/${catalogProductId}`);
+          }
+        }}
+        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-200 dark:border-blue-800 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors cursor-pointer"
+      >
+        {t('FUGA 동기화됨', 'FUGA Synced', 'FUGA同期済み')}
+      </button>
+    );
+  }
+
+  if (fugaSyncStatus === 'MISMATCH') {
+    return (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          if (catalogProductId) {
+            navigate(`/catalog/${catalogProductId}`);
+          }
+        }}
+        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border border-orange-200 dark:border-orange-800 hover:bg-orange-200 dark:hover:bg-orange-900/50 transition-colors cursor-pointer"
+      >
+        {t('FUGA 불일치', 'FUGA Mismatch', 'FUGA不一致')}
+      </button>
+    );
+  }
+
+  return null;
+};
 
 const Submissions = () => {
   const navigate = useNavigate();
@@ -458,11 +514,17 @@ const Submissions = () => {
                           </div>
 
                           {/* Status Badge */}
-                          <div className="mt-3">
+                          <div className="mt-3 flex flex-wrap items-center gap-2">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(submission.status)}`}>
                               {getStatusIcon(submission.status)}
                               {getStatusText(submission.status)}
                             </span>
+                            <FugaSyncBadge
+                              fugaSyncStatus={submission.fugaSyncStatus}
+                              catalogProductId={submission.catalogProductId}
+                              navigate={navigate}
+                              t={t}
+                            />
                           </div>
 
                           {/* Admin Notes for Rejected */}
