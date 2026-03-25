@@ -366,6 +366,9 @@ model Submission {
   adminNotes           String?
   labelAccountId       String?            @db.ObjectId
 
+  catalogProductId     String?            @db.ObjectId
+  fugaSyncStatus       String?            @default("NOT_SYNCED")
+
   submitter            User               @relation("SubmitterSubmissions", fields: [submitterId], references: [id])
   reviewer             User?              @relation("ReviewerSubmissions", fields: [reviewedBy], references: [id])
   labelAccount         User?              @relation("LabelSubmissions", fields: [labelAccountId], references: [id])
@@ -373,6 +376,7 @@ model Submission {
   featureReports       FeatureReport[]
   qcLogs               QCLog[]
   dspOverrides         DSPMetadataOverride[]
+  catalogProducts      CatalogProduct[]
 }
 
 model User {
@@ -531,4 +535,135 @@ model Guide {
   isPublished Boolean  @default(true)
   createdAt   DateTime @default(now()) @db.Date
   updatedAt   DateTime @updatedAt @db.Date
+}
+
+// ==================== CATALOG ENUMS ====================
+
+enum FugaSyncStatus {
+  NOT_SYNCED
+  SYNCED
+  MISMATCH
+}
+
+enum CatalogArtistType {
+  ARTIST
+  CONTRIBUTOR
+}
+
+// ==================== CATALOG COMPOSITE TYPES ====================
+
+type CatalogArtistRef {
+  fugaId       BigInt
+  name         String
+  primary      Boolean?
+  spotifyUrl   String?
+  appleMusicUrl String?
+}
+
+type CatalogContributor {
+  personId     BigInt
+  name         String
+  roleId       String
+  role         String
+  spotifyUrl   String?
+  appleMusicUrl String?
+}
+
+type CatalogVersionType {
+  id   String
+  name String
+}
+
+type CatalogGenre {
+  id   String
+  name String
+}
+
+// ==================== CATALOG MODELS ====================
+
+model CatalogProduct {
+  id                   String             @id @default(auto()) @map("_id") @db.ObjectId
+  fugaId               BigInt             @unique
+  name                 String
+  upc                  String
+  catalogNumber        String?
+  state                String
+  label                String?
+  labelId              BigInt?
+  displayArtist        String?
+  genre                CatalogGenre?
+  subgenre             CatalogGenre?
+  language             String?
+  releaseFormatType    String?
+  productType          String?
+  cLineText            String?
+  pLineText            String?
+  consumerReleaseDate  String?
+  originalReleaseDate  String?
+  addedDate            String?
+  releaseVersion       String?
+  parentalAdvisory     Boolean            @default(false)
+  suborg               String[]
+  artists              CatalogArtistRef[]
+  syncedAt             DateTime           @default(now()) @db.Date
+  syncSource           String             @default("nanoclaw")
+  submissionId         String?            @db.ObjectId
+  submission           Submission?        @relation(fields: [submissionId], references: [id])
+  assets               CatalogAsset[]
+  createdAt            DateTime           @default(now()) @db.Date
+  updatedAt            DateTime           @updatedAt @db.Date
+}
+
+model CatalogAsset {
+  id                   String               @id @default(auto()) @map("_id") @db.ObjectId
+  fugaId               BigInt               @unique
+  isrc                 String?
+  name                 String
+  displayArtist        String?
+  version              String?
+  duration             Int?
+  sequence             Int?
+  genre                CatalogGenre?
+  subgenre             CatalogGenre?
+  alternateGenre       CatalogGenre?
+  alternateSubgenre    CatalogGenre?
+  language             String?
+  audioLocale          String?
+  assetVersion         String?
+  versionTypes         CatalogVersionType[]
+  hasLyrics            Boolean              @default(false)
+  lyrics               String?
+  pLineYear            String?
+  pLineText            String?
+  parentalAdvisory     Boolean              @default(false)
+  rightsClaim          String?
+  rightsHolderName     String?
+  recordingYear        String?
+  recordingLocation    String?
+  countryOfRecording   String?
+  assetCatalogTier     String?
+  audio                Json?
+  originalEncodings    Json?
+  artists              CatalogArtistRef[]
+  contributors         CatalogContributor[]
+  publishers           Json?
+  productId            String               @db.ObjectId
+  product              CatalogProduct       @relation(fields: [productId], references: [id])
+  createdAt            DateTime             @default(now()) @db.Date
+  updatedAt            DateTime             @updatedAt @db.Date
+}
+
+model CatalogArtist {
+  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  fugaId         BigInt            @unique
+  name           String
+  type           CatalogArtistType @default(ARTIST)
+  spotifyId      String?
+  spotifyUrl     String?
+  appleMusicId   String?
+  appleMusicUrl  String?
+  roles          String[]
+  syncedAt       DateTime          @default(now()) @db.Date
+  createdAt      DateTime          @default(now()) @db.Date
+  updatedAt      DateTime          @updatedAt @db.Date
 }
