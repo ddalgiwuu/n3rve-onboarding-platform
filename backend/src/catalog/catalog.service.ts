@@ -313,8 +313,8 @@ export class CatalogService {
       label: product.label,
       labelId: product.label_id ? BigInt(product.label_id) : null,
       displayArtist: product.display_artist,
-      genre: product.genre || undefined,
-      subgenre: product.subgenre || undefined,
+      genre: this.normalizeGenre(product.genre),
+      subgenre: this.normalizeGenre(product.subgenre),
       language: product.language,
       releaseFormatType: product.release_format_type,
       productType: product.product_type,
@@ -352,14 +352,14 @@ export class CatalogService {
       version: asset.version,
       duration: asset.duration,
       sequence: asset.sequence,
-      genre: asset.genre || undefined,
-      subgenre: asset.subgenre || undefined,
-      alternateGenre: asset.alternate_genre || undefined,
-      alternateSubgenre: asset.alternate_subgenre || undefined,
+      genre: this.normalizeGenre(asset.genre),
+      subgenre: this.normalizeGenre(asset.subgenre),
+      alternateGenre: this.normalizeGenre(asset.alternate_genre),
+      alternateSubgenre: this.normalizeGenre(asset.alternate_subgenre),
       language: asset.language,
       audioLocale: asset.audio_locale,
       assetVersion: asset.asset_version,
-      versionTypes: (asset.version_types || []).map((v: any) => ({ id: v.id, name: v.name })),
+      versionTypes: (asset.version_types || []).map((v: any) => ({ id: String(v.id), name: String(v.name) })),
       hasLyrics: asset.has_lyrics || false,
       lyrics: asset.lyrics || null,
       pLineYear: asset.p_line_year,
@@ -486,6 +486,14 @@ export class CatalogService {
       return true;
     }
     return false;
+  }
+
+  private normalizeGenre(genre: any): { id: string; name: string } | undefined {
+    if (!genre) return undefined;
+    return {
+      id: String(genre.id),
+      name: String(genre.name),
+    };
   }
 
   private extractSpotifyId(url: string): string | null {
