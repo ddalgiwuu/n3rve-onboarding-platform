@@ -194,9 +194,9 @@ export default function AdminDashboard() {
                   <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.date')}</th>
                   <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.artist')}</th>
                   <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.album')}</th>
-                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.submitter')}</th>
-                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.status')}</th>
-                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.actions')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">{t('admin.submitter')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">{t('admin.status')}</th>
+                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">{t('admin.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -217,17 +217,17 @@ export default function AdminDashboard() {
                       <td className="p-4 text-gray-700 dark:text-gray-200">{submission.artistName || '-'}</td>
                       <td className="p-4 text-gray-700 dark:text-gray-200">{submission.albumTitle || '-'}</td>
                       <td className="p-4 text-gray-700 dark:text-gray-200">
-                        <div>
-                          <div className="text-sm">{submission.submitterName}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">{submission.submitterEmail}</div>
+                        <div className="max-w-[160px]">
+                          <div className="text-sm truncate">{submission.submitterName}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{submission.submitterEmail}</div>
                         </div>
                       </td>
-                      <td className="p-4">
+                      <td className="p-4 whitespace-nowrap">
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(submission.status.toLowerCase())}`}>
                           {t(`admin.${submission.status.toLowerCase()}`)}
                         </span>
                       </td>
-                      <td className="p-4">
+                      <td className="p-4 whitespace-nowrap">
                         <div className="flex items-center gap-1 text-n3rve-500 dark:text-n3rve-400 text-sm">
                           <Eye className="w-4 h-4" />
                           {t('admin.view')}
