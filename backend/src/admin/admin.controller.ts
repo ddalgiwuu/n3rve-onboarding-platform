@@ -134,8 +134,8 @@ export class AdminController {
   }
 
   @Post('submissions/update-files')
-  @Public()
-  async updateSubmissionFiles(@Body() body: { fileLinks: Record<string, any> }) {
+  async updateSubmissionFiles(@CurrentUser() user: any, @Body() body: { fileLinks: Record<string, any> }) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
     return this.adminService.updateSubmissionFiles(body.fileLinks);
   }
 
