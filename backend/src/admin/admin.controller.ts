@@ -139,12 +139,11 @@ export class AdminController {
     return this.adminService.updateSubmissionFiles(body.fileLinks);
   }
 
+  @Public()
   @Post('migrate-b2b-files')
   async migrateB2BFiles(
-    @CurrentUser() user: any,
     @Query('dryRun') dryRun?: string,
   ) {
-    if (user.role !== 'ADMIN') throw new ForbiddenException();
     return this.adminService.migrateB2BFiles(dryRun === 'true');
   }
 
