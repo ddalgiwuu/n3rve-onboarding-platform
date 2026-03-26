@@ -476,9 +476,9 @@ export class CatalogService {
         hasSyncHistory: (submission?.release as any)?.hasSyncHistory || false,
         motionArtwork: (submission?.release as any)?.motionArtwork || false,
 
-        // Files from submission
-        coverImageUrl: (submission?.files as any)?.coverImageUrl || null,
-        artistPhotoUrl: (submission?.files as any)?.artistPhotoUrl || null,
+        // Files from submission (convert Dropbox shared links to raw URLs for img rendering)
+        coverImageUrl: this.toRawDropboxUrl((submission?.files as any)?.coverImageUrl) || null,
+        artistPhotoUrl: this.toRawDropboxUrl((submission?.files as any)?.artistPhotoUrl) || null,
 
         // Artists (catalog has DSP URLs)
         artists: catalog?.artists?.map((a: any) => ({
@@ -806,8 +806,8 @@ export class CatalogService {
       motionArtwork: (submission?.release as any)?.motionArtwork || false,
 
       // Files
-      coverImageUrl: (submission?.files as any)?.coverImageUrl || null,
-      artistPhotoUrl: (submission?.files as any)?.artistPhotoUrl || null,
+      coverImageUrl: this.toRawDropboxUrl((submission?.files as any)?.coverImageUrl) || null,
+      artistPhotoUrl: this.toRawDropboxUrl((submission?.files as any)?.artistPhotoUrl) || null,
 
       // Artists
       artists: catalogProduct?.artists?.map((a: any) => ({
@@ -1342,6 +1342,14 @@ export class CatalogService {
       id: String(genre.id),
       name: String(genre.name),
     };
+  }
+
+  private toRawDropboxUrl(url: string | null | undefined): string | null {
+    if (!url) return null;
+    if (url.includes('dropbox.com') && url.includes('dl=0')) {
+      return url.replace('dl=0', 'raw=1');
+    }
+    return url;
   }
 
   private extractSpotifyId(url: string): string | null {
