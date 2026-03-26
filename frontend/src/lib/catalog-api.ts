@@ -30,6 +30,12 @@ const catalogApi = {
   getArtist: (id: string) =>
     api.get<CatalogArtist>(`/catalog/artists/${id}`),
 
+  updateArtist: (id: string, data: any) =>
+    api.patch(`/catalog/artists/${id}`, data),
+
+  deleteArtist: (id: string) =>
+    api.delete(`/catalog/artists/${id}`),
+
   // Assets
   searchAssets: (params?: {
     search?: string; isrc?: string; page?: number; limit?: number;

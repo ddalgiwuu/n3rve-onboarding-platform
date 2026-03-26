@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Body, Param, Query, UseGuards,
+  Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Request, ForbiddenException,
 } from '@nestjs/common';
 import { CatalogService } from './catalog.service';
 import { Public } from '../auth/decorators/public.decorator';
@@ -108,6 +108,20 @@ export class CatalogController {
   @UseGuards(JwtAuthGuard)
   async findArtist(@Param('id') id: string) {
     return this.catalogService.findArtistById(id);
+  }
+
+  @Patch('artists/:id')
+  @UseGuards(JwtAuthGuard)
+  async updateArtist(@Request() req, @Param('id') id: string, @Body() data: any) {
+    if (req.user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.catalogService.updateArtist(id, data);
+  }
+
+  @Delete('artists/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteArtist(@Request() req, @Param('id') id: string) {
+    if (req.user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.catalogService.deleteArtist(id);
   }
 
   @Get('assets/search')
