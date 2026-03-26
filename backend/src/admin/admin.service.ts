@@ -239,6 +239,14 @@ export class AdminService {
               email: true,
             },
           },
+          labelAccount: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              company: true,
+            },
+          },
         },
       }),
       this.prisma.submission.count({ where }),
