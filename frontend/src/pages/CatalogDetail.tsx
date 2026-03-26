@@ -1,24 +1,115 @@
 import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, Music, Clock, ChevronDown, ChevronRight,
-  ExternalLink, Disc3, Users, FileText, Globe, MessageSquare, Image,
+  ExternalLink, Disc3, Users, FileText, Globe, MessageSquare,
+  FolderOpen, ClipboardList, Headphones, Shield, Tag, Video, Calendar,
 } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
 import type { CatalogAsset, CatalogContributor } from '../types/catalog';
 
+/* ─── Utility Components ─── */
+
+function Section({ title, icon: Icon, children, defaultOpen = true }: {
+  title: string; icon: any; children: React.ReactNode; defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+      <button
+        className="flex w-full items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-700"
+        onClick={() => setOpen(!open)}
+      >
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4 text-zinc-400" />
+          <h2 className="font-semibold text-zinc-900 dark:text-white">{title}</h2>
+        </div>
+        {open ? <ChevronDown className="h-4 w-4 text-zinc-400" /> : <ChevronRight className="h-4 w-4 text-zinc-400" />}
+      </button>
+      {open && <div className="p-4">{children}</div>}
+    </div>
+  );
+}
+
+function Field({ label, value, mono = false }: { label: string; value: any; mono?: boolean }) {
+  if (value === null || value === undefined || value === '') return null;
+  const display = typeof value === 'boolean' ? (value ? 'Yes' : 'No')
+    : typeof value === 'object' ? JSON.stringify(value)
+    : String(value);
+  return (
+    <div>
+      <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
+      <p className={`text-sm text-zinc-800 dark:text-zinc-200 ${mono ? 'font-mono' : ''}`}>{display}</p>
+    </div>
+  );
+}
+
+function FieldGrid({ children }: { children: React.ReactNode }) {
+  return <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">{children}</div>;
+}
+
+function StateTag({ state }: { state: string }) {
+  const cls = state === 'DELIVERED'
+    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+    : state === 'DRAFT'
+    ? 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300'
+    : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+  return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{state}</span>;
+}
+
+function StatusTag({ status }: { status: string }) {
+  const cls = status === 'approved'
+    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+    : status === 'pending'
+    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+  return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>Submission: {status?.toUpperCase()}</span>;
+}
+
+function SourceBadge({ source }: { source?: string }) {
+  if (!source) return null;
+  const cls = source === 'catalog'
+    ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+    : source === 'submission'
+    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400'
+    : 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300';
+  return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{source}</span>;
+}
+
+function TagPills({ items }: { items?: string[] | null }) {
+  if (!items || items.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-1">
+      {items.map((item, i) => (
+        <span key={i} className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function LinkField({ label, url }: { label: string; url?: string | null }) {
+  if (!url) return null;
+  return (
+    <div>
+      <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
+      <a href={url} target="_blank" rel="noopener noreferrer"
+        className="inline-flex items-center gap-1 text-sm text-blue-500 hover:underline dark:text-blue-400">
+        {url.length > 60 ? url.slice(0, 60) + '...' : url} <ExternalLink className="h-3 w-3" />
+      </a>
+    </div>
+  );
+}
+
 function DspLink({ url, type }: { url?: string | null; type: 'spotify' | 'apple' }) {
   if (!url) return null;
   const label = type === 'spotify' ? 'Spotify' : 'Apple Music';
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
-    >
+    <a href={url} target="_blank" rel="noopener noreferrer"
+      className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600">
       {label} <ExternalLink className="h-3 w-3" />
     </a>
   );
@@ -32,7 +123,6 @@ function ContributorsByRole({ contributors }: { contributors: CatalogContributor
       grouped[c.role].push(c);
     }
   }
-
   return (
     <div className="space-y-2 pl-4">
       {Object.entries(grouped).map(([role, people]) => (
@@ -53,24 +143,43 @@ function ContributorsByRole({ contributors }: { contributors: CatalogContributor
   );
 }
 
-function TrackRow({ asset, index }: { asset: CatalogAsset; index: number }) {
-  const [showContributors, setShowContributors] = useState(false);
+/* ─── Sub-Section for Tracks ─── */
+
+function TrackSubSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">{title}</p>
+      {children}
+    </div>
+  );
+}
+
+/* ─── Track Row ─── */
+
+function TrackRow({ asset, index }: { asset: any; index: number }) {
+  const [expanded, setExpanded] = useState(false);
   const [showLyrics, setShowLyrics] = useState(false);
 
   const title = asset.version ? `${asset.name} (${asset.version})` : asset.name;
 
   return (
     <div className="border-b border-zinc-100 last:border-0 dark:border-zinc-700">
-      <div className="flex items-center gap-4 px-4 py-3">
+      {/* Header */}
+      <button
+        className="flex w-full items-center gap-4 px-4 py-3 text-left hover:bg-zinc-50 dark:hover:bg-zinc-700/50"
+        onClick={() => setExpanded(!expanded)}
+      >
         <span className="w-6 text-center text-sm text-zinc-400">{asset.sequence || index + 1}</span>
         <div className="flex-1 min-w-0">
           <p className="font-medium text-zinc-900 dark:text-white truncate">{title}</p>
           <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
             {asset.isrc && <span className="font-mono">ISRC: {asset.isrc}</span>}
+            {asset.isTitleTrack && <span className="rounded bg-blue-100 px-1.5 py-0.5 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Title</span>}
+            {asset.isFocusTrack && <span className="rounded bg-purple-100 px-1.5 py-0.5 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400">Focus</span>}
             {asset.assetCatalogTier && <span>Tier: {asset.assetCatalogTier}</span>}
             {asset.versionTypes?.length > 0 && (
               <span className="rounded bg-zinc-100 px-1.5 py-0.5 dark:bg-zinc-700">
-                {asset.versionTypes.map(v => v.name).join(', ')}
+                {asset.versionTypes.map((v: any) => v.name).join(', ')}
               </span>
             )}
           </div>
@@ -79,65 +188,206 @@ function TrackRow({ asset, index }: { asset: CatalogAsset; index: number }) {
           <Clock className="h-3.5 w-3.5" />
           {formatDuration(asset.duration)}
         </span>
-      </div>
+        {expanded ? <ChevronDown className="h-4 w-4 text-zinc-400" /> : <ChevronRight className="h-4 w-4 text-zinc-400" />}
+      </button>
 
-      <div className="flex gap-2 px-4 pb-2">
-        {asset.contributors?.length > 0 && (
-          <button
-            className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-            onClick={() => setShowContributors(!showContributors)}
-          >
-            {showContributors ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-            <Users className="h-3 w-3" />
-            기여자 ({asset.contributors.length})
-          </button>
-        )}
-        {asset.hasLyrics && asset.lyrics && (
-          <button
-            className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-            onClick={() => setShowLyrics(!showLyrics)}
-          >
-            {showLyrics ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-            <FileText className="h-3 w-3" />
-            가사
-          </button>
-        )}
-      </div>
+      {/* Expanded Content */}
+      {expanded && (
+        <div className="space-y-4 px-4 pb-4 pt-2">
+          {/* 기본 정보 */}
+          <TrackSubSection title="기본 정보">
+            <FieldGrid>
+              <Field label="Title (Ko)" value={asset.titleKo || asset.name} />
+              <Field label="Title (En)" value={asset.titleEn} />
+              <Field label="Title Language" value={asset.titleLanguage} />
+              <Field label="Title Translations" value={asset.titleTranslations} />
+              <Field label="Track Number" value={asset.sequence} />
+              <Field label="Disc Number" value={asset.discNumber} />
+              <Field label="Volume" value={asset.volume} />
+              <Field label="ISRC" value={asset.isrc} mono />
+              <Field label="ISWC" value={asset.iswc} mono />
+              <Field label="Duration" value={asset.duration ? formatDuration(asset.duration) : undefined} />
+              <Field label="Track Type" value={asset.trackType} />
+              <Field label="Version Type" value={asset.versionTypes?.map((v: any) => v.name).join(', ')} />
+              <Field label="Track Version" value={asset.version || asset.assetVersion} />
+              <Field label="Is Title Track" value={asset.isTitleTrack} />
+              <Field label="Is Focus Track" value={asset.isFocusTrack} />
+              <Field label="Display Artist" value={asset.displayArtist} />
+            </FieldGrid>
+          </TrackSubSection>
 
-      {showContributors && asset.contributors && (
-        <div className="px-4 pb-3">
-          <ContributorsByRole contributors={asset.contributors} />
-        </div>
-      )}
+          {/* 아티스트 & 기여자 */}
+          {(asset.artists?.length > 0 || asset.contributors?.length > 0 || asset.featuringArtists?.length > 0) && (
+            <TrackSubSection title="아티스트 & 기여자">
+              {asset.artists?.length > 0 && (
+                <div className="space-y-1">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Track Artists</p>
+                  <div className="flex flex-wrap gap-2">
+                    {asset.artists.map((a: any, i: number) => (
+                      <span key={i} className="inline-flex items-center gap-1 text-sm text-zinc-700 dark:text-zinc-300">
+                        {a.name} {a.primary && <span className="text-xs text-zinc-400">(Primary)</span>}
+                        <DspLink url={a.spotifyUrl} type="spotify" />
+                        <DspLink url={a.appleMusicUrl} type="apple" />
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {asset.featuringArtists?.length > 0 && (
+                <div className="space-y-1 mt-2">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Featuring Artists</p>
+                  <div className="flex flex-wrap gap-2">
+                    {asset.featuringArtists.map((a: any, i: number) => (
+                      <span key={i} className="text-sm text-zinc-700 dark:text-zinc-300">{a.name || a}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {asset.contributors?.length > 0 && (
+                <div className="mt-2">
+                  <ContributorsByRole contributors={asset.contributors} />
+                </div>
+              )}
+              <FieldGrid>
+                <Field label="Composer" value={asset.composer} />
+                <Field label="Lyricist" value={asset.lyricist} />
+                <Field label="Arranger" value={asset.arranger} />
+                <Field label="Producer" value={asset.producer} />
+                <Field label="Mixer" value={asset.mixer} />
+                <Field label="Masterer" value={asset.masterer} />
+              </FieldGrid>
+              {asset.publishers && (
+                <Field label="Publishers" value={asset.publishers} />
+              )}
+            </TrackSubSection>
+          )}
 
-      {showLyrics && asset.lyrics && (
-        <div className="px-4 pb-3">
-          <pre className="max-h-60 overflow-auto rounded-lg bg-zinc-50 p-3 text-sm text-zinc-700 whitespace-pre-wrap dark:bg-zinc-800 dark:text-zinc-300">
-            {asset.lyrics}
-          </pre>
+          {/* 장르 */}
+          <TrackSubSection title="장르">
+            <FieldGrid>
+              <Field label="Genre" value={asset.genre?.name} />
+              <Field label="Subgenre" value={asset.subgenre?.name} />
+              <Field label="Alternate Genre" value={asset.alternateGenre?.name} />
+              <Field label="Alternate Subgenre" value={asset.alternateSubgenre?.name} />
+            </FieldGrid>
+          </TrackSubSection>
+
+          {/* 오디오 */}
+          <TrackSubSection title="오디오">
+            <FieldGrid>
+              <Field label="Sample Rate" value={asset.audio?.sampleRate || asset.sampleRate} />
+              <Field label="Bit Depth" value={asset.audio?.bitDepth || asset.bitDepth} />
+              <Field label="Audio Format" value={asset.audio?.format || asset.audioFormat} />
+              <Field label="Dolby Atmos" value={asset.dolbyAtmos} />
+              <Field label="Stereo" value={asset.stereo} />
+            </FieldGrid>
+          </TrackSubSection>
+
+          {/* 콘텐츠 */}
+          <TrackSubSection title="콘텐츠">
+            <FieldGrid>
+              <Field label="Language" value={asset.language} />
+              <Field label="Audio Language" value={asset.audioLocale || asset.audioLanguage} />
+              <Field label="Lyrics Language" value={asset.lyricsLanguage} />
+              <Field label="Metadata Language" value={asset.metadataLanguage} />
+              <Field label="Explicit Content" value={asset.explicitContent} />
+              <Field label="Parental Advisory" value={asset.parentalAdvisory} />
+            </FieldGrid>
+            {asset.lyricsFileUrl && (
+              <LinkField label="Lyrics File URL" url={asset.lyricsFileUrl} />
+            )}
+            {(asset.hasLyrics && asset.lyrics) && (
+              <div className="mt-2">
+                <button
+                  className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+                  onClick={(e) => { e.stopPropagation(); setShowLyrics(!showLyrics); }}
+                >
+                  {showLyrics ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+                  <FileText className="h-3 w-3" /> 가사
+                </button>
+                {showLyrics && (
+                  <pre className="mt-2 max-h-60 overflow-auto rounded-lg bg-zinc-50 p-3 text-sm text-zinc-700 whitespace-pre-wrap dark:bg-zinc-900 dark:text-zinc-300">
+                    {asset.lyrics}
+                  </pre>
+                )}
+              </div>
+            )}
+          </TrackSubSection>
+
+          {/* 권리 */}
+          <TrackSubSection title="권리">
+            <FieldGrid>
+              <Field label="Asset Copyright" value={asset.pLineText || asset.assetCopyright} />
+              <Field label="Rights Claim" value={asset.rightsClaim} />
+              <Field label="Rights Holder" value={asset.rightsHolderName} />
+              <Field label="Rights Ownership" value={asset.rightsOwnership} />
+              <Field label="Recording Year" value={asset.recordingYear} />
+              <Field label="Recording Location" value={asset.recordingLocation} />
+              <Field label="Country of Recording" value={asset.countryOfRecording} />
+              <Field label="Country of Commissioning" value={asset.countryOfCommissioning} />
+              <Field label="Rights Contract Begin Date" value={asset.rightsContractBeginDate} />
+              <Field label="Asset Release Date" value={asset.assetReleaseDate} />
+              <Field label="Asset Catalog Tier" value={asset.assetCatalogTier} />
+            </FieldGrid>
+          </TrackSubSection>
+
+          {/* 프리뷰 */}
+          <TrackSubSection title="프리뷰">
+            <FieldGrid>
+              <Field label="Preview Start" value={asset.previewStart} />
+              <Field label="Preview End" value={asset.previewEnd} />
+              <Field label="Preview Length" value={asset.previewLength} />
+              <Field label="Playtime Start Short Clip" value={asset.playtimeStartShortClip} />
+              <Field label="YouTube Short Preview" value={asset.youtubeShortPreview} />
+            </FieldGrid>
+          </TrackSubSection>
+
+          {/* 비디오 */}
+          <TrackSubSection title="비디오">
+            <FieldGrid>
+              <Field label="Has Music Video" value={asset.hasMusicVideo} />
+              <Field label="Music Video ISRC" value={asset.musicVideoIsrc} mono />
+            </FieldGrid>
+          </TrackSubSection>
+
+          {/* 가용성 */}
+          <TrackSubSection title="가용성">
+            <FieldGrid>
+              <Field label="Availability" value={asset.availability} />
+              <Field label="Pre-order Enabled" value={asset.preorderEnabled} />
+              <Field label="Pre-order Date" value={asset.preorderDate} />
+              <Field label="Has Custom Release Date" value={asset.hasCustomReleaseDate} />
+              <Field label="Custom Release Date" value={asset.customReleaseDate} />
+              <Field label="Custom Release Time" value={asset.customReleaseTime} />
+              <Field label="Asset Territories" value={asset.assetTerritories} />
+            </FieldGrid>
+          </TrackSubSection>
+
+          {/* 기타 */}
+          <TrackSubSection title="기타">
+            <FieldGrid>
+              <Field label="Tags" value={asset.tags} />
+              <Field label="Extra Fields" value={asset.extraFields} />
+              <Field label="Translations" value={asset.translations} />
+            </FieldGrid>
+          </TrackSubSection>
         </div>
       )}
     </div>
   );
 }
 
-function InfoField({ label, value }: { label: string; value?: string | null }) {
-  if (!value) return null;
-  return (
-    <div>
-      <p className="text-zinc-400">{label}</p>
-      <p className="text-zinc-700 dark:text-zinc-300">{value}</p>
-    </div>
-  );
-}
+/* ─── Main Page ─── */
 
 export default function CatalogDetailPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const type = (searchParams.get('type') as 'catalog' | 'submission') || 'catalog';
   const navigate = useNavigate();
 
   const { data: product, isLoading } = useQuery({
-    queryKey: ['catalog-product', id],
-    queryFn: () => catalogApi.getProduct(id!).then(r => r.data),
+    queryKey: ['catalog-unified-detail', id, type],
+    queryFn: () => catalogApi.getUnifiedProduct(id!, type).then(r => r.data),
     enabled: !!id,
   });
 
@@ -149,8 +399,10 @@ export default function CatalogDetailPage() {
     return <div className="flex h-64 items-center justify-center text-zinc-400">프로덕트를 찾을 수 없습니다</div>;
   }
 
-  const submission = (product as any).submission;
-  const coverImageUrl = submission?.files?.coverImageUrl || (product as any).coverImageUrl;
+  const p = product as any;
+  const marketing = p.marketing || {};
+  const files = p.files || {};
+  const assets = p.assets || [];
 
   return (
     <div className="space-y-6">
@@ -162,112 +414,99 @@ export default function CatalogDetailPage() {
         <ArrowLeft className="h-4 w-4" /> 카탈로그로 돌아가기
       </button>
 
-      {/* Product header */}
+      {/* ── Section 1: Header (not collapsible) ── */}
       <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-800">
         <div className="flex items-start gap-6">
-          {/* Cover Art */}
-          {coverImageUrl && (
+          {p.coverImageUrl && (
             <div className="flex-shrink-0">
-              <img
-                src={coverImageUrl}
-                alt={product.name}
-                className="h-40 w-40 rounded-lg object-cover shadow-md"
-              />
+              <img src={p.coverImageUrl} alt={p.name} className="h-40 w-40 rounded-lg object-cover shadow-md" />
             </div>
           )}
-
           <div className="flex-1">
-            <div className="flex items-start justify-between">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{product.name}</h1>
-                  {product.releaseVersion && (
-                    <span className="rounded bg-zinc-100 px-2 py-0.5 text-sm text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-                      {product.releaseVersion}
-                    </span>
-                  )}
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                    product.state === 'DELIVERED'
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                  }`}>
-                    {product.state}
-                  </span>
-                  {submission && (
-                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      submission.status === 'approved'
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                        : submission.status === 'pending'
-                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                    }`}>
-                      Submission: {submission.status?.toUpperCase()}
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 text-zinc-600 dark:text-zinc-300">{product.displayArtist}</p>
-              </div>
-              <div className="text-right text-sm text-zinc-500 dark:text-zinc-400">
-                {product.releaseFormatType && <p>{product.releaseFormatType}</p>}
-                {product.label && <p>{product.label}</p>}
-              </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{p.name}</h1>
+              {p.releaseVersion && (
+                <span className="rounded bg-zinc-100 px-2 py-0.5 text-sm text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                  {p.releaseVersion}
+                </span>
+              )}
+              {p.state && <StateTag state={p.state} />}
+              {p.submissionStatus && <StatusTag status={p.submissionStatus} />}
+              <SourceBadge source={p.source} />
             </div>
-
-            <div className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-              <div>
-                <p className="text-zinc-400">UPC</p>
-                <p className="font-mono text-zinc-700 dark:text-zinc-300">{product.upc}</p>
-              </div>
-              <div>
-                <p className="text-zinc-400">발매일</p>
-                <p className="text-zinc-700 dark:text-zinc-300">{product.consumerReleaseDate?.split('T')[0] || '-'}</p>
-              </div>
-              <div>
-                <p className="text-zinc-400">장르</p>
-                <p className="text-zinc-700 dark:text-zinc-300">{product.genre?.name || '-'}</p>
-              </div>
-              <div>
-                <p className="text-zinc-400">언어</p>
-                <p className="text-zinc-700 dark:text-zinc-300">{product.language || '-'}</p>
-              </div>
-              <div>
-                <p className="text-zinc-400">&copy; Line</p>
-                <p className="text-zinc-700 dark:text-zinc-300">{product.cLineText || '-'}</p>
-              </div>
-              <div>
-                <p className="text-zinc-400">&#x2117; Line</p>
-                <p className="text-zinc-700 dark:text-zinc-300">{product.pLineText || '-'}</p>
-              </div>
-              <div>
-                <p className="text-zinc-400">Submission</p>
-                {submission ? (
-                  <button
-                    className="text-blue-500 hover:underline"
-                    onClick={() => navigate(`/admin/submissions/${submission.id}`)}
-                  >
-                    {submission.albumTitle || submission.id} ({submission.status})
-                  </button>
-                ) : (
-                  <span className="text-zinc-400">미연결</span>
-                )}
-              </div>
-              <div>
-                <p className="text-zinc-400">동기화</p>
-                <p className="text-zinc-700 dark:text-zinc-300">{new Date(product.syncedAt).toLocaleString('ko-KR')}</p>
-              </div>
-            </div>
+            <p className="mt-1 text-zinc-600 dark:text-zinc-300">{p.displayArtist}</p>
+            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+              {[p.label, p.albumType].filter(Boolean).join(' · ')}
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Artists with DSP links */}
-        {product.artists?.length > 0 && (
-          <div className="mt-4">
-            <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400 mb-2">아티스트</p>
+      {/* ── Section 2: Release Metadata ── */}
+      <Section title="릴리스 정보" icon={Disc3}>
+        <FieldGrid>
+          <Field label="UPC" value={p.upc} mono />
+          <Field label="Catalog Number" value={p.catalogNumber} mono />
+          <Field label="FUGA ID" value={p.fugaId} mono />
+          <Field label="EAN" value={p.ean} mono />
+
+          <Field label="Consumer Release Date" value={p.consumerReleaseDate?.split?.('T')?.[0] || p.consumerReleaseDate} />
+          <Field label="Original Release Date" value={p.originalReleaseDate?.split?.('T')?.[0] || p.originalReleaseDate} />
+          <Field label="Release Time" value={p.releaseTime} />
+          <Field label="Timezone" value={p.timezone} />
+
+          <Field label="Genre" value={p.genre?.name || p.genre} />
+          <Field label="Subgenre" value={p.subgenre?.name || p.subgenre} />
+          <Field label="Secondary Genre" value={p.secondaryGenre?.name || p.secondaryGenre} />
+          <Field label="Secondary Subgenre" value={p.secondarySubgenre?.name || p.secondarySubgenre} />
+
+          <Field label="Language" value={p.language} />
+          <Field label="Recording Country" value={p.recordingCountry} />
+          <Field label="Recording Language" value={p.recordingLanguage} />
+
+          <Field label="© Line" value={p.cLineText} />
+          <Field label="Copyright Holder" value={p.copyrightHolder} />
+          <Field label="Copyright Year" value={p.copyrightYear} />
+          <Field label="℗ Line" value={p.pLineText} />
+          <Field label="Production Holder" value={p.productionHolder} />
+          <Field label="Production Year" value={p.productionYear || p.pLineYear} />
+
+          <Field label="Release Format" value={p.releaseFormatType} />
+          <Field label="Price Type" value={p.priceType} />
+          <Field label="Pre-order" value={p.preorder} />
+
+          <Field label="Territory Type" value={p.territoryType} />
+          <Field label="Territories" value={Array.isArray(p.territories) ? p.territories.join(', ') : p.territories} />
+
+          <Field label="Is Compilation" value={p.isCompilation} />
+          <Field label="Previously Released" value={p.previouslyReleased} />
+          <Field label="Motion Artwork" value={p.motionArtwork} />
+          <Field label="YouTube Shorts Previews" value={p.youtubeShortsPreview} />
+
+          <Field label="Parental Advisory" value={p.parentalAdvisory} />
+          <Field label="Explicit Content" value={p.explicitContent} />
+
+          <Field label="Product Type" value={p.productType} />
+          <Field label="Suborg" value={Array.isArray(p.suborg) ? p.suborg.join(', ') : p.suborg} />
+
+          <Field label="Synced At" value={p.syncedAt ? new Date(p.syncedAt).toLocaleString('ko-KR') : undefined} />
+          <Field label="Added Date" value={p.addedDate} />
+          <Field label="Created At" value={p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR') : undefined} />
+        </FieldGrid>
+      </Section>
+
+      {/* ── Section 3: Artists ── */}
+      <Section title="아티스트" icon={Users}>
+        {p.artists?.length > 0 && (
+          <div className="space-y-3 mb-4">
+            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Artists</p>
             <div className="flex flex-wrap gap-3">
-              {product.artists.map((artist, i) => (
+              {p.artists.map((artist: any, i: number) => (
                 <div key={i} className="inline-flex items-center gap-2">
                   <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">{artist.name}</span>
-                  {artist.primary && <span className="text-xs text-zinc-400">(Primary)</span>}
+                  {artist.primary && (
+                    <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">Primary</span>
+                  )}
                   <DspLink url={artist.spotifyUrl} type="spotify" />
                   <DspLink url={artist.appleMusicUrl} type="apple" />
                 </div>
@@ -275,100 +514,279 @@ export default function CatalogDetailPage() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Submission Extended Info */}
-      {submission && (
-        <>
-          {/* Marketing / Description */}
-          {(submission.albumDescription || submission.biography || submission.marketing) && (
-            <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
-              <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
-                <MessageSquare className="h-4 w-4 text-zinc-400" />
-                <h2 className="font-semibold text-zinc-900 dark:text-white">마케팅 / 설명</h2>
-              </div>
-              <div className="space-y-4 p-4">
-                {submission.albumDescription && (
-                  <div>
-                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">앨범 설명</p>
-                    <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{submission.albumDescription}</p>
-                  </div>
-                )}
-                {submission.biography && (
-                  <div>
-                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">바이오그래피</p>
-                    <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{submission.biography}</p>
-                  </div>
-                )}
-                {submission.marketing && (
-                  <div>
-                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">마케팅 정보</p>
-                    <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
-                      {typeof submission.marketing === 'string' ? submission.marketing : JSON.stringify(submission.marketing, null, 2)}
-                    </p>
-                  </div>
-                )}
-              </div>
+        {p.albumFeaturingArtists?.length > 0 && (
+          <div className="space-y-2 mb-4">
+            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Featuring Artists</p>
+            <div className="flex flex-wrap gap-2">
+              {p.albumFeaturingArtists.map((a: any, i: number) => (
+                <span key={i} className="text-sm text-zinc-700 dark:text-zinc-300">{a.name || a}</span>
+              ))}
             </div>
-          )}
+          </div>
+        )}
+        <FieldGrid>
+          <Field label="Artist Type" value={p.artistType} />
+          <Field label="Spotify ID" value={p.spotifyId} mono />
+          <Field label="Apple Music ID" value={p.appleMusicId} mono />
+          <Field label="YouTube Channel ID" value={p.youtubeChannelId} mono />
+        </FieldGrid>
+        {p.biography && (
+          <div className="mt-4">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Biography</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{p.biography}</p>
+          </div>
+        )}
+        {p.socialLinks && Object.keys(p.socialLinks).length > 0 && (
+          <div className="mt-4">
+            <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Social Links</p>
+            <div className="flex flex-wrap gap-2">
+              {Object.entries(p.socialLinks).map(([platform, url]) => (
+                url && (
+                  <a key={platform} href={url as string} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600">
+                    {platform} <ExternalLink className="h-3 w-3" />
+                  </a>
+                )
+              ))}
+            </div>
+          </div>
+        )}
+      </Section>
 
-          {/* Social Links */}
-          {submission.socialLinks && Object.keys(submission.socialLinks).length > 0 && (
-            <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
-              <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
-                <Globe className="h-4 w-4 text-zinc-400" />
-                <h2 className="font-semibold text-zinc-900 dark:text-white">소셜 링크</h2>
+      {/* ── Section 4: Marketing ── */}
+      <Section title="마케팅" icon={MessageSquare} defaultOpen={false}>
+        <FieldGrid>
+          <Field label="Project Type" value={marketing.projectType} />
+          <Field label="Priority Level" value={marketing.priorityLevel} />
+        </FieldGrid>
+        {marketing.hook && (
+          <div className="mt-3">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Hook</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300">{marketing.hook}</p>
+          </div>
+        )}
+        {marketing.mainPitch && (
+          <div className="mt-3">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Main Pitch</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{marketing.mainPitch}</p>
+          </div>
+        )}
+
+        {(marketing.moods?.length > 0 || marketing.instruments?.length > 0) && (
+          <div className="mt-3 space-y-2">
+            {marketing.moods?.length > 0 && (
+              <div>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Moods</p>
+                <TagPills items={marketing.moods} />
               </div>
-              <div className="flex flex-wrap gap-3 p-4">
-                {Object.entries(submission.socialLinks).map(([platform, url]) => (
-                  url && (
-                    <a
-                      key={platform}
-                      href={url as string}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
-                    >
-                      {platform} <ExternalLink className="h-3 w-3" />
-                    </a>
-                  )
+            )}
+            {marketing.instruments?.length > 0 && (
+              <div>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Instruments</p>
+                <TagPills items={marketing.instruments} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {marketing.marketingDrivers && (
+          <div className="mt-3">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Marketing Drivers</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{typeof marketing.marketingDrivers === 'string' ? marketing.marketingDrivers : JSON.stringify(marketing.marketingDrivers)}</p>
+          </div>
+        )}
+        {marketing.socialMediaPlan && (
+          <div className="mt-3">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Social Media Plan</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{marketing.socialMediaPlan}</p>
+          </div>
+        )}
+
+        <div className="mt-3">
+          <FieldGrid>
+            <Field label="Target Audience" value={marketing.targetAudience} />
+            <Field label="Similar Artists" value={marketing.similarArtists} />
+            <Field label="Marketing Keywords" value={marketing.marketingKeywords} />
+            <Field label="Artist Bio" value={marketing.artistBio} />
+            <Field label="Artist Gender" value={marketing.artistGender} />
+          </FieldGrid>
+        </div>
+
+        {/* Social URLs from marketing */}
+        <div className="mt-3">
+          <FieldGrid>
+            <LinkField label="YouTube" url={marketing.youtubeUrl || marketing.youtube} />
+            <LinkField label="TikTok" url={marketing.tiktokUrl || marketing.tiktok} />
+            <LinkField label="X (Twitter)" url={marketing.xUrl || marketing.twitter} />
+            <LinkField label="Twitch" url={marketing.twitchUrl || marketing.twitch} />
+            <LinkField label="Threads" url={marketing.threadsUrl || marketing.threads} />
+            <LinkField label="SoundCloud" url={marketing.soundcloudUrl || marketing.soundcloud} />
+            <LinkField label="Facebook" url={marketing.facebookUrl || marketing.facebook} />
+            <LinkField label="Instagram" url={marketing.instagramUrl || marketing.instagram} />
+          </FieldGrid>
+        </div>
+
+        {marketing.campaignGoals && (
+          <div className="mt-3">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Campaign Goals</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{typeof marketing.campaignGoals === 'string' ? marketing.campaignGoals : JSON.stringify(marketing.campaignGoals)}</p>
+          </div>
+        )}
+
+        {(p.albumIntroduction || marketing.albumIntroduction) && (
+          <div className="mt-3">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Album Introduction</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{p.albumIntroduction || marketing.albumIntroduction}</p>
+          </div>
+        )}
+        {(p.albumDescription || marketing.albumDescription) && (
+          <div className="mt-3">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Album Description</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{p.albumDescription || marketing.albumDescription}</p>
+          </div>
+        )}
+
+        {marketing.promotionPlans && (
+          <div className="mt-3">
+            <Field label="Promotion Plans" value={marketing.promotionPlans} />
+          </div>
+        )}
+        {marketing.syncHistory && (
+          <div className="mt-3">
+            <Field label="Sync History" value={marketing.syncHistory} />
+          </div>
+        )}
+      </Section>
+
+      {/* ── Section 5: Tracks ── */}
+      <Section title={`트랙 (${assets.length})`} icon={Music}>
+        <div className="-mx-4 -mb-4 -mt-4">
+          {assets.length === 0 && (
+            <p className="p-4 text-sm text-zinc-400">트랙 정보가 없습니다</p>
+          )}
+          {assets.map((asset: any, i: number) => (
+            <TrackRow key={asset.id || i} asset={asset} index={i} />
+          ))}
+        </div>
+      </Section>
+
+      {/* ── Section 6: Files ── */}
+      <Section title="파일" icon={FolderOpen} defaultOpen={false}>
+        <div className="space-y-4">
+          <LinkField label="Cover Image URL" url={files.coverImageUrl || p.coverImageUrl} />
+          {(files.coverImageUrl || p.coverImageUrl) && (
+            <img
+              src={files.coverImageUrl || p.coverImageUrl}
+              alt="Cover"
+              className="h-24 w-24 rounded-lg object-cover border border-zinc-200 dark:border-zinc-700"
+            />
+          )}
+          <LinkField label="Artist Photo URL" url={files.artistPhotoUrl} />
+          <LinkField label="Motion Art URL" url={files.motionArtUrl} />
+          <LinkField label="Music Video URL" url={files.musicVideoUrl} />
+
+          {files.audioFiles?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Audio Files</p>
+              <div className="space-y-1">
+                {files.audioFiles.map((f: any, i: number) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
+                    <Music className="h-3 w-3 text-zinc-400" />
+                    <span>{f.fileName || f.trackId || `Track ${i + 1}`}</span>
+                    {(f.dropboxUrl || f.url) && (
+                      <a href={f.dropboxUrl || f.url} target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-blue-500 hover:underline dark:text-blue-400">
+                        Download <ExternalLink className="h-3 w-3" />
+                      </a>
+                    )}
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* Submission Info */}
-          <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
-            <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
-              <FileText className="h-4 w-4 text-zinc-400" />
-              <h2 className="font-semibold text-zinc-900 dark:text-white">제출 정보</h2>
+          {files.dolbyAtmosFiles?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Dolby Atmos Files</p>
+              <div className="space-y-1">
+                {files.dolbyAtmosFiles.map((f: any, i: number) => (
+                  <div key={i} className="text-sm text-zinc-700 dark:text-zinc-300">
+                    {f.fileName || JSON.stringify(f)}
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-2 gap-4 p-4 text-sm sm:grid-cols-4">
-              <InfoField label="제출자" value={submission.submitterName || submission.userId} />
-              <InfoField label="제출 상태" value={submission.status?.toUpperCase()} />
-              <InfoField label="제출일" value={submission.createdAt ? new Date(submission.createdAt).toLocaleDateString('ko-KR') : undefined} />
-              <InfoField label="관리자 노트" value={submission.adminNotes} />
-              <InfoField label="아티스트명" value={submission.artistName} />
-              <InfoField label="레이블" value={submission.labelName} />
-              <InfoField label="앨범 타입" value={submission.albumType} />
-              <InfoField label="발매 희망일" value={submission.releaseDate} />
-            </div>
-          </div>
-        </>
-      )}
+          )}
 
-      {/* Tracks */}
-      <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
-        <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
-          <Music className="h-4 w-4 text-zinc-400" />
-          <h2 className="font-semibold text-zinc-900 dark:text-white">
-            트랙 ({product.assets?.length || 0})
-          </h2>
+          {files.lyricsFiles?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Lyrics Files</p>
+              <div className="space-y-1">
+                {files.lyricsFiles.map((f: any, i: number) => (
+                  <LinkField key={i} label={f.fileName || `Lyrics ${i + 1}`} url={f.url || f.dropboxUrl} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {files.musicVideoFiles?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Music Video Files</p>
+              <div className="space-y-1">
+                {files.musicVideoFiles.map((f: any, i: number) => (
+                  <LinkField key={i} label={f.fileName || `MV ${i + 1}`} url={f.url || f.dropboxUrl} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {files.musicVideoThumbnails?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Music Video Thumbnails</p>
+              <div className="space-y-1">
+                {files.musicVideoThumbnails.map((f: any, i: number) => (
+                  <LinkField key={i} label={f.fileName || `Thumbnail ${i + 1}`} url={f.url || f.dropboxUrl} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {files.additionalFiles?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Additional Files</p>
+              <div className="space-y-1">
+                {files.additionalFiles.map((f: any, i: number) => (
+                  <LinkField key={i} label={f.fileName || `File ${i + 1}`} url={f.url || f.dropboxUrl} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* If files is empty */}
+          {Object.keys(files).length === 0 && !p.coverImageUrl && (
+            <p className="text-sm text-zinc-400">파일 정보가 없습니다</p>
+          )}
         </div>
-        {product.assets?.map((asset, i) => (
-          <TrackRow key={asset.id} asset={asset} index={i} />
-        ))}
-      </div>
+      </Section>
+
+      {/* ── Section 7: Submission Info ── */}
+      <Section title="제출 정보" icon={ClipboardList} defaultOpen={false}>
+        <FieldGrid>
+          <Field label="Submitter Name" value={p.submitterName} />
+          <Field label="Submitter Email" value={p.submitterEmail} />
+          <Field label="Submission Status" value={p.submissionStatus?.toUpperCase()} />
+          <Field label="Reviewed By" value={p.reviewedBy} />
+          <Field label="Reviewed At" value={p.reviewedAt ? new Date(p.reviewedAt).toLocaleString('ko-KR') : undefined} />
+          <Field label="Created At" value={p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR') : undefined} />
+          <Field label="Updated At" value={p.updatedAt ? new Date(p.updatedAt).toLocaleString('ko-KR') : undefined} />
+        </FieldGrid>
+        {p.adminNotes && (
+          <div className="mt-3">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Admin Notes</p>
+            <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{p.adminNotes}</p>
+          </div>
+        )}
+      </Section>
     </div>
   );
 }
