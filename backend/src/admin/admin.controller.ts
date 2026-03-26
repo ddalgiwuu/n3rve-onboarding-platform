@@ -134,14 +134,14 @@ export class AdminController {
   }
 
   @Get('submissions/sync-diagnostic')
-  @Public()
-  async syncDiagnostic() {
+  async syncDiagnostic(@CurrentUser() user: any) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
     return this.adminService.diagnoseSyncMismatches();
   }
 
   @Post('submissions/auto-sync-fix')
-  @Public()
-  async autoSyncFix() {
+  async autoSyncFix(@CurrentUser() user: any) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
     return this.adminService.autoFixSyncMismatches();
   }
 
