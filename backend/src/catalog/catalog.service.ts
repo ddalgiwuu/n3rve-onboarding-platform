@@ -803,6 +803,91 @@ export class CatalogService {
     };
   }
 
+  // ==================== BACKFILL ====================
+
+  /**
+   * One-time backfill: sync all existing CatalogArtists to SavedArtist/SavedContributor
+   * for each user who has a submission linked to a catalog product.
+   */
+  async backfillSavedArtists() {
+    const results = { artists: 0, contributors: 0, skipped: 0, errors: [] as string[] };
+
+    // Collect unique userIds from all linked submissions
+    const linkedProducts = await this.prisma.catalogProduct.findMany({
+      where: { submissionId: { not: null } },
+      select: { submissionId: true },
+    });
+
+    const submissionIds = [...new Set(linkedProducts.map((p) => p.submissionId!))];
+    const submissions = await this.prisma.submission.findMany({
+      where: { id: { in: submissionIds } },
+      select: { submitterId: true },
+    });
+
+    const userIds = [...new Set(submissions.map((s) => s.submitterId))];
+
+    // Get all catalog artists once
+    const catalogArtists = await this.prisma.catalogArtist.findMany();
+
+    for (const userId of userIds) {
+      for (const ca of catalogArtists) {
+        try {
+          if (ca.type === 'ARTIST') {
+            const existing = await this.prisma.savedArtist.findFirst({
+              where: { userId, name: ca.name },
+            });
+            if (existing) { results.skipped++; continue; }
+
+            const identifiers: any[] = [];
+            if (ca.spotifyUrl) identifiers.push({ type: 'SPOTIFY', value: ca.spotifyId || '', url: ca.spotifyUrl });
+            if (ca.appleMusicUrl) identifiers.push({ type: 'APPLE_MUSIC', value: ca.appleMusicId || '', url: ca.appleMusicUrl });
+
+            await this.prisma.savedArtist.create({
+              data: {
+                userId,
+                name: ca.name,
+                identifiers,
+                translations: [],
+                completionScore: BigInt(0),
+                releaseCount: BigInt(1),
+                usageCount: BigInt(1),
+                status: 'ACTIVE',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                lastUsed: new Date(),
+              },
+            });
+            results.artists++;
+          } else {
+            const existing = await this.prisma.savedContributor.findFirst({
+              where: { userId, name: ca.name },
+            });
+            if (existing) { results.skipped++; continue; }
+
+            await this.prisma.savedContributor.create({
+              data: {
+                userId,
+                name: ca.name,
+                roles: ca.roles || [],
+                instruments: [],
+                translations: [],
+                identifiers: [],
+                createdAt: new Date(),
+                lastUsed: new Date(),
+                usageCount: BigInt(1),
+              },
+            });
+            results.contributors++;
+          }
+        } catch (err) {
+          results.errors.push(`${ca.name}: ${err.message}`);
+        }
+      }
+    }
+
+    return results;
+  }
+
   // ==================== LINKING ====================
 
   async linkToSubmission(productId: string, submissionId: string) {
