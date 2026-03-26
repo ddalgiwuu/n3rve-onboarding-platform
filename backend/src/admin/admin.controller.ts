@@ -133,6 +133,12 @@ export class AdminController {
     return this.adminService.markCatalogSubmissionsReleased();
   }
 
+  @Post('submissions/update-files')
+  @Public()
+  async updateSubmissionFiles(@Body() body: { fileLinks: Record<string, any> }) {
+    return this.adminService.updateSubmissionFiles(body.fileLinks);
+  }
+
   @Get('submissions/sync-diagnostic')
   async syncDiagnostic(@CurrentUser() user: any) {
     if (user.role !== 'ADMIN') throw new ForbiddenException();

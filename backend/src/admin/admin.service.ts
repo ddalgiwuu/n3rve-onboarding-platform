@@ -340,6 +340,70 @@ export class AdminService {
     };
   }
 
+  /**
+   * Update submission files fields with Dropbox URLs, matched by UPC.
+   */
+  async updateSubmissionFiles(fileLinks: Record<string, { coverImageUrl?: string; audioFiles?: any[] }>) {
+    let updated = 0;
+    const errors: string[] = [];
+
+    for (const [upc, links] of Object.entries(fileLinks)) {
+      try {
+        // Find submission by UPC
+        const submissions = await this.prisma.submission.findMany({
+          select: { id: true, release: true, files: true },
+        });
+
+        const sub = submissions.find((s) => (s.release as any)?.upc === upc);
+        if (!sub) {
+          errors.push(`No submission for UPC ${upc}`);
+          continue;
+        }
+
+        const currentFiles = (sub.files || {}) as any;
+        const updateData: any = {};
+
+        if (links.coverImageUrl) {
+          updateData.files = {
+            ...currentFiles,
+            coverImageUrl: links.coverImageUrl,
+            audioFiles: links.audioFiles || currentFiles.audioFiles || [],
+            additionalFiles: currentFiles.additionalFiles || [],
+            musicVideoFiles: currentFiles.musicVideoFiles || [],
+            musicVideoThumbnails: currentFiles.musicVideoThumbnails || [],
+            artistPhotoUrl: currentFiles.artistPhotoUrl || null,
+            motionArtUrl: currentFiles.motionArtUrl || null,
+            musicVideoUrl: currentFiles.musicVideoUrl || null,
+          };
+        } else if (links.audioFiles?.length) {
+          updateData.files = {
+            ...currentFiles,
+            audioFiles: links.audioFiles,
+            additionalFiles: currentFiles.additionalFiles || [],
+            musicVideoFiles: currentFiles.musicVideoFiles || [],
+            musicVideoThumbnails: currentFiles.musicVideoThumbnails || [],
+            coverImageUrl: currentFiles.coverImageUrl || null,
+            artistPhotoUrl: currentFiles.artistPhotoUrl || null,
+            motionArtUrl: currentFiles.motionArtUrl || null,
+            musicVideoUrl: currentFiles.musicVideoUrl || null,
+          };
+        }
+
+        if (Object.keys(updateData).length > 0) {
+          await this.prisma.submission.update({
+            where: { id: sub.id },
+            data: updateData,
+          });
+          updated++;
+        }
+      } catch (err: any) {
+        errors.push(`UPC ${upc}: ${err.message}`);
+      }
+    }
+
+    return { updated, errors: errors.length, errorDetails: errors };
+  }
+
   async diagnoseSyncMismatches() {
     // Get all catalog products
     const catalogProducts = await this.prisma.catalogProduct.findMany({
