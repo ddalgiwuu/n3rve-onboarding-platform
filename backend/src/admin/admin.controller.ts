@@ -126,6 +126,12 @@ export class AdminController {
     return this.adminService.getSubmissionStats();
   }
 
+  @Post('submissions/mark-catalog-released')
+  async markCatalogReleased(@CurrentUser() user: any) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.adminService.markCatalogSubmissionsReleased();
+  }
+
   @Post('submissions/auto-map-labels')
   async autoMapLabels(@CurrentUser() user: any) {
     if (user.role !== 'ADMIN') throw new ForbiddenException();

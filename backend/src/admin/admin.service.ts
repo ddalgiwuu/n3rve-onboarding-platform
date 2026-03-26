@@ -255,11 +255,12 @@ export class AdminService {
   }
 
   async getSubmissionStats() {
-    const [totalSubmissions, pendingReview, approved, rejected, totalUsers, usersWithSubmissions] = await Promise.all([
+    const [totalSubmissions, pendingReview, approved, rejected, released, totalUsers, usersWithSubmissions] = await Promise.all([
       this.prisma.submission.count(),
       this.prisma.submission.count({ where: { status: 'PENDING' } }),
       this.prisma.submission.count({ where: { status: 'APPROVED' } }),
       this.prisma.submission.count({ where: { status: 'REJECTED' } }),
+      this.prisma.submission.count({ where: { status: 'RELEASED' } }),
       this.prisma.user.count(),
       this.prisma.user.count({ where: { submissions: { some: {} } } }),
     ]);
@@ -269,9 +270,69 @@ export class AdminService {
       pendingReview,
       approved,
       rejected,
-      totalCustomers: totalUsers, // Total registered users
-      activeArtists: usersWithSubmissions, // Users who have submitted
-      totalRevenue: 0, // Placeholder - implement if needed
+      released,
+      totalCustomers: totalUsers,
+      activeArtists: usersWithSubmissions,
+      totalRevenue: 0,
+    };
+  }
+
+  /**
+   * Mark all catalog-synced submissions as RELEASED.
+   * Also returns upcoming releases with countdown.
+   */
+  async markCatalogSubmissionsReleased() {
+    const now = new Date();
+
+    // Find all submissions linked to catalog (already released through FUGA)
+    const catalogSubmissions = await this.prisma.submission.findMany({
+      where: {
+        OR: [
+          { catalogProductId: { not: null } },
+          { fugaSyncStatus: 'SYNCED' },
+        ],
+        status: { not: 'RELEASED' },
+      },
+      select: { id: true, releaseDate: true, albumTitle: true, artistName: true },
+    });
+
+    const alreadyReleased: string[] = [];
+    const upcoming: { id: string; albumTitle: string; artistName: string; releaseDate: Date; countdown: string }[] = [];
+
+    for (const sub of catalogSubmissions) {
+      const releaseDate = new Date(sub.releaseDate);
+      if (releaseDate <= now) {
+        // Already released — mark as RELEASED
+        alreadyReleased.push(sub.id);
+      } else {
+        // Upcoming — calculate countdown
+        const diff = releaseDate.getTime() - now.getTime();
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        upcoming.push({
+          id: sub.id,
+          albumTitle: sub.albumTitle,
+          artistName: sub.artistName,
+          releaseDate,
+          countdown: `${days}일 ${hours}시간 ${minutes}분 ${seconds}초`,
+        });
+      }
+    }
+
+    // Batch update already-released submissions
+    if (alreadyReleased.length > 0) {
+      await this.prisma.submission.updateMany({
+        where: { id: { in: alreadyReleased } },
+        data: { status: 'RELEASED' },
+      });
+    }
+
+    return {
+      markedReleased: alreadyReleased.length,
+      upcoming,
+      total: catalogSubmissions.length,
     };
   }
 
