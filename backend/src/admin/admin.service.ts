@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { DropboxService } from '../dropbox/dropbox.service';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
 import { CreateQCLogDto } from './dto/create-qc-log.dto';
@@ -16,7 +17,12 @@ interface PaginationOptions {
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(AdminService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private dropbox: DropboxService,
+  ) {}
 
   async getDashboardStats() {
     const [
@@ -746,7 +752,7 @@ export class AdminService {
     parentAccountId?: string;
   }) {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    
+
     return this.prisma.user.create({
       data: {
         name: createUserDto.name,
@@ -772,5 +778,295 @@ export class AdminService {
         subAccounts: true,
       },
     });
+  }
+
+  // ─── B2B → n3rve-submissions Migration ───────────────────────────
+
+  private readonly B2B_ROOT = '/N3RVE B2B/Clients/Labels';
+  private readonly SUBMISSIONS_ROOT = '/Ryan Song/Apps/N3RVE_ONBOARDING_DASHBOARD/n3rve-submissions';
+  private readonly SUB_FOLDERS = ['Cover Art', 'Music', 'Lyrics', 'Marketing'];
+
+  /**
+   * Migrate files from B2B folder structure to n3rve-submissions.
+   *
+   * Source: /N3RVE B2B/Clients/Labels/{label}/Releases/{album_folder}/
+   * Target: /n3rve-submissions/{label}/Releases/{YYYY-MM-DD}_{album}_{UPC}/
+   *         ├── Cover Art/
+   *         ├── Music/
+   *         ├── Lyrics/
+   *         └── Marketing/
+   */
+  async migrateB2BFiles(dryRun = false) {
+    this.logger.log(`Starting B2B migration (dryRun=${dryRun})`);
+
+    // 1. Get all submissions from DB for matching
+    const submissions = await this.prisma.submission.findMany({
+      select: { id: true, albumTitle: true, labelName: true, release: true, files: true },
+    });
+
+    const subMap = submissions.map((s) => ({
+      id: s.id,
+      albumName: (s.albumTitle || '').trim(),
+      labelName: (s.labelName || '').trim(),
+      upc: (s.release as any)?.upc || '',
+      releaseDate: (s.release as any)?.releaseDate || (s.release as any)?.consumerReleaseDate || '',
+      files: s.files as any,
+    }));
+
+    this.logger.log(`Found ${subMap.length} submissions in DB`);
+
+    // 2. List all labels in B2B
+    const b2bLabels = await this.dropbox.listFiles(this.B2B_ROOT);
+    const labelFolders = b2bLabels.filter((e: any) => e['.tag'] === 'folder');
+    this.logger.log(`Found ${labelFolders.length} label folders in B2B`);
+
+    const results: any[] = [];
+    const errors: string[] = [];
+    const oldFoldersToDelete: string[] = [];
+
+    for (const labelFolder of labelFolders) {
+      const labelName = labelFolder.name;
+      const releasesPath = `${labelFolder.path_display}/Releases`;
+
+      // List releases for this label
+      let releases: any[];
+      try {
+        releases = await this.dropbox.listFiles(releasesPath);
+      } catch {
+        this.logger.warn(`No Releases folder for label: ${labelName}`);
+        continue;
+      }
+
+      const releaseFolders = releases.filter((e: any) => e['.tag'] === 'folder');
+
+      for (const releaseFolder of releaseFolders) {
+        const b2bAlbumName = releaseFolder.name; // e.g. "Yin and Yang_Jan_30_2026"
+        // Extract album name (before the first underscore+date pattern)
+        const cleanAlbumName = this.extractAlbumName(b2bAlbumName);
+
+        // Match with DB submission by album name + label
+        const match = this.findSubmissionMatch(subMap, cleanAlbumName, labelName);
+
+        if (!match) {
+          errors.push(`No DB match: "${cleanAlbumName}" (label: ${labelName}, folder: ${b2bAlbumName})`);
+          continue;
+        }
+
+        // Build target folder name: YYYY-MM-DD_album_UPC
+        const dateStr = this.formatReleaseDate(match.releaseDate);
+        const safeName = match.albumName.replace(/[/\\:*?"<>|]/g, '_');
+        const targetFolderName = `${dateStr}_${safeName}_${match.upc}`;
+        const targetPath = `${this.SUBMISSIONS_ROOT}/${labelName}/Releases/${targetFolderName}`;
+
+        // List source files
+        const sourceEntries = await this.dropbox.listFolderRecursive(releaseFolder.path_display);
+        const sourceFiles = sourceEntries.filter((e: any) => e['.tag'] === 'file');
+
+        const entry: any = {
+          label: labelName,
+          b2bFolder: b2bAlbumName,
+          matchedAlbum: match.albumName,
+          upc: match.upc,
+          targetPath,
+          filesCopied: 0,
+          coverArtUrl: null,
+        };
+
+        if (!dryRun) {
+          // Create target subfolders
+          for (const sub of this.SUB_FOLDERS) {
+            await this.dropbox.createFolder(`${targetPath}/${sub}`);
+          }
+
+          // Copy files into appropriate subfolders
+          let coverArtPath: string | null = null;
+
+          for (const file of sourceFiles) {
+            const relativePath = file.path_display.substring(releaseFolder.path_display.length);
+            const targetSubfolder = this.classifyFile(relativePath, file.name);
+            const destPath = `${targetPath}/${targetSubfolder}/${file.name}`;
+
+            try {
+              await this.dropbox.copyItem(file.path_display, destPath);
+              entry.filesCopied++;
+
+              // Track cover art file for DB update
+              if (targetSubfolder === 'Cover Art' && this.isCoverArtFile(file.name)) {
+                coverArtPath = destPath;
+              }
+            } catch (err: any) {
+              errors.push(`Copy failed: ${file.path_display} → ${destPath}: ${err.message}`);
+            }
+          }
+
+          // Create shared link for cover art and update DB
+          if (coverArtPath) {
+            try {
+              const sharedUrl = await this.dropbox.getOrCreateSharedLink(coverArtPath);
+              entry.coverArtUrl = sharedUrl;
+
+              // Update submission in DB
+              const currentFiles = match.files || {};
+              await this.prisma.submission.update({
+                where: { id: match.id },
+                data: {
+                  files: {
+                    ...currentFiles,
+                    coverImageUrl: sharedUrl,
+                  },
+                },
+              });
+            } catch (err: any) {
+              errors.push(`Shared link failed for ${coverArtPath}: ${err.message}`);
+            }
+          }
+
+          // Track old n3rve-submissions folders for cleanup
+          // Old structure: /n3rve-submissions/{label}/{artist}/{date}_{album}_{UPC}/
+          const oldLabelPath = `${this.SUBMISSIONS_ROOT}/${labelName}`;
+          const oldLabelEntries = await this.dropbox.listFiles(oldLabelPath);
+          for (const oldEntry of oldLabelEntries) {
+            if (oldEntry['.tag'] === 'folder' && oldEntry.name !== 'Releases') {
+              // This is an artist folder from old structure — mark for deletion
+              oldFoldersToDelete.push(oldEntry.path_display);
+            }
+          }
+        }
+
+        results.push(entry);
+      }
+    }
+
+    // Delete old thumbnail folders (artist-level folders from old structure)
+    let deletedOldFolders = 0;
+    if (!dryRun) {
+      const uniqueOldFolders = [...new Set(oldFoldersToDelete)];
+      for (const oldFolder of uniqueOldFolders) {
+        try {
+          await this.dropbox.deleteFolder(oldFolder);
+          deletedOldFolders++;
+        } catch (err: any) {
+          errors.push(`Delete old folder failed: ${oldFolder}: ${err.message}`);
+        }
+      }
+    }
+
+    return {
+      dryRun,
+      totalMatched: results.length,
+      totalFilesCopied: results.reduce((sum, r) => sum + (r.filesCopied || 0), 0),
+      deletedOldFolders,
+      errors: errors.length,
+      errorDetails: errors,
+      results,
+    };
+  }
+
+  /**
+   * Extract album name from B2B folder name.
+   * e.g. "Yin and Yang_Jan_30_2026" → "Yin and Yang"
+   * e.g. "BLACK CHRISTMAS" → "BLACK CHRISTMAS"
+   */
+  private extractAlbumName(folderName: string): string {
+    // Try to match pattern: AlbumName_Month_Day_Year
+    const datePattern = /^(.+?)_(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)_\d{1,2}_\d{4}$/i;
+    const match = folderName.match(datePattern);
+    if (match) return match[1].trim();
+
+    // Try pattern: AlbumName_YYYY-MM-DD or AlbumName_YYYYMMDD
+    const isoPattern = /^(.+?)_\d{4}[-]?\d{2}[-]?\d{2}$/;
+    const isoMatch = folderName.match(isoPattern);
+    if (isoMatch) return isoMatch[1].trim();
+
+    return folderName.trim();
+  }
+
+  /**
+   * Find a matching submission by album name + label.
+   * Uses fuzzy matching (case-insensitive, trimmed).
+   */
+  private findSubmissionMatch(
+    subs: { id: string; albumName: string; labelName: string; upc: string; releaseDate: string; files: any }[],
+    albumName: string,
+    labelName: string,
+  ) {
+    const normalizedAlbum = albumName.toLowerCase().replace(/\s+/g, ' ').trim();
+    const normalizedLabel = labelName.toLowerCase().replace(/\s+/g, ' ').trim();
+
+    return subs.find((s) => {
+      const sAlbum = s.albumName.toLowerCase().replace(/\s+/g, ' ').trim();
+      const sLabel = s.labelName.toLowerCase().replace(/\s+/g, ' ').trim();
+
+      // Exact label match + album match (or album contains or is contained)
+      const labelMatch = sLabel === normalizedLabel ||
+        sLabel.includes(normalizedLabel) ||
+        normalizedLabel.includes(sLabel);
+
+      const albumMatch = sAlbum === normalizedAlbum ||
+        sAlbum.includes(normalizedAlbum) ||
+        normalizedAlbum.includes(sAlbum);
+
+      return labelMatch && albumMatch;
+    });
+  }
+
+  /**
+   * Format release date to YYYY-MM-DD.
+   */
+  private formatReleaseDate(dateStr: string): string {
+    if (!dateStr) return 'unknown';
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return 'unknown';
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    } catch {
+      return 'unknown';
+    }
+  }
+
+  /**
+   * Classify a file into the appropriate subfolder based on its path/name.
+   */
+  private classifyFile(relativePath: string, fileName: string): string {
+    const lower = relativePath.toLowerCase();
+    const nameLower = fileName.toLowerCase();
+
+    if (lower.includes('/cover art/') || lower.includes('/cover/') || lower.includes('/artwork/')) {
+      return 'Cover Art';
+    }
+    if (lower.includes('/music/') || lower.includes('/audio/') || lower.includes('/tracks/')) {
+      return 'Music';
+    }
+    if (lower.includes('/lyrics/')) {
+      return 'Lyrics';
+    }
+    if (lower.includes('/marketing/') || lower.includes('/promo/')) {
+      return 'Marketing';
+    }
+
+    // Classify by file extension
+    const ext = nameLower.split('.').pop() || '';
+    if (['jpg', 'jpeg', 'png', 'tiff', 'tif', 'bmp', 'psd'].includes(ext)) {
+      return 'Cover Art';
+    }
+    if (['wav', 'mp3', 'flac', 'aiff', 'aif', 'm4a', 'ogg'].includes(ext)) {
+      return 'Music';
+    }
+    if (['mp4', 'mov', 'avi', 'mkv'].includes(ext)) {
+      return 'Marketing';
+    }
+    if (['txt', 'pdf', 'doc', 'docx', 'lrc'].includes(ext)) {
+      return 'Lyrics';
+    }
+
+    return 'Marketing'; // Default
+  }
+
+  /**
+   * Check if a file is a cover art image.
+   */
+  private isCoverArtFile(fileName: string): boolean {
+    const ext = fileName.toLowerCase().split('.').pop() || '';
+    return ['jpg', 'jpeg', 'png', 'tiff', 'tif'].includes(ext);
   }
 }

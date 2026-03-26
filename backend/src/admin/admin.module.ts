@@ -5,9 +5,10 @@ import { AdminAccountsController } from './admin-accounts.controller';
 import { PrismaModule } from '../prisma/prisma.module';
 import { SubmissionsModule } from '../submissions/submissions.module';
 import { UsersModule } from '../users/users.module';
+import { DropboxModule } from '../dropbox/dropbox.module';
 
 @Module({
-  imports: [PrismaModule, SubmissionsModule, UsersModule],
+  imports: [PrismaModule, SubmissionsModule, UsersModule, DropboxModule],
   controllers: [AdminController, AdminAccountsController],
   providers: [AdminService],
 })

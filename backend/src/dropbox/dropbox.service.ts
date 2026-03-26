@@ -145,6 +145,101 @@ export class DropboxService {
   }
 
   /**
+   * Copy a file or folder within Dropbox
+   */
+  async copyItem(fromPath: string, toPath: string): Promise<string> {
+    try {
+      const response = await this.dbx.filesCopyV2({
+        from_path: fromPath,
+        to_path: toPath,
+        autorename: false,
+      });
+      return response.result.metadata.path_display!;
+    } catch (error: any) {
+      // If destination already exists, skip
+      if (error?.error?.error?.['.tag'] === 'to' &&
+          error?.error?.error?.to?.['.tag'] === 'conflict') {
+        return toPath;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Create a folder (no-op if exists)
+   */
+  async createFolder(path: string): Promise<void> {
+    try {
+      await this.dbx.filesCreateFolderV2({ path, autorename: false });
+    } catch (error: any) {
+      // Ignore if folder already exists
+      if (error?.error?.error?.['.tag'] === 'path' &&
+          error?.error?.error?.path?.['.tag'] === 'conflict') {
+        return;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * List all entries in a folder recursively
+   */
+  async listFolderRecursive(folderPath: string): Promise<any[]> {
+    try {
+      const entries: any[] = [];
+      let response = await this.dbx.filesListFolder({
+        path: folderPath,
+        recursive: true,
+        include_deleted: false,
+      });
+      entries.push(...response.result.entries);
+      while (response.result.has_more) {
+        response = await this.dbx.filesListFolderContinue({
+          cursor: response.result.cursor,
+        });
+        entries.push(...response.result.entries);
+      }
+      return entries;
+    } catch (error) {
+      console.error('Error listing folder recursively:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get or create a shared link for a file
+   */
+  async getOrCreateSharedLink(path: string): Promise<string> {
+    try {
+      const response = await this.dbx.sharingCreateSharedLinkWithSettings({ path });
+      return response.result.url;
+    } catch (error: any) {
+      if (error?.error?.error?.['.tag'] === 'shared_link_already_exists') {
+        const existing = await this.dbx.sharingListSharedLinks({ path });
+        if (existing.result.links.length > 0) {
+          return existing.result.links[0].url;
+        }
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a folder and all contents
+   */
+  async deleteFolder(path: string): Promise<void> {
+    try {
+      await this.dbx.filesDeleteV2({ path });
+    } catch (error: any) {
+      if (error?.error?.error?.['.tag'] === 'path_lookup' &&
+          error?.error?.error?.path_lookup?.['.tag'] === 'not_found') {
+        return; // Already deleted
+      }
+      throw error;
+    }
+  }
+
+  /**
    * Check if access token is valid
    */
   isConfigured(): boolean {
