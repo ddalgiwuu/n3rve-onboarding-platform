@@ -42,6 +42,9 @@ export class CatalogService {
           const linked = await this.autoLinkSubmission(product.upc, BigInt(product.id));
           if (linked) results.linked++;
         }
+
+        // Sync artists/contributors to the submitter's SavedArtist/SavedContributor
+        await this.syncArtistsToSavedArtists(product);
       } catch (error) {
         results.errors.push(`Product ${product.id}: ${error.message}`);
       }
@@ -1055,6 +1058,150 @@ export class CatalogService {
       } catch (error) {
         console.warn(`Failed to upsert artist ${artist.id}: ${error.message}`);
       }
+    }
+  }
+
+  /**
+   * Sync artists/contributors from a catalog product to the submitter's SavedArtist/SavedContributor.
+   * This bridges the gap between CatalogArtist (global) and SavedArtist (per-user).
+   */
+  private async syncArtistsToSavedArtists(product: any) {
+    try {
+      // Find the linked submission to get the submitter (user)
+      const catalogProduct = await this.prisma.catalogProduct.findUnique({
+        where: { fugaId: BigInt(product.id) },
+        select: { submissionId: true },
+      });
+
+      if (!catalogProduct?.submissionId) return;
+
+      const submission = await this.prisma.submission.findUnique({
+        where: { id: catalogProduct.submissionId },
+        select: { submitterId: true },
+      });
+
+      if (!submission?.submitterId) return;
+
+      const userId = submission.submitterId;
+
+      // Collect all artists and contributors from product + assets
+      const artists: { name: string; spotifyUrl?: string; appleMusicUrl?: string }[] = [];
+      const contributors: { name: string; role?: string }[] = [];
+
+      for (const a of product.artists || []) {
+        artists.push({
+          name: a.name,
+          spotifyUrl: a.spotify_url && a.spotify_url !== '없음' ? a.spotify_url : undefined,
+          appleMusicUrl: a.apple_music_url && a.apple_music_url !== '없음' ? a.apple_music_url : undefined,
+        });
+      }
+
+      for (const asset of product.assets || []) {
+        for (const a of asset.artists || []) {
+          if (!artists.find((x) => x.name === a.name)) {
+            artists.push({
+              name: a.name,
+              spotifyUrl: a.spotify_url && a.spotify_url !== '없음' ? a.spotify_url : undefined,
+              appleMusicUrl: a.apple_music_url && a.apple_music_url !== '없음' ? a.apple_music_url : undefined,
+            });
+          }
+        }
+        for (const c of asset.contributors || []) {
+          if (!contributors.find((x) => x.name === c.name)) {
+            contributors.push({ name: c.name, role: c.role });
+          }
+        }
+      }
+
+      // Upsert SavedArtists
+      for (const artist of artists) {
+        try {
+          const existing = await this.prisma.savedArtist.findFirst({
+            where: { userId, name: artist.name },
+          });
+
+          if (!existing) {
+            const identifiers: any[] = [];
+            if (artist.spotifyUrl) {
+              identifiers.push({ type: 'SPOTIFY', value: this.extractSpotifyId(artist.spotifyUrl) || '', url: artist.spotifyUrl });
+            }
+            if (artist.appleMusicUrl) {
+              identifiers.push({ type: 'APPLE_MUSIC', value: this.extractAppleMusicId(artist.appleMusicUrl) || '', url: artist.appleMusicUrl });
+            }
+
+            await this.prisma.savedArtist.create({
+              data: {
+                userId,
+                name: artist.name,
+                identifiers,
+                translations: [],
+                completionScore: BigInt(0),
+                releaseCount: BigInt(1),
+                usageCount: BigInt(1),
+                status: 'ACTIVE',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                lastUsed: new Date(),
+              },
+            });
+          } else {
+            // Bump release count
+            await this.prisma.savedArtist.update({
+              where: { id: existing.id },
+              data: {
+                releaseCount: { increment: 1 },
+                lastUsed: new Date(),
+                updatedAt: new Date(),
+              },
+            });
+          }
+        } catch (err) {
+          console.warn(`Failed to sync SavedArtist "${artist.name}": ${err.message}`);
+        }
+      }
+
+      // Upsert SavedContributors
+      for (const contributor of contributors) {
+        try {
+          const existing = await this.prisma.savedContributor.findFirst({
+            where: { userId, name: contributor.name },
+          });
+
+          if (!existing) {
+            await this.prisma.savedContributor.create({
+              data: {
+                userId,
+                name: contributor.name,
+                roles: contributor.role ? [contributor.role] : [],
+                instruments: [],
+                translations: [],
+                identifiers: [],
+                createdAt: new Date(),
+                lastUsed: new Date(),
+                usageCount: BigInt(1),
+              },
+            });
+          } else {
+            // Merge roles
+            const mergedRoles = contributor.role
+              ? [...new Set([...existing.roles, contributor.role])]
+              : existing.roles;
+
+            await this.prisma.savedContributor.update({
+              where: { id: existing.id },
+              data: {
+                roles: { set: mergedRoles },
+                usageCount: { increment: 1 },
+                lastUsed: new Date(),
+              },
+            });
+          }
+        } catch (err) {
+          console.warn(`Failed to sync SavedContributor "${contributor.name}": ${err.message}`);
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to sync artists to saved artists for product ${product.id}: ${error.message}`);
     }
   }
 
