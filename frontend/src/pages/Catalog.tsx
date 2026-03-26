@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Search, Music, Users, Disc3, Building2, Link2, Unlink } from 'lucide-react';
+import { Search, Music, Users, Disc3, Building2, Link2, Unlink, LayoutGrid, List } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
 import type { CatalogProduct } from '../types/catalog';
@@ -46,6 +46,7 @@ export default function CatalogPage() {
   const [stateFilter, setStateFilter] = useState('');
   const [labelFilter, setLabelFilter] = useState('');
   const [formatFilter, setFormatFilter] = useState('');
+  const [viewMode, setViewMode] = useState<'table' | 'tile'>('table');
   const [page, setPage] = useState(1);
 
   const { data: stats } = useQuery({
@@ -118,58 +119,115 @@ export default function CatalogPage() {
           <option value="EP">EP</option>
           <option value="ALBUM">Album</option>
         </select>
+        <div className="flex gap-1 rounded-lg border border-zinc-200 p-0.5 dark:border-zinc-700">
+          <button
+            className={`rounded-md p-1.5 ${viewMode === 'table' ? 'bg-zinc-200 dark:bg-zinc-600' : 'hover:bg-zinc-100 dark:hover:bg-zinc-700'}`}
+            onClick={() => setViewMode('table')}
+            title="테이블 뷰"
+          >
+            <List className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
+          </button>
+          <button
+            className={`rounded-md p-1.5 ${viewMode === 'tile' ? 'bg-zinc-200 dark:bg-zinc-600' : 'hover:bg-zinc-100 dark:hover:bg-zinc-700'}`}
+            onClick={() => setViewMode('tile')}
+            title="타일 뷰"
+          >
+            <LayoutGrid className="h-4 w-4 text-zinc-600 dark:text-zinc-300" />
+          </button>
+        </div>
       </div>
 
-      {/* Products Table */}
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
-        <table className="w-full text-sm">
-          <thead className="bg-zinc-50 dark:bg-zinc-800">
-            <tr>
-              <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">앨범</th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">아티스트</th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">UPC</th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">포맷</th>
-              <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">상태</th>
-              <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-300">트랙</th>
-              <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-300">연결</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-zinc-100 dark:divide-zinc-700">
-            {isLoading ? (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-zinc-400">불러오는 중...</td></tr>
-            ) : productsData?.data?.length === 0 ? (
-              <tr><td colSpan={7} className="px-4 py-8 text-center text-zinc-400">결과 없음</td></tr>
-            ) : (
-              productsData?.data?.map((product: CatalogProduct) => (
-                <tr
-                  key={product.id}
-                  className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-                  onClick={() => navigate(`/catalog/${product.id}`)}
-                >
-                  <td className="px-4 py-3">
-                    <div className="font-medium text-zinc-900 dark:text-white">{product.name}</div>
+      {/* Products Table / Tile View */}
+      {viewMode === 'tile' ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {isLoading ? (
+            <p className="col-span-full text-center text-zinc-400 py-8">불러오는 중...</p>
+          ) : productsData?.data?.length === 0 ? (
+            <p className="col-span-full text-center text-zinc-400 py-8">결과 없음</p>
+          ) : (
+            productsData?.data?.map((product: CatalogProduct) => (
+              <div
+                key={product.id}
+                className="cursor-pointer rounded-lg border border-zinc-200 bg-white p-4 transition-shadow hover:shadow-md dark:border-zinc-700 dark:bg-zinc-800"
+                onClick={() => navigate(`/catalog/${product.id}`)}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium text-zinc-900 dark:text-white">{product.name}</p>
                     {product.releaseVersion && (
-                      <div className="text-xs text-zinc-400">{product.releaseVersion}</div>
+                      <p className="text-xs text-zinc-400">{product.releaseVersion}</p>
                     )}
-                  </td>
-                  <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{product.displayArtist}</td>
-                  <td className="px-4 py-3 font-mono text-xs text-zinc-500">{product.upc}</td>
-                  <td className="px-4 py-3"><FormatTag format={product.releaseFormatType} /></td>
-                  <td className="px-4 py-3"><StateTag state={product.state} /></td>
-                  <td className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-300">{product._count?.assets || '-'}</td>
-                  <td className="px-4 py-3 text-center">
-                    {product.submissionId ? (
-                      <span className="text-green-500" title="Submission 연결됨">&#x2713;</span>
-                    ) : (
-                      <span className="text-zinc-300 dark:text-zinc-600" title="미연결">&#x2717;</span>
-                    )}
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+                  </div>
+                  <StateTag state={product.state} />
+                </div>
+                <p className="mt-1 truncate text-sm text-zinc-500 dark:text-zinc-400">{product.displayArtist}</p>
+                <div className="mt-3 flex items-center justify-between text-xs text-zinc-400">
+                  <div className="flex items-center gap-2">
+                    <FormatTag format={product.releaseFormatType} />
+                    <span>{product._count?.assets || 0} 트랙</span>
+                  </div>
+                  {product.submissionId ? (
+                    <span className="text-green-500">&#x2713; 연결됨</span>
+                  ) : (
+                    <span className="text-zinc-300 dark:text-zinc-600">미연결</span>
+                  )}
+                </div>
+                <div className="mt-2 font-mono text-xs text-zinc-400">{product.upc}</div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
+          <table className="w-full text-sm">
+            <thead className="bg-zinc-50 dark:bg-zinc-800">
+              <tr>
+                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">앨범</th>
+                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">아티스트</th>
+                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">UPC</th>
+                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">포맷</th>
+                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">상태</th>
+                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-300">트랙</th>
+                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-300">연결</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-zinc-100 dark:divide-zinc-700">
+              {isLoading ? (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-zinc-400">불러오는 중...</td></tr>
+              ) : productsData?.data?.length === 0 ? (
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-zinc-400">결과 없음</td></tr>
+              ) : (
+                productsData?.data?.map((product: CatalogProduct) => (
+                  <tr
+                    key={product.id}
+                    className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    onClick={() => navigate(`/catalog/${product.id}`)}
+                  >
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-zinc-900 dark:text-white">{product.name}</div>
+                      {product.releaseVersion && (
+                        <div className="text-xs text-zinc-400">{product.releaseVersion}</div>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{product.displayArtist}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-zinc-500">{product.upc}</td>
+                    <td className="px-4 py-3"><FormatTag format={product.releaseFormatType} /></td>
+                    <td className="px-4 py-3"><StateTag state={product.state} /></td>
+                    <td className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-300">{product._count?.assets || '-'}</td>
+                    <td className="px-4 py-3 text-center">
+                      {product.submissionId ? (
+                        <span className="text-green-500" title="Submission 연결됨">&#x2713;</span>
+                      ) : (
+                        <span className="text-zinc-300 dark:text-zinc-600" title="미연결">&#x2717;</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* Pagination */}
       {productsData && productsData.totalPages > 1 && (
