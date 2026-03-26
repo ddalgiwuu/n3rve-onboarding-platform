@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardList, Users, CheckCircle, XCircle, Music, Download, Search, Filter, Clock, Settings, ShieldAlert } from 'lucide-react';
+import { ClipboardList, Users, CheckCircle, XCircle, Music, Download, Search, Filter, Clock, Settings, ShieldAlert, Disc3 } from 'lucide-react';
 import { submissionService } from '@/services/submission.service';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -18,6 +18,7 @@ export default function AdminDashboard() {
     pendingReview: 0,
     approved: 0,
     rejected: 0,
+    released: 0,
     totalCustomers: 0
   });
   const [recentSubmissions, setRecentSubmissions] = useState<any[]>([]);
@@ -94,7 +95,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* 통계 카드 */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6 mb-8">
           <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
             <div className="flex items-center justify-between">
               <div>
@@ -139,6 +140,18 @@ export default function AdminDashboard() {
               </div>
               <div className="p-2 md:p-3 bg-red-500/20 rounded-lg">
                 <XCircle className="w-6 h-6 md:w-8 md:h-8 text-red-400" />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-white/10 backdrop-blur-sm dark:backdrop-blur-md rounded-xl p-4 md:p-6 border border-gray-200 dark:border-white/20 shadow-xl">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">발매됨</p>
+                <p className="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.released}</p>
+              </div>
+              <div className="p-2 md:p-3 bg-purple-500/20 rounded-lg">
+                <Disc3 className="w-6 h-6 md:w-8 md:h-8 text-purple-400" />
               </div>
             </div>
           </div>
