@@ -193,6 +193,28 @@ export class CatalogService {
     };
   }
 
+  async updateArtist(id: string, data: any) {
+    const allowedFields = [
+      'name', 'type', 'biography', 'countryOfOrigin', 'genres', 'subgenres',
+      'labels', 'contactDetails', 'bookingAgent', 'roles', 'spotifyUrl',
+      'spotifyId', 'appleMusicUrl', 'appleMusicId', 'isni', 'ipi', 'ipn',
+      'youtubeOac', 'translations', 'customIdentifiers', 'spotifyDjMixesOptIn',
+    ];
+    const updateData: any = {};
+    for (const key of allowedFields) {
+      if (data[key] !== undefined) updateData[key] = data[key];
+    }
+    updateData.updatedAt = new Date();
+
+    const artist = await this.prisma.catalogArtist.update({ where: { id }, data: updateData });
+    return this.serializeArtist(artist);
+  }
+
+  async deleteArtist(id: string) {
+    await this.prisma.catalogArtist.delete({ where: { id } });
+    return { deleted: true };
+  }
+
   async findArtistById(id: string) {
     const artist = await this.prisma.catalogArtist.findUnique({ where: { id } });
     if (!artist) throw new NotFoundException('Artist not found');
