@@ -133,6 +133,18 @@ export class AdminController {
     return this.adminService.markCatalogSubmissionsReleased();
   }
 
+  @Get('submissions/sync-diagnostic')
+  @Public()
+  async syncDiagnostic() {
+    return this.adminService.diagnoseSyncMismatches();
+  }
+
+  @Post('submissions/auto-sync-fix')
+  @Public()
+  async autoSyncFix() {
+    return this.adminService.autoFixSyncMismatches();
+  }
+
   @Post('submissions/auto-map-labels')
   async autoMapLabels(@CurrentUser() user: any) {
     if (user.role !== 'ADMIN') throw new ForbiddenException();

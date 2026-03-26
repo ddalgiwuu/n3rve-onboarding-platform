@@ -340,6 +340,96 @@ export class AdminService {
     };
   }
 
+  async diagnoseSyncMismatches() {
+    // Get all catalog products
+    const catalogProducts = await this.prisma.catalogProduct.findMany({
+      select: { id: true, upc: true, name: true, fugaId: true, submissionId: true },
+    });
+    const catalogByUpc = new Map(catalogProducts.map(cp => [cp.upc, cp]));
+
+    // Get all submissions
+    const submissions = await this.prisma.submission.findMany({
+      select: { id: true, albumTitle: true, artistName: true, release: true, catalogProductId: true },
+    });
+
+    const submissionOnly: any[] = [];
+    const catalogOnly: any[] = [];
+    const matched: any[] = [];
+
+    const submissionUpcs = new Set<string>();
+    for (const sub of submissions) {
+      const upc = (sub.release as any)?.upc;
+      submissionUpcs.add(upc);
+      const cp = upc ? catalogByUpc.get(upc) : null;
+      if (cp) {
+        matched.push({ submissionId: sub.id, catalogId: cp.id, upc, album: sub.albumTitle, linked: !!cp.submissionId });
+      } else {
+        submissionOnly.push({ id: sub.id, album: sub.albumTitle, artist: sub.artistName, upc: upc || 'NO_UPC', catalogProductId: sub.catalogProductId });
+      }
+    }
+
+    for (const cp of catalogProducts) {
+      if (!submissionUpcs.has(cp.upc)) {
+        catalogOnly.push({ id: cp.id, name: cp.name, upc: cp.upc, fugaId: cp.fugaId?.toString() });
+      }
+    }
+
+    return {
+      matched: matched.length,
+      submissionOnly: submissionOnly.length,
+      catalogOnly: catalogOnly.length,
+      submissionOnlyDetails: submissionOnly,
+      catalogOnlyDetails: catalogOnly,
+      // Show unlinked matched (UPC matches but not linked via submissionId)
+      unlinkedMatched: matched.filter(m => !m.linked),
+    };
+  }
+
+  async autoFixSyncMismatches() {
+    // Get all catalog products
+    const catalogProducts = await this.prisma.catalogProduct.findMany({
+      select: { id: true, upc: true, fugaId: true, submissionId: true },
+    });
+    const catalogByUpc = new Map(catalogProducts.map(cp => [cp.upc, cp]));
+
+    // Get all submissions
+    const submissions = await this.prisma.submission.findMany({
+      select: { id: true, release: true, catalogProductId: true },
+    });
+
+    let linked = 0;
+    const errors: string[] = [];
+
+    for (const sub of submissions) {
+      const upc = (sub.release as any)?.upc;
+      if (!upc) continue;
+
+      const cp = catalogByUpc.get(upc);
+      if (!cp) continue;
+
+      // Link if not already linked
+      try {
+        if (!cp.submissionId || cp.submissionId !== sub.id) {
+          await this.prisma.catalogProduct.update({
+            where: { id: cp.id },
+            data: { submissionId: sub.id },
+          });
+        }
+        if (!sub.catalogProductId || sub.catalogProductId !== cp.id) {
+          await this.prisma.submission.update({
+            where: { id: sub.id },
+            data: { catalogProductId: cp.id, fugaSyncStatus: 'SYNCED' },
+          });
+        }
+        linked++;
+      } catch (err: any) {
+        errors.push(`${upc}: ${err.message}`);
+      }
+    }
+
+    return { linked, errors: errors.length, errorDetails: errors };
+  }
+
   async getSubmissionById(submissionId: string) {
     const submission = await this.prisma.submission.findUnique({
       where: { id: submissionId },
