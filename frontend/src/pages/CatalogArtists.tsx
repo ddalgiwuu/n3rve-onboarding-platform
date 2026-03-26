@@ -183,21 +183,16 @@ export default function CatalogArtistsPage() {
                     </div>
                   )}
 
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-3 mt-4">
-                    <div className="p-3 bg-white/5 rounded-lg">
-                      <p className="text-lg font-bold text-white">
-                        {artist.genres?.length || 0}
-                      </p>
-                      <p className="text-xs text-gray-400">Genres</p>
+                  {/* Labels */}
+                  {artist.labels?.length > 0 && (
+                    <div className="mt-3 flex flex-wrap gap-1">
+                      {artist.labels.map((label: string) => (
+                        <span key={label} className="rounded-full bg-purple-500/20 border border-purple-500/30 px-2.5 py-0.5 text-xs text-purple-300">
+                          {label}
+                        </span>
+                      ))}
                     </div>
-                    <div className="p-3 bg-white/5 rounded-lg">
-                      <p className="text-lg font-bold text-purple-400">
-                        {artist.labels?.length || 0}
-                      </p>
-                      <p className="text-xs text-gray-400">Labels</p>
-                    </div>
-                  </div>
+                  )}
 
                   {/* Detail button */}
                   <div className="mt-4 flex gap-2">
