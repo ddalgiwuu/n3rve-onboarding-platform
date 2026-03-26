@@ -263,6 +263,331 @@ export class CatalogService {
     };
   }
 
+  async findUnifiedProducts(params: {
+    search?: string;
+    state?: string;
+    label?: string;
+    format?: string;
+    source?: string; // 'all' | 'both' | 'submission' | 'catalog'
+    page?: number;
+    limit?: number;
+  }) {
+    const { search, state, label, format, source = 'all', page = 1, limit = 20 } = params;
+
+    // Get all catalog products
+    const catalogProducts = await this.prisma.catalogProduct.findMany({
+      include: {
+        assets: { orderBy: { sequence: 'asc' } },
+        submission: true,
+      },
+    });
+
+    // Get all submissions
+    const allSubmissions = await this.prisma.submission.findMany({
+      select: {
+        id: true,
+        albumTitle: true,
+        albumTitleEn: true,
+        albumType: true,
+        artistName: true,
+        artistNameEn: true,
+        labelName: true,
+        genre: true,
+        albumGenre: true,
+        albumSubgenre: true,
+        releaseDate: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        biography: true,
+        socialLinks: true,
+        artistType: true,
+        spotifyId: true,
+        appleMusicId: true,
+        youtubeChannelId: true,
+        albumTranslations: true,
+        albumDescription: true,
+        albumVersion: true,
+        releaseVersion: true,
+        displayArtist: true,
+        explicitContent: true,
+        albumContributors: true,
+        albumFeaturingArtists: true,
+        totalVolumes: true,
+        albumNote: true,
+        marketing: true,
+        adminNotes: true,
+        reviewedBy: true,
+        reviewedAt: true,
+        submitterName: true,
+        submitterEmail: true,
+        tracks: true,
+        files: true,
+        release: true,
+        catalogProductId: true,
+        fugaSyncStatus: true,
+      },
+    });
+
+    // Build UPC-keyed maps
+    const catalogByUpc = new Map<string, any>();
+    for (const cp of catalogProducts) {
+      catalogByUpc.set(cp.upc, cp);
+    }
+
+    const submissionByUpc = new Map<string, any>();
+    for (const sub of allSubmissions) {
+      const upc = (sub.release as any)?.upc;
+      if (upc) submissionByUpc.set(upc, sub);
+    }
+
+    // Merge
+    const allUpcs = new Set([...catalogByUpc.keys(), ...submissionByUpc.keys()]);
+    let unified: any[] = [];
+
+    for (const upc of allUpcs) {
+      const catalog = catalogByUpc.get(upc);
+      const submission = submissionByUpc.get(upc);
+      const itemSource = catalog && submission ? 'both' : catalog ? 'catalog' : 'submission';
+
+      const item: any = {
+        // Identity
+        upc,
+        source: itemSource,
+        catalogProductId: catalog?.id || null,
+        submissionId: submission?.id || null,
+
+        // === Album level (prefer catalog for FUGA data, submission for user-submitted data) ===
+        name: catalog?.name || submission?.albumTitle || '',
+        nameEn: submission?.albumTitleEn || '',
+        displayArtist: catalog?.displayArtist || submission?.displayArtist || submission?.artistName || '',
+        artistName: submission?.artistName || catalog?.displayArtist || '',
+        artistNameEn: submission?.artistNameEn || '',
+        label: catalog?.label || submission?.labelName || '',
+        albumType: catalog?.releaseFormatType || submission?.albumType || '',
+        state: catalog?.state || null, // FUGA delivery state
+        submissionStatus: submission?.status || null,
+
+        // Dates
+        consumerReleaseDate: catalog?.consumerReleaseDate || null,
+        originalReleaseDate: catalog?.originalReleaseDate || null,
+        releaseDate: submission?.releaseDate || null,
+        addedDate: catalog?.addedDate || null,
+        createdAt: submission?.createdAt || catalog?.createdAt || null,
+
+        // Genre
+        genre: catalog?.genre || submission?.albumGenre || submission?.genre || null,
+        subgenre: catalog?.subgenre || submission?.albumSubgenre || null,
+        language: catalog?.language || null,
+
+        // Copyright
+        cLineText: catalog?.cLineText || null,
+        pLineText: catalog?.pLineText || null,
+        catalogNumber: catalog?.catalogNumber || null,
+        releaseVersion: catalog?.releaseVersion || submission?.releaseVersion || submission?.albumVersion || '',
+        parentalAdvisory: catalog?.parentalAdvisory || false,
+
+        // FUGA-only
+        fugaId: catalog?.fugaId?.toString() || null,
+        labelId: catalog?.labelId?.toString() || null,
+        productType: catalog?.productType || null,
+        suborg: catalog?.suborg || [],
+        syncedAt: catalog?.syncedAt || null,
+
+        // Submission-only (album-level rich data)
+        albumDescription: submission?.albumDescription || null,
+        biography: submission?.biography || null,
+        socialLinks: submission?.socialLinks || null,
+        artistType: submission?.artistType || null,
+        spotifyId: submission?.spotifyId || null,
+        appleMusicId: submission?.appleMusicId || null,
+        youtubeChannelId: submission?.youtubeChannelId || null,
+        albumTranslations: submission?.albumTranslations || null,
+        albumContributors: submission?.albumContributors || null,
+        albumFeaturingArtists: submission?.albumFeaturingArtists || null,
+        totalVolumes: submission?.totalVolumes || null,
+        albumNote: submission?.albumNote || null,
+        explicitContent: submission?.explicitContent || false,
+        marketing: submission?.marketing || null,
+        adminNotes: submission?.adminNotes || null,
+        submitterName: submission?.submitterName || null,
+        submitterEmail: submission?.submitterEmail || null,
+        reviewedBy: submission?.reviewedBy || null,
+        reviewedAt: submission?.reviewedAt || null,
+
+        // Release details from submission
+        release: submission?.release || null,
+
+        // Files from submission
+        coverImageUrl: (submission?.files as any)?.coverImageUrl || null,
+        artistPhotoUrl: (submission?.files as any)?.artistPhotoUrl || null,
+
+        // Artists (catalog has DSP URLs)
+        artists: catalog?.artists?.map((a: any) => ({
+          ...a,
+          fugaId: a.fugaId?.toString(),
+        })) || [],
+
+        // Assets/tracks — merge catalog assets (rich FUGA data) with submission tracks
+        assets: this.mergeTracksAndAssets(
+          catalog?.assets || [],
+          (submission?.tracks as any[]) || []
+        ),
+
+        // Track count
+        trackCount: (catalog?.assets?.length || 0) || ((submission?.tracks as any[])?.length || 0),
+      };
+
+      unified.push(item);
+    }
+
+    // Apply filters
+    if (search) {
+      const q = search.toLowerCase();
+      unified = unified.filter(item =>
+        item.name.toLowerCase().includes(q) ||
+        item.displayArtist.toLowerCase().includes(q) ||
+        item.upc.includes(q) ||
+        item.artistName.toLowerCase().includes(q)
+      );
+    }
+    if (state) unified = unified.filter(item => item.state === state);
+    if (label) unified = unified.filter(item => item.label === label);
+    if (format) unified = unified.filter(item => item.albumType?.toUpperCase() === format);
+    if (source && source !== 'all') unified = unified.filter(item => item.source === source);
+
+    // Sort by date (newest first)
+    unified.sort((a, b) => {
+      const dateA = new Date(a.consumerReleaseDate || a.releaseDate || a.createdAt || 0).getTime();
+      const dateB = new Date(b.consumerReleaseDate || b.releaseDate || b.createdAt || 0).getTime();
+      return dateB - dateA;
+    });
+
+    const total = unified.length;
+    const skip = (page - 1) * limit;
+    const data = unified.slice(skip, skip + limit);
+
+    return {
+      data,
+      total,
+      page,
+      totalPages: Math.ceil(total / limit),
+      stats: {
+        total: unified.length,
+        both: unified.filter(i => i.source === 'both').length,
+        catalogOnly: unified.filter(i => i.source === 'catalog').length,
+        submissionOnly: unified.filter(i => i.source === 'submission').length,
+      },
+    };
+  }
+
+  private mergeTracksAndAssets(assets: any[], tracks: any[]): any[] {
+    // If we have catalog assets, they have richer FUGA data — enrich with submission track data
+    if (assets.length > 0) {
+      return assets.map((asset: any) => {
+        // Try to match by ISRC or by sequence/track number
+        const matchedTrack = tracks.find((t: any) =>
+          (t.isrc && t.isrc === asset.isrc) ||
+          (t.trackNumber && t.trackNumber === asset.sequence)
+        );
+
+        return {
+          // Asset (FUGA) data
+          id: asset.id,
+          fugaId: asset.fugaId?.toString(),
+          isrc: asset.isrc,
+          name: asset.name,
+          displayArtist: asset.displayArtist,
+          version: asset.version,
+          duration: asset.duration,
+          sequence: asset.sequence,
+          genre: asset.genre,
+          subgenre: asset.subgenre,
+          alternateGenre: asset.alternateGenre,
+          alternateSubgenre: asset.alternateSubgenre,
+          language: asset.language,
+          audioLocale: asset.audioLocale,
+          assetVersion: asset.assetVersion,
+          versionTypes: asset.versionTypes,
+          hasLyrics: asset.hasLyrics,
+          lyrics: asset.lyrics || matchedTrack?.lyrics || null,
+          pLineYear: asset.pLineYear,
+          pLineText: asset.pLineText,
+          parentalAdvisory: asset.parentalAdvisory,
+          rightsClaim: asset.rightsClaim,
+          rightsHolderName: asset.rightsHolderName,
+          recordingYear: asset.recordingYear,
+          recordingLocation: asset.recordingLocation,
+          countryOfRecording: asset.countryOfRecording,
+          assetCatalogTier: asset.assetCatalogTier,
+          audio: asset.audio,
+          originalEncodings: asset.originalEncodings,
+          artists: asset.artists?.map((a: any) => ({ ...a, fugaId: a.fugaId?.toString() })),
+          contributors: asset.contributors?.map((c: any) => ({ ...c, personId: c.personId?.toString() })),
+          publishers: asset.publishers,
+          // Enriched from submission track
+          titleKo: matchedTrack?.titleKo || null,
+          titleEn: matchedTrack?.titleEn || asset.name,
+          composer: matchedTrack?.composer || null,
+          lyricist: matchedTrack?.lyricist || null,
+          arranger: matchedTrack?.arranger || null,
+          producer: matchedTrack?.producer || null,
+          mixer: matchedTrack?.mixer || null,
+          masterer: matchedTrack?.masterer || null,
+          dolbyAtmos: matchedTrack?.dolbyAtmos || false,
+          sampleRate: matchedTrack?.sampleRate || null,
+          bitDepth: matchedTrack?.bitDepth || null,
+          audioFormat: matchedTrack?.audioFormat || null,
+          previewStart: matchedTrack?.previewStart || null,
+          previewEnd: matchedTrack?.previewEnd || null,
+          explicitContent: asset.parentalAdvisory || matchedTrack?.explicitContent || false,
+          source: 'catalog',
+        };
+      });
+    }
+
+    // If only submission tracks exist
+    return tracks.map((track: any) => ({
+      id: track.id,
+      isrc: track.isrc,
+      name: track.titleKo || track.titleEn || '',
+      titleKo: track.titleKo,
+      titleEn: track.titleEn,
+      displayArtist: track.displayArtist || '',
+      version: track.trackVersion || '',
+      duration: track.duration ? parseInt(track.duration) || null : null,
+      sequence: track.trackNumber,
+      genre: track.genre ? { id: '', name: track.genre } : null,
+      subgenre: track.subgenre ? { id: '', name: track.subgenre } : null,
+      language: track.language,
+      hasLyrics: !!track.lyrics,
+      lyrics: track.lyrics,
+      parentalAdvisory: track.explicitContent || false,
+      explicitContent: track.explicitContent || false,
+      artists: track.artists || [],
+      contributors: (track.contributors || []).map((c: any) => ({
+        name: c.name || c.nameEn,
+        role: (c.roles || [])[0] || '',
+        roles: c.roles || [],
+      })),
+      publishers: track.publishers || [],
+      composer: track.composer,
+      lyricist: track.lyricist,
+      arranger: track.arranger,
+      producer: track.producer,
+      mixer: track.mixer,
+      masterer: track.masterer,
+      dolbyAtmos: track.dolbyAtmos,
+      sampleRate: track.sampleRate,
+      bitDepth: track.bitDepth,
+      audioFormat: track.audioFormat,
+      previewStart: track.previewStart,
+      previewEnd: track.previewEnd,
+      versionTypes: track.versionType ? [{ id: track.versionType, name: track.versionType }] : [],
+      source: 'submission',
+    }));
+  }
+
   // ==================== LINKING ====================
 
   async linkToSubmission(productId: string, submissionId: string) {

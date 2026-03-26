@@ -39,6 +39,24 @@ export class CatalogController {
 
   // ==================== QUERY (JWT auth) ====================
 
+  @Get('unified')
+  @UseGuards(JwtAuthGuard)
+  async findUnifiedProducts(
+    @Query('search') search?: string,
+    @Query('state') state?: string,
+    @Query('label') label?: string,
+    @Query('format') format?: string,
+    @Query('source') source?: string,
+    @Query('page') page = '1',
+    @Query('limit') limit = '20',
+  ) {
+    return this.catalogService.findUnifiedProducts({
+      search, state, label, format, source,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+    });
+  }
+
   @Get('products')
   @UseGuards(JwtAuthGuard)
   async findProducts(
