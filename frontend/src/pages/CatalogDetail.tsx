@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, Music, Clock, ChevronDown, ChevronRight,
   ExternalLink, Disc3, Users, FileText, Globe, MessageSquare,
-  FolderOpen, ClipboardList, Headphones, Shield, Tag, Video, Calendar,
+  FolderOpen, ClipboardList, Headphones, Shield, Tag, Video, Calendar, Send,
 } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
@@ -280,6 +280,12 @@ function TrackRow({ asset, index }: { asset: any; index: number }) {
               <Field label="Audio Format" value={asset.audio?.format || asset.audioFormat} />
               <Field label="Dolby Atmos" value={asset.dolbyAtmos} />
               <Field label="Stereo" value={asset.stereo} />
+              <Field label="Audio File" value={asset.audioFileInfo?.filename} />
+              <Field label="Audio Quality" value={asset.audioFileInfo?.quality} />
+              <Field label="File Size" value={asset.audioFileInfo?.size} />
+              <Field label="Dolby Atmos" value={asset.dolbyAtmosFileInfo ? 'Yes' : 'No'} />
+              <Field label="Audio Language" value={asset.audioLanguage} />
+              <Field label="Metadata Language" value={asset.metadataLanguage} />
             </FieldGrid>
           </TrackSubSection>
 
@@ -328,6 +334,9 @@ function TrackRow({ asset, index }: { asset: any; index: number }) {
               <Field label="Rights Contract Begin Date" value={asset.rightsContractBeginDate} />
               <Field label="Asset Release Date" value={asset.assetReleaseDate} />
               <Field label="Asset Catalog Tier" value={asset.assetCatalogTier} />
+              <Field label="Rights Ownership Name" value={asset.rightsOwnershipName} />
+              <Field label="ISWC" value={asset.iswc} mono />
+              <Field label="Courtesy Line" value={asset.courtesyLine} />
             </FieldGrid>
           </TrackSubSection>
 
@@ -360,6 +369,11 @@ function TrackRow({ asset, index }: { asset: any; index: number }) {
               <Field label="Custom Release Date" value={asset.customReleaseDate} />
               <Field label="Custom Release Time" value={asset.customReleaseTime} />
               <Field label="Asset Territories" value={asset.assetTerritories} />
+              <Field label="Available Separately" value={asset.availableSeparately} />
+              <Field label="Allow Preorder" value={asset.allowPreorder} />
+              <Field label="Preorder Type" value={asset.preorderType} />
+              <Field label="YouTube Short Preview" value={asset.youtubeShortPreview} />
+              <Field label="Preview Length" value={asset.previewLength} />
             </FieldGrid>
           </TrackSubSection>
 
@@ -371,6 +385,25 @@ function TrackRow({ asset, index }: { asset: any; index: number }) {
               <Field label="Translations" value={asset.translations} />
             </FieldGrid>
           </TrackSubSection>
+
+          {/* 태그 & 기타 */}
+          {(asset.tags?.length > 0 || asset.extraFields) && (
+            <div>
+              <p className="text-xs font-medium text-zinc-500 mb-1">태그 & 기타</p>
+              <div className="grid grid-cols-2 gap-2">
+                {asset.tags?.length > 0 && (
+                  <div className="col-span-2 flex flex-wrap gap-1">
+                    {asset.tags.map((tag: string, i: number) => (
+                      <span key={i} className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-700">{tag}</span>
+                    ))}
+                  </div>
+                )}
+                {asset.extraFields && Object.entries(asset.extraFields).map(([k, v]: [string, any]) => (
+                  v ? <Field key={k} label={`Extra ${k}`} value={v} /> : null
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -492,8 +525,73 @@ export default function CatalogDetailPage() {
           <Field label="Synced At" value={p.syncedAt ? new Date(p.syncedAt).toLocaleString('ko-KR') : undefined} />
           <Field label="Added Date" value={p.addedDate} />
           <Field label="Created At" value={p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR') : undefined} />
+
+          <Field label="Courtesy Line" value={p.courtesyLine} />
+          <Field label="Label Copy Info" value={p.labelCopyInfo} />
+          <Field label="Album Notes" value={p.albumNotes} />
+          <Field label="Metadata Language" value={p.metadataLanguage} />
+          <Field label="Catalog Tier" value={p.catalogTier} />
+          <Field label="Total Volumes" value={p.totalVolumes} />
+          <Field label="Is Compilation" value={p.isCompilation} />
+          <Field label="Preorder Date" value={p.preorderDate} />
+          <Field label="Recording Year" value={p.recordingYear} />
+          <Field label="Recording Location" value={p.recordingLocation} />
+          <Field label="Alternate Genre" value={p.alternateGenre?.name} />
+          <Field label="Alternate Subgenre" value={p.alternateSubgenre?.name} />
         </FieldGrid>
+        {p.extraFields && (
+          <div className="col-span-full mt-2">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Extra Fields</p>
+            <div className="grid grid-cols-5 gap-2">
+              {Object.entries(p.extraFields).map(([key, val]: [string, any]) => (
+                val ? <Field key={key} label={`Extra ${key}`} value={val} /> : null
+              ))}
+            </div>
+          </div>
+        )}
+        {p.productTags?.length > 0 && (
+          <div className="col-span-full">
+            <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Tags</p>
+            <div className="flex flex-wrap gap-1">
+              {p.productTags.map((tag: string, i: number) => (
+                <span key={i} className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs dark:bg-zinc-700 dark:text-zinc-300">{tag}</span>
+              ))}
+            </div>
+          </div>
+        )}
       </Section>
+
+      {/* ── Delivery Instructions ── */}
+      {p.deliveryInstructions && (
+        <Section title="배포 상태" icon={Send} defaultOpen={false}>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-zinc-200 dark:border-zinc-700">
+                  <th className="py-2 text-left text-xs text-zinc-500">DSP</th>
+                  <th className="py-2 text-left text-xs text-zinc-500">Release Date</th>
+                  <th className="py-2 text-left text-xs text-zinc-500">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(Array.isArray(p.deliveryInstructions) ? p.deliveryInstructions : []).map((d: any, i: number) => (
+                  <tr key={i} className="border-b border-zinc-100 dark:border-zinc-700/50">
+                    <td className="py-2 text-zinc-800 dark:text-zinc-200">{d.dsp || d.name}</td>
+                    <td className="py-2 text-zinc-600 dark:text-zinc-400">{d.releaseDate || d.release_date}</td>
+                    <td className="py-2">
+                      <span className={`rounded-full px-2 py-0.5 text-xs ${
+                        (d.status || '').toLowerCase().includes('delivered') ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                        (d.status || '').toLowerCase().includes('cancelled') ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                        'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                      }`}>{d.status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      )}
 
       {/* ── Section 3: Artists ── */}
       <Section title="아티스트" icon={Users}>
@@ -530,6 +628,14 @@ export default function CatalogDetailPage() {
           <Field label="Apple Music ID" value={p.appleMusicId} mono />
           <Field label="YouTube Channel ID" value={p.youtubeChannelId} mono />
         </FieldGrid>
+        {/* Artist extended fields */}
+        <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-4">
+          <Field label="ISNI" value={p.artists?.[0]?.isni} mono />
+          <Field label="IPN" value={p.artists?.[0]?.ipn} mono />
+          <Field label="Country of Origin" value={p.artists?.[0]?.countryOfOrigin} />
+          <Field label="Booking Agent" value={p.artists?.[0]?.bookingAgent} />
+          <Field label="YouTube OAC" value={p.artists?.[0]?.youtubeOac} />
+        </div>
         {p.biography && (
           <div className="mt-4">
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">Biography</p>
