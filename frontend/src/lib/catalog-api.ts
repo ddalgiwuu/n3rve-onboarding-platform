@@ -11,6 +11,11 @@ const catalogApi = {
     format?: string; page?: number; limit?: number;
   }) => api.get<PaginatedResponse<CatalogProduct>>('/catalog/products', { params }),
 
+  getUnifiedProducts: (params?: {
+    search?: string; state?: string; label?: string;
+    format?: string; source?: string; page?: number; limit?: number;
+  }) => api.get('/catalog/unified', { params }),
+
   getProduct: (id: string) =>
     api.get<CatalogProduct>(`/catalog/products/${id}`),
 
