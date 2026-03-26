@@ -4,19 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Music, Users, Disc3, Building2, Link2, Unlink, LayoutGrid, List } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
-import type { CatalogProduct } from '../types/catalog';
-
-function StatCard({ icon: Icon, label, value }: { icon: any; label: string; value: string | number }) {
-  return (
-    <div className="flex items-center gap-3 rounded-lg border border-zinc-200 bg-white px-4 py-3 dark:border-zinc-700 dark:bg-zinc-800">
-      <Icon className="h-5 w-5 text-zinc-400" />
-      <div>
-        <p className="text-xs text-zinc-500 dark:text-zinc-400">{label}</p>
-        <p className="text-lg font-semibold text-zinc-900 dark:text-white">{value}</p>
-      </div>
-    </div>
-  );
-}
 
 function StateTag({ state }: { state: string }) {
   const colors: Record<string, string> = {
@@ -40,31 +27,45 @@ function FormatTag({ format }: { format?: string }) {
   );
 }
 
+function SourceBadge({ source }: { source?: string }) {
+  if (source === 'both') return <span className="rounded-full bg-blue-500/80 px-2 py-0.5 text-xs text-white">Synced</span>;
+  if (source === 'catalog') return <span className="rounded-full bg-green-500/80 px-2 py-0.5 text-xs text-white">FUGA</span>;
+  if (source === 'submission') return <span className="rounded-full bg-orange-500/80 px-2 py-0.5 text-xs text-white">제출</span>;
+  return null;
+}
+
+function SubmissionStatusBadge({ status }: { status?: string }) {
+  if (!status) return null;
+  const cls = status === 'APPROVED'
+    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+    : status === 'PENDING'
+    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+    : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400';
+  return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cls}`}>{status}</span>;
+}
+
 export default function CatalogPage() {
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
   const [stateFilter, setStateFilter] = useState('');
-  const [labelFilter, setLabelFilter] = useState('');
   const [formatFilter, setFormatFilter] = useState('');
+  const [sourceFilter, setSourceFilter] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'tile'>('table');
   const [page, setPage] = useState(1);
 
-  const { data: stats } = useQuery({
-    queryKey: ['catalog-stats'],
-    queryFn: () => catalogApi.getStats().then(r => r.data),
-  });
-
   const { data: productsData, isLoading } = useQuery({
-    queryKey: ['catalog-products', search, stateFilter, labelFilter, formatFilter, page],
-    queryFn: () => catalogApi.getProducts({
+    queryKey: ['catalog-unified', search, stateFilter, formatFilter, sourceFilter, page],
+    queryFn: () => catalogApi.getUnifiedProducts({
       search: search || undefined,
       state: stateFilter || undefined,
-      label: labelFilter || undefined,
       format: formatFilter || undefined,
+      source: sourceFilter || undefined,
       page,
       limit: 20,
     }).then(r => r.data),
   });
+
+  const stats = productsData?.stats;
 
   function generateGradient(name: string): string {
     let hash = 0;
@@ -100,19 +101,20 @@ export default function CatalogPage() {
       <div>
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Catalog</h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          FUGA 카탈로그 메타데이터 — 마지막 동기화: {stats?.lastSyncedAt ? new Date(stats.lastSyncedAt).toLocaleString('ko-KR') : '-'}
+          FUGA 카탈로그 + Submission 통합 뷰
         </p>
       </div>
 
       {/* Stats */}
       {stats && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          <StatCard icon={Disc3} label="프로덕트" value={stats.products} />
-          <StatCard icon={Music} label="트랙" value={stats.assets} />
-          <StatCard icon={Users} label="아티스트" value={stats.artists} />
-          <StatCard icon={Building2} label="레이블" value={stats.labels} />
-          <StatCard icon={Link2} label="연결됨" value={stats.linked} />
-          <StatCard icon={Unlink} label="미연결" value={stats.unlinked} />
+        <div className="flex flex-wrap items-center gap-4 rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm dark:border-zinc-700 dark:bg-zinc-800">
+          <span className="font-semibold text-zinc-900 dark:text-white">총 {stats.total}</span>
+          <span className="text-zinc-300 dark:text-zinc-600">|</span>
+          <span className="text-blue-600 dark:text-blue-400">양쪽 동기화 {stats.both}</span>
+          <span className="text-zinc-300 dark:text-zinc-600">|</span>
+          <span className="text-green-600 dark:text-green-400">FUGA만 {stats.catalogOnly}</span>
+          <span className="text-zinc-300 dark:text-zinc-600">|</span>
+          <span className="text-orange-600 dark:text-orange-400">제출만 {stats.submissionOnly}</span>
         </div>
       )}
 
@@ -148,6 +150,16 @@ export default function CatalogPage() {
           <option value="EP">EP</option>
           <option value="ALBUM">Album</option>
         </select>
+        <select
+          className="rounded-lg border border-zinc-200 bg-white px-3 py-2 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
+          value={sourceFilter}
+          onChange={e => { setSourceFilter(e.target.value); setPage(1); }}
+        >
+          <option value="">모든 소스</option>
+          <option value="both">양쪽 동기화</option>
+          <option value="catalog">FUGA만</option>
+          <option value="submission">제출만</option>
+        </select>
         <div className="flex gap-1 rounded-lg border border-zinc-200 p-0.5 dark:border-zinc-700">
           <button
             className={`rounded-md p-1.5 ${viewMode === 'table' ? 'bg-zinc-200 dark:bg-zinc-600' : 'hover:bg-zinc-100 dark:hover:bg-zinc-700'}`}
@@ -174,53 +186,65 @@ export default function CatalogPage() {
           ) : productsData?.data?.length === 0 ? (
             <p className="col-span-full text-center text-zinc-400 py-8">결과 없음</p>
           ) : (
-            productsData?.data?.map((product: CatalogProduct) => (
+            productsData?.data?.map((item: any) => (
               <div
-                key={product.id}
+                key={item.catalogProductId || item.submissionId}
                 className="cursor-pointer overflow-hidden rounded-lg border border-zinc-200 bg-white transition-shadow hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
-                onClick={() => navigate(`/catalog/${product.id}`)}
+                onClick={() => navigate(item.catalogProductId ? `/catalog/${item.catalogProductId}` : `/admin/submissions/${item.submissionId}`)}
               >
                 {/* Cover Art Area */}
-                <div className="relative aspect-square overflow-hidden" style={{ background: generateGradient(product.name) }}>
-                  {/* Product name overlay on the gradient */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                    <p className="text-lg font-bold text-white drop-shadow-lg">{product.name}</p>
-                    {product.releaseVersion && (
-                      <p className="mt-1 text-sm text-white/80 drop-shadow">{product.releaseVersion}</p>
-                    )}
-                    <p className="mt-2 text-sm text-white/70 drop-shadow">{product.displayArtist}</p>
-                  </div>
+                <div className="relative aspect-square overflow-hidden">
+                  {item.coverImageUrl ? (
+                    <img src={item.coverImageUrl} alt={item.name} className="absolute inset-0 h-full w-full object-cover" />
+                  ) : (
+                    <div className="absolute inset-0" style={{ background: generateGradient(item.name) }} />
+                  )}
+                  {/* Overlay text (only when no cover image) */}
+                  {!item.coverImageUrl && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                      <p className="text-lg font-bold text-white drop-shadow-lg">{item.name}</p>
+                      {item.releaseVersion && (
+                        <p className="mt-1 text-sm text-white/80 drop-shadow">{item.releaseVersion}</p>
+                      )}
+                      <p className="mt-2 text-sm text-white/70 drop-shadow">{item.displayArtist}</p>
+                    </div>
+                  )}
                   {/* Bottom overlay badges */}
                   <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-2 pb-2">
                     <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
-                      {getRelativeDate(product.consumerReleaseDate)}
+                      {getRelativeDate(item.consumerReleaseDate || item.releaseDate)}
                     </span>
                     <div className="flex items-center gap-1.5">
-                      {product.label && (
+                      {item.label && (
                         <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
-                          {product.label}
+                          {item.label}
                         </span>
                       )}
                       <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
-                        {product.releaseFormatType || 'SINGLE'}
+                        {item.albumType || 'SINGLE'}
                       </span>
-                      {product.state === 'DELIVERED' && (
+                      {item.state === 'DELIVERED' && (
                         <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
                           <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                         </span>
                       )}
+                      <SourceBadge source={item.source} />
                     </div>
                   </div>
                 </div>
                 {/* Info below image */}
                 <div className="p-3">
-                  <p className="truncate font-semibold text-zinc-900 dark:text-white">{product.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="truncate font-semibold text-zinc-900 dark:text-white">{item.name}</p>
+                    <SubmissionStatusBadge status={item.submissionStatus} />
+                  </div>
                   <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
-                    {product.displayArtist}{product.label ? ` / ${product.label}` : ''}
+                    {item.displayArtist}{item.label ? ` / ${item.label}` : ''}
                   </p>
                   <div className="mt-2 space-y-0.5 text-xs text-zinc-400">
-                    <p>BARCODE  {product.upc}</p>
-                    <p>CAT.NR.  {product.catalogNumber || product.upc}</p>
+                    <p>BARCODE  {item.upc}</p>
+                    <p>CAT.NR.  {item.catalogNumber || item.upc}</p>
+                    {item.trackCount != null && <p>TRACKS  {item.trackCount}</p>}
                   </div>
                 </div>
               </div>
@@ -237,40 +261,43 @@ export default function CatalogPage() {
                 <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">UPC</th>
                 <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">포맷</th>
                 <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">상태</th>
+                <th className="px-4 py-3 text-left font-medium text-zinc-600 dark:text-zinc-300">제출 상태</th>
                 <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-300">트랙</th>
-                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-300">연결</th>
+                <th className="px-4 py-3 text-center font-medium text-zinc-600 dark:text-zinc-300">소스</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-700">
               {isLoading ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-zinc-400">불러오는 중...</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-zinc-400">불러오는 중...</td></tr>
               ) : productsData?.data?.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-zinc-400">결과 없음</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-zinc-400">결과 없음</td></tr>
               ) : (
-                productsData?.data?.map((product: CatalogProduct) => (
+                productsData?.data?.map((item: any) => (
                   <tr
-                    key={product.id}
+                    key={item.catalogProductId || item.submissionId}
                     className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-                    onClick={() => navigate(`/catalog/${product.id}`)}
+                    onClick={() => navigate(item.catalogProductId ? `/catalog/${item.catalogProductId}` : `/admin/submissions/${item.submissionId}`)}
                   >
                     <td className="px-4 py-3">
-                      <div className="font-medium text-zinc-900 dark:text-white">{product.name}</div>
-                      {product.releaseVersion && (
-                        <div className="text-xs text-zinc-400">{product.releaseVersion}</div>
-                      )}
+                      <div className="flex items-center gap-2">
+                        {item.coverImageUrl && (
+                          <img src={item.coverImageUrl} alt="" className="h-8 w-8 rounded object-cover" />
+                        )}
+                        <div>
+                          <div className="font-medium text-zinc-900 dark:text-white">{item.name}</div>
+                          {item.releaseVersion && (
+                            <div className="text-xs text-zinc-400">{item.releaseVersion}</div>
+                          )}
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{product.displayArtist}</td>
-                    <td className="px-4 py-3 font-mono text-xs text-zinc-500">{product.upc}</td>
-                    <td className="px-4 py-3"><FormatTag format={product.releaseFormatType} /></td>
-                    <td className="px-4 py-3"><StateTag state={product.state} /></td>
-                    <td className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-300">{product._count?.assets || '-'}</td>
-                    <td className="px-4 py-3 text-center">
-                      {product.submissionId ? (
-                        <span className="text-green-500" title="Submission 연결됨">&#x2713;</span>
-                      ) : (
-                        <span className="text-zinc-300 dark:text-zinc-600" title="미연결">&#x2717;</span>
-                      )}
-                    </td>
+                    <td className="px-4 py-3 text-zinc-600 dark:text-zinc-300">{item.displayArtist}</td>
+                    <td className="px-4 py-3 font-mono text-xs text-zinc-500">{item.upc}</td>
+                    <td className="px-4 py-3"><FormatTag format={item.albumType} /></td>
+                    <td className="px-4 py-3">{item.state && <StateTag state={item.state} />}</td>
+                    <td className="px-4 py-3"><SubmissionStatusBadge status={item.submissionStatus} /></td>
+                    <td className="px-4 py-3 text-center text-zinc-600 dark:text-zinc-300">{item.trackCount || '-'}</td>
+                    <td className="px-4 py-3 text-center"><SourceBadge source={item.source} /></td>
                   </tr>
                 ))
               )}

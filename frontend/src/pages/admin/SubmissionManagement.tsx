@@ -82,6 +82,7 @@ const SubmissionManagement: React.FC = () => {
   const [showCatalog, setShowCatalog] = useState(false);
   const [catalogViewMode, setCatalogViewMode] = useState<'table' | 'tile'>('tile');
   const [catalogSearch, setCatalogSearch] = useState('');
+  const [catalogSourceFilter, setCatalogSourceFilter] = useState('');
   const [catalogPage, setCatalogPage] = useState(1);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -102,21 +103,18 @@ const SubmissionManagement: React.FC = () => {
   });
   const itemsPerPage = 10;
 
-  const { data: catalogStats } = useQuery({
-    queryKey: ['catalog-stats'],
-    queryFn: () => catalogApi.getStats().then(r => r.data),
-    enabled: showCatalog,
-  });
-
   const { data: catalogData, isLoading: catalogLoading } = useQuery({
-    queryKey: ['admin-catalog-products', catalogSearch, catalogPage],
-    queryFn: () => catalogApi.getProducts({
+    queryKey: ['admin-catalog-unified', catalogSearch, catalogSourceFilter, catalogPage],
+    queryFn: () => catalogApi.getUnifiedProducts({
       search: catalogSearch || undefined,
+      source: catalogSourceFilter || undefined,
       page: catalogPage,
       limit: 20,
     }).then(r => r.data),
     enabled: showCatalog,
   });
+
+  const catalogStats = catalogData?.stats;
 
   // Fetch submissions from API
   useEffect(() => {
@@ -499,23 +497,14 @@ const SubmissionManagement: React.FC = () => {
         <div className="space-y-4">
           {/* Catalog Stats */}
           {catalogStats && (
-            <div className="grid grid-cols-4 gap-3">
-              <div className="rounded-lg bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500">프로덕트</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{catalogStats.products}</p>
-              </div>
-              <div className="rounded-lg bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500">트랙</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{catalogStats.assets}</p>
-              </div>
-              <div className="rounded-lg bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500">연결됨</p>
-                <p className="text-xl font-bold text-green-500">{catalogStats.linked}</p>
-              </div>
-              <div className="rounded-lg bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500">미연결</p>
-                <p className="text-xl font-bold text-orange-500">{catalogStats.unlinked}</p>
-              </div>
+            <div className="flex flex-wrap items-center gap-4 rounded-lg bg-white dark:bg-gray-800 px-5 py-3 text-sm border border-gray-200 dark:border-gray-700">
+              <span className="font-semibold text-gray-900 dark:text-white">총 {catalogStats.total}</span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
+              <span className="text-blue-600 dark:text-blue-400">양쪽 동기화 {catalogStats.both}</span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
+              <span className="text-green-600 dark:text-green-400">FUGA만 {catalogStats.catalogOnly}</span>
+              <span className="text-gray-300 dark:text-gray-600">|</span>
+              <span className="text-orange-600 dark:text-orange-400">제출만 {catalogStats.submissionOnly}</span>
             </div>
           )}
 
@@ -531,6 +520,16 @@ const SubmissionManagement: React.FC = () => {
                 onChange={e => { setCatalogSearch(e.target.value); setCatalogPage(1); }}
               />
             </div>
+            <select
+              className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+              value={catalogSourceFilter}
+              onChange={e => { setCatalogSourceFilter(e.target.value); setCatalogPage(1); }}
+            >
+              <option value="">모든 소스</option>
+              <option value="both">양쪽 동기화</option>
+              <option value="catalog">FUGA만</option>
+              <option value="submission">제출만</option>
+            </select>
             <div className="flex gap-1 rounded-lg border border-gray-200 p-0.5 dark:border-gray-600">
               <button
                 className={`rounded-md p-1.5 ${catalogViewMode === 'table' ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
@@ -552,51 +551,70 @@ const SubmissionManagement: React.FC = () => {
             <div className="text-center py-8 text-gray-400">불러오는 중...</div>
           ) : catalogViewMode === 'tile' ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {catalogData?.data?.map((product: any) => (
+              {catalogData?.data?.map((item: any) => (
                 <div
-                  key={product.id}
+                  key={item.catalogProductId || item.submissionId}
                   className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
-                  onClick={() => navigate(`/catalog/${product.id}`)}
+                  onClick={() => navigate(item.catalogProductId ? `/catalog/${item.catalogProductId}` : `/admin/submissions/${item.submissionId}`)}
                 >
                   {/* Cover Art Area */}
-                  <div className="relative aspect-square overflow-hidden" style={{ background: generateGradient(product.name) }}>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                      <p className="text-lg font-bold text-white drop-shadow-lg">{product.name}</p>
-                      {product.releaseVersion && (
-                        <p className="mt-1 text-sm text-white/80 drop-shadow">{product.releaseVersion}</p>
-                      )}
-                      <p className="mt-2 text-sm text-white/70 drop-shadow">{product.displayArtist}</p>
-                    </div>
+                  <div className="relative aspect-square overflow-hidden">
+                    {item.coverImageUrl ? (
+                      <img src={item.coverImageUrl} alt={item.name} className="absolute inset-0 h-full w-full object-cover" />
+                    ) : (
+                      <div className="absolute inset-0" style={{ background: generateGradient(item.name) }} />
+                    )}
+                    {!item.coverImageUrl && (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                        <p className="text-lg font-bold text-white drop-shadow-lg">{item.name}</p>
+                        {item.releaseVersion && (
+                          <p className="mt-1 text-sm text-white/80 drop-shadow">{item.releaseVersion}</p>
+                        )}
+                        <p className="mt-2 text-sm text-white/70 drop-shadow">{item.displayArtist}</p>
+                      </div>
+                    )}
                     <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-2 pb-2">
                       <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
-                        {getRelativeDate(product.consumerReleaseDate)}
+                        {getRelativeDate(item.consumerReleaseDate || item.releaseDate)}
                       </span>
                       <div className="flex items-center gap-1.5">
-                        {product.label && (
+                        {item.label && (
                           <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
-                            {product.label}
+                            {item.label}
                           </span>
                         )}
                         <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
-                          {product.releaseFormatType || 'SINGLE'}
+                          {item.albumType || 'SINGLE'}
                         </span>
-                        {product.state === 'DELIVERED' && (
+                        {item.state === 'DELIVERED' && (
                           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
                             <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                           </span>
                         )}
+                        {item.source === 'both' && <span className="rounded-full bg-blue-500/80 px-2 py-0.5 text-xs text-white">Synced</span>}
+                        {item.source === 'catalog' && <span className="rounded-full bg-green-500/80 px-2 py-0.5 text-xs text-white">FUGA</span>}
+                        {item.source === 'submission' && <span className="rounded-full bg-orange-500/80 px-2 py-0.5 text-xs text-white">제출</span>}
                       </div>
                     </div>
                   </div>
                   {/* Info below image */}
                   <div className="p-3">
-                    <p className="truncate font-semibold text-gray-900 dark:text-white">{product.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="truncate font-semibold text-gray-900 dark:text-white">{item.name}</p>
+                      {item.submissionStatus && (
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          item.submissionStatus === 'APPROVED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                          item.submissionStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                          'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        }`}>{item.submissionStatus}</span>
+                      )}
+                    </div>
                     <p className="truncate text-sm text-gray-500 dark:text-gray-400">
-                      {product.displayArtist}{product.label ? ` / ${product.label}` : ''}
+                      {item.displayArtist}{item.label ? ` / ${item.label}` : ''}
                     </p>
                     <div className="mt-2 space-y-0.5 text-xs text-gray-400">
-                      <p>BARCODE  {product.upc}</p>
-                      <p>CAT.NR.  {product.catalogNumber || product.upc}</p>
+                      <p>BARCODE  {item.upc}</p>
+                      <p>CAT.NR.  {item.catalogNumber || item.upc}</p>
                     </div>
                   </div>
                 </div>
@@ -612,34 +630,49 @@ const SubmissionManagement: React.FC = () => {
                     <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">UPC</th>
                     <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">포맷</th>
                     <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">상태</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">제출 상태</th>
                     <th className="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-300">트랙</th>
-                    <th className="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-300">연결</th>
+                    <th className="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-300">소스</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                  {catalogData?.data?.map((product: any) => (
+                  {catalogData?.data?.map((item: any) => (
                     <tr
-                      key={product.id}
+                      key={item.catalogProductId || item.submissionId}
                       className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      onClick={() => navigate(`/catalog/${product.id}`)}
+                      onClick={() => navigate(item.catalogProductId ? `/catalog/${item.catalogProductId}` : `/admin/submissions/${item.submissionId}`)}
                     >
                       <td className="px-4 py-3">
-                        <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
-                        {product.releaseVersion && <div className="text-xs text-gray-400">{product.releaseVersion}</div>}
+                        <div className="flex items-center gap-2">
+                          {item.coverImageUrl && <img src={item.coverImageUrl} alt="" className="h-8 w-8 rounded object-cover" />}
+                          <div>
+                            <div className="font-medium text-gray-900 dark:text-white">{item.name}</div>
+                            {item.releaseVersion && <div className="text-xs text-gray-400">{item.releaseVersion}</div>}
+                          </div>
+                        </div>
                       </td>
-                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{product.displayArtist}</td>
-                      <td className="px-4 py-3 font-mono text-xs text-gray-500">{product.upc}</td>
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{item.displayArtist}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-gray-500">{item.upc}</td>
                       <td className="px-4 py-3">
-                        {product.releaseFormatType && <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">{product.releaseFormatType}</span>}
+                        {item.albumType && <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">{item.albumType}</span>}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                          product.state === 'DELIVERED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                        }`}>{product.state}</span>
+                        {item.state && <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          item.state === 'DELIVERED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                        }`}>{item.state}</span>}
                       </td>
-                      <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300">{product._count?.assets || '-'}</td>
+                      <td className="px-4 py-3">
+                        {item.submissionStatus && <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          item.submissionStatus === 'APPROVED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                          item.submissionStatus === 'PENDING' ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400' :
+                          'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                        }`}>{item.submissionStatus}</span>}
+                      </td>
+                      <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300">{item.trackCount || '-'}</td>
                       <td className="px-4 py-3 text-center">
-                        {product.submissionId ? <span className="text-green-500">&#x2713;</span> : <span className="text-gray-300 dark:text-gray-600">&#x2717;</span>}
+                        {item.source === 'both' && <span className="rounded-full bg-blue-500/80 px-2 py-0.5 text-xs text-white">Synced</span>}
+                        {item.source === 'catalog' && <span className="rounded-full bg-green-500/80 px-2 py-0.5 text-xs text-white">FUGA</span>}
+                        {item.source === 'submission' && <span className="rounded-full bg-orange-500/80 px-2 py-0.5 text-xs text-white">제출</span>}
                       </td>
                     </tr>
                   ))}
