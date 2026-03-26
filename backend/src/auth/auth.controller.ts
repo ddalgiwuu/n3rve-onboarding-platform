@@ -242,11 +242,16 @@ export class AuthController {
         email: body.email,
         password: hashedPassword,
         name: body.name,
-        phone: body.phone,
-        company: body.isCompanyAccount ? body.company : undefined,
+        phone: body.phone || null,
+        company: body.isCompanyAccount ? body.company : null,
         isCompanyAccount: body.isCompanyAccount || false,
         provider: 'EMAIL',
+        role: 'USER',
+        googleId: '',
+        profilePicture: '',
         isProfileComplete: true,
+        emailVerified: true,
+        isActive: true,
         preferences: {
           language: 'KO',
           notifications: {
