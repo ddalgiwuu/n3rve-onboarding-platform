@@ -143,7 +143,7 @@ export class CatalogController {
   }
 
   @Post('backfill-saved-artists')
-  @Public()
+  @UseGuards(JwtAuthGuard)
   async backfillSavedArtists() {
     return this.catalogService.backfillSavedArtists();
   }
