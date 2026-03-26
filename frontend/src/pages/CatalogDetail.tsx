@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, Music, Clock, ChevronDown, ChevronRight,
-  ExternalLink, Disc3, Users, FileText,
+  ExternalLink, Disc3, Users, FileText, Globe, MessageSquare, Image,
 } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
@@ -28,7 +28,6 @@ function ContributorsByRole({ contributors }: { contributors: CatalogContributor
   const grouped: Record<string, CatalogContributor[]> = {};
   for (const c of contributors) {
     if (!grouped[c.role]) grouped[c.role] = [];
-    // Deduplicate by personId within same role
     if (!grouped[c.role].find(x => x.personId === c.personId)) {
       grouped[c.role].push(c);
     }
@@ -62,7 +61,6 @@ function TrackRow({ asset, index }: { asset: CatalogAsset; index: number }) {
 
   return (
     <div className="border-b border-zinc-100 last:border-0 dark:border-zinc-700">
-      {/* Track main row */}
       <div className="flex items-center gap-4 px-4 py-3">
         <span className="w-6 text-center text-sm text-zinc-400">{asset.sequence || index + 1}</span>
         <div className="flex-1 min-w-0">
@@ -83,7 +81,6 @@ function TrackRow({ asset, index }: { asset: CatalogAsset; index: number }) {
         </span>
       </div>
 
-      {/* Expandable sections */}
       <div className="flex gap-2 px-4 pb-2">
         {asset.contributors?.length > 0 && (
           <button
@@ -107,14 +104,12 @@ function TrackRow({ asset, index }: { asset: CatalogAsset; index: number }) {
         )}
       </div>
 
-      {/* Contributors accordion */}
       {showContributors && asset.contributors && (
         <div className="px-4 pb-3">
           <ContributorsByRole contributors={asset.contributors} />
         </div>
       )}
 
-      {/* Lyrics accordion */}
       {showLyrics && asset.lyrics && (
         <div className="px-4 pb-3">
           <pre className="max-h-60 overflow-auto rounded-lg bg-zinc-50 p-3 text-sm text-zinc-700 whitespace-pre-wrap dark:bg-zinc-800 dark:text-zinc-300">
@@ -122,6 +117,16 @@ function TrackRow({ asset, index }: { asset: CatalogAsset; index: number }) {
           </pre>
         </div>
       )}
+    </div>
+  );
+}
+
+function InfoField({ label, value }: { label: string; value?: string | null }) {
+  if (!value) return null;
+  return (
+    <div>
+      <p className="text-zinc-400">{label}</p>
+      <p className="text-zinc-700 dark:text-zinc-300">{value}</p>
     </div>
   );
 }
@@ -144,6 +149,9 @@ export default function CatalogDetailPage() {
     return <div className="flex h-64 items-center justify-center text-zinc-400">프로덕트를 찾을 수 없습니다</div>;
   }
 
+  const submission = (product as any).submission;
+  const coverImageUrl = submission?.files?.coverImageUrl || (product as any).coverImageUrl;
+
   return (
     <div className="space-y-6">
       {/* Back button */}
@@ -156,72 +164,98 @@ export default function CatalogDetailPage() {
 
       {/* Product header */}
       <div className="rounded-lg border border-zinc-200 bg-white p-6 dark:border-zinc-700 dark:bg-zinc-800">
-        <div className="flex items-start justify-between">
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{product.name}</h1>
-              {product.releaseVersion && (
-                <span className="rounded bg-zinc-100 px-2 py-0.5 text-sm text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-                  {product.releaseVersion}
-                </span>
-              )}
-              <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                product.state === 'DELIVERED'
-                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                  : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-              }`}>
-                {product.state}
-              </span>
+        <div className="flex items-start gap-6">
+          {/* Cover Art */}
+          {coverImageUrl && (
+            <div className="flex-shrink-0">
+              <img
+                src={coverImageUrl}
+                alt={product.name}
+                className="h-40 w-40 rounded-lg object-cover shadow-md"
+              />
             </div>
-            <p className="mt-1 text-zinc-600 dark:text-zinc-300">{product.displayArtist}</p>
-          </div>
-          <div className="text-right text-sm text-zinc-500 dark:text-zinc-400">
-            {product.releaseFormatType && <p>{product.releaseFormatType}</p>}
-            {product.label && <p>{product.label}</p>}
-          </div>
-        </div>
+          )}
 
-        <div className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-          <div>
-            <p className="text-zinc-400">UPC</p>
-            <p className="font-mono text-zinc-700 dark:text-zinc-300">{product.upc}</p>
-          </div>
-          <div>
-            <p className="text-zinc-400">발매일</p>
-            <p className="text-zinc-700 dark:text-zinc-300">{product.consumerReleaseDate?.split('T')[0] || '-'}</p>
-          </div>
-          <div>
-            <p className="text-zinc-400">장르</p>
-            <p className="text-zinc-700 dark:text-zinc-300">{product.genre?.name || '-'}</p>
-          </div>
-          <div>
-            <p className="text-zinc-400">언어</p>
-            <p className="text-zinc-700 dark:text-zinc-300">{product.language || '-'}</p>
-          </div>
-          <div>
-            <p className="text-zinc-400">&copy; Line</p>
-            <p className="text-zinc-700 dark:text-zinc-300">{product.cLineText || '-'}</p>
-          </div>
-          <div>
-            <p className="text-zinc-400">&#x2117; Line</p>
-            <p className="text-zinc-700 dark:text-zinc-300">{product.pLineText || '-'}</p>
-          </div>
-          <div>
-            <p className="text-zinc-400">Submission</p>
-            {product.submission ? (
-              <button
-                className="text-blue-500 hover:underline"
-                onClick={() => navigate(`/admin/submissions/${product.submission!.id}`)}
-              >
-                {product.submission.albumTitle || product.submission.id} ({product.submission.status})
-              </button>
-            ) : (
-              <span className="text-zinc-400">미연결</span>
-            )}
-          </div>
-          <div>
-            <p className="text-zinc-400">동기화</p>
-            <p className="text-zinc-700 dark:text-zinc-300">{new Date(product.syncedAt).toLocaleString('ko-KR')}</p>
+          <div className="flex-1">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{product.name}</h1>
+                  {product.releaseVersion && (
+                    <span className="rounded bg-zinc-100 px-2 py-0.5 text-sm text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                      {product.releaseVersion}
+                    </span>
+                  )}
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                    product.state === 'DELIVERED'
+                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                  }`}>
+                    {product.state}
+                  </span>
+                  {submission && (
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      submission.status === 'approved'
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : submission.status === 'pending'
+                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                        : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                    }`}>
+                      Submission: {submission.status?.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                <p className="mt-1 text-zinc-600 dark:text-zinc-300">{product.displayArtist}</p>
+              </div>
+              <div className="text-right text-sm text-zinc-500 dark:text-zinc-400">
+                {product.releaseFormatType && <p>{product.releaseFormatType}</p>}
+                {product.label && <p>{product.label}</p>}
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+              <div>
+                <p className="text-zinc-400">UPC</p>
+                <p className="font-mono text-zinc-700 dark:text-zinc-300">{product.upc}</p>
+              </div>
+              <div>
+                <p className="text-zinc-400">발매일</p>
+                <p className="text-zinc-700 dark:text-zinc-300">{product.consumerReleaseDate?.split('T')[0] || '-'}</p>
+              </div>
+              <div>
+                <p className="text-zinc-400">장르</p>
+                <p className="text-zinc-700 dark:text-zinc-300">{product.genre?.name || '-'}</p>
+              </div>
+              <div>
+                <p className="text-zinc-400">언어</p>
+                <p className="text-zinc-700 dark:text-zinc-300">{product.language || '-'}</p>
+              </div>
+              <div>
+                <p className="text-zinc-400">&copy; Line</p>
+                <p className="text-zinc-700 dark:text-zinc-300">{product.cLineText || '-'}</p>
+              </div>
+              <div>
+                <p className="text-zinc-400">&#x2117; Line</p>
+                <p className="text-zinc-700 dark:text-zinc-300">{product.pLineText || '-'}</p>
+              </div>
+              <div>
+                <p className="text-zinc-400">Submission</p>
+                {submission ? (
+                  <button
+                    className="text-blue-500 hover:underline"
+                    onClick={() => navigate(`/admin/submissions/${submission.id}`)}
+                  >
+                    {submission.albumTitle || submission.id} ({submission.status})
+                  </button>
+                ) : (
+                  <span className="text-zinc-400">미연결</span>
+                )}
+              </div>
+              <div>
+                <p className="text-zinc-400">동기화</p>
+                <p className="text-zinc-700 dark:text-zinc-300">{new Date(product.syncedAt).toLocaleString('ko-KR')}</p>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -242,6 +276,86 @@ export default function CatalogDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Submission Extended Info */}
+      {submission && (
+        <>
+          {/* Marketing / Description */}
+          {(submission.albumDescription || submission.biography || submission.marketing) && (
+            <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                <MessageSquare className="h-4 w-4 text-zinc-400" />
+                <h2 className="font-semibold text-zinc-900 dark:text-white">마케팅 / 설명</h2>
+              </div>
+              <div className="space-y-4 p-4">
+                {submission.albumDescription && (
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">앨범 설명</p>
+                    <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{submission.albumDescription}</p>
+                  </div>
+                )}
+                {submission.biography && (
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">바이오그래피</p>
+                    <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{submission.biography}</p>
+                  </div>
+                )}
+                {submission.marketing && (
+                  <div>
+                    <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 mb-1">마케팅 정보</p>
+                    <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">
+                      {typeof submission.marketing === 'string' ? submission.marketing : JSON.stringify(submission.marketing, null, 2)}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Social Links */}
+          {submission.socialLinks && Object.keys(submission.socialLinks).length > 0 && (
+            <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+              <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+                <Globe className="h-4 w-4 text-zinc-400" />
+                <h2 className="font-semibold text-zinc-900 dark:text-white">소셜 링크</h2>
+              </div>
+              <div className="flex flex-wrap gap-3 p-4">
+                {Object.entries(submission.socialLinks).map(([platform, url]) => (
+                  url && (
+                    <a
+                      key={platform}
+                      href={url as string}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
+                    >
+                      {platform} <ExternalLink className="h-3 w-3" />
+                    </a>
+                  )
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Submission Info */}
+          <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
+            <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-3 dark:border-zinc-700">
+              <FileText className="h-4 w-4 text-zinc-400" />
+              <h2 className="font-semibold text-zinc-900 dark:text-white">제출 정보</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-4 p-4 text-sm sm:grid-cols-4">
+              <InfoField label="제출자" value={submission.submitterName || submission.userId} />
+              <InfoField label="제출 상태" value={submission.status?.toUpperCase()} />
+              <InfoField label="제출일" value={submission.createdAt ? new Date(submission.createdAt).toLocaleDateString('ko-KR') : undefined} />
+              <InfoField label="관리자 노트" value={submission.adminNotes} />
+              <InfoField label="아티스트명" value={submission.artistName} />
+              <InfoField label="레이블" value={submission.labelName} />
+              <InfoField label="앨범 타입" value={submission.albumType} />
+              <InfoField label="발매 희망일" value={submission.releaseDate} />
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Tracks */}
       <div className="rounded-lg border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-800">
