@@ -418,6 +418,28 @@ export class CatalogService {
         // Release details from submission
         release: submission?.release || null,
 
+        // Full files object from submission
+        files: submission?.files || null,
+
+        // Release details extracted to top-level for easy access
+        copyrightHolder: (submission?.release as any)?.copyrightHolder || null,
+        copyrightYear: (submission?.release as any)?.copyrightYear || null,
+        productionHolder: (submission?.release as any)?.productionHolder || null,
+        productionYear: (submission?.release as any)?.productionYear || null,
+        recordingCountry: (submission?.release as any)?.recordingCountry || null,
+        recordingLanguage: (submission?.release as any)?.recordingLanguage || null,
+        territories: (submission?.release as any)?.territories || null,
+        territoryType: (submission?.release as any)?.territoryType || null,
+        priceType: (submission?.release as any)?.priceType || null,
+        preOrderEnabled: (submission?.release as any)?.preOrderEnabled || false,
+        isCompilation: (submission?.release as any)?.isCompilation || false,
+        previouslyReleased: (submission?.release as any)?.previouslyReleased || false,
+        releaseFormat: (submission?.release as any)?.releaseFormat || null,
+        releaseTime: (submission?.release as any)?.releaseTime || null,
+        selectedTimezone: (submission?.release as any)?.selectedTimezone || null,
+        hasSyncHistory: (submission?.release as any)?.hasSyncHistory || false,
+        motionArtwork: (submission?.release as any)?.motionArtwork || false,
+
         // Files from submission
         coverImageUrl: (submission?.files as any)?.coverImageUrl || null,
         artistPhotoUrl: (submission?.files as any)?.artistPhotoUrl || null,
@@ -586,6 +608,157 @@ export class CatalogService {
       versionTypes: track.versionType ? [{ id: track.versionType, name: track.versionType }] : [],
       source: 'submission',
     }));
+  }
+
+  async findUnifiedProductById(id: string, idType: 'catalog' | 'submission' = 'catalog') {
+    let catalogProduct: any = null;
+    let submission: any = null;
+
+    if (idType === 'catalog') {
+      catalogProduct = await this.prisma.catalogProduct.findUnique({
+        where: { id },
+        include: { assets: { orderBy: { sequence: 'asc' } } },
+      });
+      // Find linked submission
+      if (catalogProduct?.submissionId) {
+        submission = await this.prisma.submission.findUnique({ where: { id: catalogProduct.submissionId } });
+      } else if (catalogProduct?.upc) {
+        // Try UPC match
+        const subs = await this.prisma.submission.findMany();
+        submission = subs.find((s: any) => (s.release as any)?.upc === catalogProduct.upc) || null;
+      }
+    } else {
+      submission = await this.prisma.submission.findUnique({ where: { id } });
+      if (submission) {
+        const upc = (submission.release as any)?.upc;
+        if (upc) {
+          catalogProduct = await this.prisma.catalogProduct.findFirst({
+            where: { upc },
+            include: { assets: { orderBy: { sequence: 'asc' } } },
+          });
+        }
+        // Also check direct link
+        if (!catalogProduct && submission.catalogProductId) {
+          catalogProduct = await this.prisma.catalogProduct.findUnique({
+            where: { id: submission.catalogProductId },
+            include: { assets: { orderBy: { sequence: 'asc' } } },
+          });
+        }
+      }
+    }
+
+    if (!catalogProduct && !submission) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const itemSource = catalogProduct && submission ? 'both' : catalogProduct ? 'catalog' : 'submission';
+    const upc = catalogProduct?.upc || (submission?.release as any)?.upc || '';
+
+    return {
+      upc,
+      source: itemSource,
+      catalogProductId: catalogProduct?.id || null,
+      submissionId: submission?.id || null,
+
+      // Album level
+      name: catalogProduct?.name || submission?.albumTitle || '',
+      nameEn: submission?.albumTitleEn || '',
+      displayArtist: catalogProduct?.displayArtist || submission?.displayArtist || submission?.artistName || '',
+      artistName: submission?.artistName || catalogProduct?.displayArtist || '',
+      artistNameEn: submission?.artistNameEn || '',
+      label: catalogProduct?.label || submission?.labelName || '',
+      albumType: catalogProduct?.releaseFormatType || submission?.albumType || '',
+      state: catalogProduct?.state || null,
+      submissionStatus: submission?.status || null,
+
+      // Dates
+      consumerReleaseDate: catalogProduct?.consumerReleaseDate || null,
+      originalReleaseDate: catalogProduct?.originalReleaseDate || null,
+      releaseDate: submission?.releaseDate || null,
+      addedDate: catalogProduct?.addedDate || null,
+      createdAt: submission?.createdAt || catalogProduct?.createdAt || null,
+
+      // Genre
+      genre: catalogProduct?.genre || submission?.albumGenre || submission?.genre || null,
+      subgenre: catalogProduct?.subgenre || submission?.albumSubgenre || null,
+      language: catalogProduct?.language || null,
+
+      // Copyright
+      cLineText: catalogProduct?.cLineText || (submission?.release as any)?.cRights || null,
+      pLineText: catalogProduct?.pLineText || (submission?.release as any)?.pRights || null,
+      catalogNumber: catalogProduct?.catalogNumber || null,
+      releaseVersion: catalogProduct?.releaseVersion || submission?.releaseVersion || submission?.albumVersion || '',
+      parentalAdvisory: catalogProduct?.parentalAdvisory || false,
+
+      // FUGA
+      fugaId: catalogProduct?.fugaId?.toString() || null,
+      labelId: catalogProduct?.labelId?.toString() || null,
+      productType: catalogProduct?.productType || null,
+      suborg: catalogProduct?.suborg || [],
+      syncedAt: catalogProduct?.syncedAt || null,
+
+      // Submission rich data
+      albumDescription: submission?.albumDescription || null,
+      biography: submission?.biography || null,
+      socialLinks: submission?.socialLinks || null,
+      artistType: submission?.artistType || null,
+      spotifyId: submission?.spotifyId || null,
+      appleMusicId: submission?.appleMusicId || null,
+      youtubeChannelId: submission?.youtubeChannelId || null,
+      albumTranslations: submission?.albumTranslations || null,
+      albumContributors: submission?.albumContributors || null,
+      albumFeaturingArtists: submission?.albumFeaturingArtists || null,
+      totalVolumes: submission?.totalVolumes || null,
+      albumNote: submission?.albumNote || null,
+      explicitContent: submission?.explicitContent || false,
+      marketing: submission?.marketing || null,
+      adminNotes: submission?.adminNotes || null,
+      submitterName: submission?.submitterName || null,
+      submitterEmail: submission?.submitterEmail || null,
+      reviewedBy: submission?.reviewedBy || null,
+      reviewedAt: submission?.reviewedAt || null,
+      release: submission?.release || null,
+
+      // Full files object from submission
+      files: submission?.files || null,
+
+      // Release details extracted to top-level for easy access
+      copyrightHolder: (submission?.release as any)?.copyrightHolder || null,
+      copyrightYear: (submission?.release as any)?.copyrightYear || null,
+      productionHolder: (submission?.release as any)?.productionHolder || null,
+      productionYear: (submission?.release as any)?.productionYear || null,
+      recordingCountry: (submission?.release as any)?.recordingCountry || null,
+      recordingLanguage: (submission?.release as any)?.recordingLanguage || null,
+      territories: (submission?.release as any)?.territories || null,
+      territoryType: (submission?.release as any)?.territoryType || null,
+      priceType: (submission?.release as any)?.priceType || null,
+      preOrderEnabled: (submission?.release as any)?.preOrderEnabled || false,
+      isCompilation: (submission?.release as any)?.isCompilation || false,
+      previouslyReleased: (submission?.release as any)?.previouslyReleased || false,
+      releaseFormat: (submission?.release as any)?.releaseFormat || null,
+      releaseTime: (submission?.release as any)?.releaseTime || null,
+      selectedTimezone: (submission?.release as any)?.selectedTimezone || null,
+      hasSyncHistory: (submission?.release as any)?.hasSyncHistory || false,
+      motionArtwork: (submission?.release as any)?.motionArtwork || false,
+
+      // Files
+      coverImageUrl: (submission?.files as any)?.coverImageUrl || null,
+      artistPhotoUrl: (submission?.files as any)?.artistPhotoUrl || null,
+
+      // Artists
+      artists: catalogProduct?.artists?.map((a: any) => ({
+        ...a,
+        fugaId: a.fugaId?.toString(),
+      })) || [],
+
+      // Merged tracks/assets
+      assets: this.mergeTracksAndAssets(
+        catalogProduct?.assets || [],
+        (submission?.tracks as any[]) || []
+      ),
+
+      trackCount: (catalogProduct?.assets?.length || 0) || ((submission?.tracks as any[])?.length || 0),
+    };
   }
 
   // ==================== LINKING ====================

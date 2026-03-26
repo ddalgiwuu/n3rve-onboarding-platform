@@ -57,6 +57,15 @@ export class CatalogController {
     });
   }
 
+  @Get('unified/:id')
+  @UseGuards(JwtAuthGuard)
+  async findUnifiedProduct(
+    @Param('id') id: string,
+    @Query('type') type: 'catalog' | 'submission' = 'catalog',
+  ) {
+    return this.catalogService.findUnifiedProductById(id, type);
+  }
+
   @Get('products')
   @UseGuards(JwtAuthGuard)
   async findProducts(
