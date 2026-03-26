@@ -5,6 +5,9 @@ import {
   Music, FileText, Info, History, TrendingUp,
   AlertCircle, Package, Loader2
 } from 'lucide-react';
+import { Disc3, LayoutGrid, List as ListIcon, Link2, Unlink } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { useLanguageStore } from '@/store/language.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import { CheckCircle } from 'lucide-react';
@@ -12,6 +15,7 @@ import { cn } from '@/utils/cn';
 import { exportSubmissionsToExcel } from '@/utils/excelExport';
 import { submissionService } from '@/services/submission.service';
 import SubmissionDetailView from '@/components/admin/SubmissionDetailView';
+import catalogApi from '@/lib/catalog-api';
 import toast from 'react-hot-toast';
 
 // Stats Card Component
@@ -74,6 +78,11 @@ const SubmissionManagement: React.FC = () => {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
   // Note: t function is not available from useLanguageStore, need to create local t function
   const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  const navigate = useNavigate();
+  const [showCatalog, setShowCatalog] = useState(false);
+  const [catalogViewMode, setCatalogViewMode] = useState<'table' | 'tile'>('tile');
+  const [catalogSearch, setCatalogSearch] = useState('');
+  const [catalogPage, setCatalogPage] = useState(1);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
@@ -92,6 +101,22 @@ const SubmissionManagement: React.FC = () => {
     rejected: 0
   });
   const itemsPerPage = 10;
+
+  const { data: catalogStats } = useQuery({
+    queryKey: ['catalog-stats'],
+    queryFn: () => catalogApi.getStats().then(r => r.data),
+    enabled: showCatalog,
+  });
+
+  const { data: catalogData, isLoading: catalogLoading } = useQuery({
+    queryKey: ['admin-catalog-products', catalogSearch, catalogPage],
+    queryFn: () => catalogApi.getProducts({
+      search: catalogSearch || undefined,
+      page: catalogPage,
+      limit: 20,
+    }).then(r => r.data),
+    enabled: showCatalog,
+  });
 
   // Fetch submissions from API
   useEffect(() => {
@@ -376,6 +401,18 @@ const SubmissionManagement: React.FC = () => {
             >
               {t('거절됨', 'Rejected')}
             </button>
+            <button
+              onClick={() => setShowCatalog(!showCatalog)}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 font-medium rounded-lg transition-colors ml-4 border',
+                showCatalog
+                  ? 'bg-purple-100 text-purple-700 border-purple-300 dark:bg-purple-900 dark:text-purple-300 dark:border-purple-700'
+                  : 'text-gray-600 border-gray-200 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700'
+              )}
+            >
+              <Disc3 className="w-4 h-4" />
+              Catalog
+            </button>
           </div>
 
           {/* Date Range */}
@@ -428,198 +465,347 @@ const SubmissionManagement: React.FC = () => {
         )}
       </div>
 
-      {/* Submissions Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center h-64">
-            <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      {/* Submissions Table or Catalog View */}
+      {showCatalog ? (
+        <div className="space-y-4">
+          {/* Catalog Stats */}
+          {catalogStats && (
+            <div className="grid grid-cols-4 gap-3">
+              <div className="rounded-lg bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-500">프로덕트</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{catalogStats.products}</p>
+              </div>
+              <div className="rounded-lg bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-500">트랙</p>
+                <p className="text-xl font-bold text-gray-900 dark:text-white">{catalogStats.assets}</p>
+              </div>
+              <div className="rounded-lg bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-500">연결됨</p>
+                <p className="text-xl font-bold text-green-500">{catalogStats.linked}</p>
+              </div>
+              <div className="rounded-lg bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700">
+                <p className="text-xs text-gray-500">미연결</p>
+                <p className="text-xl font-bold text-orange-500">{catalogStats.unlinked}</p>
+              </div>
+            </div>
+          )}
+
+          {/* Search + View Toggle */}
+          <div className="flex items-center gap-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="카탈로그 검색..."
+                className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-10 pr-4 text-sm dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+                value={catalogSearch}
+                onChange={e => { setCatalogSearch(e.target.value); setCatalogPage(1); }}
+              />
+            </div>
+            <div className="flex gap-1 rounded-lg border border-gray-200 p-0.5 dark:border-gray-600">
+              <button
+                className={`rounded-md p-1.5 ${catalogViewMode === 'table' ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
+                onClick={() => setCatalogViewMode('table')}
+              >
+                <ListIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </button>
+              <button
+                className={`rounded-md p-1.5 ${catalogViewMode === 'tile' ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
+                onClick={() => setCatalogViewMode('tile')}
+              >
+                <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </button>
+            </div>
           </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50 dark:bg-gray-700">
+
+          {/* Catalog Content */}
+          {catalogLoading ? (
+            <div className="text-center py-8 text-gray-400">불러오는 중...</div>
+          ) : catalogViewMode === 'tile' ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {catalogData?.data?.map((product: any) => (
+                <div
+                  key={product.id}
+                  className="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+                  onClick={() => navigate(`/catalog/${product.id}`)}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-medium text-gray-900 dark:text-white">{product.name}</p>
+                      {product.releaseVersion && <p className="text-xs text-gray-400">{product.releaseVersion}</p>}
+                    </div>
+                    <span className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
+                      product.state === 'DELIVERED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                    }`}>{product.state}</span>
+                  </div>
+                  <p className="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">{product.displayArtist}</p>
+                  <div className="mt-3 flex items-center justify-between text-xs text-gray-400">
+                    <div className="flex items-center gap-2">
+                      {product.releaseFormatType && (
+                        <span className="rounded bg-gray-100 px-1.5 py-0.5 font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">{product.releaseFormatType}</span>
+                      )}
+                      <span>{product._count?.assets || 0} 트랙</span>
+                    </div>
+                    {product.submissionId ? (
+                      <span className="text-green-500">&#x2713; 연결됨</span>
+                    ) : (
+                      <span className="text-gray-300 dark:text-gray-600">미연결</span>
+                    )}
+                  </div>
+                  <div className="mt-2 font-mono text-xs text-gray-400">{product.upc}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50 dark:bg-gray-800">
                   <tr>
-                    <th className="px-6 py-3 text-left">
-                      <input
-                        type="checkbox"
-                        checked={selectedSubmissions.size === paginatedSubmissions.length && paginatedSubmissions.length > 0}
-                        onChange={handleSelectAll}
-                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                      />
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('ID', 'ID')}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('아티스트', 'Artist')}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('앨범', 'Album')}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('제출일', 'Submit Date')}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('상태', 'Status')}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('파일', 'Files')}
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('작업', 'Actions')}
-                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">앨범</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">아티스트</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">UPC</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">포맷</th>
+                    <th className="px-4 py-3 text-left font-medium text-gray-600 dark:text-gray-300">상태</th>
+                    <th className="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-300">트랙</th>
+                    <th className="px-4 py-3 text-center font-medium text-gray-600 dark:text-gray-300">연결</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {paginatedSubmissions.map((submission) => (
-                    <tr key={submission.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                      <td className="px-6 py-4">
-                        <input
-                          type="checkbox"
-                          checked={selectedSubmissions.has(submission.id)}
-                          onChange={() => toggleSelection(submission.id)}
-                          className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
-                        />
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+                  {catalogData?.data?.map((product: any) => (
+                    <tr
+                      key={product.id}
+                      className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      onClick={() => navigate(`/catalog/${product.id}`)}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900 dark:text-white">{product.name}</div>
+                        {product.releaseVersion && <div className="text-xs text-gray-400">{product.releaseVersion}</div>}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
-                        {submission.id}
+                      <td className="px-4 py-3 text-gray-600 dark:text-gray-300">{product.displayArtist}</td>
+                      <td className="px-4 py-3 font-mono text-xs text-gray-500">{product.upc}</td>
+                      <td className="px-4 py-3">
+                        {product.releaseFormatType && <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">{product.releaseFormatType}</span>}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {submission.artistName || '-'}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {submission.labelName || '-'}
-                          </div>
-                        </div>
+                      <td className="px-4 py-3">
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          product.state === 'DELIVERED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                        }`}>{product.state}</span>
                       </td>
-                      <td className="px-6 py-4">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {submission.albumTitle || '-'}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {submission.tracks?.length || 0} {t('트랙', 'tracks')}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {new Date(submission.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={cn(
-                          'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
-                          submission.status === 'pending' && 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-                          submission.status === 'approved' && 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-                          submission.status === 'rejected' && 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                        )}>
-                          {submission.status === 'pending' && t('대기중', 'Pending')}
-                          {submission.status === 'approved' && t('승인됨', 'Approved')}
-                          {submission.status === 'rejected' && t('거절됨', 'Rejected')}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2 text-sm">
-                          {submission.files?.coverImageUrl && (
-                            <span className="text-green-600 dark:text-green-400" title={t('커버 이미지', 'Cover Image')}>
-                              <FileText className="w-4 h-4" />
-                            </span>
-                          )}
-                          {submission.files?.audioFiles?.length > 0 && (
-                            <span className="text-blue-600 dark:text-blue-400" title={t('오디오 파일', 'Audio Files')}>
-                              <Music className="w-4 h-4" />
-                            </span>
-                          )}
-                          {submission.files?.motionArtUrl && (
-                            <span className="text-purple-600 dark:text-purple-400" title={t('모션 아트', 'Motion Art')}>
-                              <Package className="w-4 h-4" />
-                            </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => {
-                              setSelectedSubmission(submission);
-                              setShowDetailModal(true);
-                            }}
-                            className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
-                          >
-                            <Eye className="w-5 h-5" />
-                          </button>
-                          {submission.status === 'pending' && (
-                            <>
-                              <button
-                                onClick={() => handleStatusUpdate(submission.id, 'approved')}
-                                className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
-                              >
-                                <Check className="w-5 h-5" />
-                              </button>
-                              <button
-                                onClick={() => handleStatusUpdate(submission.id, 'rejected')}
-                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-                              >
-                                <X className="w-5 h-5" />
-                              </button>
-                            </>
-                          )}
-                        </div>
+                      <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300">{product._count?.assets || '-'}</td>
+                      <td className="px-4 py-3 text-center">
+                        {product.submissionId ? <span className="text-green-500">&#x2713;</span> : <span className="text-gray-300 dark:text-gray-600">&#x2717;</span>}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
+          )}
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-gray-700 dark:text-gray-300">
-                    {t(
-                      `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredSubmissions.length)} / ${filteredSubmissions.length}개`,
-                      `Showing ${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredSubmissions.length)} of ${filteredSubmissions.length}`
-                    )}
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      disabled={currentPage === 1}
-                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={cn(
-                          'px-3 py-1 rounded-lg',
-                          currentPage === page
-                            ? 'bg-purple-600 text-white'
-                            : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                        )}
-                      >
-                        {page}
-                      </button>
+          {/* Catalog Pagination */}
+          {catalogData && catalogData.totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-gray-500">총 {catalogData.total}개 중 {(catalogPage - 1) * 20 + 1}-{Math.min(catalogPage * 20, catalogData.total)}</p>
+              <div className="flex gap-2">
+                <button className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm disabled:opacity-50 dark:border-gray-700 dark:text-white" disabled={catalogPage === 1} onClick={() => setCatalogPage(p => p - 1)}>이전</button>
+                <button className="rounded-lg border border-gray-200 px-3 py-1.5 text-sm disabled:opacity-50 dark:border-gray-700 dark:text-white" disabled={catalogPage >= catalogData.totalPages} onClick={() => setCatalogPage(p => p + 1)}>다음</button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+          {loading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+            </div>
+          ) : (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th className="px-6 py-3 text-left">
+                        <input
+                          type="checkbox"
+                          checked={selectedSubmissions.size === paginatedSubmissions.length && paginatedSubmissions.length > 0}
+                          onChange={handleSelectAll}
+                          className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                        />
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('ID', 'ID')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('아티스트', 'Artist')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('앨범', 'Album')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('제출일', 'Submit Date')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('상태', 'Status')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('파일', 'Files')}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        {t('작업', 'Actions')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {paginatedSubmissions.map((submission) => (
+                      <tr key={submission.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="px-6 py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedSubmissions.has(submission.id)}
+                            onChange={() => toggleSelection(submission.id)}
+                            className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                          />
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                          {submission.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {submission.artistName || '-'}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {submission.labelName || '-'}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {submission.albumTitle || '-'}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {submission.tracks?.length || 0} {t('트랙', 'tracks')}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                          {new Date(submission.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={cn(
+                            'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                            submission.status === 'pending' && 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+                            submission.status === 'approved' && 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+                            submission.status === 'rejected' && 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          )}>
+                            {submission.status === 'pending' && t('대기중', 'Pending')}
+                            {submission.status === 'approved' && t('승인됨', 'Approved')}
+                            {submission.status === 'rejected' && t('거절됨', 'Rejected')}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2 text-sm">
+                            {submission.files?.coverImageUrl && (
+                              <span className="text-green-600 dark:text-green-400" title={t('커버 이미지', 'Cover Image')}>
+                                <FileText className="w-4 h-4" />
+                              </span>
+                            )}
+                            {submission.files?.audioFiles?.length > 0 && (
+                              <span className="text-blue-600 dark:text-blue-400" title={t('오디오 파일', 'Audio Files')}>
+                                <Music className="w-4 h-4" />
+                              </span>
+                            )}
+                            {submission.files?.motionArtUrl && (
+                              <span className="text-purple-600 dark:text-purple-400" title={t('모션 아트', 'Motion Art')}>
+                                <Package className="w-4 h-4" />
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={() => {
+                                setSelectedSubmission(submission);
+                                setShowDetailModal(true);
+                              }}
+                              className="text-purple-600 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300"
+                            >
+                              <Eye className="w-5 h-5" />
+                            </button>
+                            {submission.status === 'pending' && (
+                              <>
+                                <button
+                                  onClick={() => handleStatusUpdate(submission.id, 'approved')}
+                                  className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
+                                >
+                                  <Check className="w-5 h-5" />
+                                </button>
+                                <button
+                                  onClick={() => handleStatusUpdate(submission.id, 'rejected')}
+                                  className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+                                >
+                                  <X className="w-5 h-5" />
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
                     ))}
-                    <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      disabled={currentPage === totalPages}
-                      className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                      {t(
+                        `${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredSubmissions.length)} / ${filteredSubmissions.length}개`,
+                        `Showing ${(currentPage - 1) * itemsPerPage + 1} - ${Math.min(currentPage * itemsPerPage, filteredSubmissions.length)} of ${filteredSubmissions.length}`
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={cn(
+                            'px-3 py-1 rounded-lg',
+                            currentPage === page
+                              ? 'bg-purple-600 text-white'
+                              : 'border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                          )}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       {/* Detail Modal */}
       {showDetailModal && selectedSubmission && (
