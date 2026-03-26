@@ -142,6 +142,12 @@ export class CatalogController {
     return this.catalogService.linkToSubmission(productId, body.submissionId);
   }
 
+  @Post('backfill-saved-artists')
+  @UseGuards(JwtAuthGuard)
+  async backfillSavedArtists() {
+    return this.catalogService.backfillSavedArtists();
+  }
+
   @Get('unlinked')
   @UseGuards(JwtAuthGuard)
   async findUnlinked(
