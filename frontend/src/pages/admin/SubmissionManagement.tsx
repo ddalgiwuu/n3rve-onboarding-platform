@@ -279,6 +279,35 @@ const SubmissionManagement: React.FC = () => {
     setSelectedSubmissions(newSelection);
   };
 
+  function generateGradient(name: string): string {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+      hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const h1 = Math.abs(hash % 360);
+    const h2 = (h1 + 40) % 360;
+    return `linear-gradient(135deg, hsl(${h1}, 60%, 35%), hsl(${h2}, 50%, 25%))`;
+  }
+
+  function getRelativeDate(dateStr?: string): string {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = date.getTime() - now.getTime();
+    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'today';
+    if (diffDays === 1) return 'tomorrow';
+    if (diffDays === -1) return 'yesterday';
+    if (diffDays > 1 && diffDays <= 7) return `in ${diffDays} days`;
+    if (diffDays < -1 && diffDays >= -7) return `${Math.abs(diffDays)} days ago`;
+    if (diffDays > 7 && diffDays <= 90) return 'next quarter';
+    if (diffDays < -7 && diffDays >= -30) return 'last week';
+    if (diffDays < -30 && diffDays >= -90) return 'last month';
+    if (diffDays < -90) return 'older';
+    return 'upcoming';
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -526,33 +555,50 @@ const SubmissionManagement: React.FC = () => {
               {catalogData?.data?.map((product: any) => (
                 <div
                   key={product.id}
-                  className="cursor-pointer rounded-lg border border-gray-200 bg-white p-4 transition-shadow hover:shadow-md dark:border-gray-700 dark:bg-gray-800"
+                  className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
                   onClick={() => navigate(`/catalog/${product.id}`)}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium text-gray-900 dark:text-white">{product.name}</p>
-                      {product.releaseVersion && <p className="text-xs text-gray-400">{product.releaseVersion}</p>}
-                    </div>
-                    <span className={`ml-2 shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${
-                      product.state === 'DELIVERED' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                    }`}>{product.state}</span>
-                  </div>
-                  <p className="mt-1 truncate text-sm text-gray-500 dark:text-gray-400">{product.displayArtist}</p>
-                  <div className="mt-3 flex items-center justify-between text-xs text-gray-400">
-                    <div className="flex items-center gap-2">
-                      {product.releaseFormatType && (
-                        <span className="rounded bg-gray-100 px-1.5 py-0.5 font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">{product.releaseFormatType}</span>
+                  {/* Cover Art Area */}
+                  <div className="relative aspect-square overflow-hidden" style={{ background: generateGradient(product.name) }}>
+                    <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                      <p className="text-lg font-bold text-white drop-shadow-lg">{product.name}</p>
+                      {product.releaseVersion && (
+                        <p className="mt-1 text-sm text-white/80 drop-shadow">{product.releaseVersion}</p>
                       )}
-                      <span>{product._count?.assets || 0} 트랙</span>
+                      <p className="mt-2 text-sm text-white/70 drop-shadow">{product.displayArtist}</p>
                     </div>
-                    {product.submissionId ? (
-                      <span className="text-green-500">&#x2713; 연결됨</span>
-                    ) : (
-                      <span className="text-gray-300 dark:text-gray-600">미연결</span>
-                    )}
+                    <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-2 pb-2">
+                      <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
+                        {getRelativeDate(product.consumerReleaseDate)}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {product.label && (
+                          <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
+                            {product.label}
+                          </span>
+                        )}
+                        <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
+                          {product.releaseFormatType || 'SINGLE'}
+                        </span>
+                        {product.state === 'DELIVERED' && (
+                          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
+                            <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="mt-2 font-mono text-xs text-gray-400">{product.upc}</div>
+                  {/* Info below image */}
+                  <div className="p-3">
+                    <p className="truncate font-semibold text-gray-900 dark:text-white">{product.name}</p>
+                    <p className="truncate text-sm text-gray-500 dark:text-gray-400">
+                      {product.displayArtist}{product.label ? ` / ${product.label}` : ''}
+                    </p>
+                    <div className="mt-2 space-y-0.5 text-xs text-gray-400">
+                      <p>BARCODE  {product.upc}</p>
+                      <p>CAT.NR.  {product.catalogNumber || product.upc}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
