@@ -555,7 +555,13 @@ const SubmissionManagement: React.FC = () => {
                 <div
                   key={item.catalogProductId || item.submissionId}
                   className="cursor-pointer overflow-hidden rounded-lg border border-gray-200 bg-white transition-shadow hover:shadow-lg dark:border-gray-700 dark:bg-gray-800"
-                  onClick={() => navigate(item.catalogProductId ? `/catalog/${item.catalogProductId}` : `/admin/submissions/${item.submissionId}`)}
+                  onClick={() => {
+                    if (item.catalogProductId) {
+                      navigate(`/catalog/${item.catalogProductId}`);
+                    } else if (item.submissionId) {
+                      navigate(`/catalog/${item.submissionId}?type=submission`);
+                    }
+                  }}
                 >
                   {/* Cover Art Area */}
                   <div className="relative aspect-square overflow-hidden">
@@ -640,7 +646,13 @@ const SubmissionManagement: React.FC = () => {
                     <tr
                       key={item.catalogProductId || item.submissionId}
                       className="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      onClick={() => navigate(item.catalogProductId ? `/catalog/${item.catalogProductId}` : `/admin/submissions/${item.submissionId}`)}
+                      onClick={() => {
+                    if (item.catalogProductId) {
+                      navigate(`/catalog/${item.catalogProductId}`);
+                    } else if (item.submissionId) {
+                      navigate(`/catalog/${item.submissionId}?type=submission`);
+                    }
+                  }}
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">

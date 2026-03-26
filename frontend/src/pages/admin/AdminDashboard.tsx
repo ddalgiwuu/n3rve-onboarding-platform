@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ClipboardList, Users, CheckCircle, XCircle, Music, Eye, Download, Search, Filter, Clock, Settings, ShieldAlert } from 'lucide-react';
+import { ClipboardList, Users, CheckCircle, XCircle, Music, Download, Search, Filter, Clock, Settings, ShieldAlert } from 'lucide-react';
 import { submissionService } from '@/services/submission.service';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -196,13 +196,12 @@ export default function AdminDashboard() {
                   <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium">{t('admin.album')}</th>
                   <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">{t('admin.submitter')}</th>
                   <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">{t('admin.status')}</th>
-                  <th className="text-left p-4 text-gray-700 dark:text-gray-300 font-medium whitespace-nowrap">{t('admin.actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {recentSubmissions.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="text-center p-8 text-gray-500 dark:text-gray-400">
+                    <td colSpan={5} className="text-center p-8 text-gray-500 dark:text-gray-400">
                       {t('admin.noData')}
                     </td>
                   </tr>
@@ -210,7 +209,7 @@ export default function AdminDashboard() {
                   recentSubmissions.map((submission) => (
                     <tr
                       key={submission.id}
-                      onClick={() => navigate(`/admin/submissions/${submission.id}`)}
+                      onClick={() => navigate(`/catalog/${submission.id}?type=submission`)}
                       className="border-b border-gray-100 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
                     >
                       <td className="p-4 text-gray-700 dark:text-gray-200">{formatDate(submission.createdAt)}</td>
@@ -226,12 +225,6 @@ export default function AdminDashboard() {
                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusBadge(submission.status.toLowerCase())}`}>
                           {t(`admin.${submission.status.toLowerCase()}`)}
                         </span>
-                      </td>
-                      <td className="p-4 whitespace-nowrap">
-                        <div className="flex items-center gap-1 text-n3rve-500 dark:text-n3rve-400 text-sm">
-                          <Eye className="w-4 h-4" />
-                          {t('admin.view')}
-                        </div>
                       </td>
                     </tr>
                   ))
