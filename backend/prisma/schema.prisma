@@ -610,6 +610,29 @@ model CatalogProduct {
   submissionId         String?            @db.ObjectId
   submission           Submission?        @relation(fields: [submissionId], references: [id])
   assets               CatalogAsset[]
+  courtesyLine          String?
+  labelCopyInfo         String?
+  albumNotes            String?
+  metadataLanguage      String?
+  metadataTranslations  Json?
+  extraFields           Json?
+  catalogTier           String?
+  totalVolumes          Int?
+  isCompilation         Boolean  @default(false)
+  explicitContent       String?
+  preorderDate          String?
+  recordingYear         String?
+  recordingLocation     String?
+  alternateGenre        CatalogGenre?
+  alternateSubgenre     CatalogGenre?
+  pricingIntervals      Json?
+  customPricing         Json?
+  usageRights           Json?
+  territoryReleaseDate  Json?
+  productAttachments    Json?
+  deliveryInstructions  Json?
+  tags                  String[]
+  territories           Json?
   createdAt            DateTime           @default(now()) @db.Date
   updatedAt            DateTime           @updatedAt @db.Date
 }
@@ -649,6 +672,25 @@ model CatalogAsset {
   publishers           Json?
   productId            String               @db.ObjectId
   product              CatalogProduct       @relation(fields: [productId], references: [id])
+  audioFileInfo         Json?
+  dolbyAtmosFileInfo    Json?
+  availableSeparately   Boolean  @default(true)
+  allowPreorder         Boolean  @default(false)
+  allowPreorderPreview  Boolean  @default(false)
+  preorderType          String?
+  rightsOwnershipName   String?
+  rightsContractBeginDate String?
+  courtesyLine          String?
+  iswc                  String?
+  extraFields           Json?
+  tags                  String[]
+  assetTerritories      Json?
+  assetTranslations     Json?
+  metadataLanguage      String?
+  audioLanguage         String?
+  youtubeShortPreview   Boolean  @default(false)
+  previewLength         Int?
+  assetReleaseDate      String?
   createdAt            DateTime             @default(now()) @db.Date
   updatedAt            DateTime             @updatedAt @db.Date
 }
@@ -663,7 +705,30 @@ model CatalogArtist {
   appleMusicId   String?
   appleMusicUrl  String?
   roles          String[]
+  contactDetails        String?
+  bookingAgent          String?
+  countryOfOrigin       String?
+  biography             String?
+  labels                String[]
+  genres                String[]
+  subgenres             String[]
+  isni                  String?
+  ipn                   String?
+  ipi                   String?
+  youtubeOac            String?
+  spotifyDjMixesOptIn   Boolean  @default(false)
+  translations          Json?
+  customIdentifiers     Json?
   syncedAt       DateTime          @default(now()) @db.Date
   createdAt      DateTime          @default(now()) @db.Date
   updatedAt      DateTime          @updatedAt @db.Date
+}
+
+model CatalogPublisher {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  fugaId        BigInt   @unique
+  name          String
+  translations  Json?
+  createdAt     DateTime @default(now()) @db.Date
+  updatedAt     DateTime @updatedAt @db.Date
 }
