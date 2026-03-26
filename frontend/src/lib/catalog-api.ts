@@ -16,6 +16,9 @@ const catalogApi = {
     format?: string; source?: string; page?: number; limit?: number;
   }) => api.get('/catalog/unified', { params }),
 
+  getUnifiedProduct: (id: string, type: 'catalog' | 'submission' = 'catalog') =>
+    api.get(`/catalog/unified/${id}`, { params: { type } }),
+
   getProduct: (id: string) =>
     api.get<CatalogProduct>(`/catalog/products/${id}`),
 
