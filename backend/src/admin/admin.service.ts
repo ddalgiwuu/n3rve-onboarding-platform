@@ -284,14 +284,10 @@ export class AdminService {
   async markCatalogSubmissionsReleased() {
     const now = new Date();
 
-    // Find all submissions linked to catalog (already released through FUGA)
+    // Find all non-RELEASED submissions (catalog-linked OR release date in the past)
     const catalogSubmissions = await this.prisma.submission.findMany({
       where: {
-        OR: [
-          { catalogProductId: { not: null } },
-          { fugaSyncStatus: 'SYNCED' },
-        ],
-        status: { not: 'RELEASED' },
+        status: { notIn: ['RELEASED', 'REJECTED'] },
       },
       select: { id: true, releaseDate: true, albumTitle: true, artistName: true },
     });

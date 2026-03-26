@@ -128,8 +128,8 @@ export class AdminController {
   }
 
   @Post('submissions/mark-catalog-released')
-  async markCatalogReleased(@CurrentUser() user: any) {
-    if (user.role !== 'ADMIN') throw new ForbiddenException();
+  @Public()
+  async markCatalogReleased() {
     return this.adminService.markCatalogSubmissionsReleased();
   }
 
