@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../prisma/prisma.service';
 import { FilesService } from '../files/files.service';
 import { DropboxService } from '../dropbox/dropbox.service';
+import { SavedArtistsService } from '../saved-artists/saved-artists.service';
 import { Prisma, SubmissionStatus } from '@prisma/client';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -11,6 +12,7 @@ export class SubmissionsService {
     private prisma: PrismaService,
     private filesService: FilesService,
     private dropboxService: DropboxService,
+    private savedArtistsService: SavedArtistsService,
   ) {}
 
   /**
@@ -341,12 +343,88 @@ export class SubmissionsService {
       }
     };
 
-    return this.prisma.submission.create({
+    const submission = await this.prisma.submission.create({
       data: submissionData,
       include: {
         submitter: true,
       }
     });
+
+    // Auto-create SavedArtist/SavedContributor from submission data
+    await this.createSavedArtistsFromSubmission(userId, data);
+
+    return submission;
+  }
+
+  /**
+   * Extract artists/contributors from submission data and create SavedArtist/SavedContributor records.
+   * Uses the label account (parentAccountId) as the target userId for proper scoping.
+   */
+  private async createSavedArtistsFromSubmission(submitterId: string, data: any) {
+    try {
+      // Resolve target userId: use label account (parent) if exists, otherwise submitter
+      const user = await this.prisma.user.findUnique({
+        where: { id: submitterId },
+        select: { parentAccountId: true },
+      });
+      const targetUserId = user?.parentAccountId || submitterId;
+
+      // Collect unique artist names
+      const artistNames = new Set<string>();
+      const mainArtistName = data.artist?.nameKo || data.artistName || data.artist?.name;
+      if (mainArtistName) artistNames.add(mainArtistName);
+
+      // Track-level artists
+      for (const track of data.tracks || []) {
+        for (const artist of track.artists || []) {
+          if (artist.name) artistNames.add(artist.name);
+        }
+        for (const fa of track.featuringArtists || []) {
+          if (fa.name) artistNames.add(fa.name);
+        }
+      }
+
+      // Create SavedArtists
+      for (const name of artistNames) {
+        try {
+          const identifiers: any[] = [];
+          // Add platform IDs for the main artist
+          if (name === mainArtistName) {
+            const spotifyId = data.artist?.artists?.[0]?.identifiers?.find?.((id: any) => id.type === 'spotify')?.value || data.spotifyId;
+            const appleMusicId = data.artist?.artists?.[0]?.identifiers?.find?.((id: any) => id.type === 'apple' || id.type === 'appleMusic')?.value || data.appleMusicId;
+            if (spotifyId) identifiers.push({ type: 'SPOTIFY', value: spotifyId, url: null });
+            if (appleMusicId) identifiers.push({ type: 'APPLE_MUSIC', value: appleMusicId, url: null });
+          }
+          await this.savedArtistsService.createOrUpdateArtist(targetUserId, { name, identifiers });
+        } catch (err) {
+          console.warn(`Failed to auto-create SavedArtist "${name}": ${err.message}`);
+        }
+      }
+
+      // Collect unique contributors
+      const contributorMap = new Map<string, string[]>();
+      for (const track of data.tracks || []) {
+        for (const contributor of track.contributors || []) {
+          if (!contributor.name) continue;
+          const existing = contributorMap.get(contributor.name) || [];
+          if (contributor.role && !existing.includes(contributor.role)) {
+            existing.push(contributor.role);
+          }
+          contributorMap.set(contributor.name, existing);
+        }
+      }
+
+      // Create SavedContributors
+      for (const [name, roles] of contributorMap) {
+        try {
+          await this.savedArtistsService.createOrUpdateContributor(targetUserId, { name, roles });
+        } catch (err) {
+          console.warn(`Failed to auto-create SavedContributor "${name}": ${err.message}`);
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to auto-create saved artists from submission: ${error.message}`);
+    }
   }
 
   async findAll(userId: string, isAdmin: boolean) {

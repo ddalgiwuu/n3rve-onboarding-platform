@@ -119,8 +119,6 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { icon: BarChart3, label: 'Feature Reports', path: '/feature-reports', color: 'text-green-600' },
     { icon: UserCircle, label: 'Artist Roster', path: '/artist-roster', color: 'text-gray-600' },
     { icon: FolderOpen, label: t('nav.submissionHistory'), path: '/submissions', color: 'text-gray-600' },
-    { icon: Disc3, label: 'Catalog', path: '/catalog', color: 'text-purple-600' },
-    { icon: Users, label: 'Artists', path: '/catalog/artists', color: 'text-indigo-600' },
     { icon: Music, label: t('nav.artistProfile'), path: '/artist-profile-guide', color: 'text-gray-600' },
     { icon: FileText, label: t('nav.guide'), path: '/guide', color: 'text-green-600' },
     { icon: Settings, label: t('nav.settings'), path: '/settings', color: 'text-gray-600' },
@@ -131,6 +129,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     { icon: Shield, label: t('nav.adminDashboard'), path: '/admin', color: 'text-red-600' },
     { icon: ClipboardList, label: t('nav.submissionManagement'), path: '/admin/submission-management', color: 'text-blue-600' },
     { icon: Users, label: t('nav.customerManagement'), path: '/admin/customers', color: 'text-green-600' },
+    { icon: Disc3, label: 'Catalog', path: '/admin/catalog', color: 'text-purple-600' },
+    { icon: Users, label: 'Catalog Artists', path: '/admin/catalog/artists', color: 'text-indigo-600' },
     { icon: UserCog, label: t('nav.accountManagement'), path: '/admin/accounts', color: 'text-gray-600' },
     { icon: Settings, label: t('nav.settings'), path: '/admin/settings', color: 'text-gray-600' }
   ] as const;

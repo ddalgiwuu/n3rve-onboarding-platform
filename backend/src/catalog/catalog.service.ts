@@ -821,10 +821,11 @@ export class CatalogService {
     const submissionIds = [...new Set(linkedProducts.map((p) => p.submissionId!))];
     const submissions = await this.prisma.submission.findMany({
       where: { id: { in: submissionIds } },
-      select: { submitterId: true },
+      select: { submitterId: true, labelAccountId: true },
     });
 
-    const userIds = [...new Set(submissions.map((s) => s.submitterId))];
+    // Use labelAccountId (label account) if available, otherwise fall back to submitterId
+    const userIds = [...new Set(submissions.map((s) => s.labelAccountId || s.submitterId))];
 
     // Get all catalog artists once
     const catalogArtists = await this.prisma.catalogArtist.findMany();
@@ -1162,12 +1163,12 @@ export class CatalogService {
 
       const submission = await this.prisma.submission.findUnique({
         where: { id: catalogProduct.submissionId },
-        select: { submitterId: true },
+        select: { submitterId: true, labelAccountId: true },
       });
 
       if (!submission?.submitterId) return;
 
-      const userId = submission.submitterId;
+      const userId = submission.labelAccountId || submission.submitterId;
 
       // Collect all artists and contributors from product + assets
       const artists: { name: string; spotifyUrl?: string; appleMusicUrl?: string }[] = [];

@@ -21,39 +21,28 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 export class SavedArtistsController {
   constructor(private readonly savedArtistsService: SavedArtistsService) {}
 
+  /** Resolve to label account (parent) userId for proper scoping */
+  private getLabelUserId(req: any): string {
+    return req.user.parentAccountId || req.user.id;
+  }
+
   @Get('artists')
-  @ApiOperation({ summary: 'Get all saved artists for the authenticated user' })
+  @ApiOperation({ summary: 'Get all saved artists for the label account' })
   async getArtists(
     @Request() req,
     @Query('search') search?: string,
     @Query('limit') limit?: string,
   ) {
-    console.log('SavedArtistsController: GET /artists called');
-    console.log('SavedArtistsController: Full req.user object:', JSON.stringify(req.user, null, 2));
-    console.log('SavedArtistsController: User ID:', req.user.id);
-    console.log('SavedArtistsController: User ID type:', typeof req.user.id);
-    console.log('SavedArtistsController: Search query:', search);
-    console.log('SavedArtistsController: Limit:', limit);
-    
-    try {
-      const result = await this.savedArtistsService.findAllArtists(
-        req.user.id,
-        search,
-        limit ? parseInt(limit) : 50
-      );
-      console.log('SavedArtistsController: Found artists:', result.length);
-      // Result is already converted by service, safe to stringify
-      console.log('SavedArtistsController: Artists data:', JSON.stringify(result, null, 2));
-      return result;
-    } catch (error) {
-      console.error('SavedArtistsController: Error fetching artists:', error);
-      console.error('SavedArtistsController: Error stack:', error.stack);
-      throw error;
-    }
+    const userId = this.getLabelUserId(req);
+    return this.savedArtistsService.findAllArtists(
+      userId,
+      search,
+      limit ? parseInt(limit) : 50
+    );
   }
 
   @Get('contributors')
-  @ApiOperation({ summary: 'Get all saved contributors for the authenticated user' })
+  @ApiOperation({ summary: 'Get all saved contributors for the label account' })
   async getContributors(
     @Request() req,
     @Query('search') search?: string,
@@ -61,11 +50,12 @@ export class SavedArtistsController {
     @Query('instruments') instruments?: string | string[],
     @Query('limit') limit?: string,
   ) {
+    const userId = this.getLabelUserId(req);
     const rolesArray = Array.isArray(roles) ? roles : roles ? [roles] : undefined;
     const instrumentsArray = Array.isArray(instruments) ? instruments : instruments ? [instruments] : undefined;
 
     return this.savedArtistsService.findAllContributors(
-      req.user.id,
+      userId,
       search,
       rolesArray,
       instrumentsArray,
@@ -76,55 +66,44 @@ export class SavedArtistsController {
   @Post('artists')
   @ApiOperation({ summary: 'Create or update a saved artist' })
   async createOrUpdateArtist(@Request() req, @Body() data: any) {
-    console.log('SavedArtistsController: POST /artists called');
-    console.log('SavedArtistsController: Full req.user object:', JSON.stringify(req.user, null, 2));
-    console.log('SavedArtistsController: User ID:', req.user.id);
-    console.log('SavedArtistsController: User ID type:', typeof req.user.id);
-    console.log('SavedArtistsController: Request body:', JSON.stringify(data, null, 2));
-    
-    try {
-      const result = await this.savedArtistsService.createOrUpdateArtist(req.user.id, data);
-      // Result is already converted by service, safe to stringify
-      console.log('SavedArtistsController: Artist created/updated successfully:', JSON.stringify(result, null, 2));
-      console.log('SavedArtistsController: Result ID:', result.id);
-      console.log('SavedArtistsController: Result userId:', result.userId);
-      return result;
-    } catch (error) {
-      console.error('SavedArtistsController: Error creating/updating artist:', error);
-      console.error('SavedArtistsController: Error stack:', error.stack);
-      throw error;
-    }
+    const userId = this.getLabelUserId(req);
+    return this.savedArtistsService.createOrUpdateArtist(userId, data);
   }
 
   @Post('contributors')
   @ApiOperation({ summary: 'Create or update a saved contributor' })
   async createOrUpdateContributor(@Request() req, @Body() data: any) {
-    return this.savedArtistsService.createOrUpdateContributor(req.user.id, data);
+    const userId = this.getLabelUserId(req);
+    return this.savedArtistsService.createOrUpdateContributor(userId, data);
   }
 
   @Put('artists/:id/use')
   @ApiOperation({ summary: 'Update artist usage count' })
   async updateArtistUsage(@Request() req, @Param('id') id: string) {
-    return this.savedArtistsService.updateArtistUsage(id, req.user.id);
+    const userId = this.getLabelUserId(req);
+    return this.savedArtistsService.updateArtistUsage(id, userId);
   }
 
   @Put('contributors/:id/use')
   @ApiOperation({ summary: 'Update contributor usage count' })
   async updateContributorUsage(@Request() req, @Param('id') id: string) {
-    return this.savedArtistsService.updateContributorUsage(id, req.user.id);
+    const userId = this.getLabelUserId(req);
+    return this.savedArtistsService.updateContributorUsage(id, userId);
   }
 
   @Delete('artists/:id')
   @ApiOperation({ summary: 'Delete a saved artist' })
   async deleteArtist(@Request() req, @Param('id') id: string) {
-    await this.savedArtistsService.deleteArtist(id, req.user.id);
+    const userId = this.getLabelUserId(req);
+    await this.savedArtistsService.deleteArtist(id, userId);
     return { message: 'Artist deleted successfully' };
   }
 
   @Delete('contributors/:id')
   @ApiOperation({ summary: 'Delete a saved contributor' })
   async deleteContributor(@Request() req, @Param('id') id: string) {
-    await this.savedArtistsService.deleteContributor(id, req.user.id);
+    const userId = this.getLabelUserId(req);
+    await this.savedArtistsService.deleteContributor(id, userId);
     return { message: 'Contributor deleted successfully' };
   }
 }
