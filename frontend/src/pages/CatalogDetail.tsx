@@ -442,7 +442,7 @@ export default function CatalogDetailPage() {
       {/* Back button */}
       <button
         className="inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-        onClick={() => navigate('/catalog')}
+        onClick={() => navigate('/admin/catalog')}
       >
         <ArrowLeft className="h-4 w-4" /> 카탈로그로 돌아가기
       </button>

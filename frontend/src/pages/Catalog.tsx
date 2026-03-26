@@ -192,9 +192,9 @@ export default function CatalogPage() {
                 className="cursor-pointer overflow-hidden rounded-lg border border-zinc-200 bg-white transition-shadow hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
                 onClick={() => {
                   if (item.catalogProductId) {
-                    navigate(`/catalog/${item.catalogProductId}`);
+                    navigate(`/admin/catalog/${item.catalogProductId}`);
                   } else if (item.submissionId) {
-                    navigate(`/catalog/${item.submissionId}?type=submission`);
+                    navigate(`/admin/catalog/${item.submissionId}?type=submission`);
                   }
                 }}
               >
@@ -284,9 +284,9 @@ export default function CatalogPage() {
                     className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
                     onClick={() => {
                   if (item.catalogProductId) {
-                    navigate(`/catalog/${item.catalogProductId}`);
+                    navigate(`/admin/catalog/${item.catalogProductId}`);
                   } else if (item.submissionId) {
-                    navigate(`/catalog/${item.submissionId}?type=submission`);
+                    navigate(`/admin/catalog/${item.submissionId}?type=submission`);
                   }
                 }}
                   >
