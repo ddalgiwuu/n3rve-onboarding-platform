@@ -50,7 +50,7 @@ export default function CatalogPage() {
   const [stateFilter, setStateFilter] = useState('');
   const [formatFilter, setFormatFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
-  const [viewMode, setViewMode] = useState<'table' | 'tile'>('table');
+  const [viewMode, setViewMode] = useState<'table' | 'tile'>('tile');
   const [page, setPage] = useState(1);
 
   const { data: productsData, isLoading } = useQuery({

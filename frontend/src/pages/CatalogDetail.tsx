@@ -67,31 +67,38 @@ function ReleaseDateTimeField({ date, time }: { date?: string; time?: string }) 
   if (!date) return <Field label="Release Date & Time" value={undefined} />;
   const dateStr = date.split('T')[0];
 
-  function toTZ(dateStr: string, time: string | undefined, offsetHours: number, label: string) {
+  function toTZ(dateStr: string, time: string | undefined, offsetHours: number) {
     try {
       const base = time ? `${dateStr}T${time}` : `${dateStr}T00:00:00Z`;
       const d = new Date(base);
-      if (isNaN(d.getTime())) return null;
+      if (isNaN(d.getTime())) return { date: dateStr, time: '00:00' };
       const shifted = new Date(d.getTime() + offsetHours * 3600000);
       const mo = String(shifted.getUTCMonth() + 1).padStart(2, '0');
       const da = String(shifted.getUTCDate()).padStart(2, '0');
       const hr = String(shifted.getUTCHours()).padStart(2, '0');
       const mi = String(shifted.getUTCMinutes()).padStart(2, '0');
-      return `${shifted.getUTCFullYear()}-${mo}-${da} ${hr}:${mi} ${label}`;
-    } catch { return null; }
+      return { date: `${shifted.getUTCFullYear()}-${mo}-${da}`, time: `${hr}:${mi}` };
+    } catch { return { date: dateStr, time: '00:00' }; }
   }
 
-  const utc = time ? `${dateStr} ${time.replace('Z', '')} UTC` : `${dateStr} 00:00 UTC`;
-  const kst = toTZ(dateStr, time, 9, 'KST');
-  const jst = toTZ(dateStr, time, 9, 'JST');
+  const utcTime = time ? time.replace('Z', '').substring(0, 5) : '00:00';
+  const kst = toTZ(dateStr, time, 9);
 
   return (
     <div className="pb-4 border-b border-zinc-200 dark:border-zinc-800 col-span-2">
-      <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-1">Release Date & Time</p>
-      <div className="space-y-1">
-        <p className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">{utc}</p>
-        {kst && <p className="text-[13px] text-blue-500 dark:text-blue-400">{kst}</p>}
-        {jst && kst !== jst && <p className="text-[13px] text-emerald-500 dark:text-emerald-400">{jst}</p>}
+      <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-2">Release Date & Time</p>
+      <div className="flex items-start gap-4">
+        <div className="rounded-lg bg-zinc-100 dark:bg-zinc-700/60 px-4 py-2.5 text-center min-w-[140px]">
+          <p className="text-[11px] font-medium text-zinc-400 dark:text-zinc-500 mb-0.5">UTC</p>
+          <p className="text-[15px] font-bold text-zinc-900 dark:text-zinc-100">{dateStr}</p>
+          <p className="text-[13px] font-mono text-zinc-600 dark:text-zinc-300">{utcTime}</p>
+        </div>
+        <div className="flex items-center text-zinc-300 dark:text-zinc-600 pt-4">→</div>
+        <div className="rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 px-4 py-2.5 text-center min-w-[140px]">
+          <p className="text-[11px] font-medium text-blue-400 dark:text-blue-500 mb-0.5">KST / JST</p>
+          <p className="text-[15px] font-bold text-blue-700 dark:text-blue-300">{kst.date}</p>
+          <p className="text-[13px] font-mono text-blue-500 dark:text-blue-400">{kst.time}</p>
+        </div>
       </div>
     </div>
   );
