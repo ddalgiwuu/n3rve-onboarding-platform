@@ -29,7 +29,7 @@ function FormatTag({ format }: { format?: string }) {
 
 function SourceBadge({ source }: { source?: string }) {
   if (source === 'both') return <span className="rounded-full bg-blue-500/80 px-2 py-0.5 text-xs text-white">Synced</span>;
-  if (source === 'catalog') return <span className="rounded-full bg-green-500/80 px-2 py-0.5 text-xs text-white">FUGA</span>;
+  if (source === 'catalog') return <span className="rounded-full bg-green-500/80 px-2 py-0.5 text-xs text-white">N3RVE</span>;
   if (source === 'submission') return <span className="rounded-full bg-orange-500/80 px-2 py-0.5 text-xs text-white">제출</span>;
   return null;
 }
@@ -101,7 +101,7 @@ export default function CatalogPage() {
       <div>
         <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Catalog</h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          FUGA 카탈로그 + Submission 통합 뷰
+          N3RVE 카탈로그 + Submission 통합 뷰
         </p>
       </div>
 
@@ -112,7 +112,7 @@ export default function CatalogPage() {
           <span className="text-zinc-300 dark:text-zinc-600">|</span>
           <span className="text-blue-600 dark:text-blue-400">양쪽 동기화 {stats.both}</span>
           <span className="text-zinc-300 dark:text-zinc-600">|</span>
-          <span className="text-green-600 dark:text-green-400">FUGA만 {stats.catalogOnly}</span>
+          <span className="text-green-600 dark:text-green-400">N3RVE만 {stats.catalogOnly}</span>
           <span className="text-zinc-300 dark:text-zinc-600">|</span>
           <span className="text-orange-600 dark:text-orange-400">제출만 {stats.submissionOnly}</span>
         </div>
@@ -157,7 +157,7 @@ export default function CatalogPage() {
         >
           <option value="">모든 소스</option>
           <option value="both">양쪽 동기화</option>
-          <option value="catalog">FUGA만</option>
+          <option value="catalog">N3RVE만</option>
           <option value="submission">제출만</option>
         </select>
         <div className="flex gap-1 rounded-lg border border-zinc-200 p-0.5 dark:border-zinc-700">

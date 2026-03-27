@@ -172,7 +172,7 @@ export default function CatalogArtistDetail() {
                     {artist.type === 'ARTIST' ? 'Artist' : 'Contributor'}
                   </span>
                   {artist.countryOfOrigin && <span className="text-sm">{artist.countryOfOrigin}</span>}
-                  <span className="text-sm">FUGA ID: {artist.fugaId}</span>
+                  <span className="text-sm">N3RVE ID: {artist.fugaId}</span>
                 </div>
               </div>
             </div>
