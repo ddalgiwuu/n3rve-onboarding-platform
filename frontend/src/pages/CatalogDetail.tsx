@@ -798,17 +798,17 @@ export default function CatalogDetailPage() {
       {/* ── Section 6: Files ── */}
       <Section title="파일" icon={FolderOpen} defaultOpen={false}>
         <div className="space-y-4">
-          <LinkField label="Cover Image URL" url={files.coverImageUrl || p.coverImageUrl} />
-          {(files.coverImageUrl || p.coverImageUrl) && (
+          <LinkField label="Cover Image URL" url={p.coverImageUrl || files.coverImageUrl} />
+          {(p.coverImageUrl || files.coverImageUrl) && (
             <img
-              src={files.coverImageUrl || p.coverImageUrl}
+              src={toRawUrl(p.coverImageUrl || files.coverImageUrl)}
               alt="Cover"
               className="h-24 w-24 rounded-lg object-cover border border-zinc-200 dark:border-zinc-700"
             />
           )}
-          <LinkField label="Artist Photo URL" url={files.artistPhotoUrl} />
-          <LinkField label="Motion Art URL" url={files.motionArtUrl} />
-          <LinkField label="Music Video URL" url={files.musicVideoUrl} />
+          <LinkField label="Artist Photo URL" url={p.artistPhotoUrl || files.artistPhotoUrl} />
+          <LinkField label="Motion Art URL" url={p.motionArtUrl || files.motionArtUrl} />
+          <LinkField label="Music Video URL" url={p.musicVideoUrl || files.musicVideoUrl} />
 
           {audioFiles.length > 0 && (
             <div>
