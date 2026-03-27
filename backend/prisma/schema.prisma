@@ -729,6 +729,11 @@ model CatalogArtist {
   ipn                   String?
   ipi                   String?
   youtubeOac            String?
+  melonUrl              String?
+  bugsUrl               String?
+  vibeUrl               String?
+  genieUrl              String?
+  floUrl                String?
   spotifyDjMixesOptIn   Boolean  @default(false)
   translations          Json?
   customIdentifiers     Json?
