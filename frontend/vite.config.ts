@@ -20,31 +20,25 @@ export default defineConfig({
     }
   })],
   build: {
-    sourcemap: true,
+    sourcemap: false,
     rollupOptions: {
       output: {
-        // Add timestamp to force cache invalidation
-        entryFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
-        chunkFileNames: `assets/[name]-[hash]-${Date.now()}.js`,
-        assetFileNames: `assets/[name]-[hash]-${Date.now()}.[ext]`,
-        // Simple chunking strategy
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: 'assets/[name]-[hash].[ext]',
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
-          utils: ['axios', 'date-fns', 'clsx', 'tailwind-merge']
+          query: ['@tanstack/react-query'],
+          ui: ['lucide-react'],
+          utils: ['axios', 'date-fns', 'clsx', 'tailwind-merge'],
         }
       },
-      // Preserve module structure
-      preserveEntrySignatures: 'strict'
     },
-    chunkSizeWarningLimit: 2000,
-    // DISABLE MINIFICATION COMPLETELY
-    minify: false,
-    // Target modern browsers but ensure compatibility
-    target: 'es2015',
-    // CommonJS compatibility
+    chunkSizeWarningLimit: 1000,
+    minify: 'esbuild',
+    target: 'es2020',
     commonjsOptions: {
       transformMixedEsModules: true,
-      // Include all necessary helpers
       include: [/node_modules/]
     }
   },

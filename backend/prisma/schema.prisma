@@ -378,6 +378,11 @@ model Submission {
   qcLogs               QCLog[]
   dspOverrides         DSPMetadataOverride[]
   catalogProducts      CatalogProduct[]
+
+  @@index([status])
+  @@index([submitterId])
+  @@index([labelAccountId])
+  @@index([createdAt])
 }
 
 model User {
@@ -636,6 +641,12 @@ model CatalogProduct {
   territories           Json?
   createdAt            DateTime           @default(now()) @db.Date
   updatedAt            DateTime           @updatedAt @db.Date
+
+  @@index([upc])
+  @@index([state])
+  @@index([label])
+  @@index([submissionId])
+  @@index([syncedAt])
 }
 
 model CatalogAsset {
@@ -723,6 +734,9 @@ model CatalogArtist {
   syncedAt       DateTime          @default(now()) @db.Date
   createdAt      DateTime          @default(now()) @db.Date
   updatedAt      DateTime          @updatedAt @db.Date
+
+  @@index([name])
+  @@index([type])
 }
 
 model CatalogPublisher {
