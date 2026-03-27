@@ -479,6 +479,10 @@ export class CatalogService {
         // Files from submission (convert Dropbox shared links to raw URLs for img rendering)
         coverImageUrl: this.toRawDropboxUrl((submission?.files as any)?.coverImageUrl) || null,
         artistPhotoUrl: this.toRawDropboxUrl((submission?.files as any)?.artistPhotoUrl) || null,
+        audioFiles: ((submission?.files as any)?.audioFiles || []).map((af: any) => ({
+          ...af,
+          dropboxUrl: this.toRawDropboxUrl(af.dropboxUrl) || af.dropboxUrl,
+        })),
 
         // Artists (catalog has DSP URLs)
         artists: catalog?.artists?.map((a: any) => ({
@@ -808,6 +812,15 @@ export class CatalogService {
       // Files
       coverImageUrl: this.toRawDropboxUrl((submission?.files as any)?.coverImageUrl) || null,
       artistPhotoUrl: this.toRawDropboxUrl((submission?.files as any)?.artistPhotoUrl) || null,
+      audioFiles: ((submission?.files as any)?.audioFiles || []).map((af: any) => ({
+        ...af,
+        dropboxUrl: this.toRawDropboxUrl(af.dropboxUrl) || af.dropboxUrl,
+      })),
+      lyricsFiles: (submission?.files as any)?.lyricsFiles || [],
+      dolbyAtmosFiles: (submission?.files as any)?.dolbyAtmosFiles || [],
+      additionalFiles: (submission?.files as any)?.additionalFiles || [],
+      motionArtUrl: this.toRawDropboxUrl((submission?.files as any)?.motionArtUrl) || null,
+      musicVideoUrl: this.toRawDropboxUrl((submission?.files as any)?.musicVideoUrl) || null,
 
       // Artists
       artists: catalogProduct?.artists?.map((a: any) => ({
@@ -1346,8 +1359,11 @@ export class CatalogService {
 
   private toRawDropboxUrl(url: string | null | undefined): string | null {
     if (!url) return null;
-    if (url.includes('dropbox.com') && url.includes('dl=0')) {
-      return url.replace('dl=0', 'raw=1');
+    if (url.includes('dropbox.com')) {
+      if (url.includes('dl=0')) return url.replace('dl=0', 'raw=1');
+      if (!url.includes('raw=1') && !url.includes('dl=1')) {
+        return url + (url.includes('?') ? '&' : '?') + 'raw=1';
+      }
     }
     return url;
   }
