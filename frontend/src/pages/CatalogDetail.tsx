@@ -418,6 +418,7 @@ export default function CatalogDetailPage() {
   const [searchParams] = useSearchParams();
   const type = (searchParams.get('type') as 'catalog' | 'submission') || 'catalog';
   const navigate = useNavigate();
+  const [playingUrl, setPlayingUrl] = useState<string | null>(null);
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['catalog-unified-detail', id, type],
@@ -437,7 +438,6 @@ export default function CatalogDetailPage() {
   const marketing = p.marketing || {};
   const files = p.files || {};
   const assets = p.assets || [];
-  const [playingUrl, setPlayingUrl] = useState<string | null>(null);
 
   function toRawUrl(url: string) {
     if (!url) return url;
