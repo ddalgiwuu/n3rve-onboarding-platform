@@ -611,6 +611,7 @@ model CatalogProduct {
   parentalAdvisory     Boolean            @default(false)
   suborg               String[]
   artists              CatalogArtistRef[]
+  consumerReleaseTime  String?
   syncedAt             DateTime           @default(now()) @db.Date
   syncSource           String             @default("nanoclaw")
   submissionId         String?            @db.ObjectId
