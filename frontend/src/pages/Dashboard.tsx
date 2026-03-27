@@ -2,16 +2,83 @@ import React from 'react';
 import { useAuthStore } from '@/store/auth.store';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useHydration } from '@/hooks/useHydration';
-import { Music, FileText, Users, Upload, ChevronRight, Calendar, Building2, TrendingUp, Clock } from 'lucide-react';
+import { Music, FileText, Users, Upload, ChevronRight, Calendar, Building2, TrendingUp, Clock, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import LoadingSpinner from '@/components/common/LoadingSpinner';
 import useSafeStore from '@/hooks/useSafeStore';
 import { useQuery } from '@tanstack/react-query';
 import api from '@/lib/api';
+import catalogApi from '@/lib/catalog-api';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import LabelDashboard from '@/pages/LabelDashboard';
+
+function UpcomingReleaseBanner() {
+  const { data } = useQuery({
+    queryKey: ['upcoming-releases'],
+    queryFn: () => catalogApi.getUnifiedProducts({ page: 1, limit: 200 }).then(r => r.data),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const upcoming = React.useMemo(() => {
+    if (!data?.data) return [];
+    const now = new Date();
+    return data.data
+      .filter((item: any) => {
+        const rd = item.consumerReleaseDate || item.releaseDate;
+        if (!rd) return false;
+        const diff = Math.ceil((new Date(rd).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return diff >= 0 && diff <= 7;
+      })
+      .map((item: any) => {
+        const rd = item.consumerReleaseDate || item.releaseDate;
+        const diff = Math.ceil((new Date(rd).getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+        return { ...item, daysUntil: diff };
+      })
+      .sort((a: any, b: any) => a.daysUntil - b.daysUntil);
+  }, [data]);
+
+  if (upcoming.length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 dark:border-amber-800 dark:from-amber-950/30 dark:to-orange-950/30">
+      <div className="flex items-center gap-2 mb-3">
+        <Bell className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+        <h3 className="font-bold text-amber-800 dark:text-amber-300">발매 예정 알림</h3>
+        <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-bold text-white">{upcoming.length}</span>
+      </div>
+      <div className="space-y-2">
+        {upcoming.map((item: any) => (
+          <Link
+            key={item.catalogProductId || item.submissionId}
+            to={`/catalog/${item.catalogProductId || item.submissionId}`}
+            className="flex items-center gap-3 rounded-lg bg-white/60 px-3 py-2 hover:bg-white dark:bg-zinc-800/60 dark:hover:bg-zinc-800 transition-colors"
+          >
+            {item.coverImageUrl ? (
+              <img src={item.coverImageUrl} alt="" className="h-10 w-10 rounded-md object-cover" />
+            ) : (
+              <div className="h-10 w-10 rounded-md bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
+                <Music className="h-5 w-5 text-zinc-400" />
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm text-zinc-900 dark:text-white truncate">{item.name}</p>
+              <p className="text-xs text-zinc-500 dark:text-zinc-400">{item.displayArtist} · {item.label}</p>
+            </div>
+            <span className={`rounded-full px-3 py-1 text-xs font-bold text-white flex-shrink-0 ${
+              item.daysUntil === 0 ? 'bg-green-500' :
+              item.daysUntil === 1 ? 'bg-red-500 animate-pulse' :
+              'bg-amber-500'
+            }`}>
+              {item.daysUntil === 0 ? '🎉 오늘!' : item.daysUntil === 1 ? '🔴 내일!' : `D-${item.daysUntil}`}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const isHydrated = useHydration();
@@ -123,6 +190,9 @@ export default function Dashboard() {
       />
 
       <div className="w-full space-y-6 relative z-10">
+        {/* Release Countdown Alert Banner */}
+        <UpcomingReleaseBanner />
+
         {/* Welcome Section - Compact */}
         <div className="flex items-center justify-between animate-fade-in">
           <div>

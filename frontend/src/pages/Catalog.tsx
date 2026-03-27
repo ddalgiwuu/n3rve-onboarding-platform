@@ -77,23 +77,19 @@ export default function CatalogPage() {
     return `linear-gradient(135deg, hsl(${h1}, 60%, 35%), hsl(${h2}, 50%, 25%))`;
   }
 
-  function getRelativeDate(dateStr?: string): string {
-    if (!dateStr) return '';
+  function getReleaseInfo(dateStr?: string): { text: string; style: string; isCountdown: boolean; isUrgent: boolean } {
+    if (!dateStr) return { text: '', style: 'bg-black/50', isCountdown: false, isUrgent: false };
     const date = new Date(dateStr);
     const now = new Date();
     const diffMs = date.getTime() - now.getTime();
-    const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays === 0) return 'today';
-    if (diffDays === 1) return 'tomorrow';
-    if (diffDays === -1) return 'yesterday';
-    if (diffDays > 1 && diffDays <= 7) return `in ${diffDays} days`;
-    if (diffDays < -1 && diffDays >= -7) return `${Math.abs(diffDays)} days ago`;
-    if (diffDays > 7 && diffDays <= 90) return 'next quarter';
-    if (diffDays < -7 && diffDays >= -30) return 'last week';
-    if (diffDays < -30 && diffDays >= -90) return 'last month';
-    if (diffDays < -90) return 'older';
-    return 'upcoming';
+    if (diffDays > 7) return { text: date.toISOString().split('T')[0], style: 'bg-black/50', isCountdown: false, isUrgent: false };
+    if (diffDays > 1) return { text: `D-${diffDays}`, style: 'bg-amber-500/90', isCountdown: true, isUrgent: false };
+    if (diffDays === 1) return { text: 'D-1 내일 발매!', style: 'bg-red-500 animate-pulse', isCountdown: true, isUrgent: true };
+    if (diffDays === 0) return { text: '🎉 오늘 발매!', style: 'bg-green-500', isCountdown: true, isUrgent: false };
+    if (diffDays >= -7) return { text: `${Math.abs(diffDays)}일 전 발매`, style: 'bg-zinc-600/80', isCountdown: false, isUrgent: false };
+    return { text: date.toISOString().split('T')[0], style: 'bg-zinc-600/60', isCountdown: false, isUrgent: false };
   }
 
   return (
@@ -215,42 +211,29 @@ export default function CatalogPage() {
                       <p className="mt-2 text-sm text-white/70 drop-shadow">{item.displayArtist}</p>
                     </div>
                   )}
-                  {/* Bottom overlay badges */}
-                  <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between px-2 pb-2">
-                    <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
-                      {getRelativeDate(item.consumerReleaseDate || item.releaseDate)}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      {item.label && (
-                        <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs text-white backdrop-blur-sm">
-                          {item.label}
-                        </span>
-                      )}
-                      <span className="rounded-full bg-black/50 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">
-                        {item.albumType || 'SINGLE'}
+                  {/* Overlay: countdown top-left, format bottom-left */}
+                  {(() => {
+                    const ri = getReleaseInfo(item.consumerReleaseDate || item.releaseDate);
+                    return ri.text ? (
+                      <span className={`absolute top-2 left-2 rounded-md px-2 py-1 text-[11px] font-bold text-white backdrop-blur-sm ${ri.style}`}>
+                        {ri.text}
                       </span>
-                      {item.state === 'DELIVERED' && (
-                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500 text-white">
-                          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                        </span>
-                      )}
-                      <SourceBadge source={item.source} />
-                    </div>
-                  </div>
+                    ) : null;
+                  })()}
+                  <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
+                    {item.albumType || 'SINGLE'}
+                  </span>
                 </div>
                 {/* Info below image */}
                 <div className="p-3">
-                  <div className="flex items-center gap-2">
-                    <p className="truncate font-semibold text-zinc-900 dark:text-white">{item.name}</p>
-                    <SubmissionStatusBadge status={item.submissionStatus} />
-                  </div>
-                  <p className="truncate text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="truncate font-semibold text-zinc-900 dark:text-white">{item.name}</p>
+                  <p className="truncate text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
                     {item.displayArtist}{item.label ? ` / ${item.label}` : ''}
                   </p>
-                  <div className="mt-2 space-y-0.5 text-xs text-zinc-400">
-                    <p>BARCODE  {item.upc}</p>
-                    <p>CAT.NR.  {item.catalogNumber || item.upc}</p>
-                    {item.trackCount != null && <p>TRACKS  {item.trackCount}</p>}
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    {item.state && <StateTag state={item.state} />}
+                    <SubmissionStatusBadge status={item.submissionStatus} />
+                    <SourceBadge source={item.source} />
                   </div>
                 </div>
               </div>
