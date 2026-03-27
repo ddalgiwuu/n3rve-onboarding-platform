@@ -63,6 +63,40 @@ function SubSection({ title }: { title: string }) {
   );
 }
 
+function ReleaseDateTimeField({ date, time }: { date?: string; time?: string }) {
+  if (!date) return <Field label="Release Date & Time" value={undefined} />;
+  const dateStr = date.split('T')[0];
+
+  function toTZ(dateStr: string, time: string | undefined, offsetHours: number, label: string) {
+    try {
+      const base = time ? `${dateStr}T${time}` : `${dateStr}T00:00:00Z`;
+      const d = new Date(base);
+      if (isNaN(d.getTime())) return null;
+      const shifted = new Date(d.getTime() + offsetHours * 3600000);
+      const mo = String(shifted.getUTCMonth() + 1).padStart(2, '0');
+      const da = String(shifted.getUTCDate()).padStart(2, '0');
+      const hr = String(shifted.getUTCHours()).padStart(2, '0');
+      const mi = String(shifted.getUTCMinutes()).padStart(2, '0');
+      return `${shifted.getUTCFullYear()}-${mo}-${da} ${hr}:${mi} ${label}`;
+    } catch { return null; }
+  }
+
+  const utc = time ? `${dateStr} ${time.replace('Z', '')} UTC` : `${dateStr} 00:00 UTC`;
+  const kst = toTZ(dateStr, time, 9, 'KST');
+  const jst = toTZ(dateStr, time, 9, 'JST');
+
+  return (
+    <div className="pb-4 border-b border-zinc-200 dark:border-zinc-800 col-span-2">
+      <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-1">Release Date & Time</p>
+      <div className="space-y-1">
+        <p className="text-[15px] font-semibold text-zinc-900 dark:text-zinc-100">{utc}</p>
+        {kst && <p className="text-[13px] text-blue-500 dark:text-blue-400">{kst}</p>}
+        {jst && kst !== jst && <p className="text-[13px] text-emerald-500 dark:text-emerald-400">{jst}</p>}
+      </div>
+    </div>
+  );
+}
+
 function Field({ label, value, mono }: { label: string; value?: any; mono?: boolean }) {
   const display = value === null || value === undefined || value === '' ? null : String(value);
   return (
@@ -686,10 +720,8 @@ export default function CatalogDetailPage() {
           <Field label="Catalog Number" value={p.catalogNumber} mono />
           <Field label="N3RVE ID" value={p.fugaId} mono />
           <Field label="EAN" value={p.ean} mono />
-          <Field label="Release Date" value={p.consumerReleaseDate?.split?.('T')?.[0] || p.consumerReleaseDate} />
+          <ReleaseDateTimeField date={p.consumerReleaseDate} time={p.releaseTime} />
           <Field label="Original Release Date" value={p.originalReleaseDate?.split?.('T')?.[0] || p.originalReleaseDate} />
-          <Field label="Release Time" value={p.releaseTime} />
-          <Field label="Timezone" value={p.timezone} />
           <Field label="Pre-order Date" value={p.preorderDate} />
           <Field label="Recording Year" value={p.recordingYear} />
           <Field label="Recording Location" value={p.recordingLocation} />
