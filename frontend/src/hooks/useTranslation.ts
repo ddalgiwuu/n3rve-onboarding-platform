@@ -150,9 +150,9 @@ const translations = {
     // Catalog
     'catalog.title': '카탈로그',
     'catalog.subtitle': 'N3RVE 카탈로그 + Submission 통합 뷰',
-    'catalog.total': '총',
-    'catalog.synced': '양쪽 동기화',
-    'catalog.catalogOnly': 'N3RVE만',
+    'catalog.total': '전체',
+    'catalog.synced': '동기화 완료',
+    'catalog.catalogOnly': '카탈로그만',
     'catalog.submissionOnly': '제출만',
     'catalog.search': '검색 (앨범명, UPC, 아티스트)...',
     'catalog.allStates': '모든 상태',
