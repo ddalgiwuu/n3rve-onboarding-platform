@@ -864,22 +864,24 @@ export class CatalogService {
       motionArtUrl: this.toRawDropboxUrl((submission?.files as any)?.motionArtUrl) || null,
       musicVideoUrl: this.toRawDropboxUrl((submission?.files as any)?.musicVideoUrl) || null,
 
-      // Artists — resolve MongoDB _id from fugaId for linking
-      artists: await Promise.all(
-        (catalogProduct?.artists || []).map(async (a: any) => {
-          let mongoId: string | null = null;
-          if (a.fugaId) {
-            try {
-              const dbArtist = await this.prisma.catalogArtist.findUnique({
-                where: { fugaId: BigInt(a.fugaId) },
-                select: { id: true },
-              });
-              mongoId = dbArtist?.id || null;
-            } catch {}
-          }
-          return { ...a, fugaId: a.fugaId?.toString(), id: mongoId };
-        })
-      ),
+      // Artists — batch resolve MongoDB _id from fugaId (single query instead of N)
+      artists: await (async () => {
+        const productArtists = catalogProduct?.artists || [];
+        const fugaIds = productArtists.map((a: any) => a.fugaId).filter(Boolean).map((id: any) => BigInt(id));
+        const idMap = new Map<string, string>();
+        if (fugaIds.length > 0) {
+          const dbArtists = await this.prisma.catalogArtist.findMany({
+            where: { fugaId: { in: fugaIds } },
+            select: { fugaId: true, id: true },
+          });
+          dbArtists.forEach(a => idMap.set(a.fugaId.toString(), a.id));
+        }
+        return productArtists.map((a: any) => ({
+          ...a,
+          fugaId: a.fugaId?.toString(),
+          id: idMap.get(a.fugaId?.toString()) || null,
+        }));
+      })(),
 
       // Merged tracks/assets
       assets: this.mergeTracksAndAssets(
