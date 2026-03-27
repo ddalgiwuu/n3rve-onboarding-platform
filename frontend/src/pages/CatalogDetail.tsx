@@ -684,7 +684,7 @@ export default function CatalogDetailPage() {
         <FieldGrid>
           <Field label="UPC" value={p.upc} mono />
           <Field label="Catalog Number" value={p.catalogNumber} mono />
-          <Field label="FUGA ID" value={p.fugaId} mono />
+          <Field label="N3RVE ID" value={p.fugaId} mono />
           <Field label="EAN" value={p.ean} mono />
           <Field label="Release Date" value={p.consumerReleaseDate?.split?.('T')?.[0] || p.consumerReleaseDate} />
           <Field label="Original Release Date" value={p.originalReleaseDate?.split?.('T')?.[0] || p.originalReleaseDate} />

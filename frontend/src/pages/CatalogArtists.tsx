@@ -48,7 +48,7 @@ export default function CatalogArtistsPage() {
             카탈로그 아티스트 & 기여자
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            FUGA 카탈로그에 등록된 아티스트 및 기여자를 관리합니다
+            N3RVE 카탈로그에 등록된 아티스트 및 기여자를 관리합니다
           </p>
         </div>
 

@@ -114,11 +114,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   // Make menu items reactive to language changes
   const customerMenuItems = [
     { icon: Home, label: t('nav.dashboard'), path: '/dashboard', color: 'text-blue-600' },
+    { icon: Disc3, label: 'Catalog', path: '/catalog', color: 'text-purple-600' },
     { icon: Upload, label: t('nav.newSubmission'), path: '/release-submission-modern', color: 'text-blue-600', badge: 'NEW' },
     { icon: Folder, label: 'Release Projects', path: '/release-projects', color: 'text-gray-600' },
     { icon: BarChart3, label: 'Feature Reports', path: '/feature-reports', color: 'text-green-600' },
     { icon: UserCircle, label: 'Artist Roster', path: '/artist-roster', color: 'text-gray-600' },
-    { icon: Disc3, label: 'Catalog', path: '/catalog', color: 'text-purple-600' },
     { icon: FolderOpen, label: t('nav.submissionHistory'), path: '/submissions', color: 'text-gray-600' },
     { icon: Music, label: t('nav.artistProfile'), path: '/artist-profile-guide', color: 'text-gray-600' },
     { icon: FileText, label: t('nav.guide'), path: '/guide', color: 'text-green-600' },
