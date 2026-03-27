@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Users, Search, Filter, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -10,11 +10,18 @@ import toast from 'react-hot-toast';
 
 export default function CatalogArtistsPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
-  const [search, setSearch] = useState('');
+  const urlSearch = searchParams.get('search') || '';
+  const [search, setSearch] = useState(urlSearch);
   const [typeFilter, setTypeFilter] = useState<'all' | 'ARTIST' | 'CONTRIBUTOR'>('all');
   const [page, setPage] = useState(1);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Sync URL search param to state
+  useEffect(() => {
+    if (urlSearch) setSearch(urlSearch);
+  }, [urlSearch]);
 
   const { data, isLoading } = useQuery({
     queryKey: ['catalog-artists', search, typeFilter, page],
@@ -25,6 +32,13 @@ export default function CatalogArtistsPage() {
       limit: 60,
     }).then(r => r.data),
   });
+
+  // Auto-redirect: if URL has ?search= and exactly 1 result, go to detail page
+  useEffect(() => {
+    if (urlSearch && data?.data?.length === 1) {
+      navigate(`/admin/catalog/artists/${data.data[0].id}`, { replace: true });
+    }
+  }, [urlSearch, data, navigate]);
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => catalogApi.deleteArtist(id),
