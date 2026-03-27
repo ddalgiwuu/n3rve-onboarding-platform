@@ -177,10 +177,30 @@ export class SavedArtistsService {
         }
 
         console.log('SavedArtistsService: Updating artist with data:', updateData);
-        return this.prisma.savedArtist.update({
+        const updatedArtist = await this.prisma.savedArtist.update({
           where: { id: data.id },
           data: updateData
         });
+
+        // Forward sync: propagate relevant fields to the linked CatalogArtist
+        if (updatedArtist.catalogArtistId) {
+          const catalogUpdateData: any = { updatedAt: new Date() };
+          if (data.name !== undefined) catalogUpdateData.name = data.name;
+          if (data.identifiers !== undefined) {
+            const spotifyId = data.identifiers.find((x: any) => x.type === 'SPOTIFY')?.value;
+            const appleMusicId = data.identifiers.find((x: any) => x.type === 'APPLE_MUSIC')?.value;
+            if (spotifyId !== undefined) catalogUpdateData.spotifyId = spotifyId;
+            if (appleMusicId !== undefined) catalogUpdateData.appleMusicId = appleMusicId;
+          }
+          if (Object.keys(catalogUpdateData).length > 1) {
+            await this.prisma.catalogArtist.update({
+              where: { id: updatedArtist.catalogArtistId },
+              data: catalogUpdateData,
+            }).catch(err => console.warn('SavedArtistsService: CatalogArtist sync failed:', err.message));
+          }
+        }
+
+        return updatedArtist;
       }
 
       // Check if artist already exists - BY NAME FIRST to prevent duplicates
