@@ -174,27 +174,34 @@ function ContributorGroup({
 }) {
   return (
     <div>
-      <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 mb-2">
+      <p className="text-xs font-bold uppercase tracking-[0.1em] text-zinc-400 mb-3">
         {role}
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {people.map((c: any) => (
           <div
             key={c.personId ?? c.name}
-            className="flex items-center gap-2 rounded-lg bg-zinc-900/60 border border-zinc-700/50 px-3 py-1.5"
+            className="group flex items-center gap-3 rounded-xl border border-zinc-700 bg-zinc-800/60 p-3 hover:border-zinc-500 hover:bg-zinc-800 transition-all"
           >
-            {c.personId ? (
-              <Link
-                to={`/admin/catalog/artists/${c.personId}`}
-                className="text-sm font-medium text-blue-400 hover:underline"
-              >
-                {c.name}
-              </Link>
-            ) : (
-              <span className="text-sm font-medium text-zinc-200">{c.name}</span>
-            )}
-            <DspLink url={c.spotifyUrl} type="spotify" />
-            <DspLink url={c.appleMusicUrl} type="apple" />
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700">
+              <Mic2 className="h-4 w-4 text-zinc-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              {c.personId ? (
+                <Link
+                  to={`/admin/catalog/artists/${c.personId}`}
+                  className="text-sm font-semibold text-white hover:text-blue-400 transition-colors truncate block"
+                >
+                  {c.name}
+                </Link>
+              ) : (
+                <p className="text-sm font-semibold text-white truncate">{c.name}</p>
+              )}
+              <div className="flex flex-wrap gap-1 mt-1">
+                <DspLink url={c.spotifyUrl} type="spotify" />
+                <DspLink url={c.appleMusicUrl} type="apple" />
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -229,7 +236,7 @@ export default function CatalogTrackDetail() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="flex h-64 items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 rounded-full border-2 border-zinc-700 border-t-zinc-300 animate-spin" />
           <p className="text-sm text-zinc-400">트랙 정보를 불러오는 중…</p>
@@ -240,7 +247,7 @@ export default function CatalogTrackDetail() {
 
   if (isError || !product) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="flex h-64 items-center justify-center">
         <div className="text-center space-y-3">
           <p className="text-zinc-400">데이터를 불러오지 못했습니다.</p>
           <button
@@ -256,7 +263,7 @@ export default function CatalogTrackDetail() {
 
   if (!asset) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="flex h-64 items-center justify-center">
         <div className="text-center space-y-3">
           <p className="text-zinc-400">트랙을 찾을 수 없습니다. (index: {idx})</p>
           <button
@@ -294,7 +301,7 @@ export default function CatalogTrackDetail() {
   /* ─── Render ─── */
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="space-y-8">
 
       {/* ── Dark Hero Header ── */}
       <div className="bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-800 border-b border-zinc-700/40">
@@ -352,6 +359,21 @@ export default function CatalogTrackDetail() {
                 {asset.isFocusTrack && (
                   <span className="inline-flex items-center rounded-full bg-amber-900/40 border border-amber-700/50 px-3 py-0.5 text-xs font-medium text-amber-300">
                     Focus Track
+                  </span>
+                )}
+                {asset.discNumber && (
+                  <span className="inline-flex items-center rounded-full bg-zinc-700/60 border border-zinc-600/50 px-3 py-0.5 text-xs font-medium text-zinc-300">
+                    Disc {asset.discNumber}
+                  </span>
+                )}
+                {asset.volume && (
+                  <span className="inline-flex items-center rounded-full bg-zinc-700/60 border border-zinc-600/50 px-3 py-0.5 text-xs font-medium text-zinc-300">
+                    Vol. {asset.volume}
+                  </span>
+                )}
+                {(asset.parentalAdvisory || asset.explicitContent) && (
+                  <span className="inline-flex items-center rounded-full bg-red-900/40 border border-red-700/50 px-3 py-0.5 text-xs font-bold text-red-300">
+                    🅴 EXPLICIT
                   </span>
                 )}
                 <span className="inline-flex items-center rounded-full bg-zinc-700/60 border border-zinc-600/50 px-3 py-0.5 text-xs font-medium text-zinc-400">
