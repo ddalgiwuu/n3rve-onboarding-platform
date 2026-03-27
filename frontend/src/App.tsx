@@ -181,10 +181,19 @@ function App() {
               isAuthenticated ? <ArtistDetailPage /> : <Navigate to="/login" state={{ from: '/artist-roster' }} />
             } />
 
-            {/* Catalog routes - redirects for old URLs */}
-            <Route path="/catalog" element={<Navigate to="/admin/catalog" />} />
-            <Route path="/catalog/artists" element={<Navigate to="/admin/catalog/artists" />} />
-            <Route path="/catalog/:id" element={<Navigate to="/admin/catalog" />} />
+            {/* Catalog routes - accessible to all authenticated users */}
+            <Route path="/catalog" element={
+              isAuthenticated ? <Suspense fallback={<LoadingSpinner />}><CatalogPage /></Suspense> : <Navigate to="/login" />
+            } />
+            <Route path="/catalog/artists" element={
+              isAuthenticated ? <Suspense fallback={<LoadingSpinner />}><CatalogArtistsPage /></Suspense> : <Navigate to="/login" />
+            } />
+            <Route path="/catalog/:id" element={
+              isAuthenticated ? <Suspense fallback={<LoadingSpinner />}><CatalogDetailPage /></Suspense> : <Navigate to="/login" />
+            } />
+            <Route path="/catalog/:id/track/:trackIndex" element={
+              isAuthenticated ? <Suspense fallback={<LoadingSpinner />}><CatalogTrackDetailPage /></Suspense> : <Navigate to="/login" />
+            } />
 
             {/* Submission detail - accessible to all authenticated users (label view) */}
             <Route path="/submissions/:id" element={

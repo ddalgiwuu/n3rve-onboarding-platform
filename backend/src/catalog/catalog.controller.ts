@@ -94,11 +94,12 @@ export class CatalogController {
   async findArtists(
     @Query('search') search?: string,
     @Query('type') type?: string,
+    @Query('label') label?: string,
     @Query('page') page = '1',
     @Query('limit') limit = '20',
   ) {
     return this.catalogService.findArtists({
-      search, type,
+      search, type, label,
       page: parseInt(page, 10),
       limit: parseInt(limit, 10),
     });

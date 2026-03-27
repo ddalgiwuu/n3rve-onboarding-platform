@@ -310,15 +310,24 @@ function ArtistCard({ artist, role, onDelete }: { artist: any; role?: string; on
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <Link
-              to={`/admin/catalog/artists?search=${encodeURIComponent(artist.name)}`}
-              className="font-semibold text-zinc-900 dark:text-white text-sm truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-            >
-              {artist.name}
-            </Link>
-            <div className="flex items-center gap-1 ml-auto flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+            {artist.id ? (
+              <Link
+                to={`/admin/catalog/artists/${artist.id}`}
+                className="font-semibold text-zinc-900 dark:text-white text-sm truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
+                {artist.name}
+              </Link>
+            ) : (
               <Link
                 to={`/admin/catalog/artists?search=${encodeURIComponent(artist.name)}`}
+                className="font-semibold text-zinc-900 dark:text-white text-sm truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+              >
+                {artist.name}
+              </Link>
+            )}
+            <div className="flex items-center gap-1 ml-auto flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Link
+                to={artist.id ? `/admin/catalog/artists/${artist.id}` : `/admin/catalog/artists?search=${encodeURIComponent(artist.name)}`}
                 title="수정"
                 className="flex h-6 w-6 items-center justify-center rounded-md text-zinc-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                 onClick={e => e.stopPropagation()}
