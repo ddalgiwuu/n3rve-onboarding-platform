@@ -5,6 +5,7 @@ import {
   ArrowLeft, Music, Clock, ChevronDown, ChevronRight,
   ExternalLink, Disc3, Users, FileText, Globe, MessageSquare,
   FolderOpen, ClipboardList, Headphones, Shield, Tag, Video, Calendar, Send,
+  Play, Square, Download,
 } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
@@ -436,6 +437,18 @@ export default function CatalogDetailPage() {
   const marketing = p.marketing || {};
   const files = p.files || {};
   const assets = p.assets || [];
+  const [playingUrl, setPlayingUrl] = useState<string | null>(null);
+
+  function toRawUrl(url: string) {
+    if (!url) return url;
+    if (url.includes('dropbox.com') && !url.includes('raw=1')) {
+      return url.includes('dl=0') ? url.replace('dl=0', 'raw=1') : url + (url.includes('?') ? '&' : '?') + 'raw=1';
+    }
+    return url;
+  }
+
+  // Merge audioFiles from both top-level and files object
+  const audioFiles = p.audioFiles?.length ? p.audioFiles : files.audioFiles || [];
 
   return (
     <div className="space-y-6">
@@ -452,7 +465,13 @@ export default function CatalogDetailPage() {
         <div className="flex items-start gap-6">
           {p.coverImageUrl && (
             <div className="flex-shrink-0">
-              <img src={p.coverImageUrl} alt={p.name} className="h-40 w-40 rounded-lg object-cover shadow-md" />
+              <img
+                src={p.coverImageUrl.includes('dropbox.com') && !p.coverImageUrl.includes('raw=1')
+                  ? p.coverImageUrl.replace('dl=0', 'raw=1')
+                  : p.coverImageUrl}
+                alt={p.name}
+                className="h-40 w-40 rounded-lg object-cover shadow-md"
+              />
             </div>
           )}
           <div className="flex-1">
@@ -791,22 +810,48 @@ export default function CatalogDetailPage() {
           <LinkField label="Motion Art URL" url={files.motionArtUrl} />
           <LinkField label="Music Video URL" url={files.musicVideoUrl} />
 
-          {files.audioFiles?.length > 0 && (
+          {audioFiles.length > 0 && (
             <div>
-              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Audio Files</p>
-              <div className="space-y-1">
-                {files.audioFiles.map((f: any, i: number) => (
-                  <div key={i} className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                    <Music className="h-3 w-3 text-zinc-400" />
-                    <span>{f.fileName || f.trackId || `Track ${i + 1}`}</span>
-                    {(f.dropboxUrl || f.url) && (
-                      <a href={f.dropboxUrl || f.url} target="_blank" rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-blue-500 hover:underline dark:text-blue-400">
-                        Download <ExternalLink className="h-3 w-3" />
-                      </a>
-                    )}
-                  </div>
-                ))}
+              <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wide mb-2">Audio Files ({audioFiles.length})</p>
+              <div className="space-y-2">
+                {audioFiles.map((f: any, i: number) => {
+                  const rawUrl = toRawUrl(f.dropboxUrl || f.url || '');
+                  const isPlaying = playingUrl === rawUrl;
+                  return (
+                    <div key={i} className="flex items-center gap-3 rounded-lg bg-zinc-50 p-2.5 dark:bg-zinc-700/50">
+                      {rawUrl && (
+                        <button
+                          onClick={() => setPlayingUrl(isPlaying ? null : rawUrl)}
+                          className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full ${
+                            isPlaying
+                              ? 'bg-red-500 text-white'
+                              : 'bg-blue-500 text-white hover:bg-blue-600'
+                          }`}
+                        >
+                          {isPlaying ? <Square className="h-3 w-3" /> : <Play className="h-3 w-3 ml-0.5" />}
+                        </button>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200 truncate">
+                          {f.fileName || f.trackId || `Track ${i + 1}`}
+                        </p>
+                        {f.fileSize && (
+                          <p className="text-xs text-zinc-400">{(f.fileSize / 1024 / 1024).toFixed(1)} MB</p>
+                        )}
+                      </div>
+                      {rawUrl && (
+                        <a href={f.dropboxUrl || f.url} target="_blank" rel="noopener noreferrer"
+                          className="flex-shrink-0 text-zinc-400 hover:text-blue-500">
+                          <Download className="h-4 w-4" />
+                        </a>
+                      )}
+                      {isPlaying && (
+                        <audio src={rawUrl} autoPlay controls className="hidden"
+                          onEnded={() => setPlayingUrl(null)} />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
