@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, Music, Clock, User, ChevronDown, ChevronRight,
-  FileText, ExternalLink, Mic2, Film,
+  FileText, ExternalLink, Mic2, Film, Tag, Shield,
 } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
@@ -19,15 +19,13 @@ function Field({ label, value, mono }: { label: string; value?: any; mono?: bool
       ? value ? 'Yes' : 'No'
       : String(value);
   return (
-    <div className="pb-4 border-b border-zinc-200 dark:border-zinc-800">
-      <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-1">
+    <div className="pb-4 border-b border-zinc-800">
+      <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-500 mb-1">
         {label}
       </p>
       <p
         className={`text-[15px] font-semibold ${
-          display
-            ? 'text-zinc-900 dark:text-zinc-100'
-            : 'text-zinc-300 dark:text-zinc-700 italic'
+          display ? 'text-zinc-100' : 'text-zinc-700 italic'
         } ${mono ? 'font-mono' : ''}`}
       >
         {display || '미입력'}
@@ -38,7 +36,7 @@ function Field({ label, value, mono }: { label: string; value?: any; mono?: bool
 
 function FieldGrid({ children }: { children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-0 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-5">
       {children}
     </div>
   );
@@ -50,31 +48,33 @@ function Section({
   title,
   icon: Icon,
   accent,
+  iconColor,
   children,
   defaultOpen = true,
 }: {
   title: string;
   icon: any;
   accent?: string;
+  iconColor?: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700/60 dark:bg-zinc-800/80 overflow-hidden shadow-sm">
+    <div className="rounded-xl border border-zinc-700/60 bg-zinc-800/80 overflow-hidden shadow-sm">
       <button
-        className="flex w-full items-center justify-between px-5 py-3.5 border-b border-zinc-100 dark:border-zinc-700/60 hover:bg-zinc-50 dark:hover:bg-zinc-700/30 transition-colors"
+        className="flex w-full items-center justify-between px-5 py-4 border-b border-zinc-700/60 hover:bg-zinc-700/30 transition-colors"
         onClick={() => setOpen(!open)}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-3">
           <span
-            className={`flex h-7 w-7 items-center justify-center rounded-lg ${
-              accent || 'bg-zinc-100 dark:bg-zinc-700'
+            className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+              accent || 'bg-zinc-700'
             }`}
           >
-            <Icon className="h-4 w-4 text-zinc-500 dark:text-zinc-400" />
+            <Icon className={`h-4 w-4 ${iconColor || 'text-zinc-400'}`} />
           </span>
-          <h2 className="font-semibold text-zinc-900 dark:text-white text-sm">{title}</h2>
+          <h2 className="font-bold text-white text-base">{title}</h2>
         </div>
         {open ? (
           <ChevronDown className="h-4 w-4 text-zinc-400" />
@@ -82,7 +82,7 @@ function Section({
           <ChevronRight className="h-4 w-4 text-zinc-400" />
         )}
       </button>
-      {open && <div className="p-5">{children}</div>}
+      {open && <div className="p-7">{children}</div>}
     </div>
   );
 }
@@ -94,8 +94,8 @@ function DspLink({ url, type }: { url?: string | null; type: 'spotify' | 'apple'
   const label = type === 'spotify' ? 'Spotify' : 'Apple Music';
   const color =
     type === 'spotify'
-      ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/30'
-      : 'bg-pink-50 text-pink-700 hover:bg-pink-100 dark:bg-pink-900/20 dark:text-pink-400 dark:hover:bg-pink-900/30';
+      ? 'bg-emerald-900/30 text-emerald-400 hover:bg-emerald-900/50'
+      : 'bg-pink-900/20 text-pink-400 hover:bg-pink-900/30';
   return (
     <a
       href={url}
@@ -108,24 +108,97 @@ function DspLink({ url, type }: { url?: string | null; type: 'spotify' | 'apple'
   );
 }
 
-/* ─── Badge ─── */
+/* ─── Artist Card ─── */
 
-function Badge({ children, color = 'zinc' }: { children: React.ReactNode; color?: string }) {
-  const colorMap: Record<string, string> = {
-    zinc: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-700/70 dark:text-zinc-300',
-    blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
-    violet: 'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300',
-    amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
-    emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
-  };
+function ArtistCard({
+  name,
+  role,
+  fugaId,
+  spotifyUrl,
+  appleMusicUrl,
+}: {
+  name: string;
+  role: 'Primary' | 'Featuring' | string;
+  fugaId?: string | number | null;
+  spotifyUrl?: string | null;
+  appleMusicUrl?: string | null;
+}) {
+  const roleColor =
+    role === 'Primary'
+      ? 'bg-blue-900/40 text-blue-300 border-blue-700/50'
+      : role === 'Featuring'
+      ? 'bg-violet-900/40 text-violet-300 border-violet-700/50'
+      : 'bg-zinc-700/60 text-zinc-300 border-zinc-600/50';
+
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-        colorMap[color] ?? colorMap.zinc
-      }`}
-    >
-      {children}
-    </span>
+    <div className="flex items-center gap-3 rounded-xl border border-zinc-700/50 bg-zinc-900/60 px-4 py-3">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-zinc-700">
+        <User className="h-4 w-4 text-zinc-400" />
+      </div>
+      <div className="min-w-0 flex-1">
+        {fugaId ? (
+          <Link
+            to={`/admin/catalog/artists/${fugaId}`}
+            className="text-sm font-semibold text-blue-400 hover:text-blue-300 hover:underline block truncate"
+          >
+            {name}
+          </Link>
+        ) : (
+          <Link
+            to={`/admin/catalog/artists?search=${encodeURIComponent(name)}`}
+            className="text-sm font-semibold text-zinc-100 hover:text-blue-400 hover:underline block truncate"
+          >
+            {name}
+          </Link>
+        )}
+        <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+          <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${roleColor}`}>
+            {role}
+          </span>
+          <DspLink url={spotifyUrl} type="spotify" />
+          <DspLink url={appleMusicUrl} type="apple" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Contributor Group ─── */
+
+function ContributorGroup({
+  role,
+  people,
+}: {
+  role: string;
+  people: CatalogContributor[];
+}) {
+  return (
+    <div>
+      <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 mb-2">
+        {role}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {people.map((c: any) => (
+          <div
+            key={c.personId ?? c.name}
+            className="flex items-center gap-2 rounded-lg bg-zinc-900/60 border border-zinc-700/50 px-3 py-1.5"
+          >
+            {c.personId ? (
+              <Link
+                to={`/admin/catalog/artists/${c.personId}`}
+                className="text-sm font-medium text-blue-400 hover:underline"
+              >
+                {c.name}
+              </Link>
+            ) : (
+              <span className="text-sm font-medium text-zinc-200">{c.name}</span>
+            )}
+            <DspLink url={c.spotifyUrl} type="spotify" />
+            <DspLink url={c.appleMusicUrl} type="apple" />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -152,14 +225,14 @@ export default function CatalogTrackDetail() {
   const asset = assets[idx];
   const totalTracks = assets.length;
 
-  /* ─── Loading / Error / Not found ─── */
+  /* ─── Loading ─── */
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-8 w-8 rounded-full border-2 border-zinc-300 border-t-zinc-600 animate-spin dark:border-zinc-700 dark:border-t-zinc-300" />
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">트랙 정보를 불러오는 중…</p>
+          <div className="h-8 w-8 rounded-full border-2 border-zinc-700 border-t-zinc-300 animate-spin" />
+          <p className="text-sm text-zinc-400">트랙 정보를 불러오는 중…</p>
         </div>
       </div>
     );
@@ -167,12 +240,12 @@ export default function CatalogTrackDetail() {
 
   if (isError || !product) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <p className="text-zinc-500 dark:text-zinc-400">데이터를 불러오지 못했습니다.</p>
+          <p className="text-zinc-400">데이터를 불러오지 못했습니다.</p>
           <button
             onClick={() => navigate(`/admin/catalog/${id}`)}
-            className="text-sm text-blue-500 hover:underline"
+            className="text-sm text-blue-400 hover:underline"
           >
             앨범으로 돌아가기
           </button>
@@ -183,12 +256,12 @@ export default function CatalogTrackDetail() {
 
   if (!asset) {
     return (
-      <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-center space-y-3">
-          <p className="text-zinc-500 dark:text-zinc-400">트랙을 찾을 수 없습니다. (index: {idx})</p>
+          <p className="text-zinc-400">트랙을 찾을 수 없습니다. (index: {idx})</p>
           <button
             onClick={() => navigate(`/admin/catalog/${id}`)}
-            className="text-sm text-blue-500 hover:underline"
+            className="text-sm text-blue-400 hover:underline"
           >
             앨범으로 돌아가기
           </button>
@@ -197,11 +270,10 @@ export default function CatalogTrackDetail() {
     );
   }
 
-  /* ─── Derived values ─── */
+  /* ─── Derived Values ─── */
 
-  const trackTitle = asset.version
-    ? `${asset.titleKo || asset.name} (${asset.version})`
-    : asset.titleKo || asset.name;
+  const rawTitle = asset.titleKo || asset.name || 'Untitled';
+  const trackVersion = asset.version || asset.assetVersion;
 
   const groupedContributors: Record<string, CatalogContributor[]> = {};
   for (const c of asset.contributors ?? []) {
@@ -211,87 +283,96 @@ export default function CatalogTrackDetail() {
     }
   }
 
+  const hasArtists =
+    (asset.artists?.length ?? 0) > 0 ||
+    (asset.featuringArtists?.length ?? 0) > 0;
+  const hasContributors = Object.keys(groupedContributors).length > 0;
+  const hasLegacyCredits =
+    asset.composer || asset.lyricist || asset.arranger ||
+    asset.producer || asset.mixer || asset.masterer;
+
   /* ─── Render ─── */
 
   return (
-    <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
-      {/* ── Page Header ── */}
-      <div className="sticky top-0 z-20 border-b border-zinc-200 bg-white/90 dark:border-zinc-800 dark:bg-zinc-900/90 backdrop-blur-md">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          <div className="flex items-center gap-4 py-4">
-            {/* Back button */}
-            <button
-              onClick={() => navigate(`/admin/catalog/${id}`)}
-              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-zinc-500 hover:bg-zinc-100 hover:text-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-200 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              앨범으로
-            </button>
+    <div className="min-h-screen bg-zinc-950">
 
-            <div className="h-5 w-px bg-zinc-200 dark:bg-zinc-700" />
+      {/* ── Dark Hero Header ── */}
+      <div className="bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-800 border-b border-zinc-700/40">
+        <div className="mx-auto max-w-5xl px-4 sm:px-6 pt-6 pb-8">
 
-            {/* Track identity */}
-            <div className="flex flex-1 items-center gap-3 min-w-0">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-100 dark:bg-violet-900/30">
-                <Music className="h-4 w-4 text-violet-600 dark:text-violet-400" />
-              </span>
-              <div className="min-w-0">
-                <h1 className="text-2xl font-bold text-zinc-900 dark:text-white truncate leading-tight">
-                  {trackTitle}
+          {/* Back button */}
+          <button
+            onClick={() => navigate(`/admin/catalog/${id}`)}
+            className="mb-6 inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-zinc-400 hover:bg-zinc-700/50 hover:text-zinc-200 transition-colors"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            앨범으로 돌아가기
+          </button>
+
+          <div className="flex items-start gap-5">
+            {/* Track number circle */}
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-blue-500 shadow-lg shadow-blue-900/30">
+              <span className="text-2xl font-bold text-white">{idx + 1}</span>
+            </div>
+
+            {/* Title / Artist */}
+            <div className="flex-1 min-w-0">
+              <div className="flex flex-wrap items-baseline gap-2 mb-1">
+                <h1 className="text-3xl font-bold text-white leading-tight truncate">
+                  {rawTitle}
                 </h1>
-                {asset.displayArtist && (
-                  <p className="flex items-center gap-1 text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-                    <User className="h-3.5 w-3.5 shrink-0" />
-                    {asset.displayArtist}
-                  </p>
+                {trackVersion && (
+                  <span className="text-lg text-zinc-400 font-normal">
+                    ({trackVersion})
+                  </span>
                 )}
               </div>
-            </div>
-
-            {/* Badges */}
-            <div className="hidden sm:flex items-center gap-2 shrink-0">
-              {asset.isrc && (
-                <Badge color="blue">
-                  <span className="font-mono">{asset.isrc}</span>
-                </Badge>
+              {asset.displayArtist && (
+                <p className="text-xl text-zinc-300 mt-0.5">{asset.displayArtist}</p>
               )}
-              {asset.duration != null && (
-                <Badge color="zinc">
-                  <Clock className="h-3 w-3 mr-1" />
-                  {formatDuration(asset.duration)}
-                </Badge>
-              )}
-              <Badge color="violet">
-                Track {idx + 1} of {totalTracks}
-              </Badge>
-            </div>
-          </div>
 
-          {/* Mobile badges row */}
-          <div className="sm:hidden flex flex-wrap items-center gap-2 pb-3">
-            {asset.isrc && (
-              <Badge color="blue">
-                <span className="font-mono text-[11px]">{asset.isrc}</span>
-              </Badge>
-            )}
-            {asset.duration != null && (
-              <Badge color="zinc">
-                <Clock className="h-3 w-3 mr-1" />
-                {formatDuration(asset.duration)}
-              </Badge>
-            )}
-            <Badge color="violet">
-              Track {idx + 1} of {totalTracks}
-            </Badge>
+              {/* Badges row */}
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                {asset.isrc && (
+                  <span className="inline-flex items-center rounded-full bg-blue-900/40 border border-blue-700/50 px-3 py-0.5 text-xs font-mono font-medium text-blue-300">
+                    {asset.isrc}
+                  </span>
+                )}
+                {asset.duration != null && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-zinc-700/60 border border-zinc-600/50 px-3 py-0.5 text-xs font-medium text-zinc-300">
+                    <Clock className="h-3 w-3" />
+                    {formatDuration(asset.duration)}
+                  </span>
+                )}
+                {asset.isTitleTrack && (
+                  <span className="inline-flex items-center rounded-full bg-violet-900/40 border border-violet-700/50 px-3 py-0.5 text-xs font-medium text-violet-300">
+                    Title Track
+                  </span>
+                )}
+                {asset.isFocusTrack && (
+                  <span className="inline-flex items-center rounded-full bg-amber-900/40 border border-amber-700/50 px-3 py-0.5 text-xs font-medium text-amber-300">
+                    Focus Track
+                  </span>
+                )}
+                <span className="inline-flex items-center rounded-full bg-zinc-700/60 border border-zinc-600/50 px-3 py-0.5 text-xs font-medium text-zinc-400">
+                  Track {idx + 1} of {totalTracks}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* ── Content ── */}
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 space-y-5">
+      {/* ── Sections ── */}
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 py-8 space-y-8">
 
         {/* 1. 기본 정보 */}
-        <Section title="기본 정보" icon={Music} accent="bg-violet-100 dark:bg-violet-900/30">
+        <Section
+          title="기본 정보"
+          icon={Music}
+          accent="bg-violet-900/40"
+          iconColor="text-violet-400"
+        >
           <FieldGrid>
             <Field label="Title (Ko)" value={asset.titleKo || asset.name} />
             <Field label="Title (En)" value={asset.titleEn} />
@@ -302,7 +383,10 @@ export default function CatalogTrackDetail() {
             <Field label="Volume" value={asset.volume} />
             <Field label="ISRC" value={asset.isrc} mono />
             <Field label="ISWC" value={asset.iswc} mono />
-            <Field label="Duration" value={asset.duration ? formatDuration(asset.duration) : undefined} />
+            <Field
+              label="Duration"
+              value={asset.duration ? formatDuration(asset.duration) : undefined}
+            />
             <Field label="Track Type" value={asset.trackType} />
             <Field
               label="Version Type"
@@ -319,35 +403,25 @@ export default function CatalogTrackDetail() {
         <Section
           title="아티스트 & 기여자"
           icon={User}
-          accent="bg-blue-100 dark:bg-blue-900/30"
+          accent="bg-blue-900/40"
+          iconColor="text-blue-400"
         >
           {/* Track artists */}
           {asset.artists?.length > 0 && (
-            <div className="mb-5">
-              <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-2">
+            <div className="mb-6">
+              <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 mb-3">
                 Track Artists
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {asset.artists.map((a: any, i: number) => (
-                  <div key={i} className="flex items-center gap-2">
-                    {a.fugaId ? (
-                      <Link
-                        to={`/admin/catalog/artists/${a.fugaId}`}
-                        className="text-sm font-semibold text-blue-600 hover:underline dark:text-blue-400"
-                      >
-                        {a.name}
-                      </Link>
-                    ) : (
-                      <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-                        {a.name}
-                      </span>
-                    )}
-                    {a.primary && (
-                      <span className="text-xs text-zinc-400 dark:text-zinc-500">(Primary)</span>
-                    )}
-                    <DspLink url={a.spotifyUrl} type="spotify" />
-                    <DspLink url={a.appleMusicUrl} type="apple" />
-                  </div>
+                  <ArtistCard
+                    key={i}
+                    name={a.name}
+                    role={a.primary ? 'Primary' : 'Artist'}
+                    fugaId={a.fugaId}
+                    spotifyUrl={a.spotifyUrl}
+                    appleMusicUrl={a.appleMusicUrl}
+                  />
                 ))}
               </div>
             </div>
@@ -355,67 +429,56 @@ export default function CatalogTrackDetail() {
 
           {/* Featuring artists */}
           {asset.featuringArtists?.length > 0 && (
-            <div className="mb-5">
-              <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-2">
+            <div className="mb-6">
+              <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 mb-3">
                 Featuring Artists
               </p>
-              <div className="flex flex-wrap gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {asset.featuringArtists.map((a: any, i: number) => (
-                  <span key={i} className="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
-                    {a.name || a}
-                  </span>
+                  <ArtistCard
+                    key={i}
+                    name={a.name || String(a)}
+                    role="Featuring"
+                    fugaId={a.fugaId}
+                    spotifyUrl={a.spotifyUrl}
+                    appleMusicUrl={a.appleMusicUrl}
+                  />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Contributors grouped by role */}
-          {Object.keys(groupedContributors).length > 0 && (
-            <div className="mb-5">
-              <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-3">
+          {/* Contributors */}
+          {hasContributors && (
+            <div className={`${hasArtists ? 'mt-6 pt-6 border-t border-zinc-700/60' : ''} mb-5`}>
+              <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 mb-4">
                 Contributors
               </p>
-              <div className="space-y-3">
+              <div className="space-y-5">
                 {Object.entries(groupedContributors).map(([role, people]) => (
-                  <div key={role}>
-                    <p className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 mb-1.5">
-                      {role}
-                    </p>
-                    <div className="flex flex-wrap gap-x-4 gap-y-1">
-                      {people.map((c: any) => (
-                        <div key={c.personId} className="flex items-center gap-1.5">
-                          {c.personId ? (
-                            <Link
-                              to={`/admin/catalog/artists/${c.personId}`}
-                              className="text-sm font-medium text-blue-600 hover:underline dark:text-blue-400"
-                            >
-                              {c.name}
-                            </Link>
-                          ) : (
-                            <span className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
-                              {c.name}
-                            </span>
-                          )}
-                          <DspLink url={c.spotifyUrl} type="spotify" />
-                          <DspLink url={c.appleMusicUrl} type="apple" />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  <ContributorGroup key={role} role={role} people={people} />
                 ))}
               </div>
             </div>
           )}
 
           {/* Legacy credit fields */}
-          <FieldGrid>
-            <Field label="Composer" value={asset.composer} />
-            <Field label="Lyricist" value={asset.lyricist} />
-            <Field label="Arranger" value={asset.arranger} />
-            <Field label="Producer" value={asset.producer} />
-            <Field label="Mixer" value={asset.mixer} />
-            <Field label="Masterer" value={asset.masterer} />
-          </FieldGrid>
+          {hasLegacyCredits && (
+            <div className={`${(hasArtists || hasContributors) ? 'mt-6 pt-6 border-t border-zinc-700/60' : ''}`}>
+              <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 mb-4">
+                Credits
+              </p>
+              <FieldGrid>
+                <Field label="Composer" value={asset.composer} />
+                <Field label="Lyricist" value={asset.lyricist} />
+                <Field label="Arranger" value={asset.arranger} />
+                <Field label="Producer" value={asset.producer} />
+                <Field label="Mixer" value={asset.mixer} />
+                <Field label="Masterer" value={asset.masterer} />
+              </FieldGrid>
+            </div>
+          )}
+
           {asset.publishers && (
             <div className="mt-4">
               <Field label="Publishers" value={asset.publishers} />
@@ -424,7 +487,12 @@ export default function CatalogTrackDetail() {
         </Section>
 
         {/* 3. 장르 */}
-        <Section title="장르" icon={Music} accent="bg-emerald-100 dark:bg-emerald-900/30">
+        <Section
+          title="장르"
+          icon={Tag}
+          accent="bg-emerald-900/40"
+          iconColor="text-emerald-400"
+        >
           <FieldGrid>
             <Field label="Genre" value={asset.genre?.name} />
             <Field label="Subgenre" value={asset.subgenre?.name} />
@@ -434,7 +502,12 @@ export default function CatalogTrackDetail() {
         </Section>
 
         {/* 4. 오디오 */}
-        <Section title="오디오" icon={Mic2} accent="bg-amber-100 dark:bg-amber-900/30">
+        <Section
+          title="오디오"
+          icon={Mic2}
+          accent="bg-amber-900/40"
+          iconColor="text-amber-400"
+        >
           <FieldGrid>
             <Field label="Sample Rate" value={asset.audio?.sampleRate ?? asset.sampleRate} />
             <Field label="Bit Depth" value={asset.audio?.bitDepth ?? asset.bitDepth} />
@@ -449,8 +522,13 @@ export default function CatalogTrackDetail() {
           </FieldGrid>
         </Section>
 
-        {/* 5. 콘텐츠 */}
-        <Section title="콘텐츠" icon={FileText} accent="bg-sky-100 dark:bg-sky-900/30">
+        {/* 5. 콘텐츠 & 가사 */}
+        <Section
+          title="콘텐츠"
+          icon={FileText}
+          accent="bg-sky-900/40"
+          iconColor="text-sky-400"
+        >
           <FieldGrid>
             <Field label="Language" value={asset.language} />
             <Field label="Audio Language" value={asset.audioLocale ?? asset.audioLanguage} />
@@ -460,17 +538,17 @@ export default function CatalogTrackDetail() {
             <Field label="Parental Advisory" value={asset.parentalAdvisory} />
           </FieldGrid>
 
-          {/* Lyrics file link */}
+          {/* Lyrics file URL */}
           {asset.lyricsFileUrl && (
-            <div className="mt-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
-              <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-1">
+            <div className="mt-5 pb-4 border-b border-zinc-800">
+              <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-500 mb-1">
                 Lyrics File URL
               </p>
               <a
                 href={asset.lyricsFileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm text-blue-500 hover:underline dark:text-blue-400"
+                className="inline-flex items-center gap-1 text-sm text-blue-400 hover:underline"
               >
                 {asset.lyricsFileUrl.length > 60
                   ? asset.lyricsFileUrl.slice(0, 60) + '...'
@@ -482,9 +560,9 @@ export default function CatalogTrackDetail() {
 
           {/* Expandable lyrics */}
           {asset.hasLyrics && asset.lyrics && (
-            <div className="mt-4">
+            <div className="mt-5">
               <button
-                className="inline-flex items-center gap-1.5 text-xs font-medium text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors"
+                className="inline-flex items-center gap-2 rounded-lg border border-zinc-700/60 bg-zinc-900/60 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
                 onClick={() => setShowLyrics(!showLyrics)}
               >
                 {showLyrics ? (
@@ -496,7 +574,7 @@ export default function CatalogTrackDetail() {
                 가사 {showLyrics ? '닫기' : '보기'}
               </button>
               {showLyrics && (
-                <pre className="mt-3 max-h-72 overflow-auto rounded-xl bg-zinc-50 p-4 text-sm text-zinc-700 whitespace-pre-wrap dark:bg-zinc-800/60 dark:text-zinc-300 leading-relaxed">
+                <pre className="mt-3 max-h-96 overflow-auto rounded-xl bg-zinc-900 p-6 font-mono text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed">
                   {asset.lyrics}
                 </pre>
               )}
@@ -505,7 +583,12 @@ export default function CatalogTrackDetail() {
         </Section>
 
         {/* 6. 권리 */}
-        <Section title="권리" icon={FileText} accent="bg-rose-100 dark:bg-rose-900/30">
+        <Section
+          title="권리"
+          icon={Shield}
+          accent="bg-rose-900/40"
+          iconColor="text-rose-400"
+        >
           <FieldGrid>
             <Field label="Asset Copyright" value={asset.pLineText ?? asset.assetCopyright} />
             <Field label="Rights Claim" value={asset.rightsClaim} />
@@ -528,27 +611,19 @@ export default function CatalogTrackDetail() {
         <Section
           title="프리뷰 & 비디오"
           icon={Film}
-          accent="bg-indigo-100 dark:bg-indigo-900/30"
+          accent="bg-indigo-900/40"
+          iconColor="text-indigo-400"
         >
           <FieldGrid>
             <Field label="Preview Start" value={asset.previewStart} />
             <Field label="Preview End" value={asset.previewEnd} />
             <Field label="Preview Length" value={asset.previewLength} />
-            <Field
-              label="Playtime Start Short Clip"
-              value={asset.playtimeStartShortClip}
-            />
-            <Field
-              label="YouTube Short Preview"
-              value={asset.youtubeShortPreview}
-            />
+            <Field label="Playtime Start Short Clip" value={asset.playtimeStartShortClip} />
+            <Field label="YouTube Short Preview" value={asset.youtubeShortPreview} />
             <Field label="Availability" value={asset.availability} />
             <Field label="Pre-order Enabled" value={asset.preorderEnabled} />
             <Field label="Pre-order Date" value={asset.preorderDate} />
-            <Field
-              label="Has Custom Release Date"
-              value={asset.hasCustomReleaseDate}
-            />
+            <Field label="Has Custom Release Date" value={asset.hasCustomReleaseDate} />
             <Field label="Custom Release Date" value={asset.customReleaseDate} />
             <Field label="Custom Release Time" value={asset.customReleaseTime} />
             <Field label="Asset Territories" value={asset.assetTerritories} />
@@ -560,19 +635,25 @@ export default function CatalogTrackDetail() {
           </FieldGrid>
         </Section>
 
-        {/* 8. 기타 (tags / extraFields) — only rendered if data present */}
+        {/* 8. 기타 — only if data present */}
         {(asset.tags?.length > 0 || asset.extraFields) && (
-          <Section title="기타" icon={FileText}>
+          <Section
+            title="기타"
+            icon={FileText}
+            accent="bg-zinc-700"
+            iconColor="text-zinc-400"
+            defaultOpen={false}
+          >
             {asset.tags?.length > 0 && (
-              <div className="mb-4">
-                <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-2">
+              <div className="mb-5">
+                <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 mb-3">
                   Tags
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {asset.tags.map((tag: string, i: number) => (
                     <span
                       key={i}
-                      className="rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs text-zinc-600 dark:bg-zinc-700/70 dark:text-zinc-300"
+                      className="rounded-full bg-zinc-700/70 px-2.5 py-0.5 text-xs text-zinc-300"
                     >
                       {tag}
                     </span>
@@ -590,7 +671,6 @@ export default function CatalogTrackDetail() {
           </Section>
         )}
 
-        {/* Bottom spacing */}
         <div className="h-8" />
       </div>
     </div>
