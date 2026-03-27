@@ -310,29 +310,22 @@ function ArtistCard({ artist, role, onDelete }: { artist: any; role?: string; on
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            {artist.id
-              ? (
-                <Link
-                  to={`/admin/catalog/artists/${artist.id}`}
-                  className="font-semibold text-zinc-900 dark:text-white text-sm truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                >
-                  {artist.name}
-                </Link>
-              )
-              : <p className="font-semibold text-zinc-900 dark:text-white text-sm truncate">{artist.name}</p>
-            }
+            <Link
+              to={`/admin/catalog/artists?search=${encodeURIComponent(artist.name)}`}
+              className="font-semibold text-zinc-900 dark:text-white text-sm truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              {artist.name}
+            </Link>
             <div className="flex items-center gap-1 ml-auto flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-              {artist.id && (
-                <Link
-                  to={`/admin/catalog/artists/${artist.id}`}
-                  title="수정"
-                  className="flex h-6 w-6 items-center justify-center rounded-md text-zinc-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
-                  onClick={e => e.stopPropagation()}
-                >
-                  <Pencil className="h-3.5 w-3.5" />
-                </Link>
-              )}
-              {onDelete && artist.id && (
+              <Link
+                to={`/admin/catalog/artists?search=${encodeURIComponent(artist.name)}`}
+                title="수정"
+                className="flex h-6 w-6 items-center justify-center rounded-md text-zinc-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                onClick={e => e.stopPropagation()}
+              >
+                <Pencil className="h-3.5 w-3.5" />
+              </Link>
+              {onDelete && (
                 <button
                   title="삭제"
                   onClick={handleDelete}
@@ -635,7 +628,7 @@ export default function CatalogDetailPage() {
             />
           ))}
           <Link
-            to={`/admin/catalog/${id}/artists/new`}
+            to="/admin/catalog/artists"
             className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 p-4 text-sm font-medium text-zinc-400 dark:text-zinc-500 hover:border-violet-400 hover:text-violet-500 dark:hover:border-violet-600 dark:hover:text-violet-400 transition-colors min-h-[80px]"
           >
             <Plus className="h-4 w-4" /> 아티스트 추가
