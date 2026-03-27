@@ -170,8 +170,8 @@ export class CatalogService {
     return this.serializeProduct(product);
   }
 
-  async findArtists(params: { search?: string; type?: string; page?: number; limit?: number }) {
-    const { search, type, page = 1, limit = 20 } = params;
+  async findArtists(params: { search?: string; type?: string; label?: string; page?: number; limit?: number }) {
+    const { search, type, label, page = 1, limit = 20 } = params;
     const skip = (page - 1) * limit;
 
     const where: any = {};
@@ -179,6 +179,7 @@ export class CatalogService {
       where.name = { contains: search, mode: 'insensitive' };
     }
     if (type) where.type = type;
+    if (label) where.labels = { has: label };
 
     const [artists, total] = await Promise.all([
       this.prisma.catalogArtist.findMany({ where, orderBy: { name: 'asc' }, skip, take: limit }),
@@ -822,11 +823,22 @@ export class CatalogService {
       motionArtUrl: this.toRawDropboxUrl((submission?.files as any)?.motionArtUrl) || null,
       musicVideoUrl: this.toRawDropboxUrl((submission?.files as any)?.musicVideoUrl) || null,
 
-      // Artists
-      artists: catalogProduct?.artists?.map((a: any) => ({
-        ...a,
-        fugaId: a.fugaId?.toString(),
-      })) || [],
+      // Artists — resolve MongoDB _id from fugaId for linking
+      artists: await Promise.all(
+        (catalogProduct?.artists || []).map(async (a: any) => {
+          let mongoId: string | null = null;
+          if (a.fugaId) {
+            try {
+              const dbArtist = await this.prisma.catalogArtist.findUnique({
+                where: { fugaId: BigInt(a.fugaId) },
+                select: { id: true },
+              });
+              mongoId = dbArtist?.id || null;
+            } catch {}
+          }
+          return { ...a, fugaId: a.fugaId?.toString(), id: mongoId };
+        })
+      ),
 
       // Merged tracks/assets
       assets: this.mergeTracksAndAssets(
