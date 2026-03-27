@@ -136,21 +136,12 @@ function ArtistCard({
         <User className="h-4 w-4 text-zinc-400" />
       </div>
       <div className="min-w-0 flex-1">
-        {fugaId ? (
-          <Link
-            to={`/admin/catalog/artists/${fugaId}`}
-            className="text-sm font-semibold text-blue-400 hover:text-blue-300 hover:underline block truncate"
-          >
-            {name}
-          </Link>
-        ) : (
-          <Link
-            to={`/admin/catalog/artists?search=${encodeURIComponent(name)}`}
-            className="text-sm font-semibold text-zinc-100 hover:text-blue-400 hover:underline block truncate"
-          >
-            {name}
-          </Link>
-        )}
+        <Link
+          to={`/admin/catalog/artists?search=${encodeURIComponent(name)}`}
+          className="text-sm font-semibold text-blue-400 hover:text-blue-300 hover:underline block truncate"
+        >
+          {name}
+        </Link>
         <div className="flex items-center gap-1.5 mt-1 flex-wrap">
           <span className={`rounded-full border px-2 py-0.5 text-[10px] font-medium ${roleColor}`}>
             {role}
@@ -187,16 +178,12 @@ function ContributorGroup({
               <Mic2 className="h-4 w-4 text-zinc-400" />
             </div>
             <div className="flex-1 min-w-0">
-              {c.personId ? (
-                <Link
-                  to={`/admin/catalog/artists/${c.personId}`}
-                  className="text-sm font-semibold text-white hover:text-blue-400 transition-colors truncate block"
-                >
-                  {c.name}
-                </Link>
-              ) : (
-                <p className="text-sm font-semibold text-white truncate">{c.name}</p>
-              )}
+              <Link
+                to={`/admin/catalog/artists?search=${encodeURIComponent(c.name)}`}
+                className="text-sm font-semibold text-white hover:text-blue-400 transition-colors truncate block"
+              >
+                {c.name}
+              </Link>
               <div className="flex flex-wrap gap-1 mt-1">
                 <DspLink url={c.spotifyUrl} type="spotify" />
                 <DspLink url={c.appleMusicUrl} type="apple" />
