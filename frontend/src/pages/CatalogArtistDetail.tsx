@@ -336,6 +336,37 @@ export default function CatalogArtistDetail() {
               </div>
             </motion.div>
 
+            {/* Korean DSP Profiles */}
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+            >
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                🇰🇷 한국 DSP
+              </h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Melon</label>
+                  <input type="text" value={val('melonUrl')} onChange={e => set('melonUrl', e.target.value)} disabled={!isEditing} className={inputCls} placeholder="https://www.melon.com/artist/..." />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Bugs</label>
+                  <input type="text" value={val('bugsUrl')} onChange={e => set('bugsUrl', e.target.value)} disabled={!isEditing} className={inputCls} placeholder="https://music.bugs.co.kr/artist/..." />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">VIBE</label>
+                  <input type="text" value={val('vibeUrl')} onChange={e => set('vibeUrl', e.target.value)} disabled={!isEditing} className={inputCls} placeholder="https://vibe.naver.com/artist/..." />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">Genie</label>
+                  <input type="text" value={val('genieUrl')} onChange={e => set('genieUrl', e.target.value)} disabled={!isEditing} className={inputCls} placeholder="https://www.genie.co.kr/detail/artistInfo?xxnm=..." />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 mb-1">FLO</label>
+                  <input type="text" value={val('floUrl')} onChange={e => set('floUrl', e.target.value)} disabled={!isEditing} className={inputCls} placeholder="https://www.music-flo.com/artist/..." />
+                </div>
+              </div>
+            </motion.div>
+
             {/* International Identifiers */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
               className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
