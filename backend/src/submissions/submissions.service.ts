@@ -384,7 +384,14 @@ export class SubmissionsService {
         }
       }
 
-      // Create SavedArtists
+      // Resolve label name for CatalogArtist labels field
+      const labelUser = await this.prisma.user.findUnique({
+        where: { id: targetUserId },
+        select: { name: true },
+      });
+      const labelName = labelUser?.name || '';
+
+      // Create SavedArtists and link to CatalogArtists
       for (const name of artistNames) {
         try {
           const identifiers: any[] = [];
@@ -395,7 +402,32 @@ export class SubmissionsService {
             if (spotifyId) identifiers.push({ type: 'SPOTIFY', value: spotifyId, url: null });
             if (appleMusicId) identifiers.push({ type: 'APPLE_MUSIC', value: appleMusicId, url: null });
           }
-          await this.savedArtistsService.createOrUpdateArtist(targetUserId, { name, identifiers });
+          const savedArtist = await this.savedArtistsService.createOrUpdateArtist(targetUserId, { name, identifiers });
+
+          // Skip linking if this artist already has a catalogArtistId
+          if (savedArtist?.catalogArtistId) continue;
+
+          // Find or create the corresponding CatalogArtist
+          let catalogArtist = await this.prisma.catalogArtist.findFirst({
+            where: { name: { equals: name, mode: 'insensitive' } },
+          });
+          if (!catalogArtist) {
+            catalogArtist = await this.prisma.catalogArtist.create({
+              data: {
+                fugaId: BigInt(Date.now()),
+                name,
+                type: 'ARTIST',
+                labels: [labelName].filter(Boolean),
+                syncedAt: new Date(),
+              },
+            });
+          }
+
+          // Link SavedArtist → CatalogArtist
+          await this.prisma.savedArtist.update({
+            where: { id: savedArtist.id },
+            data: { catalogArtistId: catalogArtist.id },
+          });
         } catch (err) {
           console.warn(`Failed to auto-create SavedArtist "${name}": ${err.message}`);
         }

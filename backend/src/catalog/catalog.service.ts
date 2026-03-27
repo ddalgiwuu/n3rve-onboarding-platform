@@ -207,8 +207,49 @@ export class CatalogService {
     }
     updateData.updatedAt = new Date();
 
-    const artist = await this.prisma.catalogArtist.update({ where: { id }, data: updateData });
-    return this.serializeArtist(artist);
+    const updated = await this.prisma.catalogArtist.update({ where: { id }, data: updateData });
+
+    // Reverse sync: propagate name change to all linked SavedArtists
+    const savedArtistData: any = { updatedAt: new Date() };
+    if (data.name !== undefined) savedArtistData.name = updated.name;
+
+    // Rebuild identifiers array if spotifyId or appleMusicId changed
+    if (data.spotifyId !== undefined || data.appleMusicId !== undefined) {
+      // Fetch each linked SavedArtist and update its identifiers individually
+      const linkedArtists = await this.prisma.savedArtist.findMany({
+        where: { catalogArtistId: id },
+        select: { id: true, identifiers: true },
+      });
+
+      for (const saved of linkedArtists) {
+        const identifiers: any[] = Array.isArray(saved.identifiers) ? [...(saved.identifiers as any[])] : [];
+
+        if (data.spotifyId !== undefined) {
+          const idx = identifiers.findIndex((x: any) => x.type === 'SPOTIFY');
+          if (idx >= 0) identifiers[idx] = { ...identifiers[idx], value: updated.spotifyId };
+          else if (updated.spotifyId) identifiers.push({ type: 'SPOTIFY', value: updated.spotifyId, url: null });
+        }
+
+        if (data.appleMusicId !== undefined) {
+          const idx = identifiers.findIndex((x: any) => x.type === 'APPLE_MUSIC');
+          if (idx >= 0) identifiers[idx] = { ...identifiers[idx], value: updated.appleMusicId };
+          else if (updated.appleMusicId) identifiers.push({ type: 'APPLE_MUSIC', value: updated.appleMusicId, url: null });
+        }
+
+        await this.prisma.savedArtist.update({
+          where: { id: saved.id },
+          data: { ...savedArtistData, identifiers },
+        });
+      }
+    } else if (Object.keys(savedArtistData).length > 1) {
+      // Only name (or updatedAt) changed — use updateMany for efficiency
+      await this.prisma.savedArtist.updateMany({
+        where: { catalogArtistId: id },
+        data: savedArtistData,
+      });
+    }
+
+    return this.serializeArtist(updated);
   }
 
   async deleteArtist(id: string) {
