@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Search, Music, Users, Disc3, Building2, Link2, Unlink, LayoutGrid, List } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
+import { useTranslation } from '../hooks/useTranslation';
 
 function StateTag({ state }: { state: string }) {
   const colors: Record<string, string> = {
@@ -46,6 +47,7 @@ function SubmissionStatusBadge({ status }: { status?: string }) {
 
 export default function CatalogPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [search, setSearch] = useState('');
   const [stateFilter, setStateFilter] = useState('');
   const [formatFilter, setFormatFilter] = useState('');
@@ -84,33 +86,37 @@ export default function CatalogPage() {
     const diffMs = date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 
-    if (diffDays > 7) return { text: date.toISOString().split('T')[0], style: 'bg-black/50', isCountdown: false, isUrgent: false };
-    if (diffDays > 1) return { text: `D-${diffDays}`, style: 'bg-amber-500/90', isCountdown: true, isUrgent: false };
-    if (diffDays === 1) return { text: 'D-1 내일 발매!', style: 'bg-red-500 animate-pulse', isCountdown: true, isUrgent: true };
-    if (diffDays === 0) return { text: '🎉 오늘 발매!', style: 'bg-green-500', isCountdown: true, isUrgent: false };
-    if (diffDays >= -7) return { text: `${Math.abs(diffDays)}일 전 발매`, style: 'bg-zinc-600/80', isCountdown: false, isUrgent: false };
-    return { text: date.toISOString().split('T')[0], style: 'bg-zinc-600/60', isCountdown: false, isUrgent: false };
+    // KST date string for display
+    const kstDate = new Date(date.getTime() + 9 * 3600000);
+    const kstStr = `${kstDate.getUTCMonth() + 1}/${kstDate.getUTCDate()} KST`;
+
+    if (diffDays > 7) return { text: `${kstStr}`, style: 'bg-black/50', isCountdown: false, isUrgent: false };
+    if (diffDays > 1) return { text: `D-${diffDays} (${kstStr})`, style: 'bg-amber-500/90', isCountdown: true, isUrgent: false };
+    if (diffDays === 1) return { text: t('catalog.releaseTomorrow'), style: 'bg-red-500 animate-pulse', isCountdown: true, isUrgent: true };
+    if (diffDays === 0) return { text: t('catalog.releaseToday'), style: 'bg-green-500', isCountdown: true, isUrgent: false };
+    if (diffDays >= -7) return { text: `${Math.abs(diffDays)}${t('catalog.releasedDaysAgo')}`, style: 'bg-zinc-600/80', isCountdown: false, isUrgent: false };
+    return { text: kstStr, style: 'bg-zinc-600/60', isCountdown: false, isUrgent: false };
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Catalog</h1>
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{t('catalog.title')}</h1>
         <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          N3RVE 카탈로그 + Submission 통합 뷰
+          {t('catalog.subtitle')}
         </p>
       </div>
 
       {/* Stats */}
       {stats && (
         <div className="flex flex-wrap items-center gap-4 rounded-lg border border-zinc-200 bg-white px-5 py-3 text-sm dark:border-zinc-700 dark:bg-zinc-800">
-          <span className="font-semibold text-zinc-900 dark:text-white">총 {stats.total}</span>
+          <span className="font-semibold text-zinc-900 dark:text-white">{t('catalog.total')} {stats.total}</span>
           <span className="text-zinc-300 dark:text-zinc-600">|</span>
-          <span className="text-blue-600 dark:text-blue-400">양쪽 동기화 {stats.both}</span>
+          <span className="text-blue-600 dark:text-blue-400">{t('catalog.synced')} {stats.both}</span>
           <span className="text-zinc-300 dark:text-zinc-600">|</span>
-          <span className="text-green-600 dark:text-green-400">N3RVE만 {stats.catalogOnly}</span>
+          <span className="text-green-600 dark:text-green-400">{t('catalog.catalogOnly')} {stats.catalogOnly}</span>
           <span className="text-zinc-300 dark:text-zinc-600">|</span>
-          <span className="text-orange-600 dark:text-orange-400">제출만 {stats.submissionOnly}</span>
+          <span className="text-orange-600 dark:text-orange-400">{t('catalog.submissionOnly')} {stats.submissionOnly}</span>
         </div>
       )}
 
@@ -120,7 +126,7 @@ export default function CatalogPage() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
           <input
             type="text"
-            placeholder="검색 (앨범명, UPC, 아티스트)..."
+            placeholder={t('catalog.search')}
             className="w-full rounded-lg border border-zinc-200 bg-white py-2 pl-10 pr-4 text-sm dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
             value={search}
             onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -131,7 +137,7 @@ export default function CatalogPage() {
           value={stateFilter}
           onChange={e => { setStateFilter(e.target.value); setPage(1); }}
         >
-          <option value="">모든 상태</option>
+          <option value="">{t('catalog.allStates')}</option>
           <option value="DELIVERED">Delivered</option>
           <option value="PENDING">Pending</option>
           <option value="TAKEDOWN">Takedown</option>
@@ -141,7 +147,7 @@ export default function CatalogPage() {
           value={formatFilter}
           onChange={e => { setFormatFilter(e.target.value); setPage(1); }}
         >
-          <option value="">모든 포맷</option>
+          <option value="">{t('catalog.allFormats')}</option>
           <option value="SINGLE">Single</option>
           <option value="EP">EP</option>
           <option value="ALBUM">Album</option>
@@ -151,10 +157,10 @@ export default function CatalogPage() {
           value={sourceFilter}
           onChange={e => { setSourceFilter(e.target.value); setPage(1); }}
         >
-          <option value="">모든 소스</option>
-          <option value="both">양쪽 동기화</option>
-          <option value="catalog">N3RVE만</option>
-          <option value="submission">제출만</option>
+          <option value="">{t('catalog.allSources')}</option>
+          <option value="both">{t('catalog.synced')}</option>
+          <option value="catalog">{t('catalog.catalogOnly')}</option>
+          <option value="submission">{t('catalog.submissionOnly')}</option>
         </select>
         <div className="flex gap-1 rounded-lg border border-zinc-200 p-0.5 dark:border-zinc-700">
           <button
@@ -178,9 +184,9 @@ export default function CatalogPage() {
       {viewMode === 'tile' ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {isLoading ? (
-            <p className="col-span-full text-center text-zinc-400 py-8">불러오는 중...</p>
+            <p className="col-span-full text-center text-zinc-400 py-8">{t('catalog.loading')}</p>
           ) : productsData?.data?.length === 0 ? (
-            <p className="col-span-full text-center text-zinc-400 py-8">결과 없음</p>
+            <p className="col-span-full text-center text-zinc-400 py-8">{t('catalog.noResults')}</p>
           ) : (
             productsData?.data?.map((item: any) => (
               <div
@@ -257,9 +263,9 @@ export default function CatalogPage() {
             </thead>
             <tbody className="divide-y divide-zinc-100 dark:divide-zinc-700">
               {isLoading ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-zinc-400">불러오는 중...</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-zinc-400">{t('catalog.loading')}</td></tr>
               ) : productsData?.data?.length === 0 ? (
-                <tr><td colSpan={8} className="px-4 py-8 text-center text-zinc-400">결과 없음</td></tr>
+                <tr><td colSpan={8} className="px-4 py-8 text-center text-zinc-400">{t('catalog.noResults')}</td></tr>
               ) : (
                 productsData?.data?.map((item: any) => (
                   <tr
