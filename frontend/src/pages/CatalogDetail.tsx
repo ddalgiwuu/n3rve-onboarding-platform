@@ -55,6 +55,22 @@ function Section({ title, icon: Icon, children, defaultOpen = true, accent }: {
   );
 }
 
+function formatDateTime(dateStr?: string | null): string | undefined {
+  if (!dateStr) return undefined;
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const year = d.getFullYear();
+    const mo = String(d.getMonth() + 1).padStart(2, '0');
+    const da = String(d.getDate()).padStart(2, '0');
+    const h24 = d.getHours();
+    const mi = String(d.getMinutes()).padStart(2, '0');
+    const ampm = h24 >= 12 ? 'PM' : 'AM';
+    const h = h24 % 12 || 12;
+    return `${year}-${mo}-${da} ${h}:${mi} ${ampm}`;
+  } catch { return dateStr; }
+}
+
 function SubSection({ title }: { title: string }) {
   return (
     <div className="border-b border-zinc-300 dark:border-zinc-700 pb-2 mb-5 mt-8 first:mt-0">
@@ -67,21 +83,26 @@ function ReleaseDateTimeField({ date, time }: { date?: string; time?: string }) 
   if (!date) return <Field label="Release Date & Time" value={undefined} />;
   const dateStr = date.split('T')[0];
 
+  function to12h(h24: number, min: number) {
+    const ampm = h24 >= 12 ? 'PM' : 'AM';
+    const h = h24 % 12 || 12;
+    return `${h}:${String(min).padStart(2, '0')} ${ampm}`;
+  }
+
   function toTZ(dateStr: string, time: string | undefined, offsetHours: number) {
     try {
       const base = time ? `${dateStr}T${time}` : `${dateStr}T00:00:00Z`;
       const d = new Date(base);
-      if (isNaN(d.getTime())) return { date: dateStr, time: '00:00' };
+      if (isNaN(d.getTime())) return { date: dateStr, time: '12:00 AM' };
       const shifted = new Date(d.getTime() + offsetHours * 3600000);
       const mo = String(shifted.getUTCMonth() + 1).padStart(2, '0');
       const da = String(shifted.getUTCDate()).padStart(2, '0');
-      const hr = String(shifted.getUTCHours()).padStart(2, '0');
-      const mi = String(shifted.getUTCMinutes()).padStart(2, '0');
-      return { date: `${shifted.getUTCFullYear()}-${mo}-${da}`, time: `${hr}:${mi}` };
-    } catch { return { date: dateStr, time: '00:00' }; }
+      return { date: `${shifted.getUTCFullYear()}-${mo}-${da}`, time: to12h(shifted.getUTCHours(), shifted.getUTCMinutes()) };
+    } catch { return { date: dateStr, time: '12:00 AM' }; }
   }
 
-  const utcTime = time ? time.replace('Z', '').substring(0, 5) : '00:00';
+  const utcParsed = time ? time.replace('Z', '').split(':').map(Number) : [0, 0];
+  const utcTime = to12h(utcParsed[0] || 0, utcParsed[1] || 0);
   const kst = toTZ(dateStr, time, 9);
 
   return (
@@ -732,9 +753,9 @@ export default function CatalogDetailPage() {
           <Field label="Pre-order Date" value={p.preorderDate} />
           <Field label="Recording Year" value={p.recordingYear} />
           <Field label="Recording Location" value={p.recordingLocation} />
-          <Field label="Added Date" value={p.addedDate} />
-          <Field label="Synced At" value={p.syncedAt ? new Date(p.syncedAt).toLocaleString('ko-KR') : undefined} />
-          <Field label="Created At" value={p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR') : undefined} />
+          <Field label="Added Date" value={formatDateTime(p.addedDate)} />
+          <Field label="Synced At" value={formatDateTime(p.syncedAt)} />
+          <Field label="Created At" value={formatDateTime(p.createdAt)} />
         </FieldGrid>
 
         {/* 장르 & 언어 */}
@@ -938,7 +959,7 @@ export default function CatalogDetailPage() {
           <Field label="Submission Status" value={p.submissionStatus?.toUpperCase()} />
           <Field label="Reviewed By" value={p.reviewedBy} />
           <Field label="Reviewed At" value={p.reviewedAt ? new Date(p.reviewedAt).toLocaleString('ko-KR') : undefined} />
-          <Field label="Created At" value={p.createdAt ? new Date(p.createdAt).toLocaleString('ko-KR') : undefined} />
+          <Field label="Created At" value={formatDateTime(p.createdAt)} />
           <Field label="Updated At" value={p.updatedAt ? new Date(p.updatedAt).toLocaleString('ko-KR') : undefined} />
         </FieldGrid>
         {p.adminNotes && (
