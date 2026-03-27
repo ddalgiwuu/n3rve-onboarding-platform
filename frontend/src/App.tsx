@@ -43,6 +43,7 @@ const CatalogPage = lazy(() => import('./pages/Catalog'));
 const CatalogDetailPage = lazy(() => import('./pages/CatalogDetail'));
 const CatalogArtistsPage = lazy(() => import('./pages/CatalogArtists'));
 const CatalogArtistDetailPage = lazy(() => import('./pages/CatalogArtistDetail'));
+const CatalogTrackDetailPage = lazy(() => import('./pages/CatalogTrackDetail'));
 
 // FUGA SCORE Integration pages
 const FeatureReportsPage = lazy(() => import('./pages/FeatureReports'));
@@ -222,6 +223,9 @@ function App() {
             } />
             <Route path="/admin/catalog/artists/:id" element={
               isAuthenticated && userRole === 'ADMIN' ? <Suspense fallback={<LoadingSpinner />}><CatalogArtistDetailPage /></Suspense> : <Navigate to="/login" />
+            } />
+            <Route path="/admin/catalog/:id/track/:trackIndex" element={
+              isAuthenticated && userRole === 'ADMIN' ? <Suspense fallback={<LoadingSpinner />}><CatalogTrackDetailPage /></Suspense> : <Navigate to="/login" />
             } />
             <Route path="/admin/catalog/:id" element={
               isAuthenticated && userRole === 'ADMIN' ? <Suspense fallback={<LoadingSpinner />}><CatalogDetailPage /></Suspense> : <Navigate to="/login" />
