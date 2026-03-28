@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
+import { TOTP } from 'totp-generator';
 
 @Injectable()
 export class FugaApiService {
@@ -18,6 +19,7 @@ export class FugaApiService {
   async login(otpCode?: string): Promise<void> {
     const username = this.configService.get<string>('FUGA_USERNAME');
     const password = this.configService.get<string>('FUGA_PASSWORD');
+    const totpSecret = this.configService.get<string>('FUGA_TOTP_SECRET');
 
     try {
       // Step 1: Username/password login
@@ -42,17 +44,24 @@ export class FugaApiService {
         .map((c: string) => c.split(';')[0])
         .join('; ');
 
-      // Step 2: Check if 2FA is required
+      // Step 2: Handle 2FA if enabled
       const loginData = await res.json().catch(() => ({})) as any;
       if (loginData?.user?.is_two_factor_authentication_enabled) {
-        this.requires2FA = true;
-
-        if (!otpCode) {
-          this.logger.warn('FUGA 2FA required — call loginWith2FA(otpCode) or provide OTP via API');
-          return;
+        // Auto-generate OTP if TOTP secret is configured
+        let code = otpCode;
+        if (!code && totpSecret) {
+          const { otp } = await TOTP.generate(totpSecret);
+          code = otp;
+          this.logger.log('FUGA 2FA: auto-generated TOTP code');
         }
 
-        await this.verify2FA(otpCode);
+        if (code) {
+          await this.verify2FA(code);
+        } else {
+          this.requires2FA = true;
+          this.logger.warn('FUGA 2FA required but no TOTP secret or OTP code provided');
+          return;
+        }
       }
 
       this.logger.log('FUGA login successful');
