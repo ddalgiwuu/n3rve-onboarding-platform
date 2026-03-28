@@ -1,9 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { FugaApiService } from './fuga-api.service';
+import fetch from 'node-fetch';
 
 @Injectable()
 export class CatalogService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(CatalogService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private fugaApi: FugaApiService,
+  ) {}
 
   // ==================== SYNC ====================
 
@@ -1017,6 +1024,310 @@ export class CatalogService {
     };
   }
 
+  // ==================== FUGA PUSH / PULL ====================
+
+  async pushToFuga(submissionId: string): Promise<any> {
+    const result: any = {
+      submissionId,
+      success: false,
+      fugaProductId: null,
+      errors: [] as string[],
+    };
+
+    try {
+      // 1. Load submission with all data
+      const submission = await this.prisma.submission.findUnique({
+        where: { id: submissionId },
+      });
+
+      if (!submission) {
+        throw new Error(`Submission ${submissionId} not found`);
+      }
+
+      const release = submission.release as any;
+      const tracks: any[] = (submission.tracks as any[]) || [];
+      const files = submission.files as any;
+
+      // 2. Validate required fields
+      const missing: string[] = [];
+      if (!release?.upc) missing.push('UPC');
+      if (!submission.albumTitle && !submission.albumTitleEn) missing.push('Album title');
+      if (!submission.artistName && !submission.artistNameEn) missing.push('Artist name');
+      if (!submission.labelName) missing.push('Label name');
+
+      if (missing.length > 0) {
+        throw new Error(`Missing required fields: ${missing.join(', ')}`);
+      }
+
+      // 3. Create FUGA product
+      const fugaProductData = this.fugaApi.mapSubmissionToFugaProduct(submission);
+      this.logger.log(`Pushing submission ${submissionId} to FUGA: ${fugaProductData.name}`);
+
+      const fugaProduct = await this.fugaApi.createProduct(fugaProductData);
+      const fugaProductId = String(fugaProduct.id || fugaProduct.product?.id);
+      result.fugaProductId = fugaProductId;
+
+      this.logger.log(`FUGA product created: ${fugaProductId}`);
+
+      // 4. Add primary artist to FUGA product
+      const primaryArtistName = submission.artistNameEn || submission.artistName;
+      try {
+        const artist = await this.fugaApi.findOrCreateArtist(primaryArtistName, true);
+        await this.fugaApi.addArtistToProduct(fugaProductId, String(artist.id), true);
+      } catch (artistErr) {
+        result.errors.push(`Primary artist error: ${artistErr.message}`);
+        this.logger.warn(`Failed to add primary artist: ${artistErr.message}`);
+      }
+
+      // Featuring artists at album level
+      const albumFeaturing = (submission.albumFeaturingArtists as any[]) || [];
+      for (const featuring of albumFeaturing) {
+        try {
+          const featuringName = featuring.nameEn || featuring.name;
+          if (!featuringName) continue;
+          const featuringArtist = await this.fugaApi.findOrCreateArtist(featuringName, false);
+          await this.fugaApi.addArtistToProduct(fugaProductId, String(featuringArtist.id), false);
+        } catch (err) {
+          result.errors.push(`Featuring artist error: ${err.message}`);
+        }
+      }
+
+      // 5. Add assets (tracks) to FUGA product
+      for (let i = 0; i < tracks.length; i++) {
+        const track = tracks[i];
+        try {
+          const assetData = this.fugaApi.mapSubmissionTrackToFugaAsset(track, i + 1);
+          const fugaAsset = await this.fugaApi.addAsset(fugaProductId, assetData);
+          const fugaAssetId = String(fugaAsset.id || fugaAsset.asset?.id);
+
+          // Add track-level artists
+          const trackArtists: any[] = track.artists || [];
+          for (const ta of trackArtists) {
+            try {
+              const taName = ta.nameEn || ta.name;
+              if (!taName) continue;
+              const isPrimary = (ta.type || '').toUpperCase() !== 'FEATURING';
+              const taArtist = await this.fugaApi.findOrCreateArtist(taName, isPrimary);
+              await this.fugaApi.addArtistToAsset(fugaAssetId, String(taArtist.id), isPrimary);
+            } catch (err) {
+              result.errors.push(`Track ${i + 1} artist error: ${err.message}`);
+            }
+          }
+        } catch (trackErr) {
+          result.errors.push(`Track ${i + 1} (${track.titleKo || track.titleEn}) error: ${trackErr.message}`);
+          this.logger.warn(`Failed to add track ${i + 1}: ${trackErr.message}`);
+        }
+      }
+
+      // 6. Upload cover art if available (download from Dropbox first)
+      const coverUrl = files?.coverImageUrl;
+      if (coverUrl) {
+        try {
+          const rawUrl = this.toRawDropboxUrl(coverUrl);
+          if (rawUrl) {
+            const imageRes = await fetch(rawUrl);
+            if (imageRes.ok) {
+              const imageBuffer = Buffer.from(await imageRes.arrayBuffer());
+              const filename = coverUrl.split('/').pop()?.split('?')[0] || 'cover.jpg';
+              await this.fugaApi.uploadCoverArt(fugaProductId, imageBuffer, filename);
+              this.logger.log(`Cover art uploaded for FUGA product ${fugaProductId}`);
+            } else {
+              result.errors.push(`Cover art download failed: HTTP ${imageRes.status}`);
+            }
+          }
+        } catch (coverErr) {
+          result.errors.push(`Cover art upload error: ${coverErr.message}`);
+          this.logger.warn(`Cover art upload failed: ${coverErr.message}`);
+        }
+      }
+
+      // 7. Create / update CatalogProduct in our DB
+      const existingCatalog = await this.prisma.catalogProduct.findUnique({
+        where: { fugaId: BigInt(fugaProductId) },
+      });
+
+      let catalogProduct;
+      const catalogData = {
+        fugaId: BigInt(fugaProductId),
+        name: fugaProductData.name,
+        upc: release.upc,
+        state: 'DRAFT',
+        label: submission.labelName,
+        displayArtist: submission.displayArtist || submission.artistName,
+        consumerReleaseDate: release.consumerReleaseDate || null,
+        originalReleaseDate: release.originalReleaseDate || null,
+        language: release.recordingLanguage || null,
+        releaseFormatType: this.mapReleaseFormatForDb(submission.albumType),
+        cLineText: release.cRights || null,
+        pLineText: release.pRights || null,
+        parentalAdvisory: release.parentalAdvisory === 'EXPLICIT' || submission.explicitContent || false,
+        catalogNumber: release.catalogNumber || null,
+        totalVolumes: submission.totalVolumes || 1,
+        isCompilation: release.isCompilation || false,
+        submissionId,
+        syncedAt: new Date(),
+        syncSource: 'push',
+      };
+
+      if (existingCatalog) {
+        catalogProduct = await this.prisma.catalogProduct.update({
+          where: { fugaId: BigInt(fugaProductId) },
+          data: catalogData,
+        });
+      } else {
+        catalogProduct = await this.prisma.catalogProduct.create({ data: catalogData });
+      }
+
+      // 8. Link submission to catalog product
+      await this.prisma.submission.update({
+        where: { id: submissionId },
+        data: {
+          catalogProductId: catalogProduct.id,
+          fugaSyncStatus: result.errors.length === 0 ? 'SYNCED' : 'MISMATCH',
+        },
+      });
+
+      result.success = true;
+      result.catalogProductId = catalogProduct.id;
+      this.logger.log(
+        `pushToFuga complete for submission ${submissionId} — FUGA product: ${fugaProductId}, errors: ${result.errors.length}`,
+      );
+    } catch (error) {
+      result.errors.push(error.message);
+      this.logger.error(`pushToFuga failed for submission ${submissionId}: ${error.message}`);
+
+      // Mark as MISMATCH so admin knows action is needed
+      try {
+        await this.prisma.submission.update({
+          where: { id: submissionId },
+          data: { fugaSyncStatus: 'MISMATCH' },
+        });
+      } catch (_) {
+        // Ignore — submission may not exist
+      }
+    }
+
+    return result;
+  }
+
+  async pullFromFuga(): Promise<any> {
+    const result = { created: 0, updated: 0, errors: [] as string[] };
+
+    try {
+      this.logger.log('Starting pullFromFuga...');
+
+      let page = 0;
+      const limit = 50;
+      let hasMore = true;
+
+      while (hasMore) {
+        let response: any;
+        try {
+          response = await this.fugaApi.getProducts({ page, limit });
+        } catch (fetchErr) {
+          result.errors.push(`Page ${page} fetch error: ${fetchErr.message}`);
+          break;
+        }
+
+        // FUGA wraps results in `product` array
+        const products: any[] =
+          response?.product ||
+          response?.products ||
+          response?.data ||
+          (Array.isArray(response) ? response : []);
+
+        if (products.length === 0) {
+          hasMore = false;
+          break;
+        }
+
+        for (const product of products) {
+          try {
+            // Fetch full product details (includes assets and artists)
+            let fullProduct: any;
+            try {
+              fullProduct = await this.fugaApi.getProduct(String(product.id));
+              // Fetch assets separately if not embedded
+              if (!fullProduct.assets || fullProduct.assets.length === 0) {
+                const assetsResponse = await this.fugaApi.getProductAssets(String(product.id));
+                fullProduct.assets = assetsResponse?.asset || assetsResponse?.assets || assetsResponse?.data || [];
+              }
+            } catch (detailErr) {
+              // Fall back to the summary data from the list
+              fullProduct = product;
+              result.errors.push(`Product ${product.id} detail fetch failed: ${detailErr.message}`);
+            }
+
+            const data = this.mapProductData(fullProduct);
+
+            const existing = await this.prisma.catalogProduct.findUnique({
+              where: { fugaId: BigInt(product.id) },
+            });
+
+            if (existing) {
+              await this.prisma.catalogProduct.update({
+                where: { fugaId: BigInt(product.id) },
+                data: { ...data, syncedAt: new Date() },
+              });
+              result.updated++;
+            } else {
+              await this.prisma.catalogProduct.create({ data });
+              result.created++;
+            }
+
+            // Upsert assets
+            for (const asset of fullProduct.assets || []) {
+              try {
+                await this.upsertAsset(asset, product.id);
+              } catch (assetErr) {
+                result.errors.push(`Asset ${asset.id} in product ${product.id}: ${assetErr.message}`);
+              }
+            }
+
+            // Upsert artists
+            await this.upsertArtistsFromProduct(fullProduct);
+
+            // Auto-link to Submission by UPC
+            if (fullProduct.upc) {
+              await this.autoLinkSubmission(fullProduct.upc, BigInt(product.id));
+            }
+
+            // Sync artists to per-user saved lists
+            await this.syncArtistsToSavedArtists(fullProduct);
+          } catch (productErr) {
+            result.errors.push(`Product ${product.id}: ${productErr.message}`);
+          }
+        }
+
+        // FUGA pagination: stop if fewer than `limit` results were returned
+        if (products.length < limit) {
+          hasMore = false;
+        } else {
+          page++;
+        }
+      }
+
+      this.logger.log(
+        `pullFromFuga complete — created: ${result.created}, updated: ${result.updated}, errors: ${result.errors.length}`,
+      );
+    } catch (error) {
+      result.errors.push(`pullFromFuga fatal: ${error.message}`);
+      this.logger.error(`pullFromFuga fatal error: ${error.message}`);
+    }
+
+    return result;
+  }
+
+  private mapReleaseFormatForDb(albumType?: string): string {
+    const map: Record<string, string> = {
+      SINGLE: 'SINGLE',
+      EP: 'EP',
+      ALBUM: 'ALBUM',
+      COMPILATION: 'COMPILATION',
+    };
+    return map[(albumType || '').toUpperCase()] || 'SINGLE';
+  }
+
   // ==================== PRIVATE HELPERS ====================
 
   private mapProductData(product: any) {
@@ -1151,12 +1462,22 @@ export class CatalogService {
     };
 
     const existing = await this.prisma.catalogAsset.findUnique({
-      where: { fugaId: BigInt(asset.id) },
+      where: {
+        fugaId_productId: {
+          fugaId: BigInt(asset.id),
+          productId: product.id,
+        },
+      },
     });
 
     if (existing) {
       await this.prisma.catalogAsset.update({
-        where: { fugaId: BigInt(asset.id) },
+        where: {
+          fugaId_productId: {
+            fugaId: BigInt(asset.id),
+            productId: product.id,
+          },
+        },
         data,
       });
     } else {

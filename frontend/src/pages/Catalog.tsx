@@ -1,7 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Search, Music, Users, Disc3, Building2, Link2, Unlink, LayoutGrid, List } from 'lucide-react';
+import { Search, Music, Users, Disc3, Building2, Link2, Unlink, LayoutGrid, List, RefreshCw, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
 import { useTranslation } from '../hooks/useTranslation';
@@ -48,12 +49,28 @@ function SubmissionStatusBadge({ status }: { status?: string }) {
 export default function CatalogPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [stateFilter, setStateFilter] = useState('');
   const [formatFilter, setFormatFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'tile'>('tile');
   const [page, setPage] = useState(1);
+  const [isPulling, setIsPulling] = useState(false);
+
+  const handlePullFromFuga = async () => {
+    setIsPulling(true);
+    try {
+      const result = await catalogApi.pullFromFuga();
+      toast.success(`동기화 완료: ${result.data?.created || 0}개 생성, ${result.data?.updated || 0}개 업데이트`);
+      queryClient.invalidateQueries({ queryKey: ['catalog-unified'] });
+      queryClient.invalidateQueries({ queryKey: ['catalog-infinite'] });
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'FUGA 동기화 실패');
+    } finally {
+      setIsPulling(false);
+    }
+  };
 
   // Table view: paginated query
   const { data: productsData, isLoading } = useQuery({
@@ -142,11 +159,25 @@ export default function CatalogPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{t('catalog.title')}</h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400">
-          {t('catalog.subtitle')}
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{t('catalog.title')}</h1>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            {t('catalog.subtitle')}
+          </p>
+        </div>
+        <button
+          onClick={handlePullFromFuga}
+          disabled={isPulling}
+          className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 text-sm transition-colors"
+        >
+          {isPulling ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <RefreshCw className="h-3.5 w-3.5" />
+          )}
+          FUGA 싱크
+        </button>
       </div>
 
       {/* Stats */}

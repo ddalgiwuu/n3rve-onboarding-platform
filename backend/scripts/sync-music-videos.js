@@ -49,11 +49,13 @@ async function main() {
       const existingFugaIds = new Set(dbAssets.map(a => a.fugaId?.toString()));
 
       for (const fa of fugaAssets) {
-        // Skip if already in DB
-        if (existingIsrcs.has(fa.isrc) || existingFugaIds.has(String(fa.id))) continue;
+        // Skip if this exact fugaId already exists for this product
+        if (existingFugaIds.has(String(fa.id))) continue;
 
-        // This is a missing asset (could be MV or missing track)
+        // For TRACK type: also skip if ISRC already exists (same track)
+        // For MUSIC_VIDEO type: always add (MV can share ISRC with track)
         const isMV = fa.type === 'MUSIC_VIDEO';
+        if (!isMV && existingIsrcs.has(fa.isrc)) continue;
         if (isMV) results.mvFound++;
 
         console.log(`  ${isMV ? '🎬' : '🎵'} ${product.name} → ${fa.name} (${fa.type}) isrc=${fa.isrc}`);
