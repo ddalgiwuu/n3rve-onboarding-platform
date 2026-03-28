@@ -175,9 +175,25 @@ export class CatalogController {
 
   @Post('sync/pull-from-fuga')
   @UseGuards(JwtAuthGuard)
-  async pullFromFuga(@CurrentUser() user: any) {
+  async pullFromFuga(@CurrentUser() user: any, @Body() body?: { otp?: string }) {
     if (user.role !== 'ADMIN') throw new ForbiddenException();
-    return this.catalogService.pullFromFuga();
+    return this.catalogService.pullFromFuga(body?.otp);
+  }
+
+  @Post('fuga/2fa')
+  @UseGuards(JwtAuthGuard)
+  async fuga2FA(@CurrentUser() user: any, @Body() body: { otp: string }) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    if (!body?.otp) throw new ForbiddenException('OTP code required');
+    await this.catalogService.fugaVerify2FA(body.otp);
+    return { message: 'FUGA 2FA verified successfully' };
+  }
+
+  @Get('fuga/2fa-status')
+  @UseGuards(JwtAuthGuard)
+  async fuga2FAStatus(@CurrentUser() user: any) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return { requires2FA: this.catalogService.fugaRequires2FA() };
   }
 
   @Get('unlinked')

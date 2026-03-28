@@ -13,11 +13,14 @@ export class FugaApiService {
 
   // ==================== AUTH ====================
 
-  async login(): Promise<void> {
+  private requires2FA = false;
+
+  async login(otpCode?: string): Promise<void> {
     const username = this.configService.get<string>('FUGA_USERNAME');
     const password = this.configService.get<string>('FUGA_PASSWORD');
 
     try {
+      // Step 1: Username/password login
       const res = await fetch(`${this.baseUrl}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -35,16 +38,63 @@ export class FugaApiService {
         throw new Error('FUGA login succeeded but no session cookie returned');
       }
 
-      // Extract the session cookie (typically JSESSIONID or similar)
       this.sessionCookie = setCookie
         .map((c: string) => c.split(';')[0])
         .join('; ');
+
+      // Step 2: Check if 2FA is required
+      const loginData = await res.json().catch(() => ({})) as any;
+      if (loginData?.user?.is_two_factor_authentication_enabled) {
+        this.requires2FA = true;
+
+        if (!otpCode) {
+          this.logger.warn('FUGA 2FA required — call loginWith2FA(otpCode) or provide OTP via API');
+          return;
+        }
+
+        await this.verify2FA(otpCode);
+      }
 
       this.logger.log('FUGA login successful');
     } catch (error) {
       this.sessionCookie = null;
       throw new Error(`FUGA login error: ${error.message}`);
     }
+  }
+
+  async verify2FA(otpCode: string): Promise<void> {
+    if (!this.sessionCookie) {
+      throw new Error('Must call login() first before verify2FA()');
+    }
+
+    const tfaRes = await fetch(`${this.baseUrl}/login/2fa`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Cookie: this.sessionCookie,
+      },
+      body: JSON.stringify({ totp: otpCode }),
+    });
+
+    if (tfaRes.status !== 200) {
+      const body = await tfaRes.text();
+      throw new Error(`FUGA 2FA verification failed (${tfaRes.status}): ${body}`);
+    }
+
+    // Update session cookie if new ones returned
+    const tfaCookies = tfaRes.headers.raw()['set-cookie'];
+    if (tfaCookies?.length) {
+      this.sessionCookie = tfaCookies
+        .map((c: string) => c.split(';')[0])
+        .join('; ');
+    }
+
+    this.requires2FA = false;
+    this.logger.log('FUGA 2FA verification successful');
+  }
+
+  is2FARequired(): boolean {
+    return this.requires2FA;
   }
 
   private async ensureAuth(): Promise<string> {

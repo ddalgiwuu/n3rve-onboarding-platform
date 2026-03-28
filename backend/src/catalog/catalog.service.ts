@@ -1212,7 +1212,15 @@ export class CatalogService {
     return result;
   }
 
-  async pullFromFuga(): Promise<any> {
+  async fugaVerify2FA(otpCode: string): Promise<void> {
+    await this.fugaApi.verify2FA(otpCode);
+  }
+
+  fugaRequires2FA(): boolean {
+    return this.fugaApi.is2FARequired();
+  }
+
+  async pullFromFuga(otp?: string): Promise<any> {
     const result = { created: 0, updated: 0, errors: [] as string[] };
 
     try {
