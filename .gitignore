@@ -155,3 +155,6 @@ backend/.env.*
 frontend/.env.*
 !.env.example
 !backend/.env.example
+scripts/set-admin-*.js
+scripts/deploy-ec2.sh
+scripts/update-admin-*.js
