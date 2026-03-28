@@ -137,3 +137,21 @@ frontend/.env
 frontend/.env.local
 
 .vercel
+
+# Security: scripts with tokens
+deploy-dropbox-env.sh
+setup-dropbox-token.sh
+scripts/setup-dropbox-env.sh
+
+# Security: env check/verify files with tokens
+frontend/.env.production.check
+frontend/.env.verify
+*.env.check
+*.env.verify
+
+# Security: any env variant files
+.env.*
+backend/.env.*
+frontend/.env.*
+!.env.example
+!backend/.env.example

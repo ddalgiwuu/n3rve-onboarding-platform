@@ -38,8 +38,6 @@ export class AuthController {
     @Res() res: Response,
   ) {
     try {
-      console.log('Google OAuth callback - received user:', req.user);
-      
       if (!req.user) {
         throw new Error('No user data received from Google');
       }
@@ -55,19 +53,11 @@ export class AuthController {
       // Use the user returned from googleLogin which has the updated role
       const profileComplete = result.user?.isProfileComplete || false;
 
-      // Log for debugging
-      console.log('Google OAuth callback - redirecting to:', frontendUrl);
-      console.log('Profile complete:', profileComplete);
-
       res.redirect(
         `${frontendUrl}/auth/callback?access_token=${result.access_token}&refresh_token=${result.refresh_token}&profile_complete=${profileComplete}`,
       );
     } catch (error) {
-      console.error('Google OAuth callback error:', error);
-      console.error('Error stack:', error.stack);
-      console.error('Error details:', JSON.stringify(error, null, 2));
-      
-      // Return a JSON error response for debugging
+      // Return a JSON error response
       res.status(500).json({
         error: 'OAuth callback failed',
         message: error.message || 'Unknown error',
@@ -79,51 +69,6 @@ export class AuthController {
     }
   }
 
-  @Public()
-  @Get('test')
-  async test() {
-    return {
-      status: 'ok',
-      mongoUri: this.configService.get('MONGODB_URI') ? 'configured' : 'missing',
-      jwtSecret: this.configService.get('JWT_SECRET') ? 'configured' : 'missing',
-      googleClientId: this.configService.get('GOOGLE_CLIENT_ID') ? 'configured' : 'missing',
-      googleClientSecret: this.configService.get('GOOGLE_CLIENT_SECRET') ? 'configured' : 'missing',
-      nodeEnv: this.configService.get('NODE_ENV') || 'not set',
-      corsOrigin: this.configService.get('CORS_ORIGIN') || 'not set',
-    };
-  }
-  
-  @Public()
-  @Get('debug')
-  async debug() {
-    try {
-      // Test database connection
-      const dbTest = await this.usersService.findOne('test@example.com').catch(() => null);
-      
-      return {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        environment: {
-          NODE_ENV: this.configService.get('NODE_ENV') || 'not set',
-          MONGODB_URI: this.configService.get('MONGODB_URI') ? 'configured' : 'missing',
-          JWT_SECRET: this.configService.get('JWT_SECRET') ? 'configured' : 'missing',
-          GOOGLE_CLIENT_ID: this.configService.get('GOOGLE_CLIENT_ID') ? 'configured' : 'missing',
-          GOOGLE_CLIENT_SECRET: this.configService.get('GOOGLE_CLIENT_SECRET') ? 'configured' : 'missing',
-          GOOGLE_CALLBACK_URL: this.configService.get('GOOGLE_CALLBACK_URL') || 'using default',
-          CORS_ORIGIN: this.configService.get('CORS_ORIGIN') || 'not set',
-        },
-        database: {
-          connected: dbTest !== null ? 'maybe' : 'connection test performed',
-        },
-      };
-    } catch (error) {
-      return {
-        status: 'error',
-        message: error.message,
-        timestamp: new Date().toISOString(),
-      };
-    }
-  }
 
   @UseGuards(JwtAuthGuard)
   @Get('profile')
@@ -160,10 +105,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('verify-token')
   async verifyToken(@CurrentUser() user: User, @Req() req: Request) {
-    console.log('Verify Token - Headers:', req.headers);
-    console.log('Verify Token - Authorization header:', req.headers.authorization);
-    console.log('Verify Token - User:', user);
-    
     return {
       status: 'authenticated',
       user: {
@@ -180,7 +121,6 @@ export class AuthController {
   @Public()
   @Post('refresh')
   async refreshToken(@Body() body: { refreshToken: string }) {
-    console.log('Auth Controller - Refresh token request received');
     
     if (!body.refreshToken) {
       throw new HttpException('Refresh token is required', HttpStatus.BAD_REQUEST);
@@ -188,16 +128,12 @@ export class AuthController {
 
     try {
       const result = await this.authService.refreshAccessToken(body.refreshToken);
-      console.log('Auth Controller - Refresh token result:', result ? 'Success' : 'Failed');
-      
       if (!result) {
         throw new HttpException('Invalid refresh token', HttpStatus.UNAUTHORIZED);
       }
 
       return result;
     } catch (error) {
-      console.error('Auth Controller - Refresh token error:', error);
-      
       if (error instanceof HttpException) {
         throw error;
       }
@@ -216,8 +152,6 @@ export class AuthController {
     company?: string;
     isCompanyAccount?: boolean;
   }) {
-    console.log('Auth Controller - Registration request for:', body.email);
-
     if (!body.email || !body.password || !body.name) {
       throw new HttpException('Email, password, and name are required', HttpStatus.BAD_REQUEST);
     }
@@ -265,11 +199,11 @@ export class AuthController {
       // Generate tokens
       const tokens = await this.authService.generateTokens(user);
 
-      // Transform role for frontend compatibility
+      // Transform role for frontend compatibility, exclude password
+      const { password: _pw, ...userWithoutPassword } = user;
       const userResponse = {
-        ...user,
+        ...userWithoutPassword,
         role: user.role === 'USER' ? 'CUSTOMER' : user.role,
-        password: undefined, // Remove password from response
       };
 
       return {
@@ -278,12 +212,10 @@ export class AuthController {
         refresh_token: tokens.refresh_token,
       };
     } catch (error) {
-      console.error('Auth Controller - Registration error:', error);
-      
       if (error instanceof HttpException) {
         throw error;
       }
-      
+
       throw new HttpException('Registration failed', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -291,8 +223,6 @@ export class AuthController {
   @Public()
   @Post('login')
   async login(@Body() body: { email: string; password: string }) {
-    console.log('Auth Controller - Email login request for:', body.email);
-
     if (!body.email || !body.password) {
       throw new HttpException('Email and password are required', HttpStatus.BAD_REQUEST);
     }
@@ -328,11 +258,11 @@ export class AuthController {
       // Generate tokens
       const tokens = await this.authService.generateTokens(user);
 
-      // Transform role for frontend compatibility
+      // Transform role for frontend compatibility, exclude password
+      const { password: _pw, ...userWithoutPassword } = user;
       const userResponse = {
-        ...user,
+        ...userWithoutPassword,
         role: user.role === 'USER' ? 'CUSTOMER' : user.role,
-        password: undefined, // Remove password from response
       };
 
       return {
@@ -341,8 +271,6 @@ export class AuthController {
         refreshToken: tokens.refresh_token,
       };
     } catch (error) {
-      console.error('Auth Controller - Login error:', error);
-      
       if (error instanceof HttpException) {
         throw error;
       }

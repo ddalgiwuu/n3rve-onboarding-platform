@@ -283,19 +283,14 @@ When simulation is absolutely necessary, I will always ask for permission first 
 ## N3RVE Platform Critical Configuration
 
 ### Dropbox Integration Settings
-- **App Key (Client ID)**: `slffi4mfztfohqd`
+- **App Key**: Configured in `.env` (DO NOT commit)
 - **Production Domain**: `https://n3rve-onboarding.com`
 - **Development URL**: `http://localhost:5173`
-- **Redirect URIs**: 
-  - Development: `http://localhost:5173/dropbox-callback`
-  - Production: `https://n3rve-onboarding.com/dropbox-callback`
 
 ### File Storage Architecture
 - **Method**: Company Dropbox account (users don't need personal Dropbox)
 - **Structure**: `/n3rve-submissions/[year-month]/[submissionID]_[artist]_[album]/[filetype]/`
-- **Configuration**: Requires `DROPBOX_ACCESS_TOKEN` in backend environment variables
-- **Access Token**: Configured in `.env.production` (백엔드)
-- **Important**: Access Token은 백엔드에서만 사용 (보안 강화)
+- **Configuration**: Requires `DROPBOX_ACCESS_TOKEN` in backend `.env` (never commit)
 
 ### Platform Features
 - Dolby Atmos tracking for each track
@@ -303,13 +298,9 @@ When simulation is absolutely necessary, I will always ask for permission first 
 - Direct file preview and audio playback from Dropbox in admin dashboard
 - Korean/English bilingual support
 
-### AWS EC2 Instance Connection Details
-- **Instance ID**: `i-0fd6de9be4fa199a9` (N3RVE)
-- **SSH Client Steps**:
-  - Find private key file: `N3RVE_AWS.pem`
-  - Set key permissions: `chmod 400 "N3RVE_AWS.pem"`
-  - Public DNS: `ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com`
-  - Connection Command: `ssh -i "N3RVE_AWS.pem" ubuntu@ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com`
+### AWS EC2 Instance Connection
+- See private infrastructure docs (NOT in git) for SSH details
+- PEM key required for access
 
 ### 🚀 Automated Deployment Process (GitHub Actions)
 #### 자동 배포 (권장)
