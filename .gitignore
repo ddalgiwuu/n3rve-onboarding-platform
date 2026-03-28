@@ -160,3 +160,13 @@ scripts/deploy-ec2.sh
 scripts/update-admin-*.js
 FINAL_DEPLOYMENT_SUMMARY.md
 update-github-secrets.md
+
+# Deployment docs (no longer needed)
+DEPLOYMENT_*.md
+*_COMPLETE.md
+*_SUMMARY*.md
+SESSION_*.md
+WARP.md
+deploy*.sh
+check-*.sh
+fix-*.sh

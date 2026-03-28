@@ -1,4 +1,5 @@
 import { Controller, Get, Put, Post, Body, UseGuards, Req, Res, HttpException, HttpStatus } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AuthService } from './auth.service';
 import { GoogleOAuthGuard } from './guards/google-oauth.guard';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -144,6 +145,7 @@ export class AuthController {
 
   @Public()
   @Post('register')
+  @Throttle({ short: { ttl: 60000, limit: 3 } }) // 3 registrations per minute
   async register(@Body() body: { 
     email: string; 
     password: string; 
@@ -222,6 +224,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @Throttle({ short: { ttl: 60000, limit: 5 } }) // 5 login attempts per minute
   async login(@Body() body: { email: string; password: string }) {
     if (!body.email || !body.password) {
       throw new HttpException('Email and password are required', HttpStatus.BAD_REQUEST);
