@@ -111,45 +111,46 @@ export default function MarketingSubmission() {
     enabled: !!selectedId
   });
 
-  // Load existing marketing data
+  // Load existing marketing data (from marketing JSON field, with fallback to root-level fields)
   useEffect(() => {
     if (submission) {
-      // Existing fields
-      setHook(submission.hook || '');
-      setMainPitch(submission.mainPitch || '');
-      setMoods(submission.moods || []);
-      setInstruments(submission.instruments || []);
-      setPriority(submission.release?.priorityLevel || 0);
-      setSocialMediaPlan(submission.socialMediaPlan || '');
-      setMarketingSpend(submission.marketingDrivers || '');
-      setFactSheetUrl(submission.release?.factSheetsUrl || '');
-      setYoutubeShorts(submission.release?.youtubeShortsPreviews || false);
-      setThisIsPlaylist(submission.release?.thisIsPlaylist || false);
-      setMotionArtwork(submission.release?.motionArtwork || false);
+      const m = submission.marketing || {};
 
-      // Focus tracks from Track.isFocusTrack
-      const focusTracks = submission.tracks?.filter((t: any) => t.isFocusTrack).map((t: any) => t.id) || [];
+      // Existing fields (prefer marketing JSON, fallback to root-level)
+      setHook(m.hook || submission.hook || '');
+      setMainPitch(m.mainPitch || submission.mainPitch || '');
+      setMoods(m.moods || submission.moods || []);
+      setInstruments(m.instruments || submission.instruments || []);
+      setPriority(m.priorityLevel || submission.release?.priorityLevel || 0);
+      setSocialMediaPlan(m.socialMediaPlan || submission.socialMediaPlan || '');
+      setMarketingSpend(m.marketingSpend || submission.marketingDrivers || '');
+      setFactSheetUrl(m.factSheetUrl || submission.release?.factSheetsUrl || '');
+      setYoutubeShorts(m.youtubeShorts || submission.release?.youtubeShortsPreviews || false);
+      setThisIsPlaylist(m.thisIsPlaylist || submission.release?.thisIsPlaylist || false);
+      setMotionArtwork(m.motionArtwork || submission.release?.motionArtwork || false);
+
+      // Focus tracks
+      const focusTracks = m.focusTrackIds || submission.tracks?.filter((t: any) => t.isFocusTrack).map((t: any) => t.id) || [];
       setFocusTrackIds(focusTracks);
 
-      // NEW: Primary Artist
-      setPrimaryArtist(submission.primaryArtist || '');
+      // Primary Artist
+      setPrimaryArtist(m.primaryArtist || submission.primaryArtist || '');
 
-      // NEW: Project Context
-      setFrontlineOrCatalog(submission.frontlineOrCatalog || 'Frontline');
-      setMoreProductsComing(submission.moreProductsComing || 'No');
-      // projectArtwork is File type, cannot be loaded from API
+      // Project Context
+      setFrontlineOrCatalog(m.frontlineOrCatalog || submission.frontlineOrCatalog || 'Frontline');
+      setMoreProductsComing(m.moreProductsComing || submission.moreProductsComing || 'No');
 
-      // NEW: About The Music
-      setPrivateListeningLink(submission.privateListeningLink || '');
-      setMainGenre(submission.mainGenre || '');
-      setSubgenres(submission.subgenres || []);
-      setIsSoundtrack(submission.isSoundtrack || false);
-      setDolbyAtmos(submission.dolbyAtmos || false);
+      // About The Music
+      setPrivateListeningLink(m.privateListeningLink || submission.privateListeningLink || '');
+      setMainGenre(m.mainGenre || submission.mainGenre || '');
+      setSubgenres(m.subgenres || submission.subgenres || []);
+      setIsSoundtrack(m.isSoundtrack || submission.isSoundtrack || false);
+      setDolbyAtmos(m.dolbyAtmos || submission.dolbyAtmos || false);
 
-      // NEW: Marketing Details
-      setMarketingDrivers(submission.marketingDriversList || []);
-      setPlatformBudgets(submission.platformBudgets || []);
-      setOtherNotes(submission.otherNotes || '');
+      // Marketing Details
+      setMarketingDrivers(m.marketingDriversList || submission.marketingDriversList || []);
+      setPlatformBudgets(m.platformBudgets || submission.platformBudgets || []);
+      setOtherNotes(m.otherNotes || submission.otherNotes || '');
     }
   }, [submission]);
 

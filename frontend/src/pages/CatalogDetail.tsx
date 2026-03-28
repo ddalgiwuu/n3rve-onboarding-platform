@@ -930,6 +930,44 @@ export default function CatalogDetailPage() {
           </div>
         )}
 
+        {/* FUGA Score fields */}
+        {(marketing.marketingSpend || marketing.frontlineCatalog || marketing.listeningLink || marketing.fugaProjectId) && (
+          <div className="mt-4">
+            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-2">FUGA Score</p>
+            <FieldGrid>
+              <Field label="Frontline / Catalog" value={marketing.frontlineCatalog} />
+              <Field label="FUGA Project ID" value={marketing.fugaProjectId} />
+              {marketing.listeningLink && <LinkField label="Listening Link" url={marketing.listeningLink} />}
+            </FieldGrid>
+            {marketing.marketingSpend && (
+              <div className="mt-2 rounded-xl bg-zinc-50 dark:bg-zinc-700/40 px-4 py-3">
+                <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-1">Marketing Spend</p>
+                <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap">{typeof marketing.marketingSpend === 'string' ? marketing.marketingSpend : JSON.stringify(marketing.marketingSpend, null, 2)}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Goals & Expectations */}
+        {marketing.goalsAndExpectations?.length > 0 && (
+          <div className="mt-4">
+            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-2">Goals & Expectations</p>
+            <div className="space-y-3">
+              {marketing.goalsAndExpectations.map((goal: any, i: number) => (
+                <div key={i} className="rounded-xl bg-zinc-50 dark:bg-zinc-700/40 px-4 py-3">
+                  <p className="text-xs font-semibold text-zinc-600 dark:text-zinc-300 mb-2">{goal.goalType}</p>
+                  <div className="space-y-1.5 text-sm text-zinc-600 dark:text-zinc-400">
+                    {goal.goalDetails && <p><span className="text-zinc-400 dark:text-zinc-500">Details:</span> {goal.goalDetails.length > 200 ? goal.goalDetails.substring(0, 200) + '...' : goal.goalDetails}</p>}
+                    {goal.strategy && <p><span className="text-zinc-400 dark:text-zinc-500">Strategy:</span> {goal.strategy.length > 200 ? goal.strategy.substring(0, 200) + '...' : goal.strategy}</p>}
+                    {goal.howWeCanHelp && <p><span className="text-zinc-400 dark:text-zinc-500">How FUGA Can Help:</span> {goal.howWeCanHelp.length > 200 ? goal.howWeCanHelp.substring(0, 200) + '...' : goal.howWeCanHelp}</p>}
+                    {goal.confidence && <p><span className="text-zinc-400 dark:text-zinc-500">Confidence:</span> {goal.confidence}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Social URLs */}
         {(marketing.youtubeUrl || marketing.youtube || marketing.tiktokUrl || marketing.tiktok ||
           marketing.xUrl || marketing.twitter || marketing.twitchUrl || marketing.twitch ||
