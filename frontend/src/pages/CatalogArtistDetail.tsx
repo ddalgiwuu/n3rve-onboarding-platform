@@ -294,7 +294,7 @@ export default function CatalogArtistDetail() {
           <div className="space-y-6">
             {/* DSP Profiles */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 overflow-hidden"
             >
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                 <Music className="w-5 h-5 text-green-500" /> DSP 프로필
@@ -306,8 +306,8 @@ export default function CatalogArtistDetail() {
                   {isEditing ? (
                     <input type="text" value={val('spotifyUrl')} onChange={e => set('spotifyUrl', e.target.value)} className={inputCls} />
                   ) : artist.spotifyUrl ? (
-                    <a href={artist.spotifyUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:underline text-sm">
-                      <ExternalLink className="h-3 w-3" /> {artist.spotifyUrl}
+                    <a href={artist.spotifyUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-green-600 hover:underline text-sm max-w-full overflow-hidden">
+                      <ExternalLink className="h-3 w-3 flex-shrink-0" /> <span className="truncate">{artist.spotifyUrl}</span>
                     </a>
                   ) : <span className="text-gray-400 text-sm">-</span>}
                 </div>
@@ -320,8 +320,8 @@ export default function CatalogArtistDetail() {
                   {isEditing ? (
                     <input type="text" value={val('appleMusicUrl')} onChange={e => set('appleMusicUrl', e.target.value)} className={inputCls} />
                   ) : artist.appleMusicUrl ? (
-                    <a href={artist.appleMusicUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-pink-600 hover:underline text-sm">
-                      <ExternalLink className="h-3 w-3" /> {artist.appleMusicUrl}
+                    <a href={artist.appleMusicUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-pink-600 hover:underline text-sm max-w-full overflow-hidden">
+                      <ExternalLink className="h-3 w-3 flex-shrink-0" /> <span className="truncate">{artist.appleMusicUrl}</span>
                     </a>
                   ) : <span className="text-gray-400 text-sm">-</span>}
                 </div>
