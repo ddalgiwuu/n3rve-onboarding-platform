@@ -652,7 +652,7 @@ model CatalogProduct {
 
 model CatalogAsset {
   id                   String               @id @default(auto()) @map("_id") @db.ObjectId
-  fugaId               BigInt               @unique
+  fugaId               BigInt
   isrc                 String?
   name                 String
   displayArtist        String?
@@ -706,6 +706,10 @@ model CatalogAsset {
   assetReleaseDate      String?
   createdAt            DateTime             @default(now()) @db.Date
   updatedAt            DateTime             @updatedAt @db.Date
+
+  @@unique([fugaId, productId])
+  @@index([productId])
+  @@index([isrc])
 }
 
 model CatalogArtist {
