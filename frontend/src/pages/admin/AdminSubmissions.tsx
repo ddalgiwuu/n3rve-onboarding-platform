@@ -186,10 +186,10 @@ export default function AdminSubmissions() {
 
   return (
     <div className="p-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{t('제출 관리', 'Submission Management', '提出管理')}</h1>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white whitespace-nowrap">{t('제출 관리', 'Submission Management', '提出管理')}</h1>
 
-        <div className="flex gap-4 items-center">
+        <div className="flex flex-wrap gap-3 items-center">
           {/* 검색 / Search / 検索 */}
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
