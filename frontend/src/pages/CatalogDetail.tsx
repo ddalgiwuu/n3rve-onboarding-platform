@@ -863,12 +863,14 @@ export default function CatalogDetailPage() {
       {/* ── MARKETING ── */}
       <Section title="마케팅" icon={MessageSquare} defaultOpen={false} accent="bg-pink-100 dark:bg-pink-900/30">
         <FieldGrid>
-          <Field label="Project Type" value={marketing.projectType} />
-          <Field label="Priority Level" value={marketing.priorityLevel} />
+          <Field label="Project Type" value={marketing.projectType || marketing.frontlineOrCatalog} />
+          <Field label="Priority Level" value={marketing.priorityLevel ? `★ ${marketing.priorityLevel}` : (p.release?.priorityLevel ? `★ ${p.release.priorityLevel}` : undefined)} />
           <Field label="Target Audience" value={marketing.targetAudience} />
           <Field label="Similar Artists" value={marketing.similarArtists} />
           <Field label="Marketing Keywords" value={marketing.marketingKeywords} />
           <Field label="Artist Gender" value={marketing.artistGender} />
+          <Field label="Main Genre" value={marketing.mainGenre} />
+          {marketing.subgenres?.length > 0 && <Field label="Subgenres" value={marketing.subgenres.join(', ')} />}
         </FieldGrid>
 
         {marketing.hook && (
@@ -927,6 +929,37 @@ export default function CatalogDetailPage() {
             {marketing.promotionPlans && <Field label="Promotion Plans" value={marketing.promotionPlans} />}
             {marketing.syncHistory && <Field label="Sync History" value={marketing.syncHistory} />}
             {marketing.artistBio && <Field label="Artist Bio" value={marketing.artistBio} />}
+          </div>
+        )}
+
+        {/* Marketing Drivers List */}
+        {marketing.marketingDriversList?.length > 0 && (
+          <div className="mt-4">
+            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-2">Marketing Drivers</p>
+            <div className="space-y-1">
+              {marketing.marketingDriversList.map((driver: string, i: number) => (
+                <div key={i} className="flex items-start gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                  <span className="text-xs bg-pink-100 dark:bg-pink-900/40 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded font-medium shrink-0">{i + 1}</span>
+                  <span>{driver}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Platform Budgets */}
+        {marketing.platformBudgets?.length > 0 && (
+          <div className="mt-4">
+            <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wide mb-2">Platform Budgets</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {marketing.platformBudgets.map((b: any, i: number) => (
+                <div key={i} className="rounded-lg bg-zinc-50 dark:bg-zinc-700/40 px-3 py-2 text-sm">
+                  <div className="font-medium text-zinc-700 dark:text-zinc-300">{b.platform} — ${b.amount?.toLocaleString()}</div>
+                  {(b.startDate || b.endDate) && <div className="text-xs text-zinc-400">{b.startDate} ~ {b.endDate}</div>}
+                  {b.targetAudience && <div className="text-xs text-zinc-500 dark:text-zinc-400 mt-0.5">{b.targetAudience}</div>}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
