@@ -391,6 +391,69 @@ export default function CatalogArtistDetail() {
             </motion.div>
           </div>
         </div>
+
+        {/* Translations */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+        >
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            🌐 번역 (Translations)
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">한국어 (KO)</label>
+              <input type="text" value={isEditing ? (formData.translations?.ko || '') : (artist?.translations?.ko || '')}
+                onChange={e => setFormData((prev: any) => ({ ...prev, translations: { ...(prev.translations || {}), ko: e.target.value } }))}
+                disabled={!isEditing} className={inputCls} placeholder="한국어 아티스트명" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">English (EN)</label>
+              <input type="text" value={isEditing ? (formData.translations?.en || '') : (artist?.translations?.en || '')}
+                onChange={e => setFormData((prev: any) => ({ ...prev, translations: { ...(prev.translations || {}), en: e.target.value } }))}
+                disabled={!isEditing} className={inputCls} placeholder="English artist name" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-gray-500 mb-1">日本語 (JA)</label>
+              <input type="text" value={isEditing ? (formData.translations?.ja || '') : (artist?.translations?.ja || '')}
+                onChange={e => setFormData((prev: any) => ({ ...prev, translations: { ...(prev.translations || {}), ja: e.target.value } }))}
+                disabled={!isEditing} className={inputCls} placeholder="日本語アーティスト名" />
+            </div>
+          </div>
+          {!isEditing && !artist?.translations?.ko && !artist?.translations?.en && !artist?.translations?.ja && (
+            <p className="text-gray-400 text-sm mt-2">번역이 설정되지 않았습니다. 수정 모드에서 추가할 수 있습니다.</p>
+          )}
+        </motion.div>
+
+        {/* Linked Albums */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+        >
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            💿 연결된 앨범
+          </h2>
+          {artist?.products?.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {artist.products.map((p: any) => (
+                <button
+                  key={p.id}
+                  onClick={() => navigate(`/admin/catalog/${p.id}`)}
+                  className="flex items-center gap-3 rounded-lg border border-gray-200 dark:border-gray-700 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-left"
+                >
+                  <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                    <Music className="h-6 w-6 text-white" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm truncate">{p.name}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{p.displayArtist} · {p.label}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{p.upc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="text-gray-400 text-sm">연결된 앨범이 없습니다.</p>
+          )}
+        </motion.div>
       </div>
     </div>
   );
