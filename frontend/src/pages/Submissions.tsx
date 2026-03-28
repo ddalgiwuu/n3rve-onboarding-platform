@@ -501,15 +501,24 @@ const Submissions = () => {
                               <Music className="w-4 h-4" />
                               {submission.tracks?.length || 0} {t('트랙', 'tracks', 'トラック')}
                             </span>
-                            {submission.albumGenre?.length > 0 && (
+                            {(submission.albumGenre?.length ?? 0) > 0 && (
                               <span className="flex items-center gap-1">
                                 <span className="text-purple-600 dark:text-purple-400">●</span>
-                                {submission.albumGenre.join(', ')}
+                                {submission.albumGenre?.join(', ')}
                               </span>
                             )}
                             <span className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
-                              {format(new Date(submission.releaseDate), 'yyyy-MM-dd')}
+                              {submission.releaseDate
+                                ? (() => {
+                                    try {
+                                      const d = new Date(submission.releaseDate);
+                                      return isNaN(d.getTime()) ? submission.releaseDate : format(d, 'yyyy-MM-dd');
+                                    } catch {
+                                      return submission.releaseDate;
+                                    }
+                                  })()
+                                : '-'}
                             </span>
                           </div>
 
