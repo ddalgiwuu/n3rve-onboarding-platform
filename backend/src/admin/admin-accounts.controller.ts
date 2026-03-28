@@ -118,8 +118,9 @@ export class AdminAccountsController {
         },
       });
 
+      const { password: _pw, ...userWithoutPassword } = user;
       return {
-        ...user,
+        ...userWithoutPassword,
         role: user.role === 'USER' ? 'CUSTOMER' : user.role,
       };
     } catch (error) {

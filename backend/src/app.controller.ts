@@ -24,15 +24,5 @@ export class AppController {
     };
   }
 
-  @Public()
-  @Get('config-check')
-  configCheck() {
-    return {
-      mongoUri: this.configService.get('MONGODB_URI') ? 'configured' : 'missing',
-      jwtSecret: this.configService.get('JWT_SECRET') ? 'configured' : 'missing',
-      googleClientId: this.configService.get('GOOGLE_CLIENT_ID') ? 'configured' : 'missing',
-      googleClientSecret: this.configService.get('GOOGLE_CLIENT_SECRET') ? 'configured' : 'missing',
-      nodeEnv: this.configService.get('NODE_ENV') || 'not set',
-    };
-  }
+  // Config check removed for security — was exposing env configuration status publicly
 }

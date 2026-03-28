@@ -23,8 +23,10 @@ COPY frontend/ ./
 # Set production environment variables for build
 ENV VITE_API_URL=https://n3rve-onboarding.com/api
 ENV VITE_WS_URL=wss://n3rve-onboarding.com
-ENV VITE_DROPBOX_CLIENT_ID=slffi4mfztfohqd
-ENV VITE_DROPBOX_APP_KEY=slffi4mfztfohqd
+ARG VITE_DROPBOX_CLIENT_ID=slffi4mfztfohqd
+ARG VITE_DROPBOX_APP_KEY=slffi4mfztfohqd
+ENV VITE_DROPBOX_CLIENT_ID=${VITE_DROPBOX_CLIENT_ID}
+ENV VITE_DROPBOX_APP_KEY=${VITE_DROPBOX_APP_KEY}
 ENV VITE_DROPBOX_REDIRECT_URI=https://n3rve-onboarding.com/dropbox-callback
 
 # Build with increased Node.js memory allocation and error handling
