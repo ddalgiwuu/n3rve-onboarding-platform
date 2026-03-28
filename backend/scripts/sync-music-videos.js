@@ -109,14 +109,15 @@ async function main() {
             } : {}),
           },
           artists: (fa.artists || []).map((a) => ({
-            fugaId: BigInt(a.id || 0),
-            name: a.name,
+            fugaId: BigInt(a.id || Date.now()),
+            name: a.name || '',
             primary: a.primary ?? false,
           })),
-          contributors: (fa.contributors || []).map((c) => ({
-            personId: c.person ? BigInt(c.person.id || 0) : null,
-            name: c.person?.name || c.name || '',
-            role: c.role || '',
+          contributors: (fa.contributors || []).filter(c => c.person?.name || c.name).map((c) => ({
+            personId: BigInt(c.person?.id || Date.now()),
+            name: c.person?.name || c.name || 'Unknown',
+            roleId: typeof c.role === 'object' ? (c.role?.id || 'UNKNOWN') : (c.role || 'UNKNOWN'),
+            role: typeof c.role === 'object' ? (c.role?.name || c.role?.id || 'Unknown') : (c.role || 'Unknown'),
           })),
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -127,7 +128,9 @@ async function main() {
           if (isMV) results.mvAdded++;
           else results.tracksAdded++;
         } catch (e) {
-          results.errors.push(`${fa.name}: ${e.message.substring(0, 100)}`);
+          const errMsg = e?.message || e?.meta?.cause || JSON.stringify(e?.meta) || String(e);
+          console.log('    ERR:', errMsg.substring(0, 200));
+          results.errors.push(`${fa.name}: ${errMsg.substring(0, 200)}`);
         }
       }
     } catch (e) {
