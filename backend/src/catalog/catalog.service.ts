@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { FugaApiService } from './fuga-api.service';
+import { DropboxService } from '../dropbox/dropbox.service';
 import fetch from 'node-fetch';
 
 @Injectable()
@@ -10,6 +11,7 @@ export class CatalogService {
   constructor(
     private prisma: PrismaService,
     private fugaApi: FugaApiService,
+    private dropbox: DropboxService,
   ) {}
 
   // ==================== SYNC ====================
@@ -1294,6 +1296,13 @@ export class CatalogService {
 
             // Sync artists to per-user saved lists
             await this.syncArtistsToSavedArtists(fullProduct);
+
+            // Sync files to Dropbox (cover art + audio)
+            try {
+              await this.syncProductToDropbox(fullProduct, product.id);
+            } catch (dbxErr) {
+              result.errors.push(`Dropbox sync for ${product.id}: ${dbxErr.message}`);
+            }
           } catch (productErr) {
             result.errors.push(`Product ${product.id}: ${productErr.message}`);
           }
@@ -1316,6 +1325,90 @@ export class CatalogService {
     }
 
     return result;
+  }
+
+  /**
+   * Sync a FUGA product's files to Dropbox:
+   * Cover art → /n3rve-submissions/{label}/Releases/{date}_{name}_{upc}/Cover Art/
+   * Audio → .../Music/
+   */
+  private async syncProductToDropbox(fugaProduct: any, fugaId: string | number): Promise<void> {
+    const label = fugaProduct.label?.name || fugaProduct.label || 'Unknown';
+    const upc = fugaProduct.upc || '';
+    const name = (fugaProduct.name || '').replace(/[/\\:*?"<>|]/g, '_');
+    const dateStr = fugaProduct.consumer_release_date?.split?.('T')?.[0] || 'unknown';
+    const basePath = `/n3rve-submissions/${label}/Releases/${dateStr}_${name}_${upc}`;
+
+    // Check if already has cover art
+    try {
+      const existing = await this.dropbox.listFiles(`${basePath}/Cover Art`);
+      if (existing.some((f: any) => f['.tag'] === 'file')) return;
+    } catch {}
+
+    // Create folder structure
+    for (const sub of ['Cover Art', 'Music', 'Lyrics', 'Marketing']) {
+      await this.dropbox.createFolder(`${basePath}/${sub}`);
+    }
+
+    // Download cover art from FUGA → upload to Dropbox
+    if (fugaProduct.cover_image?.has_uploaded) {
+      try {
+        await this.fugaApi.login();
+        const imgRes = await fetch(
+          `https://login.n3rvemusic.com/ui-only/v2/products/${fugaId}/image/full`,
+          { headers: { Cookie: (this.fugaApi as any).sessionCookie } },
+        );
+        if (imgRes.ok) {
+          const buf = Buffer.from(await imgRes.arrayBuffer());
+          if (buf.length > 10000) {
+            const isPng = buf[0] === 0x89 && buf[1] === 0x50;
+            const coverFileName = `cover.${isPng ? 'png' : 'jpg'}`;
+            const coverPath = `${basePath}/Cover Art/${coverFileName}`;
+
+            const uploadResult = await this.dropbox.uploadFile(buf, coverFileName, '', '', name, 'cover');
+            // Also try direct path upload
+            try {
+              const sharedUrl = await this.dropbox.getOrCreateSharedLink(coverPath);
+              // Update submission with cover URL
+              const allSubs = await this.prisma.submission.findMany({ select: { id: true, release: true, files: true } });
+              const sub = allSubs.find(s => (s.release as any)?.upc === upc);
+              if (sub) {
+                const files = (sub.files || {}) as any;
+                await this.prisma.submission.update({
+                  where: { id: sub.id },
+                  data: { files: { ...files, coverImageUrl: sharedUrl } },
+                });
+              }
+            } catch {}
+          }
+        }
+      } catch (err) {
+        this.logger.warn(`Cover art sync failed for ${name}: ${err.message}`);
+      }
+    }
+
+    // Download audio from FUGA → upload to Dropbox
+    for (const asset of fugaProduct.assets || []) {
+      if (!asset.audio?.has_uploaded) continue;
+      try {
+        await this.fugaApi.login();
+        const audioRes = await fetch(
+          `https://login.n3rvemusic.com/ui-only/v2/assets/${asset.id}/audio`,
+          { headers: { Cookie: (this.fugaApi as any).sessionCookie } },
+        );
+        if (audioRes.ok) {
+          const buf = Buffer.from(await audioRes.arrayBuffer());
+          if (buf.length > 1000 && buf.length < 150 * 1024 * 1024) {
+            const fileName = (asset.audio?.original_filename || `${asset.name || 'track'}.wav`).replace(/[/\\#@]/g, '_');
+            await this.dropbox.uploadFile(buf, fileName, '', '', name, 'audio');
+          }
+        }
+      } catch (err) {
+        this.logger.warn(`Audio sync failed for asset ${asset.id}: ${err.message}`);
+      }
+    }
+
+    this.logger.log(`Dropbox sync complete for: ${name} (${upc})`);
   }
 
   private mapReleaseFormatForDb(albumType?: string): string {
