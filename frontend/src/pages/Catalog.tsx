@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState, useRef, useCallback, useEffect } from 'react';
+import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { Search, Music, Users, Disc3, Building2, Link2, Unlink, LayoutGrid, List } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
@@ -55,6 +55,7 @@ export default function CatalogPage() {
   const [viewMode, setViewMode] = useState<'table' | 'tile'>('tile');
   const [page, setPage] = useState(1);
 
+  // Table view: paginated query
   const { data: productsData, isLoading } = useQuery({
     queryKey: ['catalog-unified', search, stateFilter, formatFilter, sourceFilter, page],
     queryFn: () => catalogApi.getUnifiedProducts({
@@ -63,9 +64,50 @@ export default function CatalogPage() {
       format: formatFilter || undefined,
       source: sourceFilter || undefined,
       page,
-      limit: 20,
+      limit: viewMode === 'tile' ? 40 : 20,
     }).then(r => r.data),
+    enabled: viewMode === 'table',
   });
+
+  // Tile view: infinite scroll
+  const {
+    data: infiniteData,
+    isLoading: infiniteLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['catalog-infinite', search, stateFilter, formatFilter, sourceFilter],
+    queryFn: ({ pageParam = 1 }) => catalogApi.getUnifiedProducts({
+      search: search || undefined,
+      state: stateFilter || undefined,
+      format: formatFilter || undefined,
+      source: sourceFilter || undefined,
+      page: pageParam,
+      limit: 40,
+    }).then(r => r.data),
+    getNextPageParam: (lastPage) => {
+      if (lastPage.page < lastPage.totalPages) return lastPage.page + 1;
+      return undefined;
+    },
+    initialPageParam: 1,
+    enabled: viewMode === 'tile',
+  });
+
+  // Infinite scroll observer
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (viewMode !== 'tile' || !hasNextPage) return;
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) fetchNextPage(); },
+      { threshold: 0.1 },
+    );
+    if (loadMoreRef.current) observer.observe(loadMoreRef.current);
+    return () => observer.disconnect();
+  }, [viewMode, hasNextPage, fetchNextPage]);
+
+  const tileItems = infiniteData?.pages?.flatMap(p => p.data || []) || [];
+  const tileLoading = infiniteLoading;
 
   const stats = productsData?.stats;
 
@@ -183,12 +225,12 @@ export default function CatalogPage() {
       {/* Products Table / Tile View */}
       {viewMode === 'tile' ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {isLoading ? (
+          {tileLoading ? (
             <p className="col-span-full text-center text-zinc-400 py-8">{t('catalog.loading')}</p>
-          ) : productsData?.data?.length === 0 ? (
+          ) : tileItems.length === 0 ? (
             <p className="col-span-full text-center text-zinc-400 py-8">{t('catalog.noResults')}</p>
           ) : (
-            productsData?.data?.map((item: any) => (
+            tileItems.map((item: any) => (
               <div
                 key={item.catalogProductId || item.submissionId}
                 className="cursor-pointer overflow-hidden rounded-lg border border-zinc-200 bg-white transition-shadow hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
@@ -245,6 +287,10 @@ export default function CatalogPage() {
               </div>
             ))
           )}
+          {/* Infinite scroll trigger */}
+          <div ref={loadMoreRef} className="col-span-full py-4 text-center">
+            {isFetchingNextPage && <p className="text-zinc-400 animate-pulse">{t('catalog.loading')}</p>}
+          </div>
         </div>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
@@ -307,8 +353,8 @@ export default function CatalogPage() {
         </div>
       )}
 
-      {/* Pagination */}
-      {productsData && productsData.totalPages > 1 && (
+      {/* Pagination — table view only */}
+      {viewMode === 'table' && productsData && productsData.totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-zinc-500">
             총 {productsData.total}개 중 {(page - 1) * 20 + 1}-{Math.min(page * 20, productsData.total)}
