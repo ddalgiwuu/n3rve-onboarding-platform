@@ -16,7 +16,7 @@ async function main() {
   // Login FUGA
   const loginRes = await fetch('https://login.n3rvemusic.com/api/v2/login', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: 'ryansong', password: '***REDACTED***' }),
+    body: JSON.stringify({ name: process.env.FUGA_USERNAME || 'ryansong', password: process.env.FUGA_PASSWORD }),
   });
   const sid = loginRes.headers.get('set-cookie').split(';')[0];
   console.log('✅ FUGA login OK\n');
