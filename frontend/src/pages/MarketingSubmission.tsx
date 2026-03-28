@@ -79,6 +79,9 @@ export default function MarketingSubmission() {
   const [platformBudgets, setPlatformBudgets] = useState<PlatformBudget[]>([]);
   const [otherNotes, setOtherNotes] = useState('');
 
+  // Artist metadata (synced from FugaArtistModal)
+  const [artistMetadata, setArtistMetadata] = useState<Record<string, string>>({});
+
   // Fetch all submissions (for dropdown)
   const { data: allSubmissions = [] } = useQuery({
     queryKey: ['all-submissions'],
@@ -151,6 +154,17 @@ export default function MarketingSubmission() {
       setMarketingDrivers(m.marketingDriversList || submission.marketingDriversList || []);
       setPlatformBudgets(m.platformBudgets || submission.platformBudgets || []);
       setOtherNotes(m.otherNotes || submission.otherNotes || '');
+
+      // Restore artist metadata from marketing JSON
+      const restored: Record<string, string> = {};
+      const artistFields = ['artistName', 'artistGender', 'artistBio', 'similarArtists',
+        'artistCountry', 'artistCurrentCity', 'artistHometown',
+        'spotifyArtistId', 'appleMusicArtistId', 'soundcloudArtistId',
+        'youtubeUrl', 'tiktokUrl', 'facebookUrl', 'instagramUrl', 'xUrl', 'twitchUrl', 'threadsUrl'];
+      for (const f of artistFields) {
+        if (m[f]) restored[f] = m[f];
+      }
+      if (Object.keys(restored).length > 0) setArtistMetadata(restored);
     }
   }, [submission]);
 
@@ -161,42 +175,52 @@ export default function MarketingSubmission() {
 
       // Prepare payload with ALL fields
       const payload = {
-        // Existing fields
+        // Marketing pitch
         hook,
         mainPitch,
         moods,
         instruments,
         socialMediaPlan,
-        marketingDrivers: marketingSpend, // Legacy field name
+        marketingSpend, // Marketing spend text (separate from drivers)
 
-        // NEW: Primary Artist
+        // Primary Artist
         primaryArtist,
 
-        // NEW: Project Context
+        // Project Context
         frontlineOrCatalog,
         moreProductsComing,
-        // projectArtwork would need separate file upload handling
 
-        // NEW: About The Music
+        // About The Music
         privateListeningLink,
         mainGenre,
         subgenres,
         isSoundtrack,
         dolbyAtmos,
 
-        // NEW: Marketing Details
+        // Marketing Details
         marketingDriversList: marketingDrivers,
         platformBudgets,
         otherNotes,
 
-        // Release nested data
+        // These fields need to be at root level for marketing JSON storage
+        priorityLevel: priority,
+        factSheetUrl,
+        youtubeShorts,
+        thisIsPlaylist,
+        motionArtwork,
+        focusTrackIds,
+
+        // Artist metadata from FugaArtistModal
+        ...artistMetadata,
+
+        // Release nested data (for SubmissionRelease composite type)
         release: {
           priorityLevel: priority,
           factSheetsUrl: factSheetUrl,
           youtubeShortsPreviews: youtubeShorts,
           thisIsPlaylist,
           motionArtwork,
-          dolbyAtmos // Add to release as well
+          dolbyAtmos,
         },
 
         // Tracks with focus track flags
@@ -857,6 +881,26 @@ export default function MarketingSubmission() {
         onClose={() => setShowArtistForm(false)}
         onSave={(artist) => {
           setPrimaryArtist(artist.name);
+          // Sync artist metadata to marketing state for saving
+          setArtistMetadata({
+            artistName: artist.name,
+            artistGender: artist.gender || '',
+            artistBio: artist.bio || '',
+            similarArtists: artist.similarArtists || '',
+            artistCountry: artist.country || '',
+            artistCurrentCity: artist.currentCity || '',
+            artistHometown: artist.hometown || '',
+            spotifyArtistId: artist.dspIdentifiers?.find(d => d.platform === 'SPOTIFY')?.value || artist.socialMedia?.spotify || '',
+            appleMusicArtistId: artist.dspIdentifiers?.find(d => d.platform === 'APPLE_MUSIC')?.value || artist.socialMedia?.appleMusic || '',
+            soundcloudArtistId: artist.dspIdentifiers?.find(d => d.platform === 'SOUNDCLOUD')?.value || artist.socialMedia?.soundcloud || '',
+            youtubeUrl: artist.socialMedia?.youtube || '',
+            tiktokUrl: artist.socialMedia?.tiktok || '',
+            facebookUrl: artist.socialMedia?.facebook || '',
+            instagramUrl: artist.socialMedia?.instagram || '',
+            xUrl: artist.socialMedia?.twitter || '',
+            twitchUrl: artist.socialMedia?.twitch || '',
+            threadsUrl: '',
+          });
           setShowArtistForm(false);
         }}
         editingArtist={null}
