@@ -50,6 +50,12 @@ const catalogApi = {
 
   getUnlinked: (params?: { page?: number; limit?: number }) =>
     api.get<PaginatedResponse<CatalogProduct>>('/catalog/unlinked', { params }),
+
+  pushToFuga: (submissionId: string) =>
+    api.post(`/catalog/submissions/${submissionId}/push-to-fuga`),
+
+  pullFromFuga: () =>
+    api.post('/catalog/sync/pull-from-fuga'),
 };
 
 export default catalogApi;

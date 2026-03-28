@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, XCircle, Send, Loader2 } from 'lucide-react';
 import { useLanguageStore } from '@/store/language.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import { adminService } from '@/services/admin.service';
@@ -8,6 +8,7 @@ import SubmissionDetailView from '@/components/admin/SubmissionDetailView';
 import QCLogTab from '@/components/admin/QCLogTab';
 import DSPMemoTab from '@/components/admin/DSPMemoTab';
 import toast from 'react-hot-toast';
+import catalogApi from '@/lib/catalog-api';
 
 type TabId = 'details' | 'qclogs' | 'dspmemo';
 
@@ -17,6 +18,7 @@ export default function SubmissionDetail() {
   const [submission, setSubmission] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('details');
 
   const language = useSafeStore(useLanguageStore, (state) => state.language);
@@ -52,6 +54,20 @@ export default function SubmissionDetail() {
       toast.error(t('상태 업데이트에 실패했습니다', 'Failed to update status'));
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const handlePushToFuga = async () => {
+    if (!confirm('이 제출물을 FUGA에 동기화하시겠습니까?')) return;
+    setIsSyncing(true);
+    try {
+      await catalogApi.pushToFuga(submission.id);
+      toast.success('FUGA 동기화 성공!');
+      await loadSubmission();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'FUGA 동기화 실패');
+    } finally {
+      setIsSyncing(false);
     }
   };
 
@@ -129,6 +145,35 @@ export default function SubmissionDetail() {
                   {t('반려', 'Reject')}
                 </button>
               </>
+            )}
+            {/* FUGA Sync Button — show for APPROVED submissions */}
+            {submission.status === 'APPROVED' && (
+              <div className="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                {submission.fugaSyncStatus === 'SYNCED' ? (
+                  <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                    <CheckCircle className="h-5 w-5" />
+                    <span className="font-medium">FUGA 동기화 완료</span>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handlePushToFuga}
+                    disabled={isSyncing}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors"
+                  >
+                    {isSyncing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        FUGA 동기화 중...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4" />
+                        FUGA 동기화
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>

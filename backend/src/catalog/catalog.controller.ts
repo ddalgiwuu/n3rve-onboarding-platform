@@ -6,6 +6,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { ApiKeyAuth } from '../auth/decorators/api-key.decorator';
 import { ApiKeyGuard } from '../auth/guards/api-key.guard';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('catalog')
 export class CatalogController {
@@ -161,6 +162,22 @@ export class CatalogController {
   @UseGuards(JwtAuthGuard)
   async backfillSavedArtists() {
     return this.catalogService.backfillSavedArtists();
+  }
+
+  // ==================== FUGA PUSH / PULL ====================
+
+  @Post('submissions/:id/push-to-fuga')
+  @UseGuards(JwtAuthGuard)
+  async pushToFuga(@Param('id') id: string, @CurrentUser() user: any) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.catalogService.pushToFuga(id);
+  }
+
+  @Post('sync/pull-from-fuga')
+  @UseGuards(JwtAuthGuard)
+  async pullFromFuga(@CurrentUser() user: any) {
+    if (user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.catalogService.pullFromFuga();
   }
 
   @Get('unlinked')
