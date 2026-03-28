@@ -208,8 +208,8 @@ export class AuthController {
 
       return {
         user: userResponse,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
+        access_token: tokens.accessToken,
+        refresh_token: tokens.refreshToken,
       };
     } catch (error) {
       if (error instanceof HttpException) {
@@ -267,8 +267,8 @@ export class AuthController {
 
       return {
         user: userResponse,
-        accessToken: tokens.access_token,
-        refreshToken: tokens.refresh_token,
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
       };
     } catch (error) {
       if (error instanceof HttpException) {

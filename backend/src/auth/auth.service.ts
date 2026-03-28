@@ -97,6 +97,24 @@ export class AuthService {
     }
   }
 
+  async generateTokens(user: User) {
+    const payload: JwtPayload = {
+      email: user.email,
+      sub: user.id,
+      name: user.name,
+      role: user.role,
+    };
+
+    const accessToken = this.jwtService.sign(payload, { expiresIn: '24h' });
+    const refreshSecret = this.configService.get('JWT_REFRESH_SECRET') || this.configService.get('JWT_SECRET');
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: refreshSecret,
+      expiresIn: '7d',
+    });
+
+    return { accessToken, refreshToken };
+  }
+
   async refreshAccessToken(refreshToken: string): Promise<{ accessToken: string } | null> {
     try {
       const refreshSecret = this.configService.get('JWT_REFRESH_SECRET') || this.configService.get('JWT_SECRET');
