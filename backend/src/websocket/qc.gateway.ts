@@ -13,7 +13,15 @@ import { Logger } from '@nestjs/common';
 
 @WebSocketGateway({
   namespace: '/qc',
-  cors: { origin: '*', credentials: true },
+  cors: {
+    origin: [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://n3rve-onboarding.com',
+      'https://n3rve-onboarding-platform.vercel.app',
+    ],
+    credentials: true,
+  },
 })
 export class QCGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server;
