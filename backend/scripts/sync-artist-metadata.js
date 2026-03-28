@@ -98,8 +98,24 @@ async function main() {
       if (data.isni_code) updates.isni = data.isni_code;
       if (data.ipn) updates.ipn = data.ipn;
 
-      // Translations
-      if (data.translations) updates.translations = data.translations;
+      // Translations — fetched from /api/v2/translations?owner_id={fugaId}
+      try {
+        const trRes = await fetch(`https://login.n3rvemusic.com/api/v2/translations?owner_id=${fugaId}`, { headers: { Cookie: sid } });
+        if (trRes.status === 200) {
+          const trData = await trRes.json();
+          if (Array.isArray(trData) && trData.length > 0) {
+            const translations = {};
+            for (const tr of trData) {
+              if (tr.field === 'name' && tr.language && tr.value) {
+                translations[tr.language.toLowerCase()] = tr.value;
+              }
+            }
+            if (Object.keys(translations).length > 0) {
+              updates.translations = translations;
+            }
+          }
+        }
+      } catch {}
 
       if (Object.keys(updates).length > 0) {
         if (!DRY_RUN) {
