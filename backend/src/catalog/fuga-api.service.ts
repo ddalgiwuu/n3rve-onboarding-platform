@@ -14,8 +14,8 @@ export class FugaApiService {
   // ==================== AUTH ====================
 
   async login(): Promise<void> {
-    const username = this.configService.get<string>('FUGA_USERNAME', 'ryansong');
-    const password = this.configService.get<string>('FUGA_PASSWORD', '***REDACTED***');
+    const username = this.configService.get<string>('FUGA_USERNAME');
+    const password = this.configService.get<string>('FUGA_PASSWORD');
 
     try {
       const res = await fetch(`${this.baseUrl}/login`, {
