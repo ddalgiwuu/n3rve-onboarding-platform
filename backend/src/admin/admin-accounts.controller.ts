@@ -62,8 +62,8 @@ export class AdminAccountsController {
         },
       });
 
-      // Transform role from USER to CUSTOMER for display
-      return accounts.map(account => ({
+      // Transform role and strip sensitive fields
+      return accounts.map(({ password, ...account }) => ({
         ...account,
         role: account.role === 'USER' ? 'CUSTOMER' : account.role,
         companyName: account.company,
