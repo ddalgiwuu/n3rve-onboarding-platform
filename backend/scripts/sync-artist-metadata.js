@@ -37,9 +37,12 @@ async function main() {
 
       const updates = {};
 
-      // DSP profiles from /identifier endpoint
+      // DSP profiles from /identifier endpoint (try both artists and people)
       try {
-        const idRes = await fetch(`https://login.n3rvemusic.com/api/v2/artists/${fugaId}/identifier`, { headers: { Cookie: sid } });
+        let idRes = await fetch(`https://login.n3rvemusic.com/api/v2/artists/${fugaId}/identifier`, { headers: { Cookie: sid } });
+        if (idRes.status !== 200) {
+          idRes = await fetch(`https://login.n3rvemusic.com/api/v2/people/${fugaId}/identifier`, { headers: { Cookie: sid } });
+        }
         if (idRes.status === 200) {
           const identifiers = await idRes.json();
           for (const ident of (Array.isArray(identifiers) ? identifiers : [])) {
@@ -94,9 +97,21 @@ async function main() {
       if (data.contact_details) updates.contactDetails = data.contact_details;
       if (data.booking_agent) updates.bookingAgent = data.booking_agent;
 
-      // ISNI / IPN
+      // ISNI / IPN / IPI — also check /people endpoint for contributors
       if (data.isni_code) updates.isni = data.isni_code;
       if (data.ipn) updates.ipn = data.ipn;
+      if (data.ipi) updates.ipi = data.ipi;
+      if (!data.isni_code && !data.ipn) {
+        try {
+          const pRes = await fetch(`https://login.n3rvemusic.com/api/v2/people/${fugaId}`, { headers: { Cookie: sid } });
+          if (pRes.status === 200) {
+            const pData = await pRes.json();
+            if (pData.isni_code) updates.isni = pData.isni_code;
+            if (pData.ipn) updates.ipn = pData.ipn;
+            if (pData.ipi) updates.ipi = pData.ipi;
+          }
+        } catch {}
+      }
 
       // Translations — fetched from /api/v2/translations?owner_id={fugaId}
       try {
