@@ -639,28 +639,64 @@ export class SubmissionsService {
     const current = await this.prisma.submission.findUnique({ where: { id } });
     if (!current) throw new Error('Submission not found');
 
-    // Update submission with marketing fields
     const updateData: any = {};
 
-    if (marketingData.hook !== undefined) updateData.hook = marketingData.hook;
-    if (marketingData.mainPitch !== undefined) updateData.mainPitch = marketingData.mainPitch;
-    if (marketingData.moods !== undefined) updateData.moods = marketingData.moods;
-    if (marketingData.instruments !== undefined) updateData.instruments = marketingData.instruments;
-    if (marketingData.socialMediaPlan !== undefined) updateData.socialMediaPlan = marketingData.socialMediaPlan;
-    if (marketingData.marketingDrivers !== undefined) updateData.marketingDrivers = marketingData.marketingDrivers;
+    // Update tracks if provided
     if (marketingData.tracks !== undefined) updateData.tracks = marketingData.tracks;
 
     // Update release fields
     if (marketingData.release) {
       updateData.release = {
-        ...current.release,
-        ...marketingData.release
+        ...(current.release as any || {}),
+        ...marketingData.release,
       };
     }
 
+    // Merge ALL marketing fields into the marketing JSON field
+    const currentMarketing = (current.marketing as any) || {};
+    const marketingUpdate: any = { ...currentMarketing };
+
+    // Core marketing fields
+    const marketingFields = [
+      'hook', 'mainPitch', 'moods', 'instruments', 'socialMediaPlan',
+      'marketingDrivers', 'marketingSpend', 'factSheetUrl',
+      // Project context
+      'primaryArtist', 'frontlineOrCatalog', 'moreProductsComing',
+      // About the music
+      'privateListeningLink', 'mainGenre', 'subgenres', 'isSoundtrack', 'dolbyAtmos',
+      // Marketing details
+      'marketingDriversList', 'platformBudgets', 'otherNotes',
+      // Display fields
+      'projectType', 'priorityLevel', 'targetAudience', 'similarArtists',
+      'marketingKeywords', 'artistGender',
+      // Pitch/descriptions
+      'albumIntroduction', 'albumDescription', 'artistBio',
+      // Campaign
+      'campaignGoals', 'promotionPlans', 'syncHistory',
+      // Social URLs
+      'youtubeUrl', 'tiktokUrl', 'facebookUrl', 'instagramUrl',
+      'xUrl', 'twitchUrl', 'threadsUrl', 'soundcloudArtistId',
+      'spotifyArtistId', 'appleMusicArtistId',
+      // Artist info
+      'artistName', 'artistCountry', 'artistCurrentCity', 'artistHometown',
+      'artistAvatar', 'artistLogo', 'pressShotUrl', 'pressShotCredits',
+      'artistUgcPriorities',
+      // Focus tracks
+      'focusTrackIds', 'youtubeShorts', 'thisIsPlaylist', 'motionArtwork',
+    ];
+
+    for (const field of marketingFields) {
+      if (marketingData[field] !== undefined) {
+        marketingUpdate[field] = marketingData[field];
+      }
+    }
+
+    marketingUpdate.updatedAt = new Date().toISOString();
+    updateData.marketing = marketingUpdate;
+
     return this.prisma.submission.update({
       where: { id },
-      data: updateData
+      data: updateData,
     });
   }
 }
