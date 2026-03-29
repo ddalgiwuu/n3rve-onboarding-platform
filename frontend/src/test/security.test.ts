@@ -98,8 +98,9 @@ describe('Secret Exposure', () => {
 describe('Git History Clean', () => {
   const checkHistory = (pattern: string) => {
     try {
+      // Exclude test files themselves (they contain the patterns as string literals)
       const count = execSync(
-        `git grep "${pattern}" $(git rev-list --all --max-count=100) 2>/dev/null | wc -l`,
+        `git grep "${pattern}" $(git rev-list --all --max-count=100) 2>/dev/null | grep -v "security\\.test\\.ts\\|integration\\.test\\.ts" | wc -l`,
         { cwd: ROOT, encoding: 'utf-8' }
       ).trim();
       return parseInt(count, 10);
