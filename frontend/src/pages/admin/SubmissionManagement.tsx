@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import {
   Search, Eye, Check, X, Download, ChevronLeft, ChevronRight,
   FileSpreadsheet, Calendar, Clock, CheckSquare, XSquare,
@@ -12,9 +12,10 @@ import { useLanguageStore } from '@/store/language.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import { CheckCircle } from 'lucide-react';
 import { cn } from '@/utils/cn';
-import { exportSubmissionsToExcel } from '@/utils/excelExport';
 import { submissionService } from '@/services/submission.service';
-import SubmissionDetailView from '@/components/admin/SubmissionDetailView';
+
+// Lazy-load heavy components: SubmissionDetailView (1376 lines / ~80KB)
+const SubmissionDetailView = lazy(() => import('@/components/admin/SubmissionDetailView'));
 import catalogApi from '@/lib/catalog-api';
 import toast from 'react-hot-toast';
 
@@ -251,6 +252,7 @@ const SubmissionManagement: React.FC = () => {
 
     const selected = submissions.filter(s => selectedSubmissions.has(s.id));
     try {
+      const { exportSubmissionsToExcel } = await import('@/utils/excelExport');
       await exportSubmissionsToExcel({ submissions: selected });
       toast.success(t('선택된 제출이 내보내기되었습니다', 'Selected submissions exported'));
     } catch (error) {
@@ -941,7 +943,9 @@ const SubmissionManagement: React.FC = () => {
 
             {/* Tab Content */}
             {activeTab === 'details' && (
-              <SubmissionDetailView submission={selectedSubmission} />
+              <Suspense fallback={<div className="flex items-center justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-gray-400" /></div>}>
+                <SubmissionDetailView submission={selectedSubmission} />
+              </Suspense>
             )}
 
             {activeTab === 'overview' && (

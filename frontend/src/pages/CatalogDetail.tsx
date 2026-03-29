@@ -591,7 +591,7 @@ export default function CatalogDetailPage() {
         {assets.length === 0 && (
           <p className="text-sm text-zinc-400 text-center py-4">트랙 정보가 없습니다</p>
         )}
-        <div className="-mx-5 -mb-5">
+        <div className="-mx-5 -mb-5" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 300px' }}>
           {/* Header row */}
           {assets.length > 0 && (
             <div className="grid grid-cols-[2.5rem_1fr_4.5rem_2.5rem] items-center gap-2 px-5 py-2 border-b border-zinc-100 dark:border-zinc-700/60">
@@ -677,7 +677,7 @@ export default function CatalogDetailPage() {
       {/* ── ARTISTS ── */}
       <Section title="아티스트" icon={Users} accent="bg-violet-100 dark:bg-violet-900/30">
         {/* Primary + Featuring artists as cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 300px' }}>
           {p.artists?.map((artist: any, i: number) => (
             <ArtistCard
               key={i}

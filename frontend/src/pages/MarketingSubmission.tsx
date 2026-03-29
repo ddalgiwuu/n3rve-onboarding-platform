@@ -14,7 +14,7 @@ import {
   Target,
   AlertCircle
 } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslationFixed';
 import { MarketingSection } from '@/components/submission/MarketingSection';
 import { FocusTrackSelector } from '@/components/submission/FocusTrackSelector';
@@ -82,37 +82,41 @@ export default function MarketingSubmission() {
   // Artist metadata (synced from FugaArtistModal)
   const [artistMetadata, setArtistMetadata] = useState<Record<string, string>>({});
 
-  // Fetch all submissions (for dropdown)
-  const { data: allSubmissions = [] } = useQuery({
-    queryKey: ['all-submissions'],
-    queryFn: async () => {
-      try {
-        const response = await api.get('/submissions/user', {
-          params: { page: 1, limit: 100 }
-        });
-        // Handle paginated response
-        const data = response.data;
-        if (data && typeof data === 'object' && 'data' in data) {
-          return Array.isArray(data.data) ? data.data : [];
-        }
-        return Array.isArray(data) ? data : [];
-      } catch {
-        return [];
-      }
-    },
-    refetchOnWindowFocus: false
+  // Parallelize independent queries: submissions list + selected submission detail
+  const [allSubmissionsQuery, submissionQuery] = useQueries({
+    queries: [
+      {
+        queryKey: ['all-submissions'],
+        queryFn: async () => {
+          try {
+            const response = await api.get('/submissions/user', {
+              params: { page: 1, limit: 100 }
+            });
+            const data = response.data;
+            if (data && typeof data === 'object' && 'data' in data) {
+              return Array.isArray(data.data) ? data.data : [];
+            }
+            return Array.isArray(data) ? data : [];
+          } catch {
+            return [];
+          }
+        },
+        refetchOnWindowFocus: false,
+      },
+      {
+        queryKey: ['submission', selectedId],
+        queryFn: async () => {
+          if (!selectedId) return null;
+          const response = await api.get(`/submissions/${selectedId}`);
+          return response.data;
+        },
+        enabled: !!selectedId,
+      },
+    ],
   });
-
-  // Fetch selected submission data
-  const { data: submission, isLoading } = useQuery({
-    queryKey: ['submission', selectedId],
-    queryFn: async () => {
-      if (!selectedId) return null;
-      const response = await api.get(`/submissions/${selectedId}`);
-      return response.data;
-    },
-    enabled: !!selectedId
-  });
+  const allSubmissions = allSubmissionsQuery.data ?? [];
+  const submission = submissionQuery.data;
+  const isLoading = submissionQuery.isLoading;
 
   // Load existing marketing data (from marketing JSON field, with fallback to root-level fields)
   useEffect(() => {
