@@ -654,7 +654,7 @@ export default function LoginPage() {
                             {isLoading ? (
                               <div className="flex items-center justify-center gap-3">
                                 <div className="w-6 h-6 border-3 border-white/30 border-t-white rounded-full animate-spin" />
-                                <span>처리 중...</span>
+                                <span>{t('auth.signingIn', '처리 중...', 'Processing...', '処理中...')}</span>
                               </div>
                             ) : (
                               <div className="flex items-center justify-center gap-3 w-full">

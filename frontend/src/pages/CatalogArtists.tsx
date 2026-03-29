@@ -7,11 +7,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import catalogApi from '../lib/catalog-api';
 import type { CatalogArtist } from '../types/catalog';
 import toast from 'react-hot-toast';
+import { useTranslation } from '../hooks/useTranslation';
 
 export default function CatalogArtistsPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const urlSearch = searchParams.get('search') || '';
   const [search, setSearch] = useState(urlSearch);
   const [typeFilter, setTypeFilter] = useState<'all' | 'ARTIST' | 'CONTRIBUTOR'>('all');
@@ -41,11 +43,11 @@ export default function CatalogArtistsPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => catalogApi.deleteArtist(id),
     onSuccess: () => {
-      toast.success('아티스트가 삭제되었습니다');
+      toast.success(t('catalogArtists.deleted'));
       queryClient.invalidateQueries({ queryKey: ['catalog-artists'] });
       setDeletingId(null);
     },
-    onError: (err: any) => toast.error(err.response?.data?.message || '삭제 실패'),
+    onError: (err: any) => toast.error(err.response?.data?.message || t('catalogArtists.deleteFailed')),
   });
 
   const artists = data?.data || [];
@@ -62,10 +64,10 @@ export default function CatalogArtistsPage() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                 <Users size={20} className="text-white" />
               </div>
-              카탈로그 아티스트
+              {t('catalogArtists.title')}
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 ml-[52px]">
-              {data?.total || 0}명 등록됨
+              {data?.total || 0}{t('catalogArtists.registered')}
             </p>
           </div>
 
@@ -90,7 +92,7 @@ export default function CatalogArtistsPage() {
               type="text"
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-              placeholder="아티스트 이름 검색..."
+              placeholder={t('catalogArtists.search')}
               className="w-full pl-10 pr-4 py-2.5 bg-white/80 dark:bg-white/5 sm:backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500/40 transition-all"
             />
           </div>
@@ -106,7 +108,7 @@ export default function CatalogArtistsPage() {
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10'
                 )}
               >
-                {type === 'all' ? '전체' : type === 'ARTIST' ? 'Artist' : 'Contributor'}
+                {type === 'all' ? t('catalogArtists.all') : type === 'ARTIST' ? 'Artist' : 'Contributor'}
               </button>
             ))}
           </div>
@@ -186,7 +188,7 @@ export default function CatalogArtistsPage() {
                     {/* Hover action bar */}
                     <div className="mt-auto pt-2 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                       <span className="flex items-center gap-1 text-[11px] text-purple-500 dark:text-purple-400 font-medium">
-                        <ExternalLink size={12} /> 상세
+                        <ExternalLink size={12} /> {t('catalogArtists.detail')}
                       </span>
                       <button
                         onClick={(e) => { e.stopPropagation(); setDeletingId(artist.id); }}
@@ -203,7 +205,7 @@ export default function CatalogArtistsPage() {
         ) : (
           <div className="text-center py-20 bg-white/60 dark:bg-white/5 sm:backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl">
             <Users size={48} className="mx-auto mb-3 text-gray-300 dark:text-gray-600" />
-            <p className="text-gray-500 dark:text-gray-400 font-medium">결과 없음</p>
+            <p className="text-gray-500 dark:text-gray-400 font-medium">{t('catalogArtists.noResults')}</p>
           </div>
         )}
 
@@ -211,7 +213,7 @@ export default function CatalogArtistsPage() {
         {data && data.totalPages > 1 && (
           <div className="flex items-center justify-between pt-2">
             <p className="text-xs text-gray-500 dark:text-zinc-500">
-              {page} / {data.totalPages} 페이지 (총 {data.total}명)
+              {page} / {data.totalPages} {t('catalogArtists.pageOf')} ({t('catalogArtists.total')} {data.total}명)
             </p>
             <div className="flex gap-1.5">
               <button
@@ -219,14 +221,14 @@ export default function CatalogArtistsPage() {
                 disabled={page === 1}
                 onClick={() => setPage(p => p - 1)}
               >
-                <ChevronLeft size={14} /> 이전
+                <ChevronLeft size={14} /> {t('catalogArtists.prev')}
               </button>
               <button
                 className="flex items-center gap-1 rounded-lg border border-gray-200 dark:border-zinc-700 px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-zinc-400 disabled:opacity-30 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
                 disabled={page >= data.totalPages}
                 onClick={() => setPage(p => p + 1)}
               >
-                다음 <ChevronRight size={14} />
+                {t('catalogArtists.next')} <ChevronRight size={14} />
               </button>
             </div>
           </div>
@@ -253,21 +255,21 @@ export default function CatalogArtistsPage() {
               <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center mx-auto mb-4">
                 <Trash2 size={24} className="text-red-500" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white text-center">아티스트 삭제</h3>
-              <p className="mt-2 text-sm text-gray-500 dark:text-zinc-400 text-center">이 작업은 되돌릴 수 없습니다.</p>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white text-center">{t('catalogArtists.deleteTitle')}</h3>
+              <p className="mt-2 text-sm text-gray-500 dark:text-zinc-400 text-center">{t('catalogArtists.deleteConfirm')}</p>
               <div className="mt-5 flex gap-2">
                 <button
                   onClick={() => setDeletingId(null)}
                   className="flex-1 rounded-xl border border-gray-200 dark:border-zinc-700 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-zinc-300 hover:bg-gray-50 dark:hover:bg-zinc-800 transition-colors"
                 >
-                  취소
+                  {t('catalogArtists.cancel')}
                 </button>
                 <button
                   onClick={() => deleteMutation.mutate(deletingId)}
                   disabled={deleteMutation.isPending}
                   className="flex-1 rounded-xl bg-red-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-600 disabled:opacity-50 transition-colors"
                 >
-                  {deleteMutation.isPending ? '삭제 중...' : '삭제'}
+                  {deleteMutation.isPending ? t('catalogArtists.deleting') : t('catalogArtists.deleteTitle')}
                 </button>
               </div>
             </motion.div>

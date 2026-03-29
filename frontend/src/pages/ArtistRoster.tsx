@@ -36,7 +36,7 @@ interface SavedArtist {
 type ViewMode = 'bento' | 'grid' | 'list';
 
 export default function ArtistRoster() {
-  const { t, language } = useTranslation();
+  const { language } = useTranslation();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'DRAFT' | 'COMPLETE' | 'VERIFIED'>('all');
@@ -100,11 +100,11 @@ export default function ArtistRoster() {
   const getStatusConfig = (status: string) => {
     switch (status) {
       case 'COMPLETE':
-        return { color: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/30', label: 'Complete' };
+        return { color: 'text-green-400', bg: 'bg-green-500/20', border: 'border-green-500/30', label: translate('완성', 'Complete', '完成') };
       case 'VERIFIED':
-        return { color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/30', label: 'Verified' };
+        return { color: 'text-blue-400', bg: 'bg-blue-500/20', border: 'border-blue-500/30', label: translate('인증됨', 'Verified', '認証済み') };
       default:
-        return { color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/30', label: 'Draft' };
+        return { color: 'text-yellow-400', bg: 'bg-yellow-500/20', border: 'border-yellow-500/30', label: translate('초안', 'Draft', '下書き') };
     }
   };
 
@@ -131,7 +131,7 @@ export default function ArtistRoster() {
             animate={{ opacity: 1, y: 0 }}
             className="p-6 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl"
           >
-            <p className="text-gray-400 text-sm mb-1">Total Artists</p>
+            <p className="text-gray-400 text-sm mb-1">{translate('전체 아티스트', 'Total Artists', '全アーティスト')}</p>
             <p className="text-3xl font-bold text-gray-900 dark:text-white">{artists.length}</p>
           </motion.div>
 
@@ -141,7 +141,7 @@ export default function ArtistRoster() {
             transition={{ delay: 0.1 }}
             className="p-6 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl"
           >
-            <p className="text-gray-400 text-sm mb-1">Complete Profiles</p>
+            <p className="text-gray-400 text-sm mb-1">{translate('완성된 프로필', 'Complete Profiles', '完成プロフィール')}</p>
             <p className="text-3xl font-bold text-green-400">
               {artists.filter(a => a.status === 'COMPLETE' || a.status === 'VERIFIED').length}
             </p>
@@ -153,7 +153,7 @@ export default function ArtistRoster() {
             transition={{ delay: 0.2 }}
             className="p-6 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl"
           >
-            <p className="text-gray-400 text-sm mb-1">Draft Profiles</p>
+            <p className="text-gray-400 text-sm mb-1">{translate('초안 프로필', 'Draft Profiles', '下書きプロフィール')}</p>
             <p className="text-3xl font-bold text-yellow-400">
               {artists.filter(a => a.status === 'DRAFT').length}
             </p>
@@ -165,7 +165,7 @@ export default function ArtistRoster() {
             transition={{ delay: 0.3 }}
             className="p-6 bg-white/80 dark:bg-white/5 backdrop-blur-xl border border-gray-200 dark:border-white/10 rounded-2xl"
           >
-            <p className="text-gray-400 text-sm mb-1">Verified</p>
+            <p className="text-gray-400 text-sm mb-1">{translate('인증됨', 'Verified', '認証済み')}</p>
             <p className="text-3xl font-bold text-blue-400">
               {artists.filter(a => a.status === 'VERIFIED').length}
             </p>
@@ -181,7 +181,7 @@ export default function ArtistRoster() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search artists..."
+              placeholder={translate('아티스트 검색...', 'Search artists...', 'アーティストを検索...')}
               className="
                 w-full pl-12 pr-4 py-3
                 bg-white/80 dark:bg-white/5 backdrop-blur-md
@@ -207,7 +207,7 @@ export default function ArtistRoster() {
                     : 'bg-white/80 dark:bg-white/5 text-gray-700 dark:text-gray-400 hover:bg-white dark:hover:bg-white/10 border border-gray-200 dark:border-white/10'
                 )}
               >
-                {status === 'all' ? 'All' : status}
+                {status === 'all' ? translate('전체', 'All', '全体') : status}
               </button>
             ))}
           </div>
@@ -241,7 +241,7 @@ export default function ArtistRoster() {
         {isLoading ? (
           <div className="text-center py-20">
             <div className="inline-block w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mb-4" />
-            <p className="text-gray-400">Loading artists...</p>
+            <p className="text-gray-400">{translate('아티스트 불러오는 중...', 'Loading artists...', 'アーティスト読み込み中...')}</p>
           </div>
         ) : filteredArtists.length > 0 ? (
           <div className={clsx(
@@ -326,14 +326,14 @@ export default function ArtistRoster() {
                         <p className="text-lg font-bold text-white">
                           {artist.releaseCount}
                         </p>
-                        <p className="text-xs text-gray-400">Releases</p>
+                        <p className="text-xs text-gray-400">{translate('릴리즈', 'Releases', 'リリース')}</p>
                       </div>
 
                       <div className="p-3 bg-white/5 rounded-lg">
                         <p className="text-lg font-bold text-purple-400">
                           {artist.completionScore}%
                         </p>
-                        <p className="text-xs text-gray-400">Complete</p>
+                        <p className="text-xs text-gray-400">{translate('완성도', 'Complete', '完成度')}</p>
                       </div>
 
                       {cardSize === 'large' && artist.totalStreams && (
@@ -342,14 +342,14 @@ export default function ArtistRoster() {
                             <p className="text-lg font-bold text-green-400">
                               {(artist.totalStreams / 1000000).toFixed(1)}M
                             </p>
-                            <p className="text-xs text-gray-400">Streams</p>
+                            <p className="text-xs text-gray-400">{translate('스트리밍', 'Streams', 'ストリーミング')}</p>
                           </div>
 
                           <div className="p-3 bg-white/5 rounded-lg">
                             <p className="text-lg font-bold text-blue-400">
                               {artist.dspProfiles.filter(d => d.verified).length}
                             </p>
-                            <p className="text-xs text-gray-400">Verified DSPs</p>
+                            <p className="text-xs text-gray-400">{translate('인증된 DSP', 'Verified DSPs', '認証済みDSP')}</p>
                           </div>
                         </>
                       )}

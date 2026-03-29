@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuthStore } from '@/store/auth.store';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useTranslation } from '@/hooks/useTranslationFixed';
 import { useHydration } from '@/hooks/useHydration';
 import { Music, FileText, Users, Upload, ChevronRight, Calendar, Building2, TrendingUp, Clock, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import LabelDashboard from '@/pages/LabelDashboard';
 
 function UpcomingReleaseBanner() {
+  const { t } = useTranslation();
   const { data } = useQuery({
     queryKey: ['upcoming-releases'],
     queryFn: () => catalogApi.getUnifiedProducts({ page: 1, limit: 200 }).then(r => r.data),
@@ -45,7 +46,7 @@ function UpcomingReleaseBanner() {
     <div className="rounded-xl border border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 p-4 dark:border-amber-800 dark:from-amber-950/30 dark:to-orange-950/30">
       <div className="flex items-center gap-2 mb-3">
         <Bell className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-        <h3 className="font-bold text-amber-800 dark:text-amber-300">발매 예정 알림</h3>
+        <h3 className="font-bold text-amber-800 dark:text-amber-300">{t('dashboard.upcomingReleases')}</h3>
         <span className="rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-bold text-white">{upcoming.length}</span>
       </div>
       <div className="space-y-2">
@@ -71,7 +72,7 @@ function UpcomingReleaseBanner() {
               item.daysUntil === 1 ? 'bg-red-500 animate-pulse' :
               'bg-amber-500'
             }`}>
-              {item.daysUntil === 0 ? '🎉 오늘!' : item.daysUntil === 1 ? '🔴 내일!' : `D-${item.daysUntil}`}
+              {item.daysUntil === 0 ? `🎉 ${t('dashboard.today')}` : item.daysUntil === 1 ? `🔴 ${t('dashboard.tomorrow')}` : `D-${item.daysUntil}`}
             </span>
           </Link>
         ))}
@@ -252,7 +253,7 @@ export default function Dashboard() {
               <div>
                 <CardTitle className="text-2xl">{t('dashboard.recentSubmissions')}</CardTitle>
                 <CardDescription className="mt-1">
-                  Track your latest release submissions
+                  {t('dashboard.trackLatestSubmissions')}
                 </CardDescription>
               </div>
               <Button asChild variant="ghost" size="sm">
@@ -318,8 +319,8 @@ export default function Dashboard() {
         {/* Quick Actions - Unified Card */}
         <Card className="magnetic">
           <CardHeader>
-            <CardTitle>빠른 실행</CardTitle>
-            <CardDescription>자주 사용하는 기능에 빠르게 접근하세요</CardDescription>
+            <CardTitle>{t('dashboard.quickActions')}</CardTitle>
+            <CardDescription>{t('dashboard.quickActionsDesc')}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">

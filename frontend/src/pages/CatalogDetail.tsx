@@ -11,6 +11,7 @@ import {
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 /* ─── Utility ─── */
 
@@ -122,12 +123,13 @@ function ReleaseDateTimeField({ date, time }: { date?: string; time?: string }) 
 }
 
 function Field({ label, value, mono }: { label: string; value?: any; mono?: boolean }) {
+  const { t } = useTranslation();
   const display = value === null || value === undefined || value === '' ? null : String(value);
   return (
     <div className="pb-4 border-b border-zinc-200 dark:border-zinc-800">
       <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-1">{label}</p>
       <p className={`text-[15px] font-semibold ${display ? 'text-zinc-900 dark:text-zinc-100' : 'text-zinc-300 dark:text-zinc-700 italic'} ${mono ? 'font-mono' : ''}`}>
-        {display || '미입력'}
+        {display || t('catalogDetail.notEntered')}
       </p>
     </div>
   );
@@ -211,8 +213,9 @@ function DspLink({ url, type }: { url?: string | null; type: 'spotify' | 'apple'
 /* ─── Artist Card ─── */
 
 function ArtistCard({ artist, role, onDelete }: { artist: any; role?: string; onDelete?: (id: string) => void }) {
+  const { t } = useTranslation();
   const handleDelete = () => {
-    if (window.confirm(`"${artist.name}" 아티스트를 삭제하시겠습니까?`)) {
+    if (window.confirm(`"${artist.name}" ${t('catalogDetail.confirmDelete')}`)) {
       onDelete?.(artist.id);
     }
   };
@@ -292,6 +295,7 @@ export default function CatalogDetailPage() {
   const [searchParams] = useSearchParams();
   const type = (searchParams.get('type') as 'catalog' | 'submission') || 'catalog';
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // All hooks before early returns
   const audioPlayer = useAudioPlayer();
@@ -311,14 +315,14 @@ export default function CatalogDetailPage() {
       <div className="flex h-64 items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-zinc-300 border-t-blue-500" />
-          <p className="text-sm text-zinc-400">불러오는 중...</p>
+          <p className="text-sm text-zinc-400">{t('common.loading')}</p>
         </div>
       </div>
     );
   }
 
   if (!product) {
-    return <div className="flex h-64 items-center justify-center text-zinc-400">프로덕트를 찾을 수 없습니다</div>;
+    return <div className="flex h-64 items-center justify-center text-zinc-400">{t('catalogDetail.notFound')}</div>;
   }
 
   const p = product as any;
@@ -370,7 +374,7 @@ export default function CatalogDetailPage() {
         className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200 transition-colors"
         onClick={() => navigate('/admin/catalog')}
       >
-        <ArrowLeft className="h-4 w-4" /> 카탈로그로 돌아가기
+        <ArrowLeft className="h-4 w-4" /> {t('catalogDetail.backToCatalog')}
       </button>
 
       {/* ── HERO HEADER ── */}
@@ -427,8 +431,8 @@ export default function CatalogDetailPage() {
                     className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 transition-colors shadow"
                   >
                     {isHeaderPlaying
-                      ? <><Pause className="h-4 w-4 fill-zinc-900" /> Pause</>
-                      : <><Play className="h-4 w-4 fill-zinc-900" /> Play</>}
+                      ? <><Pause className="h-4 w-4 fill-zinc-900" /> {t('common.pause')}</>
+                      : <><Play className="h-4 w-4 fill-zinc-900" /> {t('common.play')}</>}
                   </button>
                 );
               })()}
@@ -458,7 +462,7 @@ export default function CatalogDetailPage() {
                   }}
                   className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition-colors backdrop-blur-sm"
                 >
-                  <Download className="h-4 w-4" /> Download Cover
+                  <Download className="h-4 w-4" /> {t('catalogDetail.downloadCover')}
                 </button>
               )}
             </div>
@@ -467,9 +471,9 @@ export default function CatalogDetailPage() {
       </div>
 
       {/* ── TRACKLIST ── */}
-      <Section title={`트랙 (${assets.length})`} icon={Music} accent="bg-blue-100 dark:bg-blue-900/30">
+      <Section title={`${t('catalogDetail.tracks')} (${assets.length})`} icon={Music} accent="bg-blue-100 dark:bg-blue-900/30">
         {assets.length === 0 && (
-          <p className="text-sm text-zinc-400 text-center py-4">트랙 정보가 없습니다</p>
+          <p className="text-sm text-zinc-400 text-center py-4">{t('catalogDetail.noTracks')}</p>
         )}
         <div className="-mx-5 -mb-5" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 300px' }}>
           {/* Header row */}
@@ -555,7 +559,7 @@ export default function CatalogDetailPage() {
       </Section>
 
       {/* ── ARTISTS ── */}
-      <Section title="아티스트" icon={Users} accent="bg-violet-100 dark:bg-violet-900/30">
+      <Section title={t('catalogDetail.artists')} icon={Users} accent="bg-violet-100 dark:bg-violet-900/30">
         {/* Primary + Featuring artists as cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 300px' }}>
           {p.artists?.map((artist: any, i: number) => (
@@ -582,7 +586,7 @@ export default function CatalogDetailPage() {
             to="/admin/catalog/artists"
             className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-zinc-200 dark:border-zinc-700 p-4 text-sm font-medium text-zinc-400 dark:text-zinc-500 hover:border-violet-400 hover:text-violet-500 dark:hover:border-violet-600 dark:hover:text-violet-400 transition-colors min-h-[80px]"
           >
-            <Plus className="h-4 w-4" /> 아티스트 추가
+            <Plus className="h-4 w-4" /> {t('catalogDetail.addArtist')}
           </Link>
         </div>
 
@@ -622,9 +626,9 @@ export default function CatalogDetailPage() {
       </Section>
 
       {/* ── RELEASE INFO — Categorized ── */}
-      <Section title="릴리스 정보" icon={Disc3} accent="bg-amber-100 dark:bg-amber-900/30">
+      <Section title={t('catalogDetail.releaseInfo')} icon={Disc3} accent="bg-amber-100 dark:bg-amber-900/30">
         {/* 기본 정보 */}
-        <SubSection title="기본 정보" />
+        <SubSection title={t('catalogDetail.basicInfo')} />
         <FieldGrid>
           <Field label="UPC" value={p.upc} mono />
           <Field label="Catalog Number" value={p.catalogNumber} mono />
@@ -641,7 +645,7 @@ export default function CatalogDetailPage() {
         </FieldGrid>
 
         {/* 장르 & 언어 */}
-        <SubSection title="장르 & 언어" />
+        <SubSection title={t('catalogDetail.genreLanguage')} />
         <FieldGrid>
           <Field label="Genre" value={p.genre?.name || p.genre} />
           <Field label="Subgenre" value={p.subgenre?.name || p.subgenre} />
@@ -656,7 +660,7 @@ export default function CatalogDetailPage() {
         </FieldGrid>
 
         {/* 권리 */}
-        <SubSection title="권리" />
+        <SubSection title={t('catalogDetail.rights')} />
         <FieldGrid>
           <Field label="© Line" value={p.cLineText} />
           <Field label="Copyright Holder" value={p.copyrightHolder} />
@@ -670,7 +674,7 @@ export default function CatalogDetailPage() {
         </FieldGrid>
 
         {/* 배포 */}
-        <SubSection title="배포" />
+        <SubSection title={t('catalogDetail.distribution')} />
         <FieldGrid>
           <Field label="Territory Type" value={p.territoryType} />
           <Field label="Territories" value={Array.isArray(p.territories) ? p.territories.join(', ') : p.territories} />
@@ -743,7 +747,7 @@ export default function CatalogDetailPage() {
       )}
 
       {/* ── MARKETING ── */}
-      <Section title="마케팅" icon={MessageSquare} defaultOpen={false} accent="bg-pink-100 dark:bg-pink-900/30">
+      <Section title={t('catalogDetail.marketing')} icon={MessageSquare} defaultOpen={false} accent="bg-pink-100 dark:bg-pink-900/30">
         <FieldGrid>
           <Field label="Project Type" value={marketing.projectType || marketing.frontlineOrCatalog} />
           <Field label="Priority Level" value={marketing.priorityLevel ? `★ ${marketing.priorityLevel}` : (p.release?.priorityLevel ? `★ ${p.release.priorityLevel}` : undefined)} />
@@ -905,7 +909,7 @@ export default function CatalogDetailPage() {
       </Section>
 
       {/* ── SUBMISSION INFO ── */}
-      <Section title="제출 정보" icon={ClipboardList} defaultOpen={false} accent="bg-zinc-100 dark:bg-zinc-700/50">
+      <Section title={t('catalogDetail.submissionInfo')} icon={ClipboardList} defaultOpen={false} accent="bg-zinc-100 dark:bg-zinc-700/50">
         <FieldGrid>
           <Field label="Submitter Name" value={p.submitterName} />
           <Field label="Submitter Email" value={p.submitterEmail} />
