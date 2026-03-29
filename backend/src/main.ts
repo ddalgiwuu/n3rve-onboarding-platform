@@ -38,8 +38,22 @@ async function bootstrap() {
 
 
 
-  // Security headers
-  app.use(helmet());
+  // Security headers (allow Dropbox media/images)
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:", "https://*.dropbox.com", "https://*.dropboxusercontent.com", "https://dl.dropboxusercontent.com"],
+        mediaSrc: ["'self'", "blob:", "https://*.dropbox.com", "https://*.dropboxusercontent.com", "https://dl.dropboxusercontent.com"],
+        connectSrc: ["'self'", "https://*.dropbox.com", "https://*.dropboxusercontent.com", "https://n3rve-backend.fly.dev", "wss://n3rve-onboarding.com"],
+        fontSrc: ["'self'", "data:"],
+        frameSrc: ["'self'"],
+      },
+    },
+    crossOriginEmbedderPolicy: false, // Required for Dropbox media
+  }));
 
   app.useGlobalPipes(
     new ValidationPipe({

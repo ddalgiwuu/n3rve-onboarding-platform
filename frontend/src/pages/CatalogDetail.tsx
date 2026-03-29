@@ -589,14 +589,33 @@ export default function CatalogDetailPage() {
                 </button>
               )}
               {(p.coverImageUrl || files.coverImageUrl) && (
-                <a
-                  href={p.coverImageUrl || files.coverImageUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                <button
+                  onClick={async () => {
+                    const url = p.coverImageUrl || files.coverImageUrl;
+                    try {
+                      const { default: api } = await import('../lib/api');
+                      const res = await api.get('/catalog/audio/stream-url', {
+                        params: { url },
+                      });
+                      const downloadUrl = res.data?.url || url;
+                      const a = document.createElement('a');
+                      a.href = downloadUrl;
+                      a.download = `${p.name || 'cover'}.jpg`;
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                    } catch {
+                      // Fallback: open in new tab with dl=1
+                      const dlUrl = url.includes('dropbox.com')
+                        ? url.replace('dl=0', 'dl=1').replace('raw=1', 'dl=1')
+                        : url;
+                      window.open(dlUrl, '_blank');
+                    }
+                  }}
                   className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition-colors backdrop-blur-sm"
                 >
                   <Download className="h-4 w-4" /> Download Cover
-                </a>
+                </button>
               )}
             </div>
           </div>
