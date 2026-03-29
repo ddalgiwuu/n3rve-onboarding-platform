@@ -311,7 +311,7 @@ function BottomPlayer({
         {/* Cover + Info */}
         <div className="flex items-center gap-3 w-52 min-w-0">
           {player.coverUrl
-            ? <img src={player.coverUrl} alt="" className="h-10 w-10 rounded-lg object-cover flex-shrink-0 shadow" />
+            ? <img src={player.coverUrl} alt="" loading="lazy" className="h-10 w-10 rounded-lg object-cover flex-shrink-0 shadow" />
             : <div className="h-10 w-10 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex-shrink-0 flex items-center justify-center">
                 <Music className="h-4 w-4 text-zinc-400" />
               </div>
@@ -535,7 +535,7 @@ export default function CatalogDetailPage() {
           {/* Cover Art */}
           <div className="flex-shrink-0">
             {coverRawUrl
-              ? <img src={coverRawUrl} alt={p.name} className="h-52 w-52 rounded-xl object-cover shadow-2xl ring-1 ring-white/10" />
+              ? <img src={coverRawUrl} alt={p.name} loading="lazy" className="h-52 w-52 rounded-xl object-cover shadow-2xl ring-1 ring-white/10" />
               : <div className="h-52 w-52 rounded-xl bg-zinc-700 shadow-2xl flex items-center justify-center ring-1 ring-white/10">
                   <Disc3 className="h-16 w-16 text-zinc-500" />
                 </div>

@@ -56,7 +56,7 @@ function UpcomingReleaseBanner() {
             className="flex items-center gap-3 rounded-lg bg-white/60 px-3 py-2 hover:bg-white dark:bg-zinc-800/60 dark:hover:bg-zinc-800 transition-colors"
           >
             {item.coverImageUrl ? (
-              <img src={item.coverImageUrl} alt="" className="h-10 w-10 rounded-md object-cover" />
+              <img src={item.coverImageUrl} alt="" loading="lazy" className="h-10 w-10 rounded-md object-cover" />
             ) : (
               <div className="h-10 w-10 rounded-md bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center">
                 <Music className="h-5 w-5 text-zinc-400" />

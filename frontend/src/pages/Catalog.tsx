@@ -276,7 +276,7 @@ export default function CatalogPage() {
                 {/* Cover Art Area */}
                 <div className="relative aspect-square overflow-hidden">
                   {item.coverImageUrl ? (
-                    <img src={item.coverImageUrl} alt={item.name} className="absolute inset-0 h-full w-full object-cover" />
+                    <img src={item.coverImageUrl} alt={item.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
                   ) : (
                     <div className="absolute inset-0" style={{ background: generateGradient(item.name) }} />
                   )}
@@ -359,7 +359,7 @@ export default function CatalogPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {item.coverImageUrl && (
-                          <img src={item.coverImageUrl} alt="" className="h-8 w-8 rounded object-cover" />
+                          <img src={item.coverImageUrl} alt="" loading="lazy" className="h-8 w-8 rounded object-cover" />
                         )}
                         <div>
                           <div className="font-medium text-zinc-900 dark:text-white">{item.name}</div>

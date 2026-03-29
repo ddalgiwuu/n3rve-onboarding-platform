@@ -566,7 +566,7 @@ const SubmissionManagement: React.FC = () => {
                   {/* Cover Art Area */}
                   <div className="relative aspect-square overflow-hidden">
                     {item.coverImageUrl ? (
-                      <img src={item.coverImageUrl} alt={item.name} className="absolute inset-0 h-full w-full object-cover" />
+                      <img src={item.coverImageUrl} alt={item.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
                     ) : (
                       <div className="absolute inset-0" style={{ background: generateGradient(item.name) }} />
                     )}
@@ -656,7 +656,7 @@ const SubmissionManagement: React.FC = () => {
                     >
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          {item.coverImageUrl && <img src={item.coverImageUrl} alt="" className="h-8 w-8 rounded object-cover" />}
+                          {item.coverImageUrl && <img src={item.coverImageUrl} alt="" loading="lazy" className="h-8 w-8 rounded object-cover" />}
                           <div>
                             <div className="font-medium text-gray-900 dark:text-white">{item.name}</div>
                             {item.releaseVersion && <div className="text-xs text-gray-400">{item.releaseVersion}</div>}

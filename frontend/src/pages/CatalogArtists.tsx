@@ -119,23 +119,16 @@ export default function CatalogArtistsPage() {
           </div>
         ) : artists.length > 0 ? (
           <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-            <AnimatePresence mode="popLayout">
-              {artists.map((artist: CatalogArtist, index: number) => (
-                <motion.div
+              {artists.map((artist: CatalogArtist) => (
+                <div
                   key={artist.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ delay: index * 0.02, duration: 0.2 }}
-                  whileHover={{ y: -4 }}
                   className={clsx(
                     'relative overflow-hidden rounded-2xl cursor-pointer group',
                     'bg-white dark:bg-zinc-800/80 backdrop-blur-xl',
                     'border border-gray-100 dark:border-zinc-700/60',
                     'hover:border-purple-400/50 dark:hover:border-purple-500/40',
                     'hover:shadow-lg hover:shadow-purple-500/10 dark:hover:shadow-purple-500/5',
-                    'transition-all duration-200'
+                    'transition-all duration-200 hover:-translate-y-1'
                   )}
                   onClick={() => navigate(`/admin/catalog/artists/${artist.id}`)}
                 >
@@ -204,9 +197,8 @@ export default function CatalogArtistsPage() {
                       </button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
-            </AnimatePresence>
           </div>
         ) : (
           <div className="text-center py-20 bg-white/60 dark:bg-white/5 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl">

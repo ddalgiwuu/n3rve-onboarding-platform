@@ -31,10 +31,11 @@ export default defineConfig({
           query: ['@tanstack/react-query'],
           ui: ['lucide-react'],
           utils: ['axios', 'date-fns', 'clsx', 'tailwind-merge'],
+          motion: ['framer-motion'],
         }
       },
     },
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
     minify: 'esbuild',
     target: 'es2020',
     commonjsOptions: {

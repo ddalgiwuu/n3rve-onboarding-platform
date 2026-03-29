@@ -7,14 +7,14 @@ import LoadingSpinner from './components/common/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
 import { initializeSecurity } from './utils/security';
 
-// Admin pages - use direct imports to avoid React 19 lazy() compatibility issues
-import AdminDashboardPage from './pages/admin/AdminDashboard';
-import AdminSubmissionsPage from './pages/admin/AdminSubmissions';
-import SubmissionDetailPage from './pages/admin/SubmissionDetail';
-import SubmissionManagementPage from './pages/admin/SubmissionManagement';
-import AdminCustomersPage from './pages/admin/AdminCustomers';
-import AdminSettingsPage from './pages/admin/AdminSettings';
-import AdminAccountsPage from './pages/admin/AdminAccounts';
+// Admin pages - lazy loaded for bundle splitting
+const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminSubmissionsPage = lazy(() => import('./pages/admin/AdminSubmissions'));
+const SubmissionDetailPage = lazy(() => import('./pages/admin/SubmissionDetail'));
+const SubmissionManagementPage = lazy(() => import('./pages/admin/SubmissionManagement'));
+const AdminCustomersPage = lazy(() => import('./pages/admin/AdminCustomers'));
+const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettings'));
+const AdminAccountsPage = lazy(() => import('./pages/admin/AdminAccounts'));
 
 // Lazy load non-admin pages
 const HomePage = lazy(() => import('./pages/Home'));
