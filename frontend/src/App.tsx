@@ -6,6 +6,8 @@ import Layout from './components/layout/Layout';
 import LoadingSpinner from './components/common/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
 import { initializeSecurity } from './utils/security';
+import { AudioPlayerProvider } from './contexts/AudioPlayerContext';
+import GlobalAudioPlayer from './components/GlobalAudioPlayer';
 
 // Admin pages - lazy loaded for bundle splitting
 const AdminDashboardPage = lazy(() => import('./pages/admin/AdminDashboard'));
@@ -101,6 +103,7 @@ function App() {
   }
 
   return (
+    <AudioPlayerProvider>
     <div className="min-h-screen">
       <Suspense fallback={<LoadingSpinner fullScreen />}>
         <Routes>
@@ -245,7 +248,9 @@ function App() {
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </Suspense>
+      <GlobalAudioPlayer />
     </div>
+    </AudioPlayerProvider>
   );
 }
 

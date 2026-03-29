@@ -1,15 +1,16 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, Music, ChevronDown, ChevronRight,
   ExternalLink, Disc3, Users, MessageSquare,
   ClipboardList, Send,
-  Play, Download, Pause, Volume2, VolumeX,
-  Mic2, X, Pencil, Trash2, Plus,
+  Play, Download, Pause,
+  Mic2, Pencil, Trash2, Plus,
 } from 'lucide-react';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
+import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 
 /* ─── Utility ─── */
 
@@ -21,12 +22,7 @@ function toRawUrl(url: string) {
   return url;
 }
 
-function formatTime(seconds: number) {
-  if (!isFinite(seconds) || isNaN(seconds)) return '0:00';
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
+// formatTime removed — now in GlobalAudioPlayer
 
 /* ─── Utility Components ─── */
 
@@ -209,217 +205,8 @@ function DspLink({ url, type }: { url?: string | null; type: 'spotify' | 'apple'
   );
 }
 
-/* ─── Fixed Bottom Audio Player ─── */
 
-interface PlayerState {
-  url: string;
-  trackName: string;
-  artistName: string;
-  coverUrl?: string;
-}
-
-function BottomPlayer({
-  player,
-  onClose,
-}: {
-  player: PlayerState | null;
-  onClose: () => void;
-}) {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(1);
-  const [muted, setMuted] = useState(false);
-
-  useEffect(() => {
-    if (!player) return;
-    const audio = audioRef.current;
-    if (!audio) return;
-
-    // Get streamable URL from backend (resolves Dropbox temporary link)
-    const loadAndPlay = async () => {
-      let streamUrl = player.url;
-      try {
-        if (player.url.includes('dropbox.com')) {
-          const { default: api } = await import('../lib/api');
-          const res = await api.get('/catalog/audio/stream-url', {
-            params: { url: player.url },
-          });
-          if (res.data?.url) streamUrl = res.data.url;
-        }
-      } catch { /* fallback to original URL */ }
-
-      audio.src = streamUrl;
-      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
-    };
-
-    loadAndPlay();
-  }, [player?.url]);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const onTime = () => setCurrentTime(audio.currentTime);
-    const onMeta = () => setDuration(audio.duration);
-    const onEnded = () => setIsPlaying(false);
-    audio.addEventListener('timeupdate', onTime);
-    audio.addEventListener('loadedmetadata', onMeta);
-    audio.addEventListener('ended', onEnded);
-    return () => {
-      audio.removeEventListener('timeupdate', onTime);
-      audio.removeEventListener('loadedmetadata', onMeta);
-      audio.removeEventListener('ended', onEnded);
-    };
-  }, []);
-
-  const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (isPlaying) { audio.pause(); setIsPlaying(false); }
-    else { audio.play(); setIsPlaying(true); }
-  };
-
-  const seek = (val: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = val;
-    setCurrentTime(val);
-  };
-
-  const changeVolume = (val: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.volume = val;
-    setVolume(val);
-    setMuted(val === 0);
-  };
-
-  const toggleMute = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (muted) { audio.volume = volume || 0.8; setMuted(false); }
-    else { audio.volume = 0; setMuted(true); }
-  };
-
-  const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
-  const seekBarRef = useRef<HTMLDivElement>(null);
-
-  const handleSeekClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const bar = seekBarRef.current;
-    if (!bar || !duration) return;
-    const rect = bar.getBoundingClientRect();
-    const percent = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    seek(percent * duration);
-  };
-
-  const handleSeekDrag = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.buttons !== 1) return; // Only on left mouse drag
-    handleSeekClick(e);
-  };
-
-  if (!player) return null;
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 dark:bg-zinc-900/95 sm:backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.15)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)]">
-      <audio ref={audioRef} />
-
-      {/* Progress bar — Spotify-style clickable/draggable */}
-      <div
-        ref={seekBarRef}
-        className="relative w-full h-1.5 group cursor-pointer hover:h-2.5 transition-all duration-150"
-        onClick={handleSeekClick}
-        onMouseMove={handleSeekDrag}
-      >
-        {/* Background track */}
-        <div className="absolute inset-0 bg-zinc-200 dark:bg-zinc-700" />
-        {/* Buffered progress (subtle) */}
-        <div className="absolute inset-y-0 left-0 bg-zinc-300 dark:bg-zinc-600" style={{ width: `${Math.min(progressPercent + 10, 100)}%` }} />
-        {/* Current progress */}
-        <div className="absolute inset-y-0 left-0 bg-gradient-to-r from-purple-500 to-blue-500 transition-[width] duration-100" style={{ width: `${progressPercent}%` }} />
-        {/* Seek thumb — visible on hover */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full bg-white shadow-md border-2 border-purple-500 opacity-0 group-hover:opacity-100 transition-opacity"
-          style={{ left: `${progressPercent}%` }}
-        />
-      </div>
-
-      <div className="flex items-center gap-3 sm:gap-4 px-3 sm:px-5 py-2.5">
-        {/* Cover + Info */}
-        <div className="flex items-center gap-3 min-w-0 flex-1 sm:flex-none sm:w-60">
-          {player.coverUrl
-            ? <img src={player.coverUrl} alt="" loading="lazy" className="h-11 w-11 rounded-lg object-cover flex-shrink-0 shadow-md" />
-            : <div className="h-11 w-11 rounded-lg bg-zinc-200 dark:bg-zinc-700 flex-shrink-0 flex items-center justify-center">
-                <Music className="h-5 w-5 text-zinc-400" />
-              </div>
-          }
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-zinc-900 dark:text-white truncate">{player.trackName}</p>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">{player.artistName}</p>
-          </div>
-        </div>
-
-        {/* Center: Controls + Time */}
-        <div className="hidden sm:flex flex-col items-center gap-0.5 flex-1">
-          <div className="flex items-center gap-3">
-            <button onClick={togglePlay}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-600 text-white hover:from-purple-600 hover:to-blue-700 transition-all shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-105 active:scale-95">
-              {isPlaying
-                ? <Pause className="h-4 w-4" />
-                : <Play className="h-4 w-4 ml-0.5" />}
-            </button>
-          </div>
-          <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-400">
-            <span className="w-10 text-right tabular-nums">{formatTime(currentTime)}</span>
-            <span>/</span>
-            <span className="w-10 tabular-nums">{formatTime(duration)}</span>
-          </div>
-        </div>
-
-        {/* Mobile: play button only */}
-        <div className="sm:hidden">
-          <button onClick={togglePlay}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-blue-600 text-white shadow-lg">
-            {isPlaying
-              ? <Pause className="h-4 w-4" />
-              : <Play className="h-4 w-4 ml-0.5" />}
-          </button>
-        </div>
-
-        {/* Volume + Close */}
-        <div className="hidden sm:flex items-center gap-2 w-48 justify-end">
-          <button onClick={toggleMute} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors">
-            {muted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-          </button>
-          <div className="relative w-20 h-1 group cursor-pointer">
-            <div className="absolute inset-0 rounded-full bg-zinc-200 dark:bg-zinc-700" />
-            <div className="absolute inset-y-0 left-0 rounded-full bg-zinc-400 dark:bg-zinc-400" style={{ width: `${(muted ? 0 : volume) * 100}%` }} />
-            <input
-              type="range"
-              min={0}
-              max={1}
-              step={0.02}
-              value={muted ? 0 : volume}
-              onChange={e => changeVolume(parseFloat(e.target.value))}
-              className="absolute inset-0 w-full opacity-0 cursor-pointer"
-            />
-          </div>
-          <button onClick={onClose} className="ml-1 rounded-full p-1.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-
-        {/* Mobile: time + close */}
-        <div className="sm:hidden flex items-center gap-2 text-[10px] text-zinc-400 font-mono">
-          <span className="tabular-nums">{formatTime(currentTime)}</span>
-          <button onClick={onClose} className="p-1 text-zinc-400">
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+/* ─── Audio player is now global (AudioPlayerContext + GlobalAudioPlayer) ─── */
 
 /* ─── Artist Card ─── */
 
@@ -507,7 +294,7 @@ export default function CatalogDetailPage() {
   const navigate = useNavigate();
 
   // All hooks before early returns
-  const [playerState, setPlayerState] = useState<PlayerState | null>(null);
+  const audioPlayer = useAudioPlayer();
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['catalog-unified-detail', id, type],
@@ -516,7 +303,7 @@ export default function CatalogDetailPage() {
   });
 
   const playTrack = useCallback((url: string, trackName: string, artistName: string, coverUrl?: string) => {
-    setPlayerState({ url: toRawUrl(url), trackName, artistName, coverUrl });
+    audioPlayer.play({ url: toRawUrl(url), trackName, artistName, coverUrl });
   }, []);
 
   if (isLoading) {
@@ -576,7 +363,7 @@ export default function CatalogDetailPage() {
   return (
     <div className="space-y-8 pb-32">
       {/* Bottom Audio Player */}
-      <BottomPlayer player={playerState} onClose={() => setPlayerState(null)} />
+      {/* Global player rendered in App.tsx */}
 
       {/* Back button */}
       <button
@@ -629,14 +416,22 @@ export default function CatalogDetailPage() {
 
             {/* Quick actions */}
             <div className="mt-4 flex flex-wrap gap-2">
-              {firstTrackUrl && (
-                <button
-                  onClick={() => playTrack(firstTrackUrl, assets[0]?.name || 'Track 1', p.displayArtist, coverRawUrl)}
-                  className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 transition-colors shadow"
-                >
-                  <Play className="h-4 w-4 fill-zinc-900" /> Play
-                </button>
-              )}
+              {firstTrackUrl && (() => {
+                const isHeaderPlaying = audioPlayer.track?.url === firstTrackUrl && audioPlayer.isPlaying;
+                return (
+                  <button
+                    onClick={() => {
+                      if (isHeaderPlaying) audioPlayer.togglePlay();
+                      else playTrack(firstTrackUrl, assets[0]?.name || 'Track 1', p.displayArtist, coverRawUrl);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 transition-colors shadow"
+                  >
+                    {isHeaderPlaying
+                      ? <><Pause className="h-4 w-4 fill-zinc-900" /> Pause</>
+                      : <><Play className="h-4 w-4 fill-zinc-900" /> Play</>}
+                  </button>
+                );
+              })()}
               {(p.coverImageUrl || files.coverImageUrl) && (
                 <button
                   onClick={async () => {
@@ -688,7 +483,7 @@ export default function CatalogDetailPage() {
           )}
           {assets.map((asset: any, i: number) => {
             const audioUrl = getAssetAudioUrl(asset);
-            const isActive = playerState?.url === (audioUrl ? toRawUrl(audioUrl) : null);
+            const isActive = audioPlayer.track?.url === (audioUrl ? toRawUrl(audioUrl) : null);
             const title = asset.version ? `${asset.name} (${asset.version})` : asset.name;
 
             return (
@@ -735,8 +530,8 @@ export default function CatalogDetailPage() {
                     <button
                       onClick={e => {
                         e.stopPropagation();
-                        if (isActive && playerState) {
-                          setPlayerState(null);
+                        if (isActive && audioPlayer.isPlaying) {
+                          audioPlayer.togglePlay();
                         } else {
                           playTrack(audioUrl, asset.name, asset.displayArtist || p.displayArtist, coverRawUrl);
                         }
@@ -747,7 +542,7 @@ export default function CatalogDetailPage() {
                           : 'bg-zinc-200 text-zinc-600 opacity-0 group-hover:opacity-100 dark:bg-zinc-600 dark:text-zinc-300'
                       }`}
                     >
-                      {isActive
+                      {isActive && audioPlayer.isPlaying
                         ? <Pause className="h-3 w-3" />
                         : <Play className="h-3 w-3 ml-0.5" />}
                     </button>
