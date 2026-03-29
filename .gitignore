@@ -170,3 +170,10 @@ WARP.md
 deploy*.sh
 check-*.sh
 fix-*.sh
+
+# Auto-generated fix/summary docs
+*_FIX_*.md
+*_SUMMARY*.md
+*_COMPLETE*.md
+*.backup.tsx
+fix_*.py

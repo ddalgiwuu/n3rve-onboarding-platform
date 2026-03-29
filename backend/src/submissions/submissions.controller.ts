@@ -19,10 +19,13 @@ import { User, Prisma } from '@prisma/client';
 import { CreateSubmissionDto } from './dto/create-submission.dto';
 import { FilesService } from '../files/files.service';
 import { DropboxService } from '../dropbox/dropbox.service';
+import { Logger } from '@nestjs/common';
 
 @Controller('submissions')
 @UseGuards(JwtAuthGuard)
 export class SubmissionsController {
+  private readonly logger = new Logger(SubmissionsController.name);
+
   constructor(
     private readonly submissionsService: SubmissionsService,
     private readonly filesService: FilesService,
@@ -78,15 +81,12 @@ export class SubmissionsController {
     },
   ) {
     try {
-      console.log('🔍 [CREATE SUBMISSION] Controller entered');
-      console.log('🔍 [CREATE SUBMISSION] User:', { id: user.id, email: user.email });
-      console.log('🔍 [CREATE SUBMISSION] Body keys:', Object.keys(body));
-      console.log('🔍 [CREATE SUBMISSION] Has files:', files ? Object.keys(files) : 'none');
+      this.logger.log('Submission creation started');
 
       // Handle both FormData and JSON payloads
       let submissionData;
       if (body.releaseData && typeof body.releaseData === 'string') {
-        console.log('🔍 [CREATE SUBMISSION] Parsing FormData submission');
+        this.logger.debug('Parsing FormData submission');
       // FormData submission from consumer form - parse the JSON releaseData field
       const releaseData = JSON.parse(body.releaseData);
       submissionData = {
@@ -168,23 +168,16 @@ export class SubmissionsController {
     // Process files - handle both local uploads and Dropbox URLs from the submission
     let processedFiles;
 
-    console.log('🔍 [FILES] submissionData.files:', submissionData.files);
-    console.log('🔍 [FILES] Multer files:', files ? Object.keys(files) : 'none');
-    console.log('🔍 [FILES] Has multer audioFiles:', !!files?.audioFiles);
+    this.logger.debug('Processing submission files');
 
     // Check if we have Dropbox URLs from frontend OR need to process local files
     const hasDropboxUrls = submissionData.files &&
       (submissionData.files.coverImageUrl || submissionData.files.audioFiles?.length > 0);
     const hasLocalFiles = files && (files.coverArt || files.audioFiles);
 
-    console.log('🔍 [FILES] Decision:', {
-      hasDropboxUrls,
-      hasLocalFiles,
-      willProcessLocal: !hasDropboxUrls && hasLocalFiles
-    });
 
     if (hasDropboxUrls && !hasLocalFiles) {
-      console.log('✅ [FILES] Using Dropbox URLs from frontend');
+      this.logger.debug('Using Dropbox URLs from frontend');
       // Files already contain Dropbox URLs from frontend
       processedFiles = {
         coverImage: submissionData.files.coverImageUrl
@@ -203,13 +196,11 @@ export class SubmissionsController {
         additionalFiles: submissionData.files.additionalFiles || [],
       };
     } else {
-      console.log('🔍 [FILES] Processing local files');
-      console.log('🔍 [FILES] Dropbox configured:', this.dropboxService.isConfigured());
-      console.log('🔍 [FILES] Has files:', !!files);
+      this.logger.debug('Processing local files');
 
       // Upload files to Dropbox if configured
       if (this.dropboxService.isConfigured() && files) {
-        console.log('🔍 [FILES] Using Dropbox upload path');
+        this.logger.debug('Using Dropbox upload path');
         try {
           const submissionId = Date.now().toString(); // Create a unique submission ID
           const artistName = submissionData.artist?.nameKo || 'Unknown Artist';
@@ -238,7 +229,6 @@ export class SubmissionsController {
           
           // Upload audio files
           if (files.audioFiles) {
-            console.log('🔍 [FILES] Processing audioFiles:', files.audioFiles.length);
             files.audioFiles.forEach((file, index) => {
               dropboxFiles.push({
                 buffer: file.buffer,
@@ -247,7 +237,6 @@ export class SubmissionsController {
               });
             });
           } else {
-            console.log('⚠️ [FILES] No audioFiles in multer files');
           }
           
           // Upload motion art
@@ -285,7 +274,7 @@ export class SubmissionsController {
           }
           
           // Upload all files to Dropbox
-          console.log('🔍 [FILES] Uploading to Dropbox:', dropboxFiles.length, 'files');
+          this.logger.log(`Uploading ${dropboxFiles.length} files to Dropbox`);
           const dropboxResults = await this.dropboxService.uploadMultipleFiles(
             dropboxFiles,
             submissionId,
@@ -293,7 +282,6 @@ export class SubmissionsController {
             albumTitle
           );
 
-          console.log('🔍 [FILES] Dropbox upload results keys:', Object.keys(dropboxResults));
 
           // Process the results to match expected format
           processedFiles = {
@@ -345,9 +333,9 @@ export class SubmissionsController {
             additionalFiles: []
           };
           
-          console.log('Files uploaded to Dropbox successfully:', dropboxResults);
+          this.logger.log('Files uploaded to Dropbox successfully');
         } catch (error) {
-          console.error('Error uploading to Dropbox, falling back to local storage:', error);
+          this.logger.warn('Dropbox upload failed, falling back to local storage');
           // Fall back to local file processing
           processedFiles = this.filesService.processSubmissionFiles(
             files ? Object.values(files).flat() : [],
@@ -604,14 +592,11 @@ export class SubmissionsController {
       adminNotes: body.submissionNotes,
     };
 
-      console.log('🔍 [CREATE SUBMISSION] Calling submissionsService.create');
       const result = await this.submissionsService.create(user.id, prismaData);
-      console.log('✅ [CREATE SUBMISSION] Success!', { id: result.id });
+      this.logger.log('Submission created successfully');
       return result;
     } catch (error) {
-      console.error('❌ [CREATE SUBMISSION] Error occurred:', error);
-      console.error('❌ [CREATE SUBMISSION] Error message:', error.message);
-      console.error('❌ [CREATE SUBMISSION] Error stack:', error.stack);
+      this.logger.error('Submission creation failed', error.message);
       throw error;
     }
   }

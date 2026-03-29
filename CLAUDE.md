@@ -6,15 +6,11 @@ npm run type-check: Verify types
 
 ## 📊 Current Platform Status
 
-### 🚀 Production Deployment (Latest)
-- **EC2 Server**: ec2-52-78-81-116.ap-northeast-2.compute.amazonaws.com  
-- **EC2 Instance ID**: i-0fd6de9be4fa199a9
+### Production Deployment
+- **Deployment**: fly.io (n3rve-backend)
 - **Docker Hub**: ddalgiwuu/n3rve-platform:latest
-- **Latest Version**: v1.3.54
-- **Deployment Date**: 2025-07-19
-- **Status**: ✅ LIVE and Running
-- **GitHub Actions**: ✅ Auto-deployment enabled
-- **Database**: MongoDB Atlas (Cloud) - 로컬 MongoDB 사용 X
+- **GitHub Actions**: Auto-deployment enabled
+- **Database**: MongoDB Atlas (Cloud)
 
 ### 🏗️ Major Features Deployed
 1. **JSON-based FUGA QC Management System** 
@@ -118,11 +114,9 @@ npm run type-check: Verify types
    - **Location**: /pages/ReleaseSubmission.tsx line 152
 
 8. **Infrastructure Fixes**
-   - Nginx proxy port correction: 5001 → 3001
+   - Nginx proxy port correction: 5001 -> 3001
    - MongoDB Atlas migration (no local MongoDB)
-   - docker-compose.prod.yml for production deployments
-   - EC2 SSH connectivity improvements
-   - **Nginx Cache Headers**: Disabled caching for JS/CSS files to ensure users get latest code
+   - Migrated from EC2 to fly.io
 
 ### 📁 Reference Implementation
 - **Complete Form**: `/Users/ryansong/Downloads/n3rve-onboarding-platform`
@@ -298,45 +292,18 @@ When simulation is absolutely necessary, I will always ask for permission first 
 - Direct file preview and audio playback from Dropbox in admin dashboard
 - Korean/English bilingual support
 
-### AWS EC2 Instance Connection
-- See private infrastructure docs (NOT in git) for SSH details
-- PEM key required for access
-
-### 🚀 Automated Deployment Process (GitHub Actions)
-#### 자동 배포 (권장)
-1. **Local Development**: 코드 수정 및 테스트
-2. **Git Commit**: `git add .` → `git commit -m "commit message"`
-3. **GitHub Push**: `git push origin main`
-4. **자동 실행**: GitHub Actions가 자동으로:
-   - Docker 이미지 빌드 (linux/amd64)
-   - Docker Hub 푸시 (ddalgiwuu/n3rve-platform)
-   - EC2 자동 배포 (docker-compose.prod.yml 사용)
-   - 상태: Actions 탭에서 확인 가능
-
-#### 수동 배포 (필요시)
-1. **Docker Desktop 실행 필요**
-2. **배포 스크립트**: `./scripts/deploy.sh`
-3. **버전 입력**: v1.3.x 형식으로 입력
-4. **자동 처리**: 빌드, 푸시, 배포 전체 과정
-
-#### 배포 파일 구조
-- `docker-compose.yml`: 로컬 개발용 (MongoDB 포함)
-- `docker-compose.prod.yml`: 프로덕션용 (MongoDB Atlas 사용)
-- `.github/workflows/deploy-docker.yml`: GitHub Actions 워크플로우
+### Automated Deployment Process (GitHub Actions)
+1. `git push origin main` triggers GitHub Actions
+2. Docker image built and pushed to Docker Hub
+3. Deployed to fly.io automatically
 
 ### 📋 Key Management Tasks
 - **QC Rules**: Update JSON files in `/fuga-qc-config/`
 - **Deployment**: Use GitHub Actions (자동) or `./scripts/deploy.sh` (수동)
-- **Monitoring**: Check EC2 instance health regularly
+- **Monitoring**: Check fly.io dashboard
 - **Backup**: Dropbox provides automatic file backup
 - **Troubleshooting**:
-  - EC2 SSH timeout: Reboot instance via AWS Console
-  - Map undefined errors: 
-    - Ask user to clear browser cache (Ctrl+Shift+R or Cmd+Shift+R)
-    - Open in incognito/private window to bypass cache
-    - All arrays now have defensive checks (v1.3.18+)
   - MongoDB connection: Ensure MONGODB_URI points to Atlas, not local
-  - Browser caching issues: Nginx now sends no-cache headers for JS/CSS files
 
 ### 📝 Recent Updates
 
@@ -366,6 +333,3 @@ When simulation is absolutely necessary, I will always ask for permission first 
    - **Cause**: Backend port mismatch
    - **Solution**: Ensure nginx proxy_pass uses port 3001
 
-3. **EC2 Connection Timeout**
-   - **Cause**: Instance instability
-   - **Solution**: Reboot instance from AWS Console

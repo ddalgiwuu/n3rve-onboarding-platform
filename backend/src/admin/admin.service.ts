@@ -187,12 +187,15 @@ export class AdminService {
       throw new Error('User not found');
     }
 
-    return this.prisma.user.update({
+    const updated = await this.prisma.user.update({
       where: { id: userId },
       data: {
         isActive: !user.isActive,
       },
     });
+
+    const { password: _pw, ...safe } = updated;
+    return safe;
   }
 
   async getAllSubmissions(options: PaginationOptions) {
@@ -753,7 +756,7 @@ export class AdminService {
   }) {
     const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
-    return this.prisma.user.create({
+    const created = await this.prisma.user.create({
       data: {
         name: createUserDto.name,
         email: createUserDto.email,
@@ -778,6 +781,9 @@ export class AdminService {
         subAccounts: true,
       },
     });
+
+    const { password: _pw, ...safe } = created;
+    return safe;
   }
 
   // ─── B2B → n3rve-submissions Migration ───────────────────────────

@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class SavedArtistsService {
+  private readonly logger = new Logger(SavedArtistsService.name);
+
   constructor(private prisma: PrismaService) {}
 
   // Helper to convert BigInt fields to Number for JSON serialization
@@ -27,34 +29,8 @@ export class SavedArtistsService {
 
   // Get all saved artists for a user
   async findAllArtists(userId: string, search?: string, limit: number = 50) {
-    console.log('SavedArtistsService: Finding artists for userId:', userId);
-    console.log('SavedArtistsService: userId type:', typeof userId);
-    
-    // First, let's check if there are ANY artists in the database
-    const totalCount = await this.prisma.savedArtist.count();
-    console.log('SavedArtistsService: Total artists in database:', totalCount);
-    
-    // Check artists for this specific user
-    const userArtistCount = await this.prisma.savedArtist.count({
-      where: { userId }
-    });
-    console.log('SavedArtistsService: Artists for this user:', userArtistCount);
-    
-    // Get all artists (for debugging)
-    const allArtists = await this.prisma.savedArtist.findMany({
-      take: 5,
-      select: {
-        id: true,
-        userId: true,
-        name: true,
-        createdAt: true
-      }
-    });
-    // Safe stringify - no BigInt fields in this select
-    console.log('SavedArtistsService: Sample of all artists:', JSON.stringify(allArtists, null, 2));
-    
     const where: Prisma.SavedArtistWhereInput = { userId };
-    
+
     if (search) {
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
@@ -68,25 +44,17 @@ export class SavedArtistsService {
       ];
     }
 
-    console.log('SavedArtistsService: Query where clause:', JSON.stringify(where, null, 2));
-
     const result = await this.prisma.savedArtist.findMany({
       where,
       orderBy: [
-        { createdAt: 'desc' },  // Show recently created artists first
+        { createdAt: 'desc' },
         { usageCount: 'desc' },
         { lastUsed: 'desc' }
       ],
       take: limit,
     });
 
-    console.log('SavedArtistsService: Found artists:', result.length);
-
-    // Convert BigInt fields to Number for JSON serialization
-    const serializable = result.map(artist => this.convertArtistBigInt(artist));
-
-    console.log('SavedArtistsService: Result details:', JSON.stringify(serializable, null, 2));
-    return serializable;
+    return result.map(artist => this.convertArtistBigInt(artist));
   }
 
   // Get all saved contributors for a user
@@ -136,15 +104,11 @@ export class SavedArtistsService {
 
   // Create or update an artist
   async createOrUpdateArtist(userId: string, data: any) {
-    console.log('SavedArtistsService: createOrUpdateArtist called with userId:', userId);
-    console.log('SavedArtistsService: createOrUpdateArtist data:', JSON.stringify(data, null, 2));
-
     try {
       let existingArtist: any = null;
 
       // If ID is provided, this is an explicit update request
       if (data.id) {
-        console.log('SavedArtistsService: Explicit update by ID:', data.id);
         existingArtist = await this.prisma.savedArtist.findFirst({
           where: {
             id: data.id,
@@ -176,7 +140,6 @@ export class SavedArtistsService {
           }));
         }
 
-        console.log('SavedArtistsService: Updating artist with data:', updateData);
         const updatedArtist = await this.prisma.savedArtist.update({
           where: { id: data.id },
           data: updateData
@@ -196,7 +159,7 @@ export class SavedArtistsService {
             await this.prisma.catalogArtist.update({
               where: { id: updatedArtist.catalogArtistId },
               data: catalogUpdateData,
-            }).catch(err => console.warn('SavedArtistsService: CatalogArtist sync failed:', err.message));
+            }).catch(err => this.logger.warn(`CatalogArtist sync failed: ${err.message}`));
           }
         }
 
@@ -204,7 +167,6 @@ export class SavedArtistsService {
       }
 
       // Check if artist already exists - BY NAME FIRST to prevent duplicates
-      console.log('SavedArtistsService: Checking for existing artist by name:', data.name);
       existingArtist = await this.prisma.savedArtist.findFirst({
         where: {
           userId,
@@ -212,16 +174,7 @@ export class SavedArtistsService {
         }
       });
 
-      console.log('SavedArtistsService: Existing artist found:', existingArtist ? 'Yes' : 'No');
       if (existingArtist) {
-        // Convert BigInt before stringify
-        const safeArtist = this.convertArtistBigInt(existingArtist);
-        console.log('SavedArtistsService: Existing artist details:', JSON.stringify(safeArtist, null, 2));
-      }
-
-      if (existingArtist) {
-        console.log('SavedArtistsService: Updating existing artist with ID:', existingArtist.id);
-
         // Build update data - merge new information with existing
         const updateData: any = {
           usageCount: { increment: 1 },
@@ -248,86 +201,30 @@ export class SavedArtistsService {
           where: { id: existingArtist.id },
           data: updateData,
         });
-        console.log('SavedArtistsService: Artist updated successfully:', updatedArtist);
         // Convert BigInt to Number
         return this.convertArtistBigInt(updatedArtist);
       }
 
       // Create new artist
-      console.log('SavedArtistsService: Creating new artist...');
-      console.log('SavedArtistsService: Artist data to create:', {
-        userId,
-        name: data.name,
-        translations: data.translations || [],
-        identifiers: data.identifiers || []
+      const newArtist = await this.prisma.savedArtist.create({
+        data: {
+          userId,
+          name: data.name,
+          translations: data.translations || [],
+          identifiers: data.identifiers || [],
+          completionScore: BigInt(0),
+          createdAt: new Date(),
+          lastUsed: new Date(),
+          releaseCount: BigInt(0),
+          status: 'ACTIVE',
+          updatedAt: new Date(),
+          usageCount: BigInt(0),
+        },
       });
-      
-      console.log('SavedArtistsService: Attempting to create artist with Prisma...');
-      console.log('SavedArtistsService: Prisma data object:', JSON.stringify({
-        userId,
-        name: data.name,
-        translations: data.translations || [],
-        identifiers: data.identifiers || []
-      }, null, 2));
 
-      let newArtist;
-      try {
-        // For composite types in MongoDB, assign directly without { set: ... }
-        newArtist = await this.prisma.savedArtist.create({
-          data: {
-            userId,
-            name: data.name,
-            translations: data.translations || [],
-            identifiers: data.identifiers || [],
-            completionScore: BigInt(0),
-            createdAt: new Date(),
-            lastUsed: new Date(),
-            releaseCount: BigInt(0),
-            status: 'ACTIVE',
-            updatedAt: new Date(),
-            usageCount: BigInt(0),
-          },
-        });
-        console.log('SavedArtistsService: Prisma create successful');
-        // Convert BigInt before stringify
-        const safeNewArtist = this.convertArtistBigInt(newArtist);
-        console.log('SavedArtistsService: New artist created successfully:', JSON.stringify(safeNewArtist, null, 2));
-      } catch (createError) {
-        console.error('SavedArtistsService: Prisma create failed:', createError);
-        console.error('SavedArtistsService: Create error message:', createError.message);
-        console.error('SavedArtistsService: Create error code:', createError.code);
-        console.error('SavedArtistsService: Create error stack:', createError.stack);
-        throw createError;
-      }
-      
-      // Verify the artist was actually saved
-      console.log('SavedArtistsService: Verifying artist was saved...');
-      try {
-        const verifyArtist = await this.prisma.savedArtist.findUnique({
-          where: { id: newArtist.id }
-        });
-        console.log('SavedArtistsService: Verification - artist exists in DB:', verifyArtist ? 'YES' : 'NO');
-        if (verifyArtist) {
-          // Convert BigInt before stringify
-          const safeVerifyArtist = this.convertArtistBigInt(verifyArtist);
-          console.log('SavedArtistsService: Verified artist data:', JSON.stringify(safeVerifyArtist, null, 2));
-        } else {
-          console.warn('SavedArtistsService: WARNING - Artist created but not found in verification!');
-        }
-      } catch (verifyError) {
-        console.error('SavedArtistsService: Verification error:', verifyError);
-      }
-      
-      // Also count total artists to confirm
-      const totalAfterCreate = await this.prisma.savedArtist.count();
-      console.log('SavedArtistsService: Total artists after create:', totalAfterCreate);
-
-      // Convert BigInt to Number
       return this.convertArtistBigInt(newArtist);
     } catch (error) {
-      console.error('SavedArtistsService: Error in createOrUpdateArtist:', error);
-      console.error('SavedArtistsService: Error details:', error.message);
-      console.error('SavedArtistsService: Error stack:', error.stack);
+      this.logger.error(`Failed to create/update artist: ${error.message}`);
       throw error;
     }
   }

@@ -1991,20 +1991,38 @@ export default function Step3TrackInfo({ data, onNext }: Props) {
         ? `필수 입력 항목을 확인해주세요:\n${errors.join('\n')}`
         : `Please fill in required fields:\n${errors.join('\n')}`;
 
-      // Show error in a prominent way
+      // Show error in a prominent way using safe DOM methods (no innerHTML/XSS)
       const errorDiv = document.createElement('div');
       errorDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 z-50 bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg max-w-md';
-      errorDiv.innerHTML = `
-        <div class="flex items-start gap-3">
-          <svg class="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <div>
-            <div class="font-semibold mb-1">${language === 'ko' ? '필수 입력 항목 누락' : 'Required Fields Missing'}</div>
-            <div class="text-sm">${errors[0]}</div>
-          </div>
-        </div>
-      `;
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'flex items-start gap-3';
+
+      const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      svg.setAttribute('class', 'w-6 h-6 flex-shrink-0');
+      svg.setAttribute('fill', 'none');
+      svg.setAttribute('viewBox', '0 0 24 24');
+      svg.setAttribute('stroke', 'currentColor');
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+      path.setAttribute('stroke-width', '2');
+      path.setAttribute('d', 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z');
+      svg.appendChild(path);
+
+      const textContainer = document.createElement('div');
+      const titleEl = document.createElement('div');
+      titleEl.className = 'font-semibold mb-1';
+      titleEl.textContent = language === 'ko' ? '필수 입력 항목 누락' : 'Required Fields Missing';
+      const messageEl = document.createElement('div');
+      messageEl.className = 'text-sm';
+      messageEl.textContent = errors[0];
+      textContainer.appendChild(titleEl);
+      textContainer.appendChild(messageEl);
+
+      wrapper.appendChild(svg);
+      wrapper.appendChild(textContainer);
+      errorDiv.appendChild(wrapper);
       document.body.appendChild(errorDiv);
       setTimeout(() => {
         errorDiv.remove();

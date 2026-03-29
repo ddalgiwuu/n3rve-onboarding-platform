@@ -58,14 +58,8 @@ export class AuthController {
         `${frontendUrl}/auth/callback?access_token=${result.access_token}&refresh_token=${result.refresh_token}&profile_complete=${profileComplete}`,
       );
     } catch (error) {
-      // Return a JSON error response
       res.status(500).json({
-        error: 'OAuth callback failed',
-        message: error.message || 'Unknown error',
-        details: process.env.NODE_ENV === 'development' ? {
-          stack: error.stack,
-          user: req.user,
-        } : undefined,
+        error: 'Authentication failed',
       });
     }
   }

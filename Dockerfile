@@ -20,11 +20,13 @@ RUN rm -rf node_modules package-lock.json 2>/dev/null || true && npm install --s
 
 COPY frontend/ ./
 
-# Set production environment variables for build
-ENV VITE_API_URL=https://n3rve-onboarding.com/api
-ENV VITE_WS_URL=wss://n3rve-onboarding.com
-ARG VITE_DROPBOX_CLIENT_ID=slffi4mfztfohqd
-ARG VITE_DROPBOX_APP_KEY=slffi4mfztfohqd
+# Set production environment variables for build (values from build args)
+ARG VITE_API_URL=https://n3rve-onboarding.com/api
+ARG VITE_WS_URL=wss://n3rve-onboarding.com
+ARG VITE_DROPBOX_CLIENT_ID
+ARG VITE_DROPBOX_APP_KEY
+ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_WS_URL=${VITE_WS_URL}
 ENV VITE_DROPBOX_CLIENT_ID=${VITE_DROPBOX_CLIENT_ID}
 ENV VITE_DROPBOX_APP_KEY=${VITE_DROPBOX_APP_KEY}
 ENV VITE_DROPBOX_REDIRECT_URI=https://n3rve-onboarding.com/dropbox-callback
