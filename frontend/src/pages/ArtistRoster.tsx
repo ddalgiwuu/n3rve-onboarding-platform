@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -14,8 +14,9 @@ import {
 import { clsx } from 'clsx';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '@/hooks/useTranslationFixed';
-import ArtistManagementModal from '@/components/ArtistManagementModal';
 import api from '@/lib/api';
+
+const ArtistManagementModal = lazy(() => import('@/components/ArtistManagementModal'));
 
 interface SavedArtist {
   id: string;
@@ -390,14 +391,16 @@ export default function ArtistRoster() {
         )}
       </div>
 
-      {/* Artist Detail Modal */}
+      {/* Artist Detail Modal — lazy-loaded (1042 lines, only when editing) */}
       {editingArtist && (
-        <ArtistManagementModal
-          isOpen={editingArtist !== null}
-          onClose={() => setEditingArtist(null)}
-          artist={editingArtist}
-          mode="edit"
-        />
+        <Suspense fallback={null}>
+          <ArtistManagementModal
+            isOpen={editingArtist !== null}
+            onClose={() => setEditingArtist(null)}
+            artist={editingArtist}
+            mode="edit"
+          />
+        </Suspense>
       )}
     </div>
   );

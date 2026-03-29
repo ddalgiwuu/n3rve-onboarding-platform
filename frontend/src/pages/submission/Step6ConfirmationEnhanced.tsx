@@ -77,7 +77,7 @@ export default function Step6ConfirmationEnhanced({ data, onNext, isSubmitting }
       }
 
       // ISRC duplicate check
-      const isrcCodes = trackList.filter(t => t.isrc).map(t => t.isrc);
+      const isrcCodes = trackList.reduce<string[]>((acc, t) => { if (t.isrc) acc.push(t.isrc); return acc; }, []);
       const duplicateIsrc = isrcCodes.find((code, index) => isrcCodes.indexOf(code) !== index);
       if (duplicateIsrc) {
         issues.push({

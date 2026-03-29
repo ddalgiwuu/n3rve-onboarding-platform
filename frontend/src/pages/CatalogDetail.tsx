@@ -728,12 +728,14 @@ export default function CatalogDetailPage() {
           <div className="mt-4">
             <p className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-widest mb-2">Social Links</p>
             <div className="flex flex-wrap gap-2">
-              {(Object.entries(p.socialLinks) as [string, string][]).filter(([, url]) => !!url).map(([platform, url]) => (
-                <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 transition-colors">
-                  {platform} <ExternalLink className="h-3 w-3" />
-                </a>
-              ))}
+              {(Object.entries(p.socialLinks) as [string, string][]).flatMap(([platform, url]) =>
+                url ? [(
+                  <a key={platform} href={url} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-3 py-1 text-sm text-zinc-600 hover:bg-zinc-200 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600 transition-colors">
+                    {platform} <ExternalLink className="h-3 w-3" />
+                  </a>
+                )] : []
+              )}
             </div>
           </div>
         )}

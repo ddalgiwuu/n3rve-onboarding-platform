@@ -137,7 +137,7 @@ export default function MarketingSubmission() {
       setMotionArtwork(m.motionArtwork || submission.release?.motionArtwork || false);
 
       // Focus tracks
-      const focusTracks = m.focusTrackIds || submission.tracks?.filter((t: any) => t.isFocusTrack).map((t: any) => t.id) || [];
+      const focusTracks = m.focusTrackIds || submission.tracks?.reduce((acc: string[], t: any) => { if (t.isFocusTrack) acc.push(t.id); return acc; }, []) || [];
       setFocusTrackIds(focusTracks);
 
       // Primary Artist

@@ -265,6 +265,17 @@ export default function CatalogPage() {
               <div
                 key={item.catalogProductId || item.submissionId}
                 className="cursor-pointer overflow-hidden rounded-lg border border-zinc-200 bg-white transition-shadow hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+                onMouseEnter={() => {
+                  const id = item.catalogProductId || item.submissionId;
+                  const type = item.catalogProductId ? 'catalog' : 'submission';
+                  if (id) {
+                    queryClient.prefetchQuery({
+                      queryKey: ['catalog-unified-detail', id, type],
+                      queryFn: () => catalogApi.getUnifiedProduct(id, type).then(r => r.data),
+                      staleTime: 30_000,
+                    });
+                  }
+                }}
                 onClick={() => {
                   if (item.catalogProductId) {
                     navigate(`/admin/catalog/${item.catalogProductId}`);
@@ -348,6 +359,17 @@ export default function CatalogPage() {
                   <tr
                     key={item.catalogProductId || item.submissionId}
                     className="cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                    onMouseEnter={() => {
+                      const id = item.catalogProductId || item.submissionId;
+                      const type = item.catalogProductId ? 'catalog' : 'submission';
+                      if (id) {
+                        queryClient.prefetchQuery({
+                          queryKey: ['catalog-unified-detail', id, type],
+                          queryFn: () => catalogApi.getUnifiedProduct(id, type).then(r => r.data),
+                          staleTime: 30_000,
+                        });
+                      }
+                    }}
                     onClick={() => {
                   if (item.catalogProductId) {
                     navigate(`/admin/catalog/${item.catalogProductId}`);

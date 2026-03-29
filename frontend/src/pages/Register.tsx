@@ -7,6 +7,13 @@ import { useAuthStore } from '@/store/auth.store';
 import toast from 'react-hot-toast';
 import { logger } from '@/utils/logger';
 
+// Hoisted regex patterns — avoids re-creation on every render/call
+const RE_LOWERCASE = /[a-z]/;
+const RE_UPPERCASE = /[A-Z]/;
+const RE_DIGIT = /\d/;
+const RE_SPECIAL = /[^a-zA-Z\d]/;
+const RE_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function Register() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -71,9 +78,9 @@ export default function Register() {
 
     if (password.length >= 8) strength += 20;
     if (password.length >= 12) strength += 20;
-    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 20;
-    if (/\d/.test(password)) strength += 20;
-    if (/[^a-zA-Z\d]/.test(password)) strength += 20;
+    if (RE_LOWERCASE.test(password) && RE_UPPERCASE.test(password)) strength += 20;
+    if (RE_DIGIT.test(password)) strength += 20;
+    if (RE_SPECIAL.test(password)) strength += 20;
 
     setPasswordStrength(strength);
     setFieldValid(prev => ({ ...prev, password: strength >= 60 }));
@@ -81,11 +88,10 @@ export default function Register() {
 
   // Real-time validation
   const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
       setFieldErrors(prev => ({ ...prev, email: '' }));
       setFieldValid(prev => ({ ...prev, email: false }));
-    } else if (!emailRegex.test(email)) {
+    } else if (!RE_EMAIL.test(email)) {
       setFieldErrors(prev => ({ ...prev, email: t('올바른 이메일 형식이 아닙니다', 'Invalid email format', '無効なメール形式です') }));
       setFieldValid(prev => ({ ...prev, email: false }));
     } else {
@@ -131,9 +137,9 @@ export default function Register() {
 
   const passwordRequirements = [
     { met: formData.password.length >= 8, text: t('8자 이상', '8+ characters', '8文字以上') },
-    { met: /[a-z]/.test(formData.password) && /[A-Z]/.test(formData.password), text: t('대소문자 포함', 'Upper & lowercase', '大文字と小文字') },
-    { met: /\d/.test(formData.password), text: t('숫자 포함', 'Numbers', '数字を含む') },
-    { met: /[^a-zA-Z\d]/.test(formData.password), text: t('특수문자 포함', 'Special characters', '特殊文字') }
+    { met: RE_LOWERCASE.test(formData.password) && RE_UPPERCASE.test(formData.password), text: t('대소문자 포함', 'Upper & lowercase', '大文字と小文字') },
+    { met: RE_DIGIT.test(formData.password), text: t('숫자 포함', 'Numbers', '数字を含む') },
+    { met: RE_SPECIAL.test(formData.password), text: t('특수문자 포함', 'Special characters', '特殊文字') }
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {

@@ -1315,11 +1315,11 @@ const ImprovedReleaseSubmissionContent: React.FC = () => {
           contributors: t.contributors || [],
           // Extract composers, lyricists, arrangers from contributors
           composer: t.composers?.map(c => c.name).join(', ') ||
-                    t.contributors?.filter(c => c.role === 'composer').map(c => c.name).join(', ') || '',
+                    t.contributors?.reduce((acc: string[], c) => { if (c.role === 'composer') acc.push(c.name); return acc; }, []).join(', ') || '',
           lyricist: t.lyricists?.map(c => c.name).join(', ') ||
-                    t.contributors?.filter(c => c.role === 'lyricist').map(c => c.name).join(', ') || '',
+                    t.contributors?.reduce((acc: string[], c) => { if (c.role === 'lyricist') acc.push(c.name); return acc; }, []).join(', ') || '',
           arranger: t.arrangers?.map(c => c.name).join(', ') ||
-                    t.contributors?.filter(c => c.role === 'arranger').map(c => c.name).join(', ') || '',
+                    t.contributors?.reduce((acc: string[], c) => { if (c.role === 'arranger') acc.push(c.name); return acc; }, []).join(', ') || '',
           isTitle: t.isTitle || false,
           isFocusTrack: false, // TODO: Add field to Track interface if needed
           isrc: t.isrc || '',
