@@ -236,8 +236,25 @@ function BottomPlayer({
     if (!player) return;
     const audio = audioRef.current;
     if (!audio) return;
-    audio.src = player.url;
-    audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+
+    // Get streamable URL from backend (resolves Dropbox temporary link)
+    const loadAndPlay = async () => {
+      let streamUrl = player.url;
+      try {
+        if (player.url.includes('dropbox.com')) {
+          const { default: api } = await import('../lib/api');
+          const res = await api.get('/catalog/audio/stream-url', {
+            params: { url: player.url },
+          });
+          if (res.data?.url) streamUrl = res.data.url;
+        }
+      } catch { /* fallback to original URL */ }
+
+      audio.src = streamUrl;
+      audio.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false));
+    };
+
+    loadAndPlay();
   }, [player?.url]);
 
   useEffect(() => {

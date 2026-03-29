@@ -2,6 +2,7 @@ import {
   Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Request, ForbiddenException,
 } from '@nestjs/common';
 import { CatalogService } from './catalog.service';
+import { DropboxService } from '../dropbox/dropbox.service';
 import { Public } from '../auth/decorators/public.decorator';
 import { ApiKeyAuth } from '../auth/decorators/api-key.decorator';
 import { ApiKeyGuard } from '../auth/guards/api-key.guard';
@@ -10,7 +11,10 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
 @Controller('catalog')
 export class CatalogController {
-  constructor(private readonly catalogService: CatalogService) {}
+  constructor(
+    private readonly catalogService: CatalogService,
+    private readonly dropboxService: DropboxService,
+  ) {}
 
   // ==================== SYNC (API Key auth) ====================
 
@@ -194,6 +198,20 @@ export class CatalogController {
   async fuga2FAStatus(@CurrentUser() user: any) {
     if (user.role !== 'ADMIN') throw new ForbiddenException();
     return { requires2FA: this.catalogService.fugaRequires2FA() };
+  }
+
+  // ==================== AUDIO STREAMING ====================
+
+  @Get('audio/stream-url')
+  @UseGuards(JwtAuthGuard)
+  async getAudioStreamUrl(@Query('url') url: string) {
+    if (!url) throw new ForbiddenException('URL parameter required');
+    // Only allow Dropbox URLs for security
+    if (!url.includes('dropbox.com')) {
+      throw new ForbiddenException('Only Dropbox URLs are supported');
+    }
+    const streamUrl = await this.dropboxService.getTemporaryLink(url);
+    return { url: streamUrl };
   }
 
   @Get('unlinked')

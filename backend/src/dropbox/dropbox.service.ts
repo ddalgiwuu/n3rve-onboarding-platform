@@ -225,6 +225,30 @@ export class DropboxService {
   }
 
   /**
+   * Get a temporary direct download link for a shared URL.
+   * Returns a URL that can be used directly in <audio> or <img> tags.
+   * Link is valid for ~4 hours.
+   */
+  async getTemporaryLink(sharedUrl: string): Promise<string> {
+    try {
+      // Extract the path from the shared link by resolving it
+      const metadata = await this.dbx.sharingGetSharedLinkMetadata({ url: sharedUrl });
+      const filePath = metadata.result.path_lower;
+      if (!filePath) throw new Error('Could not resolve file path from shared link');
+
+      const response = await this.dbx.filesGetTemporaryLink({ path: filePath });
+      return response.result.link;
+    } catch (error) {
+      // Fallback: try converting shared URL to dl format
+      const dlUrl = sharedUrl
+        .replace('www.dropbox.com', 'dl.dropboxusercontent.com')
+        .replace('dl=0', 'dl=1')
+        .replace('raw=1', 'dl=1');
+      return dlUrl;
+    }
+  }
+
+  /**
    * Delete a folder and all contents
    */
   async deleteFolder(path: string): Promise<void> {
