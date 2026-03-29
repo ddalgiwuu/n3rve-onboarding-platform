@@ -1917,7 +1917,13 @@
 }
 
 .dark .neuro-raised {
-  box-shadow: 
+  box-shadow:
     4px 4px 12px rgba(0, 0, 0, 0.3),
     -4px -4px 12px rgba(255, 255, 255, 0.02);
+}
+
+/* Performance: skip rendering for offscreen content */
+.content-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 200px;
 }

@@ -91,10 +91,10 @@ export default function CatalogArtistsPage() {
               value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1); }}
               placeholder="아티스트 이름 검색..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white/80 dark:bg-white/5 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500/40 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 bg-white/80 dark:bg-white/5 sm:backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-xl text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500/40 transition-all"
             />
           </div>
-          <div className="flex items-center gap-1.5 p-1 bg-white/60 dark:bg-white/5 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-xl">
+          <div className="flex items-center gap-1.5 p-1 bg-white/60 dark:bg-white/5 sm:backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-xl">
             {(['all', 'ARTIST', 'CONTRIBUTOR'] as const).map((type) => (
               <button
                 key={type}
@@ -118,13 +118,13 @@ export default function CatalogArtistsPage() {
             <div className="inline-block w-8 h-8 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
           </div>
         ) : artists.length > 0 ? (
-          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          <div className="grid gap-3 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
               {artists.map((artist: CatalogArtist) => (
                 <div
                   key={artist.id}
                   className={clsx(
                     'relative overflow-hidden rounded-2xl cursor-pointer group',
-                    'bg-white dark:bg-zinc-800/80 backdrop-blur-xl',
+                    'bg-white dark:bg-zinc-800/80 sm:backdrop-blur-xl',
                     'border border-gray-100 dark:border-zinc-700/60',
                     'hover:border-purple-400/50 dark:hover:border-purple-500/40',
                     'hover:shadow-lg hover:shadow-purple-500/10 dark:hover:shadow-purple-500/5',
@@ -201,7 +201,7 @@ export default function CatalogArtistsPage() {
               ))}
           </div>
         ) : (
-          <div className="text-center py-20 bg-white/60 dark:bg-white/5 backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl">
+          <div className="text-center py-20 bg-white/60 dark:bg-white/5 sm:backdrop-blur-md border border-gray-200 dark:border-white/10 rounded-2xl">
             <Users size={48} className="mx-auto mb-3 text-gray-300 dark:text-gray-600" />
             <p className="text-gray-500 dark:text-gray-400 font-medium">결과 없음</p>
           </div>

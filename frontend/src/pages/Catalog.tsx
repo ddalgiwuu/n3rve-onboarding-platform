@@ -255,7 +255,7 @@ export default function CatalogPage() {
 
       {/* Products Table / Tile View */}
       {viewMode === 'tile' ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" style={{ contentVisibility: 'auto', containIntrinsicSize: '0 500px' }}>
           {tileLoading ? (
             <p className="col-span-full text-center text-zinc-400 py-8">{t('catalog.loading')}</p>
           ) : tileItems.length === 0 ? (

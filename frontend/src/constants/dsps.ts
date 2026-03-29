@@ -1,6 +1,9 @@
 // Digital Service Providers (DSPs) for music distribution
 import { territories } from './territories';
 
+/** Regions blocked from certain DSPs (sanctions / platform restrictions) */
+const BLOCKED_REGIONS = new Set(['CN', 'IR', 'KP', 'CU', 'SY']);
+
 export interface DSP {
   id: string;
   name: string;
@@ -200,7 +203,7 @@ export const dsps: DSP[] = [
     id: 'tiktok',
     name: 'TikTok',
     nameKo: '틱톡',
-    availableRegions: territories.filter(t => !['CN', 'IR', 'KP', 'CU', 'SY'].includes(t.code)).map(t => t.code) // Available worldwide except some countries
+    availableRegions: territories.filter(t => !BLOCKED_REGIONS.has(t.code)).map(t => t.code) // Available worldwide except blocked regions
   },
   {
     id: 'instagram_music',
