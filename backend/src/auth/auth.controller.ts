@@ -74,13 +74,15 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@CurrentUser() user: User) {
-    return user;
+    const { password: _pw, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMe(@CurrentUser() user: User) {
-    return { user };
+    const { password: _pw, ...userWithoutPassword } = user;
+    return { user: userWithoutPassword };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -158,8 +160,11 @@ export class AuthController {
       throw new HttpException('Email, password, and name are required', HttpStatus.BAD_REQUEST);
     }
 
-    if (body.password.length < 8) {
+    if (!body.password || body.password.length < 8) {
       throw new HttpException('Password must be at least 8 characters', HttpStatus.BAD_REQUEST);
+    }
+    if (!/[A-Z]/.test(body.password) || !/[a-z]/.test(body.password) || !/[0-9]/.test(body.password)) {
+      throw new HttpException('Password must contain uppercase, lowercase, and number', HttpStatus.BAD_REQUEST);
     }
 
     try {
@@ -167,7 +172,7 @@ export class AuthController {
       const existingUser = await this.usersService.findOne(body.email);
       
       if (existingUser) {
-        throw new HttpException('Email already exists', HttpStatus.CONFLICT);
+        throw new HttpException('Registration failed. Please try again or use a different email.', HttpStatus.CONFLICT);
       }
 
       // Hash password
@@ -240,7 +245,7 @@ export class AuthController {
 
       // Check if user has a password (was created with email/password)
       if (!user.password || user.provider !== 'EMAIL') {
-        throw new HttpException('Please use Google login for this account', HttpStatus.UNAUTHORIZED);
+        throw new HttpException('Invalid email or password', HttpStatus.UNAUTHORIZED);
       }
 
       // Verify password

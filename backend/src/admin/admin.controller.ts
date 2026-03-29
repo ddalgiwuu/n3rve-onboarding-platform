@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, UseGuards, ForbiddenException, Query, Patch, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, UseGuards, ForbiddenException, Query, Patch, Delete, HttpException, HttpStatus } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Public } from '../auth/decorators/public.decorator';
@@ -92,6 +92,12 @@ export class AdminController {
   ) {
     if (user.role !== 'ADMIN') {
       throw new ForbiddenException('Admin access required');
+    }
+    if (!createUserDto.password || createUserDto.password.length < 8) {
+      throw new HttpException('Password must be at least 8 characters', HttpStatus.BAD_REQUEST);
+    }
+    if (!/[A-Z]/.test(createUserDto.password) || !/[a-z]/.test(createUserDto.password) || !/[0-9]/.test(createUserDto.password)) {
+      throw new HttpException('Password must contain uppercase, lowercase, and number', HttpStatus.BAD_REQUEST);
     }
     return this.adminService.createUser(createUserDto);
   }

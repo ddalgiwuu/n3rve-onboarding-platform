@@ -14,15 +14,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         ? 'https://n3rve-onboarding.com/api/auth/google/callback'
         : 'http://localhost:3001/api/auth/google/callback');
     
-    console.log('Google Strategy Configuration:', {
-      clientID: clientID ? 'configured' : 'missing',
-      clientSecret: clientSecret ? 'configured' : 'missing',
-      callbackURL,
-      NODE_ENV: configService.get<string>('NODE_ENV'),
-    });
-    
     if (!clientID || !clientSecret) {
-      console.error('❌ Google OAuth credentials are missing!');
+      console.error('Google OAuth credentials are missing');
     }
     
     super({
@@ -40,19 +33,12 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: VerifyCallback,
   ): void {
     try {
-      console.log('Google Strategy Validate - Profile received:', {
-        id: profile.id,
-        displayName: profile.displayName,
-        emails: profile.emails?.length || 0,
-      });
-      
       const { displayName, emails, photos, id } = profile;
-      
+
       if (!emails || emails.length === 0) {
-        console.error('❌ No email received from Google');
         return done(new Error('No email received from Google'), false);
       }
-      
+
       const user: GoogleUser = {
         googleId: id,
         email: emails[0].value,
@@ -61,11 +47,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         provider: 'google',
         accessToken,
       };
-      
-      console.log('✅ Google Strategy Validate - User created:', user);
+
       done(null, user);
     } catch (error) {
-      console.error('❌ Google Strategy Validate Error:', error);
       done(error as Error, false);
     }
   }

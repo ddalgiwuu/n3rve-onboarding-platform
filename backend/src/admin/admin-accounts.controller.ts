@@ -80,6 +80,13 @@ export class AdminAccountsController {
   @Post()
   async createAccount(@Body() dto: CreateAccountDto) {
     try {
+      if (!dto.password || dto.password.length < 8) {
+        throw new HttpException('Password must be at least 8 characters', HttpStatus.BAD_REQUEST);
+      }
+      if (!/[A-Z]/.test(dto.password) || !/[a-z]/.test(dto.password) || !/[0-9]/.test(dto.password)) {
+        throw new HttpException('Password must contain uppercase, lowercase, and number', HttpStatus.BAD_REQUEST);
+      }
+
       // Check if email already exists
       const existingUser = await this.prisma.user.findUnique({
         where: { email: dto.email },
@@ -138,6 +145,13 @@ export class AdminAccountsController {
   @Post('sub-account')
   async createSubAccount(@Body() dto: CreateSubAccountDto) {
     try {
+      if (!dto.password || dto.password.length < 8) {
+        throw new HttpException('Password must be at least 8 characters', HttpStatus.BAD_REQUEST);
+      }
+      if (!/[A-Z]/.test(dto.password) || !/[a-z]/.test(dto.password) || !/[0-9]/.test(dto.password)) {
+        throw new HttpException('Password must contain uppercase, lowercase, and number', HttpStatus.BAD_REQUEST);
+      }
+
       // Check if parent account exists and is a company account
       const parentAccount = await this.prisma.user.findUnique({
         where: { id: dto.parentAccountId },
@@ -195,7 +209,8 @@ export class AdminAccountsController {
         },
       });
 
-      return subAccount;
+      const { password: _pw, ...safe } = subAccount;
+      return safe;
     } catch (error) {
       console.error('Error creating sub-account:', error);
       if (error instanceof HttpException) {

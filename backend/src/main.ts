@@ -1,8 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
-import * as express from 'express';
-import { join } from 'path';
 import * as cors from 'cors';
 import helmet from 'helmet';
 
@@ -58,14 +56,7 @@ async function bootstrap() {
     next();
   });
 
-  // Serve static files from uploads directory (with basic auth check)
-  app.use('/uploads', (req, res, next) => {
-    const auth = req.headers.authorization;
-    if (!auth?.startsWith('Bearer ')) {
-      return res.status(401).json({ message: 'Authentication required' });
-    }
-    next();
-  }, express.static(join(__dirname, '..', 'uploads')));
+  // Static /uploads serving removed: files are served from Dropbox.
 
   const port = process.env.PORT ?? 3001;
   await app.listen(port, '0.0.0.0'); // Listen on all interfaces for Fly.io

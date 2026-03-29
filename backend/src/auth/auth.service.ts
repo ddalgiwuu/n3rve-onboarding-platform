@@ -21,7 +21,8 @@ export class AuthService {
     let user = await this.usersService.findUserByGoogleId(googleUser.googleId);
 
     if (!user) {
-      const adminEmails = ['wonseok9706@gmail.com', 'chris@n3rve.com', 'ckalargiros@gmail.com'];
+      const adminEmailsStr = this.configService.get<string>('ADMIN_EMAILS') || '';
+      const adminEmails = adminEmailsStr.split(',').map(e => e.trim()).filter(Boolean);
       const isAdmin = adminEmails.includes(googleUser.email);
 
       user = await this.usersService.createUser({
@@ -43,7 +44,8 @@ export class AuthService {
         },
       });
     } else {
-      const adminEmails = ['wonseok9706@gmail.com', 'chris@n3rve.com', 'ckalargiros@gmail.com'];
+      const adminEmailsStr = this.configService.get<string>('ADMIN_EMAILS') || '';
+      const adminEmails = adminEmailsStr.split(',').map(e => e.trim()).filter(Boolean);
       const isAdmin = adminEmails.includes(user.email);
 
       if (isAdmin && user.role !== 'ADMIN') {

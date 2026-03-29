@@ -45,7 +45,17 @@ export class SubmissionsController {
       { name: 'musicVideoThumbnails', maxCount: 10 },
       { name: 'lyricsFiles', maxCount: 50 },
       { name: 'marketingAssets', maxCount: 20 },
-    ]),
+    ], {
+      limits: { fileSize: 500 * 1024 * 1024 },
+      fileFilter: (_req, file, cb) => {
+        const allowed = /\.(wav|mp3|flac|aiff|aac|ogg|jpg|jpeg|png|gif|webp|mp4|mov|avi|pdf|doc|docx|xlsx)$/i;
+        if (!allowed.test(file.originalname)) {
+          cb(new Error('Invalid file type'), false);
+        } else {
+          cb(null, true);
+        }
+      },
+    }),
   )
   async create(
     @CurrentUser() user: User,
