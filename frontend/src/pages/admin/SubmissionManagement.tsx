@@ -94,6 +94,7 @@ const SubmissionManagement: React.FC = () => {
   const [adminNotes, setAdminNotes] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedSubmissions, setSelectedSubmissions] = useState<Set<string>>(new Set());
+  const [submissionViewMode, setSubmissionViewMode] = useState<'tile' | 'table'>('tile');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
   const [activeTab, setActiveTab] = useState<'details' | 'overview' | 'history'>('details');
   const [stats, setStats] = useState({
@@ -707,13 +708,101 @@ const SubmissionManagement: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
+        <div>
+          {/* View mode toggle */}
+          <div className="flex items-center justify-end mb-3 gap-1">
+            <div className="flex gap-1 rounded-lg border border-gray-200 p-0.5 dark:border-gray-600">
+              <button
+                className={`rounded-md p-1.5 ${submissionViewMode === 'tile' ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
+                onClick={() => setSubmissionViewMode('tile')}
+              >
+                <LayoutGrid className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </button>
+              <button
+                className={`rounded-md p-1.5 ${submissionViewMode === 'table' ? 'bg-gray-200 dark:bg-gray-600' : ''}`}
+                onClick={() => setSubmissionViewMode('table')}
+              >
+                <ListIcon className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+              </button>
+            </div>
+          </div>
+
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
             </div>
+          ) : submissionViewMode === 'tile' ? (
+            /* Tile View */
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {paginatedSubmissions.map((submission: any) => (
+                <div
+                  key={submission.id}
+                  className="cursor-pointer overflow-hidden rounded-xl border border-gray-200 bg-white transition-all hover:shadow-lg hover:-translate-y-0.5 dark:border-gray-700 dark:bg-gray-800"
+                  onClick={() => { setSelectedSubmission(submission); setShowDetailModal(true); }}
+                >
+                  {/* Cover Art */}
+                  <div className="relative aspect-square bg-gray-100 dark:bg-gray-700">
+                    {submission.files?.coverArt || submission.coverImageUrl ? (
+                      <img
+                        src={submission.files?.coverArt || submission.coverImageUrl}
+                        alt={submission.albumTitle}
+                        loading="lazy"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <Music className="h-12 w-12 text-gray-300 dark:text-gray-600" />
+                      </div>
+                    )}
+                    {/* Status Badge */}
+                    <div className="absolute top-2 left-2">
+                      <span className={cn(
+                        'px-2 py-0.5 rounded-full text-[10px] font-bold uppercase',
+                        submission.status === 'pending' && 'bg-yellow-500 text-white',
+                        submission.status === 'approved' && 'bg-green-500 text-white',
+                        submission.status === 'rejected' && 'bg-red-500 text-white',
+                        !submission.status && 'bg-gray-500 text-white',
+                      )}>
+                        {submission.status === 'pending' ? t('대기중', 'Pending') :
+                         submission.status === 'approved' ? t('승인됨', 'Approved') :
+                         submission.status === 'rejected' ? t('거절됨', 'Rejected') :
+                         t('미정', 'Unknown')}
+                      </span>
+                    </div>
+                    {/* Track count */}
+                    <div className="absolute bottom-2 right-2 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded">
+                      {submission.tracks?.length || submission.trackCount || 0} {t('트랙', 'tracks')}
+                    </div>
+                  </div>
+                  {/* Info */}
+                  <div className="p-3">
+                    <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                      {submission.albumTitle || '-'}
+                    </h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                      {submission.artistName || '-'}
+                    </p>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-[10px] text-gray-400">
+                        {submission.labelName || '-'}
+                      </span>
+                      <span className="text-[10px] text-gray-400">
+                        {new Date(submission.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {paginatedSubmissions.length === 0 && (
+                <div className="col-span-full text-center py-12 text-gray-400">
+                  {t('제출된 항목이 없습니다', 'No submissions found')}
+                </div>
+              )}
+            </div>
           ) : (
+            /* Table View */
             <>
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 dark:bg-gray-700">
@@ -779,7 +868,7 @@ const SubmissionManagement: React.FC = () => {
                               {submission.albumTitle || '-'}
                             </div>
                             <div className="text-sm text-gray-500 dark:text-gray-400">
-                              {submission.tracks?.length || 0} {t('트랙', 'tracks')}
+                              {submission.tracks?.length || submission.trackCount || 0} {t('트랙', 'tracks')}
                             </div>
                           </div>
                         </td>
@@ -895,6 +984,7 @@ const SubmissionManagement: React.FC = () => {
                   </div>
                 </div>
               )}
+              </div>
             </>
           )}
         </div>
