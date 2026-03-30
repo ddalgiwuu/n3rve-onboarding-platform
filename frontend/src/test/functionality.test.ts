@@ -138,7 +138,7 @@ describe('Navigation & Buttons', () => {
 
   it('CatalogDetail has back navigation', () => {
     const content = readFile('src/pages/CatalogDetail.tsx');
-    expect(content).toMatch(/navigate.*-1|카탈로그로 돌아가기|뒤로/);
+    expect(content).toMatch(/navigate.*-1|backToCatalog|카탈로그로 돌아가기|뒤로/);
   });
 
   it('CatalogArtists has search input', () => {
@@ -368,7 +368,7 @@ describe('Catalog Detail Features', () => {
 
   it('has cover art download button', () => {
     const content = readFile('src/pages/CatalogDetail.tsx');
-    expect(content).toMatch(/Download Cover|다운로드/i);
+    expect(content).toMatch(/downloadCover|Download Cover|다운로드/i);
   });
 
   it('tracks are clickable (navigate to track detail)', () => {

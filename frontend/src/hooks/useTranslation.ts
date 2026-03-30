@@ -101,6 +101,10 @@ const translations = {
     'catalogDetail.marketing': '마케팅',
     'catalogDetail.submissionInfo': '제출 정보',
     'catalogDetail.downloadCover': '커버 다운로드',
+    'catalogDetail.qcLog': 'QC 로그',
+    'catalogDetail.dspMemo': 'DSP 메모',
+    'catalogDetail.approve': '승인',
+    'catalogDetail.reject': '거절',
 
     // CatalogArtists page
     'catalogArtists.title': '카탈로그 아티스트',
@@ -387,6 +391,10 @@ const translations = {
     'catalogDetail.marketing': 'Marketing',
     'catalogDetail.submissionInfo': 'Submission Info',
     'catalogDetail.downloadCover': 'Download Cover',
+    'catalogDetail.qcLog': 'QC Log',
+    'catalogDetail.dspMemo': 'DSP Memo',
+    'catalogDetail.approve': 'Approve',
+    'catalogDetail.reject': 'Reject',
 
     // CatalogArtists page
     'catalogArtists.title': 'Catalog Artists',
@@ -673,6 +681,10 @@ const translations = {
     'catalogDetail.marketing': 'マーケティング',
     'catalogDetail.submissionInfo': '提出情報',
     'catalogDetail.downloadCover': 'カバーダウンロード',
+    'catalogDetail.qcLog': 'QCログ',
+    'catalogDetail.dspMemo': 'DSPメモ',
+    'catalogDetail.approve': '承認',
+    'catalogDetail.reject': '拒否',
 
     // CatalogArtists page
     'catalogArtists.title': 'カタログアーティスト',

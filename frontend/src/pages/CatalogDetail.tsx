@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, lazy, Suspense } from 'react';
 import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, Music, ChevronDown, ChevronRight,
   ExternalLink, Disc3, Users, MessageSquare,
-  ClipboardList, Send,
+  ClipboardList, Send, Copy,
   Play, Download, Pause,
   Mic2, Pencil, Trash2, Plus,
 } from 'lucide-react';
@@ -12,6 +12,10 @@ import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { useTranslation } from '../hooks/useTranslation';
+import { useAuthStore } from '../store/auth.store';
+
+const QCLogTab = lazy(() => import('../components/admin/QCLogTab'));
+const DSPMemoTab = lazy(() => import('../components/admin/DSPMemoTab'));
 
 /* ─── Utility ─── */
 
@@ -31,6 +35,18 @@ function Section({ title, icon: Icon, children, defaultOpen = true, accent }: {
   title: string; icon: any; children: React.ReactNode; defaultOpen?: boolean; accent?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
+  const [copied, setCopied] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const text = contentRef.current?.innerText || '';
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+
   return (
     <div className="rounded-xl border border-zinc-200 bg-white dark:border-zinc-700/60 dark:bg-zinc-800/80 overflow-hidden shadow-sm">
       <button
@@ -43,11 +59,23 @@ function Section({ title, icon: Icon, children, defaultOpen = true, accent }: {
           </span>
           <h2 className="font-semibold text-zinc-900 dark:text-white text-base">{title}</h2>
         </div>
-        {open
-          ? <ChevronDown className="h-4 w-4 text-zinc-400" />
-          : <ChevronRight className="h-4 w-4 text-zinc-400" />}
+        <div className="flex items-center gap-2">
+          <span
+            role="button"
+            tabIndex={0}
+            aria-label="Copy section content"
+            onClick={handleCopy}
+            onKeyDown={(e) => e.key === 'Enter' && handleCopy(e as any)}
+            className={`flex h-6 w-6 items-center justify-center rounded transition-colors ${copied ? 'text-emerald-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'}`}
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </span>
+          {open
+            ? <ChevronDown className="h-4 w-4 text-zinc-400" />
+            : <ChevronRight className="h-4 w-4 text-zinc-400" />}
+        </div>
       </button>
-      {open && <div className="p-7">{children}</div>}
+      {open && <div className="p-7" ref={contentRef}>{children}</div>}
     </div>
   );
 }
@@ -299,6 +327,8 @@ export default function CatalogDetailPage() {
 
   // All hooks before early returns
   const audioPlayer = useAudioPlayer();
+  const { user } = useAuthStore();
+  const isAdmin = user?.role === 'ADMIN';
 
   const { data: product, isLoading } = useQuery({
     queryKey: ['catalog-unified-detail', id, type],
@@ -464,6 +494,16 @@ export default function CatalogDetailPage() {
                 >
                   <Download className="h-4 w-4" /> {t('catalogDetail.downloadCover')}
                 </button>
+              )}
+              {isAdmin && p.submissionId && (
+                <div className="flex gap-2">
+                  <button className="inline-flex items-center gap-1.5 rounded-full border border-green-400/30 bg-green-500/10 px-4 py-2 text-sm text-green-400 hover:bg-green-500/20 transition-colors backdrop-blur-sm">
+                    ✓ {t('catalogDetail.approve') || '승인'}
+                  </button>
+                  <button className="inline-flex items-center gap-1.5 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm text-red-400 hover:bg-red-500/20 transition-colors backdrop-blur-sm">
+                    ✗ {t('catalogDetail.reject') || '거절'}
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -907,6 +947,30 @@ export default function CatalogDetailPage() {
           </div>
         )}
       </Section>
+
+      {/* ── QC LOG (admin only) ── */}
+      {isAdmin && p.submissionId && (
+        <Section title={t('catalogDetail.qcLog') || 'QC 로그'} icon={ClipboardList} defaultOpen={false} accent="bg-red-100 dark:bg-red-900/30">
+          <Suspense fallback={<div className="text-center py-4 text-sm text-zinc-500">Loading QC...</div>}>
+            <QCLogTab
+              submissionId={p.submissionId}
+              tracks={assets?.map((a: any, i: number) => ({ id: a.id || String(i), titleKo: a.name, titleEn: a.name, trackNumber: i + 1 })) || []}
+            />
+          </Suspense>
+        </Section>
+      )}
+
+      {/* ── DSP MEMO (admin only) ── */}
+      {isAdmin && p.submissionId && (
+        <Section title={t('catalogDetail.dspMemo') || 'DSP 메모'} icon={Send} defaultOpen={false} accent="bg-orange-100 dark:bg-orange-900/30">
+          <Suspense fallback={<div className="text-center py-4 text-sm text-zinc-500">Loading DSP...</div>}>
+            <DSPMemoTab
+              submissionId={p.submissionId}
+              tracks={assets?.map((a: any, i: number) => ({ id: a.id || String(i), titleKo: a.name, titleEn: a.name, trackNumber: i + 1 })) || []}
+            />
+          </Suspense>
+        </Section>
+      )}
 
       {/* ── SUBMISSION INFO ── */}
       <Section title={t('catalogDetail.submissionInfo')} icon={ClipboardList} defaultOpen={false} accent="bg-zinc-100 dark:bg-zinc-700/50">
