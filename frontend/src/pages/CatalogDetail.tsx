@@ -385,22 +385,38 @@ export default function CatalogDetailPage() {
 
   const coverRawUrl = toRawUrl(p.coverImageUrl || files.coverImageUrl || '');
 
-  // Map audio files to track URL by trackId/filename for matching against assets
-  const audioFileMap: Record<string, string> = {};
+  // Build multiple lookup maps for audio file matching
+  const audioByKey: Record<string, string> = {};
+  const audioByNorm: Record<string, string> = {};
+
   for (const f of audioFiles) {
-    const key = f.trackId || f.fileName || '';
     const rawUrl = toRawUrl(f.dropboxUrl || f.url || '');
-    if (key && rawUrl) audioFileMap[key] = rawUrl;
+    if (!rawUrl) continue;
+    // Store by trackId and fileName as-is
+    if (f.trackId) audioByKey[f.trackId] = rawUrl;
+    if (f.fileName) {
+      audioByKey[f.fileName] = rawUrl;
+      // Normalized key for fuzzy matching
+      const norm = f.fileName.replace(/\.(wav|mp3|flac|aiff|aac|ogg)$/i, '')
+        .toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (norm) audioByNorm[norm] = rawUrl;
+    }
   }
 
-  // Get playable URL for an asset
+  // Get playable URL for an asset — multiple matching strategies
   const getAssetAudioUrl = (asset: any): string | null => {
-    // Try matching by isrc, id, fileName patterns
-    const candidates = [asset.isrc, asset.id, asset.name, `${asset.sequence}`];
-    for (const key of candidates) {
-      if (key && audioFileMap[key]) return audioFileMap[key];
+    // 1. Exact key match (trackId, ISRC, id, name, sequence)
+    for (const key of [asset.isrc, asset.id, asset.fugaId, asset.name, `${asset.sequence}`]) {
+      if (key && audioByKey[key]) return audioByKey[key];
     }
-    // Fallback: use index match
+    // 2. Fuzzy name match (normalize and check if one contains the other)
+    if (asset.name) {
+      const norm = asset.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      for (const [k, url] of Object.entries(audioByNorm)) {
+        if (k.includes(norm) || norm.includes(k)) return url;
+      }
+    }
+    // 3. Index/sequence fallback (reliable for ordered track lists)
     const idx = assets.indexOf(asset);
     if (idx >= 0 && audioFiles[idx]) {
       return toRawUrl(audioFiles[idx].dropboxUrl || audioFiles[idx].url || '');
