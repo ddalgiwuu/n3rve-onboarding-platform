@@ -105,6 +105,15 @@ const translations = {
     'catalogDetail.dspMemo': 'DSP 메모',
     'catalogDetail.approve': '승인',
     'catalogDetail.reject': '거절',
+    'catalogDetail.fugaSync': 'FUGA 동기화',
+    'catalogDetail.files': '파일',
+    'catalogDetail.artistPhoto': '아티스트 사진',
+    'catalogDetail.motionArt': '모션 아트',
+    'catalogDetail.musicVideo': '뮤직 비디오',
+    'catalogDetail.musicVideoFiles': '뮤직 비디오 파일',
+    'catalogDetail.additionalFiles': '추가 파일',
+    'catalogDetail.download': '다운로드',
+    'catalogDetail.artistUgcPriorities': '아티스트 UGC 우선순위',
 
     // CatalogArtists page
     'catalogArtists.title': '카탈로그 아티스트',
@@ -395,6 +404,15 @@ const translations = {
     'catalogDetail.dspMemo': 'DSP Memo',
     'catalogDetail.approve': 'Approve',
     'catalogDetail.reject': 'Reject',
+    'catalogDetail.fugaSync': 'FUGA Sync',
+    'catalogDetail.files': 'Files',
+    'catalogDetail.artistPhoto': 'Artist Photo',
+    'catalogDetail.motionArt': 'Motion Art',
+    'catalogDetail.musicVideo': 'Music Video',
+    'catalogDetail.musicVideoFiles': 'Music Video Files',
+    'catalogDetail.additionalFiles': 'Additional Files',
+    'catalogDetail.download': 'Download',
+    'catalogDetail.artistUgcPriorities': 'Artist UGC Priorities',
 
     // CatalogArtists page
     'catalogArtists.title': 'Catalog Artists',
@@ -685,6 +703,15 @@ const translations = {
     'catalogDetail.dspMemo': 'DSPメモ',
     'catalogDetail.approve': '承認',
     'catalogDetail.reject': '拒否',
+    'catalogDetail.fugaSync': 'FUGA同期',
+    'catalogDetail.files': 'ファイル',
+    'catalogDetail.artistPhoto': 'アーティスト写真',
+    'catalogDetail.motionArt': 'モーションアート',
+    'catalogDetail.musicVideo': 'ミュージックビデオ',
+    'catalogDetail.musicVideoFiles': 'ミュージックビデオファイル',
+    'catalogDetail.additionalFiles': '追加ファイル',
+    'catalogDetail.download': 'ダウンロード',
+    'catalogDetail.artistUgcPriorities': 'アーティストUGC優先順位',
 
     // CatalogArtists page
     'catalogArtists.title': 'カタログアーティスト',

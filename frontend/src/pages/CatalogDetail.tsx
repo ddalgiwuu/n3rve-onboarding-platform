@@ -6,8 +6,9 @@ import {
   ExternalLink, Disc3, Users, MessageSquare,
   ClipboardList, Send, Copy,
   Play, Download, Pause,
-  Mic2, Pencil, Trash2, Plus,
+  Mic2, Pencil, Trash2, Plus, FileText,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
@@ -310,6 +311,27 @@ function ArtistCard({ artist, role, onDelete }: { artist: any; role?: string; on
               {artist.ipn && <p className="text-[10px] font-mono text-zinc-400">IPN: {artist.ipn}</p>}
             </div>
           )}
+          {/* Artist translations */}
+          {artist.translations && (
+            Array.isArray(artist.translations)
+              ? artist.translations.length > 0
+              : Object.keys(artist.translations).length > 0
+          ) && (
+            <div className="mt-1 flex flex-wrap gap-1">
+              {Array.isArray(artist.translations)
+                ? artist.translations.map((tr: any) => (
+                    <span key={tr.language} className="text-[10px] text-zinc-400">
+                      {tr.language.toUpperCase()}: {tr.name}
+                    </span>
+                  ))
+                : (Object.entries(artist.translations) as [string, string][]).map(([lang, name]) => (
+                    <span key={lang} className="text-[10px] text-zinc-400">
+                      {lang.toUpperCase()}: {name}
+                    </span>
+                  ))
+              }
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -502,6 +524,16 @@ export default function CatalogDetailPage() {
                   </button>
                   <button className="inline-flex items-center gap-1.5 rounded-full border border-red-400/30 bg-red-500/10 px-4 py-2 text-sm text-red-400 hover:bg-red-500/20 transition-colors backdrop-blur-sm">
                     ✗ {t('catalogDetail.reject') || '거절'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      catalogApi.pushToFuga(p.submissionId)
+                        .then(() => toast.success('FUGA sync initiated'))
+                        .catch(() => toast.error('FUGA sync failed'));
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/30 bg-blue-500/10 px-4 py-2 text-sm text-blue-400 hover:bg-blue-500/20 transition-colors backdrop-blur-sm"
+                  >
+                    {t('catalogDetail.fugaSync') || 'FUGA Sync'}
                   </button>
                 </div>
               )}
@@ -797,6 +829,13 @@ export default function CatalogDetailPage() {
           <Field label="Artist Gender" value={marketing.artistGender} />
           <Field label="Main Genre" value={marketing.mainGenre} />
           {marketing.subgenres?.length > 0 && <Field label="Subgenres" value={marketing.subgenres.join(', ')} />}
+          {(marketing.artistUgcPriorities || p.release?.artistUgcPriorities) && (
+            <Field label={t('catalogDetail.artistUgcPriorities') || 'Artist UGC Priorities'} value={
+              typeof (marketing.artistUgcPriorities || p.release?.artistUgcPriorities) === 'string'
+                ? (marketing.artistUgcPriorities || p.release?.artistUgcPriorities)
+                : JSON.stringify(marketing.artistUgcPriorities || p.release?.artistUgcPriorities)
+            } />
+          )}
         </FieldGrid>
 
         {marketing.hook && (
@@ -990,6 +1029,130 @@ export default function CatalogDetailPage() {
           </div>
         )}
       </Section>
+
+      {/* ── FILES (admin only) ── */}
+      {isAdmin && (files.artistPhotoUrl || files.motionArtUrl || files.musicVideoUrl || files.musicVideoFiles?.length > 0 || files.additionalFiles?.length > 0) && (
+        <Section title={t('catalogDetail.files') || '파일'} icon={FileText} defaultOpen={false} accent="bg-teal-100 dark:bg-teal-900/30">
+          <div className="space-y-4">
+            {/* Artist Photo */}
+            {files.artistPhotoUrl && (
+              <div className="pb-4 border-b border-zinc-200 dark:border-zinc-700">
+                <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-2">
+                  {t('catalogDetail.artistPhoto') || 'Artist Photo'}
+                </p>
+                <div className="flex items-center gap-3">
+                  <img
+                    src={toRawUrl(files.artistPhotoUrl)}
+                    alt="Artist Photo"
+                    className="h-20 w-20 rounded-lg object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
+                  <a
+                    href={files.artistPhotoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700/40 transition-colors"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    {t('catalogDetail.download') || '다운로드'}
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Motion Art */}
+            {files.motionArtUrl && (
+              <div className="pb-4 border-b border-zinc-200 dark:border-zinc-700">
+                <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-2">
+                  {t('catalogDetail.motionArt') || 'Motion Art'}
+                </p>
+                <a
+                  href={files.motionArtUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 px-3 py-1.5 text-sm text-zinc-600 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-zinc-700/40 transition-colors"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  {files.motionArtUrl.length > 60 ? files.motionArtUrl.slice(0, 60) + '...' : files.motionArtUrl}
+                </a>
+              </div>
+            )}
+
+            {/* Music Video URL (single) */}
+            {files.musicVideoUrl && (
+              <div className="pb-4 border-b border-zinc-200 dark:border-zinc-700">
+                <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-2">
+                  {t('catalogDetail.musicVideo') || 'Music Video'}
+                </p>
+                <a
+                  href={files.musicVideoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-blue-500 hover:underline dark:text-blue-400"
+                >
+                  {files.musicVideoUrl.length > 60 ? files.musicVideoUrl.slice(0, 60) + '...' : files.musicVideoUrl}
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </div>
+            )}
+
+            {/* Music Video Files array */}
+            {files.musicVideoFiles?.length > 0 && (
+              <div className="pb-4 border-b border-zinc-200 dark:border-zinc-700">
+                <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-2">
+                  {t('catalogDetail.musicVideoFiles') || 'Music Video Files'} ({files.musicVideoFiles.length})
+                </p>
+                <div className="space-y-1.5">
+                  {files.musicVideoFiles.map((f: any, i: number) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg bg-zinc-50 dark:bg-zinc-700/40 px-3 py-2 text-sm">
+                      <span className="text-zinc-700 dark:text-zinc-300 truncate max-w-xs">{f.fileName || `File ${i + 1}`}</span>
+                      {(f.dropboxUrl || f.url) && (
+                        <a
+                          href={f.dropboxUrl || f.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-blue-500 dark:text-blue-400 hover:underline ml-2 shrink-0"
+                        >
+                          <Download className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Additional Files */}
+            {files.additionalFiles?.length > 0 && (
+              <div>
+                <p className="text-[11px] uppercase tracking-wider font-medium text-zinc-400 dark:text-zinc-500 mb-2">
+                  {t('catalogDetail.additionalFiles') || '추가 파일'} ({files.additionalFiles.length})
+                </p>
+                <div className="space-y-1.5">
+                  {files.additionalFiles.map((f: any, i: number) => (
+                    <div key={i} className="flex items-center justify-between rounded-lg bg-zinc-50 dark:bg-zinc-700/40 px-3 py-2 text-sm">
+                      <div className="min-w-0">
+                        <span className="text-zinc-700 dark:text-zinc-300 truncate block max-w-xs">{f.fileName || `File ${i + 1}`}</span>
+                        {f.fileType && <span className="text-[10px] text-zinc-400">{f.fileType}</span>}
+                      </div>
+                      {(f.dropboxUrl || f.url) && (
+                        <a
+                          href={f.dropboxUrl || f.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-blue-500 dark:text-blue-400 hover:underline ml-2 shrink-0"
+                        >
+                          <Download className="h-3 w-3" />
+                        </a>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </Section>
+      )}
     </div>
   );
 }

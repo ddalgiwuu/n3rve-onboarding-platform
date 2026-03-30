@@ -116,19 +116,29 @@ function ArtistCard({
   fugaId,
   spotifyUrl,
   appleMusicUrl,
+  translations,
 }: {
   name: string;
   role: 'Primary' | 'Featuring' | string;
-  fugaId?: string | number | null;
+  fugaId?: string | number | null; // reserved for future use
   spotifyUrl?: string | null;
   appleMusicUrl?: string | null;
+  translations?: any;
 }) {
+  void fugaId; // suppress unused warning — kept for API compatibility
   const roleColor =
     role === 'Primary'
       ? 'bg-blue-900/40 text-blue-300 border-blue-700/50'
       : role === 'Featuring'
       ? 'bg-violet-900/40 text-violet-300 border-violet-700/50'
       : 'bg-zinc-700/60 text-zinc-300 border-zinc-600/50';
+
+  const translationEntries: Array<{ language: string; name: string }> =
+    Array.isArray(translations)
+      ? translations
+      : translations && typeof translations === 'object'
+        ? Object.entries(translations).map(([language, tname]) => ({ language, name: tname as string }))
+        : [];
 
   return (
     <div className="flex items-center gap-3 rounded-xl border border-zinc-700/50 bg-zinc-900/60 px-4 py-3">
@@ -149,6 +159,15 @@ function ArtistCard({
           <DspLink url={spotifyUrl} type="spotify" />
           <DspLink url={appleMusicUrl} type="apple" />
         </div>
+        {translationEntries.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {translationEntries.map((tr) => (
+              <span key={tr.language} className="text-[10px] text-zinc-500">
+                {tr.language.toUpperCase()}: {tr.name}
+              </span>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -219,6 +238,10 @@ export default function CatalogTrackDetail() {
   const asset = assets[idx];
   const totalTracks = assets.length;
 
+  // Submission track data as a fallback for fields not present in FUGA asset
+  const subTracks: any[] = product?.tracks ?? product?.submissionTracks ?? [];
+  const subTrack: any = subTracks[idx] ?? {};
+
   /* ─── Loading ─── */
 
   if (isLoading) {
@@ -279,8 +302,13 @@ export default function CatalogTrackDetail() {
 
   const hasArtists =
     (asset.artists?.length ?? 0) > 0 ||
-    (asset.featuringArtists?.length ?? 0) > 0;
+    (asset.featuringArtists?.length ?? 0) > 0 ||
+    (subTrack.artists?.length ?? 0) > 0 ||
+    (subTrack.featuringArtists?.length ?? 0) > 0;
   const hasContributors = Object.keys(groupedContributors).length > 0;
+
+  // Submission-side contributors (may have richer role data)
+  const subContributors: any[] = subTrack.contributors ?? [];
   const hasLegacyCredits =
     asset.composer || asset.lyricist || asset.arranger ||
     asset.producer || asset.mixer || asset.masterer;
@@ -390,21 +418,31 @@ export default function CatalogTrackDetail() {
             <Field label="Track Number" value={asset.sequence} />
             <Field label="Disc Number" value={asset.discNumber} />
             <Field label="Volume" value={asset.volume} />
-            <Field label="ISRC" value={asset.isrc} mono />
+            <Field label="ISRC" value={asset.isrc || subTrack.isrc} mono />
             <Field label="ISWC" value={asset.iswc} mono />
             <Field
               label="Duration"
-              value={asset.duration ? formatDuration(asset.duration) : undefined}
+              value={asset.duration ? formatDuration(asset.duration) : subTrack.duration}
             />
-            <Field label="Track Type" value={asset.trackType} />
+            <Field label="Track Type" value={asset.trackType || subTrack.trackType} />
             <Field
               label="Version Type"
-              value={asset.versionTypes?.map((v: any) => v.name).join(', ')}
+              value={
+                asset.versionTypes?.map((v: any) => v.name).join(', ')
+                || subTrack.versionType
+              }
             />
-            <Field label="Track Version" value={asset.version || asset.assetVersion} />
-            <Field label="Is Title Track" value={asset.isTitleTrack} />
-            <Field label="Is Focus Track" value={asset.isFocusTrack} />
-            <Field label="Display Artist" value={asset.displayArtist} />
+            <Field label="Track Version" value={asset.version || asset.assetVersion || subTrack.trackVersion} />
+            <Field label="Is Title Track" value={asset.isTitleTrack ?? subTrack.isTitle} />
+            <Field label="Is Focus Track" value={asset.isFocusTrack ?? subTrack.isFocusTrack} />
+            <Field label="Display Artist" value={asset.displayArtist || subTrack.displayArtist} />
+            {/* Submission-side fields */}
+            {(subTrack.musicVideoISRC) && (
+              <Field label="Music Video ISRC" value={subTrack.musicVideoISRC} mono />
+            )}
+            {(subTrack.hasMusicVideo != null) && (
+              <Field label="Has Music Video" value={subTrack.hasMusicVideo} />
+            )}
           </FieldGrid>
         </Section>
 
@@ -415,35 +453,36 @@ export default function CatalogTrackDetail() {
           accent="bg-blue-900/40"
           iconColor="text-blue-400"
         >
-          {/* Track artists */}
-          {asset.artists?.length > 0 && (
+          {/* Track artists — prefer asset.artists, fall back to subTrack.artists */}
+          {((asset.artists?.length ?? 0) > 0 || (subTrack.artists?.length ?? 0) > 0) && (
             <div className="mb-6">
               <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 mb-3">
                 Track Artists
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {asset.artists.map((a: any, i: number) => (
+                {(asset.artists?.length > 0 ? asset.artists : subTrack.artists ?? []).map((a: any, i: number) => (
                   <ArtistCard
                     key={i}
-                    name={a.name}
+                    name={a.name || String(a)}
                     role={a.primary ? 'Primary' : 'Artist'}
                     fugaId={a.fugaId}
                     spotifyUrl={a.spotifyUrl}
                     appleMusicUrl={a.appleMusicUrl}
+                    translations={a.translations}
                   />
                 ))}
               </div>
             </div>
           )}
 
-          {/* Featuring artists */}
-          {asset.featuringArtists?.length > 0 && (
+          {/* Featuring artists — prefer asset.featuringArtists, fall back to subTrack.featuringArtists */}
+          {((asset.featuringArtists?.length ?? 0) > 0 || (subTrack.featuringArtists?.length ?? 0) > 0) && (
             <div className="mb-6">
               <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 mb-3">
                 Featuring Artists
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {asset.featuringArtists.map((a: any, i: number) => (
+                {(asset.featuringArtists?.length > 0 ? asset.featuringArtists : subTrack.featuringArtists ?? []).map((a: any, i: number) => (
                   <ArtistCard
                     key={i}
                     name={a.name || String(a)}
@@ -451,6 +490,7 @@ export default function CatalogTrackDetail() {
                     fugaId={a.fugaId}
                     spotifyUrl={a.spotifyUrl}
                     appleMusicUrl={a.appleMusicUrl}
+                    translations={a.translations}
                   />
                 ))}
               </div>
@@ -466,6 +506,40 @@ export default function CatalogTrackDetail() {
               <div className="space-y-5">
                 {Object.entries(groupedContributors).map(([role, people]) => (
                   <ContributorGroup key={role} role={role} people={people} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Submission-side contributors (when FUGA contributors not available) */}
+          {!hasContributors && subContributors.length > 0 && (
+            <div className={`${hasArtists ? 'mt-6 pt-6 border-t border-zinc-700/60' : ''} mb-5`}>
+              <p className="text-[11px] uppercase tracking-wider font-semibold text-zinc-500 mb-4">
+                Contributors (Submission)
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {subContributors.map((c: any, i: number) => (
+                  <div
+                    key={i}
+                    className="flex items-start gap-3 rounded-xl border border-zinc-700 bg-zinc-800/60 p-3"
+                  >
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-zinc-600 to-zinc-700">
+                      <Mic2 className="h-4 w-4 text-zinc-400" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-white truncate">{c.name}</p>
+                      {(c.role || c.roles?.length > 0) && (
+                        <p className="text-[11px] text-zinc-400 mt-0.5">
+                          {c.role || c.roles?.join(', ')}
+                        </p>
+                      )}
+                      {(c.instrument || c.instruments?.length > 0) && (
+                        <p className="text-[11px] text-zinc-500">
+                          {c.instrument || c.instruments?.join(', ')}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
@@ -539,12 +613,15 @@ export default function CatalogTrackDetail() {
           iconColor="text-sky-400"
         >
           <FieldGrid>
-            <Field label="Language" value={asset.language} />
-            <Field label="Audio Language" value={asset.audioLocale ?? asset.audioLanguage} />
-            <Field label="Lyrics Language" value={asset.lyricsLanguage} />
-            <Field label="Metadata Language" value={asset.metadataLanguage} />
-            <Field label="Explicit Content" value={asset.explicitContent} />
+            <Field label="Language" value={asset.language || subTrack.language} />
+            <Field label="Audio Language" value={asset.audioLocale ?? asset.audioLanguage ?? subTrack.audioLanguage} />
+            <Field label="Lyrics Language" value={asset.lyricsLanguage || subTrack.lyricsLanguage} />
+            <Field label="Metadata Language" value={asset.metadataLanguage || subTrack.metadataLanguage} />
+            <Field label="Explicit Content" value={asset.explicitContent ?? subTrack.explicitContent} />
             <Field label="Parental Advisory" value={asset.parentalAdvisory} />
+            {subTrack.lyrics && !asset.lyrics && (
+              <Field label="Has Lyrics" value={true} />
+            )}
           </FieldGrid>
 
           {/* Lyrics file URL */}
@@ -567,8 +644,8 @@ export default function CatalogTrackDetail() {
             </div>
           )}
 
-          {/* Expandable lyrics */}
-          {asset.hasLyrics && asset.lyrics && (
+          {/* Expandable lyrics — use asset.lyrics or subTrack.lyrics */}
+          {((asset.hasLyrics && asset.lyrics) || subTrack.lyrics) && (
             <div className="mt-5">
               <button
                 className="inline-flex items-center gap-2 rounded-lg border border-zinc-700/60 bg-zinc-900/60 px-3 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:border-zinc-600 transition-colors"
@@ -584,7 +661,7 @@ export default function CatalogTrackDetail() {
               </button>
               {showLyrics && (
                 <pre className="mt-3 max-h-96 overflow-auto rounded-xl bg-zinc-900 p-6 font-mono text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed">
-                  {asset.lyrics}
+                  {asset.lyrics || subTrack.lyrics}
                 </pre>
               )}
             </div>
@@ -624,23 +701,23 @@ export default function CatalogTrackDetail() {
           iconColor="text-indigo-400"
         >
           <FieldGrid>
-            <Field label="Preview Start" value={asset.previewStart} />
-            <Field label="Preview End" value={asset.previewEnd} />
-            <Field label="Preview Length" value={asset.previewLength} />
-            <Field label="Playtime Start Short Clip" value={asset.playtimeStartShortClip} />
+            <Field label="Preview Start" value={asset.previewStart ?? subTrack.previewStart ?? subTrack.playtimeStartShortClip} />
+            <Field label="Preview End" value={asset.previewEnd ?? subTrack.previewEnd} />
+            <Field label="Preview Length" value={asset.previewLength ?? subTrack.previewLength} />
+            <Field label="Playtime Start Short Clip" value={asset.playtimeStartShortClip ?? subTrack.playtimeStartShortClip} />
             <Field label="YouTube Short Preview" value={asset.youtubeShortPreview} />
             <Field label="Availability" value={asset.availability} />
             <Field label="Pre-order Enabled" value={asset.preorderEnabled} />
             <Field label="Pre-order Date" value={asset.preorderDate} />
-            <Field label="Has Custom Release Date" value={asset.hasCustomReleaseDate} />
-            <Field label="Custom Release Date" value={asset.customReleaseDate} />
-            <Field label="Custom Release Time" value={asset.customReleaseTime} />
+            <Field label="Has Custom Release Date" value={asset.hasCustomReleaseDate ?? subTrack.hasCustomReleaseDate} />
+            <Field label="Custom Release Date" value={asset.customReleaseDate ?? subTrack.customConsumerReleaseDate} />
+            <Field label="Custom Release Time" value={asset.customReleaseTime ?? subTrack.customReleaseTime} />
             <Field label="Asset Territories" value={asset.assetTerritories} />
             <Field label="Available Separately" value={asset.availableSeparately} />
             <Field label="Allow Preorder" value={asset.allowPreorder} />
             <Field label="Preorder Type" value={asset.preorderType} />
-            <Field label="Has Music Video" value={asset.hasMusicVideo} />
-            <Field label="Music Video ISRC" value={asset.musicVideoIsrc} mono />
+            <Field label="Has Music Video" value={asset.hasMusicVideo ?? subTrack.hasMusicVideo} />
+            <Field label="Music Video ISRC" value={asset.musicVideoIsrc || subTrack.musicVideoISRC} mono />
           </FieldGrid>
         </Section>
 
