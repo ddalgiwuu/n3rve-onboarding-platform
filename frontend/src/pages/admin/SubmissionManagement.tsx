@@ -77,8 +77,12 @@ const Tab: React.FC<{
 
 const SubmissionManagement: React.FC = () => {
   const language = useSafeStore(useLanguageStore, (state) => state.language);
-  // Note: t function is not available from useLanguageStore, need to create local t function
-  const t = (ko: string, en: string) => language === 'ko' ? ko : en;
+  // Trilingual translation helper (ko/en/ja)
+  const t = (ko: string, en: string, ja?: string) => {
+    if (language === 'ko') return ko;
+    if (language === 'ja') return ja || en;
+    return en;
+  };
   const navigate = useNavigate();
   const [showCatalog, setShowCatalog] = useState(false);
   const [catalogViewMode, setCatalogViewMode] = useState<'table' | 'tile'>('tile');
@@ -131,7 +135,8 @@ const SubmissionManagement: React.FC = () => {
         searchQuery,
         dateRange: dateRange.start && dateRange.end ? dateRange : undefined,
         page: currentPage,
-        limit: itemsPerPage
+        limit: itemsPerPage,
+        excludeFugaImports: true,
       });
 
       // Add defensive programming
@@ -730,6 +735,27 @@ const SubmissionManagement: React.FC = () => {
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+            </div>
+          ) : paginatedSubmissions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <Package className="w-16 h-16 text-gray-300 dark:text-gray-600 mb-4" />
+              <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300">
+                {t('새로운 제출이 없습니다', 'No new submissions', '新しい提出はありません')}
+              </h3>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2 max-w-md">
+                {t(
+                  '아티스트가 새 릴리스를 제출하면 여기에서 QC, DSP 설정 및 승인/거절을 관리할 수 있습니다.',
+                  'When artists submit new releases, you can manage QC, DSP settings, and approval here.',
+                  'アーティストが新しいリリースを提出すると、QC、DSP設定、承認/拒否をここで管理できます。'
+                )}
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-4">
+                {t(
+                  '이미 발매된 FUGA 카탈로그는 Catalog 페이지에서 확인하세요.',
+                  'Already released FUGA catalog items can be found on the Catalog page.',
+                  'すでにリリースされたFUGAカタログはCatalogページでご確認ください。'
+                )}
+              </p>
             </div>
           ) : submissionViewMode === 'tile' ? (
             /* Tile View */

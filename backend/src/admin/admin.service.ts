@@ -13,6 +13,7 @@ interface PaginationOptions {
   status?: string;
   startDate?: string;
   endDate?: string;
+  excludeFugaImports?: boolean;
 }
 
 @Injectable()
@@ -199,10 +200,15 @@ export class AdminService {
   }
 
   async getAllSubmissions(options: PaginationOptions) {
-    const { page = 1, limit = 10, status, search, startDate, endDate } = options;
+    const { page = 1, limit = 10, status, search, startDate, endDate, excludeFugaImports } = options;
     const skip = (page - 1) * limit;
 
     const where: Prisma.SubmissionWhereInput = {};
+
+    // Exclude FUGA-imported submissions (already in catalog)
+    if (excludeFugaImports) {
+      where.catalogProductId = null;
+    }
 
     if (status && status !== 'all') {
       where.status = status.toUpperCase() as 'PENDING' | 'APPROVED' | 'REJECTED';
@@ -227,7 +233,13 @@ export class AdminService {
       }
     }
 
-    const [submissions, total] = await Promise.all([
+    // Base filter for stats (same excludeFugaImports but without status/search/date)
+    const baseWhere: Prisma.SubmissionWhereInput = {};
+    if (excludeFugaImports) {
+      baseWhere.catalogProductId = null;
+    }
+
+    const [submissions, total, pending, approved, rejected] = await Promise.all([
       this.prisma.submission.findMany({
         where,
         skip,
@@ -259,6 +271,9 @@ export class AdminService {
         },
       }),
       this.prisma.submission.count({ where }),
+      this.prisma.submission.count({ where: { ...baseWhere, status: 'PENDING' } }),
+      this.prisma.submission.count({ where: { ...baseWhere, status: 'APPROVED' } }),
+      this.prisma.submission.count({ where: { ...baseWhere, status: 'REJECTED' } }),
     ]);
 
     return {
@@ -268,6 +283,12 @@ export class AdminService {
         submitterEmail: submission.submitter?.email,
       })),
       total,
+      stats: {
+        total: pending + approved + rejected,
+        pending,
+        approved,
+        rejected,
+      },
     };
   }
 

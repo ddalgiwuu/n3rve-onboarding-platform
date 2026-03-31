@@ -111,6 +111,7 @@ export class AdminController {
     @Query('search') search?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('excludeFugaImports') excludeFugaImports?: string,
   ) {
     if (user.role !== 'ADMIN') {
       throw new ForbiddenException('Admin access required');
@@ -122,6 +123,7 @@ export class AdminController {
       search,
       startDate,
       endDate,
+      excludeFugaImports: excludeFugaImports === 'true',
     });
   }
 

@@ -26,13 +26,31 @@ async function main() {
   dbxApp = await getAppDropbox();
   console.log('✅ Dropbox token refreshed');
 
-  // Login to FUGA
-  const loginRes = await fetch('https://login.n3rvemusic.com/api/v2/login', {
+  // Login to FUGA (with 2FA TOTP support)
+  const loginRes = await fetch('https://next.fugamusic.com/api/v2/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name: process.env.FUGA_USERNAME || 'ryansong', password: process.env.FUGA_PASSWORD }),
   });
-  const sid = loginRes.headers.get('set-cookie').split(';')[0];
+  let sid = loginRes.headers.get('set-cookie')?.split(';')[0] || '';
+  const loginData = await loginRes.json().catch(() => ({}));
+
+  // Handle 2FA if enabled
+  if (loginData?.user?.is_two_factor_authentication_enabled) {
+    const totpSecret = process.env.FUGA_TOTP_SECRET;
+    if (!totpSecret) throw new Error('FUGA 2FA enabled but FUGA_TOTP_SECRET not set');
+    const { TOTP } = require('totp-generator');
+    const { otp } = await TOTP.generate(totpSecret);
+    console.log('🔐 Submitting 2FA code...');
+    const tfaRes = await fetch('https://next.fugamusic.com/api/v2/login/2fa', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Cookie: sid },
+      body: JSON.stringify({ totp: otp }),
+    });
+    if (tfaRes.status !== 200) throw new Error('FUGA 2FA failed: ' + await tfaRes.text());
+    const tfaCookies = tfaRes.headers.get('set-cookie');
+    if (tfaCookies) sid = tfaCookies.split(';')[0];
+  }
   console.log('✅ FUGA login OK\n');
 
   // Get submissions
@@ -66,15 +84,31 @@ async function main() {
       existingMusicCount = mf.result.entries.filter(e => e['.tag'] === 'file' && /\.(wav|mp3|flac|aiff|aif|m4a|ogg)$/i.test(e.name)).length;
     } catch {}
 
-    if (existingMusicCount > 0) {
+    // Get expected asset count from FUGA catalog
+    const catalogProduct = await prisma.catalogProduct.findFirst({
+      where: { upc },
+      select: { id: true },
+    });
+    const expectedAssetCount = catalogProduct
+      ? await prisma.catalogAsset.count({ where: { productId: catalogProduct.id } })
+      : 0;
+
+    // Skip if already has correct number of audio files AND DB audioFiles is populated
+    const currentAudioFiles = sub.files?.audioFiles || [];
+    if (existingMusicCount > 0 && existingMusicCount >= expectedAssetCount && currentAudioFiles.length >= expectedAssetCount) {
       results.skipped++;
       continue;
+    }
+
+    // If mismatch, we'll re-sync (download missing/correct files)
+    if (existingMusicCount > 0 && existingMusicCount !== expectedAssetCount) {
+      console.log(`  ⚠️  Mismatch: ${existingMusicCount} files in Dropbox vs ${expectedAssetCount} FUGA assets — re-syncing`);
     }
 
     // Get tracks from FUGA
     let assets;
     try {
-      const res = await fetch(`https://login.n3rvemusic.com/api/v2/products/${fugaId}/assets`, {
+      const res = await fetch(`https://next.fugamusic.com/api/v2/products/${fugaId}/assets`, {
         headers: { Cookie: sid },
       });
       const raw = await res.json();
@@ -118,7 +152,7 @@ async function main() {
       const localPath = path.join(TEMP_DIR, safeFileName);
       try {
         // Download from FUGA
-        const dlRes = await fetch(`https://login.n3rvemusic.com/ui-only/v2/assets/${asset.id}/audio`, {
+        const dlRes = await fetch(`https://next.fugamusic.com/ui-only/v2/assets/${asset.id}/audio`, {
           headers: { Cookie: sid },
         });
 
@@ -134,17 +168,16 @@ async function main() {
         if (buf.length > CHUNK_SIZE) {
           await chunkedUpload(localPath, targetPath, buf.length);
         } else {
-          const contents = fs.readFileSync(localPath);
-          await dbxApp.filesUpload({ path: targetPath, contents, mode: { '.tag': 'add' }, autorename: false, mute: true });
+          await dbxApp.filesUpload({ path: targetPath, contents: buf, mode: { '.tag': 'add' }, autorename: false, mute: true });
         }
 
         results.tracksUploaded++;
         console.log(`  ✅ ${safeFileName}`);
-        fs.unlinkSync(localPath);
       } catch (e) {
         results.errors.push(`${safeFileName}: ${e.message}`);
         console.error(`  ❌ ${safeFileName}: ${e.message}`);
-        if (fs.existsSync(localPath)) fs.unlinkSync(localPath);
+      } finally {
+        try { if (fs.existsSync(localPath)) fs.unlinkSync(localPath); } catch {}
       }
     }
 

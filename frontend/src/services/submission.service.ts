@@ -71,6 +71,7 @@ export interface SubmissionFilters {
   }
   page?: number
   limit?: number
+  excludeFugaImports?: boolean
 }
 
 export const submissionService = {
@@ -95,6 +96,9 @@ export const submissionService = {
     }
     if (filters?.limit) {
       params.append('limit', filters.limit.toString());
+    }
+    if (filters?.excludeFugaImports) {
+      params.append('excludeFugaImports', 'true');
     }
 
     const response = await api.get(`/admin/submissions?${params.toString()}`);

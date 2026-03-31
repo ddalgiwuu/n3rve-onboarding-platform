@@ -236,7 +236,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   }}
                   className={({ isActive }) =>
                     cn(
-                      'group relative flex items-center gap-3 px-4 py-4 rounded-2xl transition-all duration-300',
+                      'group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 overflow-hidden',
                       'bg-surface border-modern-soft magnetic hover:shadow-xl transform-gpu',
                       'hover:bg-gray-100 dark:hover:bg-gray-800/50',
                       'backdrop-blur-md',
@@ -248,7 +248,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   {({ isActive }) => (
                     <>
                       <div className={cn(
-                        'p-3 rounded-xl transition-all duration-300 bg-surface border-modern-soft',
+                        'p-2.5 rounded-xl transition-all duration-300 bg-surface border-modern-soft shrink-0',
                         'group-hover:scale-110 group-hover:shadow-lg magnetic',
                         'group-hover:backdrop-blur-lg',
                         isActive
@@ -263,7 +263,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                         )} />
                       </div>
                       <span className={cn(
-                        'font-medium transition-all duration-300 whitespace-nowrap',
+                        'font-medium transition-all duration-300 truncate text-sm',
                         'group-hover:font-semibold',
                         isActive
                           ? 'text-gray-900 dark:text-white font-semibold'
@@ -298,10 +298,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                   }}
                   className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-surface border-modern-soft hover:bg-red-50 dark:hover:bg-red-900/20 magnetic transition-all duration-300 border border-red-500/20 hover:border-red-500/40 transform-gpu"
                 >
-                  <div className="p-3 bg-red-500/20 dark:bg-red-400/20 rounded-xl bg-surface border-modern-soft magnetic hover:scale-110 transition-all duration-300 shadow-lg shadow-red-500/20">
+                  <div className="p-2.5 shrink-0 bg-red-500/20 dark:bg-red-400/20 rounded-xl bg-surface border-modern-soft magnetic hover:scale-110 transition-all duration-300 shadow-lg shadow-red-500/20">
                     <Shield className="w-5 h-5 text-red-600 dark:text-red-400" />
                   </div>
-                  <span className="font-medium text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-all duration-300">
+                  <span className="font-medium text-sm truncate text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-all duration-300">
                     {isInAdminConsole
                       ? t('nav.toCustomerConsole')
                       : t('nav.toAdminConsole')
@@ -318,7 +318,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               onClick={handleLogout}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl bg-surface border-modern-soft hover:bg-red-50 dark:hover:bg-red-900/20 magnetic transition-all duration-300 group border border-transparent hover:border-red-500/30 transform-gpu"
             >
-              <div className="p-3 rounded-xl bg-surface border-modern-soft group-hover:bg-red-500/20 dark:group-hover:bg-red-400/20 magnetic group-hover:scale-110 transition-all duration-300 shadow-lg group-hover:shadow-red-500/20">
+              <div className="p-2.5 shrink-0 rounded-xl bg-surface border-modern-soft group-hover:bg-red-500/20 dark:group-hover:bg-red-400/20 magnetic group-hover:scale-110 transition-all duration-300 shadow-lg group-hover:shadow-red-500/20">
                 <LogOut className="w-5 h-5 text-gray-500 group-hover:text-red-600 dark:group-hover:text-red-400 transition-all duration-300 group-hover:scale-110 group-hover:-rotate-12" />
               </div>
               <span className="font-medium text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-all duration-300 group-hover:font-semibold">
