@@ -377,6 +377,7 @@ model Submission {
   featureReports       FeatureReport[]
   qcLogs               QCLog[]
   dspOverrides         DSPMetadataOverride[]
+  communicationLogs    CommunicationLog[]
   catalogProducts      CatalogProduct[]
 
   @@index([status])
@@ -519,6 +520,36 @@ model MarketingDriver {
   updatedAt           DateTime         @updatedAt @db.Date
 }
 
+model CommunicationLog {
+  id               String              @id @default(auto()) @map("_id") @db.ObjectId
+  submissionId     String?             @db.ObjectId
+  catalogProductId String?             @db.ObjectId
+  upc              String
+  type             CommunicationType
+  source           CommunicationSource
+  subject          String
+  summary          String
+  senderEmail      String?
+  dsp              String?
+  receivedAt       DateTime            @db.Date
+  outlookMessageId String?             @unique
+  metadata         Json?
+  status           String              @default("OPEN")
+  resolvedBy       String?
+  resolvedAt       DateTime?           @db.Date
+  createdAt        DateTime            @default(now()) @db.Date
+  updatedAt        DateTime            @updatedAt @db.Date
+
+  submission       Submission?         @relation(fields: [submissionId], references: [id])
+  catalogProduct   CatalogProduct?     @relation(fields: [catalogProductId], references: [id])
+
+  @@index([upc])
+  @@index([type])
+  @@index([receivedAt])
+  @@index([submissionId])
+  @@index([catalogProductId])
+}
+
 model TerritorySelection {
   id                  String                  @id @default(auto()) @map("_id") @db.ObjectId
   name                String                  @unique
@@ -541,6 +572,19 @@ model Guide {
   isPublished Boolean  @default(true)
   createdAt   DateTime @default(now()) @db.Date
   updatedAt   DateTime @updatedAt @db.Date
+}
+
+enum CommunicationType {
+  QC_REJECTION
+  QC_PASS
+  DSP_TICKET
+  MARKETING
+  GENERAL
+}
+
+enum CommunicationSource {
+  AUTO_EMAIL
+  MANUAL
 }
 
 // ==================== CATALOG ENUMS ====================
@@ -617,6 +661,7 @@ model CatalogProduct {
   submissionId         String?            @db.ObjectId
   submission           Submission?        @relation(fields: [submissionId], references: [id])
   assets               CatalogAsset[]
+  communicationLogs    CommunicationLog[]
   courtesyLine          String?
   labelCopyInfo         String?
   albumNotes            String?
