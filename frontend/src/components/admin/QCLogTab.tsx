@@ -184,50 +184,133 @@ function formatFullDate(dateStr: string): string {
   return `${day[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-// Format email body: clean up FUGA ticket noise, highlight key info
+// Parse email thread into individual messages
+interface ParsedMessage {
+  sender: string;
+  date: string;
+  body: string;
+  isRyan: boolean;
+}
+
+function parseEmailThread(text: string): ParsedMessage[] {
+  if (!text) return [];
+
+  // Remove FUGA ticket headers
+  let cleaned = text
+    .replace(/Your request \(#\d+\) has been updated\.\s*To add additional comments, reply to this email\.\s*/gi, '')
+    .replace(/---\s*\[원본 이메일.*?\]\s*Subject:.*?From:.*?\n/gi, '')
+    .trim();
+
+  // Split by sender headers: "Name (FUGA)\nDate" or "Ryan Song\nDate"
+  const msgPattern = /(?:^|\n)((?:[A-Z][a-z]+(?:\s+[A-Z][a-z.]+)*)\s*(?:\(FUGA\))?\s*\n\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s+\d{4},?\s+\d{1,2}:\d{2}\s*(?:GMT[+-]\d+)?))/g;
+
+  const splits: { index: number; sender: string; date: string }[] = [];
+  let match;
+  while ((match = msgPattern.exec(cleaned)) !== null) {
+    const block = match[1].trim();
+    const lines = block.split('\n').map(l => l.trim());
+    const senderLine = lines[0]?.replace(/\s*\(FUGA\)\s*$/, '').trim() || '';
+    const dateLine = lines[1]?.trim() || '';
+    splits.push({ index: match.index, sender: senderLine, date: dateLine });
+  }
+
+  if (splits.length === 0) {
+    // No parseable thread — show as single message
+    return [{ sender: '', date: '', body: cleanMessageBody(cleaned), isRyan: false }];
+  }
+
+  const messages: ParsedMessage[] = [];
+  for (let i = 0; i < splits.length; i++) {
+    const start = splits[i].index + (cleaned.substring(splits[i].index).indexOf('\n', cleaned.substring(splits[i].index).indexOf(splits[i].date)) + splits[i].index);
+    const bodyStart = cleaned.indexOf('\n', cleaned.indexOf(splits[i].date, splits[i].index)) + 1;
+    const bodyEnd = i + 1 < splits.length ? splits[i + 1].index : cleaned.length;
+    const rawBody = cleaned.substring(bodyStart, bodyEnd).trim();
+    const body = cleanMessageBody(rawBody);
+
+    if (body.length > 10) {
+      const isRyan = splits[i].sender.toLowerCase().includes('ryan');
+      messages.push({ sender: splits[i].sender, date: splits[i].date, body, isRyan });
+    }
+  }
+
+  return messages.length > 0 ? messages : [{ sender: '', date: '', body: cleanMessageBody(cleaned), isRyan: false }];
+}
+
+function cleanMessageBody(text: string): string {
+  return text
+    // Remove FUGA signatures
+    .replace(/Best regards,?\s*\n\s*[A-Z][a-z]+.*?(?:Content Manager|Support Manager|Account Manager).*?·\s*FUGA\s*/gi, '')
+    .replace(/Visit the FUGA Knowledge Base.*$/gim, '')
+    .replace(/A Downtown company.*?Music Industry Lives Here\.\s*/gi, '')
+    .replace(/The content of this email is confidential.*?backups of it\.\s*/gis, '')
+    .replace(/[–—]{2,}\s*/g, '')
+    // Remove ticket references
+    .replace(/\[\w+-\w+\]\s*$/gm, '')
+    .replace(/Your request \(#\d+\).*?reply to this email\.\s*/gi, '')
+    // Clean whitespace
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+// Format email body with parsed thread
 function EmailBody({ text }: { text: string }) {
   if (!text) return <span className="text-gray-400 italic">No content</span>;
 
-  // Clean up common FUGA ticket header
-  let cleaned = text
-    .replace(/^Your request \(#\d+\) has been updated\.\s*To add additional comments, reply to this email\.\s*/i, '')
-    .trim();
+  const messages = parseEmailThread(text);
 
-  // Split into paragraphs
-  const paragraphs = cleaned.split(/\n{2,}/).filter(p => p.trim());
+  // If single message or unparseable, show cleaned text
+  if (messages.length <= 1 && !messages[0]?.sender) {
+    const cleaned = cleanMessageBody(text);
+    return <FormattedText text={cleaned} />;
+  }
 
+  // Show parsed thread as conversation
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
+      {messages.map((msg, i) => (
+        <div key={i} className={`${msg.isRyan ? 'pl-4 border-l-2 border-purple-300 dark:border-purple-700' : ''}`}>
+          {msg.sender && (
+            <div className="flex items-center gap-2 mb-1">
+              <span className={`text-xs font-semibold ${msg.isRyan ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400'}`}>
+                {msg.sender}
+              </span>
+              {msg.date && (
+                <span className="text-[10px] text-gray-400 dark:text-gray-500">{msg.date}</span>
+              )}
+              <span className={`px-1 py-0.5 rounded text-[9px] font-medium ${
+                msg.isRyan
+                  ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
+                  : 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300'
+              }`}>
+                {msg.isRyan ? 'SENT' : 'RECV'}
+              </span>
+            </div>
+          )}
+          <FormattedText text={msg.body} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function FormattedText({ text }: { text: string }) {
+  const paragraphs = text.split(/\n{2,}/).filter(p => p.trim());
+  return (
+    <div className="space-y-1.5">
       {paragraphs.map((para, i) => {
         const trimmed = para.trim();
-        // Detect quoted reply lines (starting with >)
-        if (trimmed.startsWith('>') || trimmed.startsWith('On ') && trimmed.includes(' wrote:')) {
-          return (
-            <div key={i} className="border-l-2 border-gray-300 dark:border-gray-600 pl-3 text-xs text-gray-500 dark:text-gray-400 italic">
-              {trimmed}
-            </div>
-          );
-        }
-        // Detect signature blocks
-        if (/^(Best regards|Kind regards|Thanks|Sincerely|Regards),?$/i.test(trimmed) ||
-            /^-{2,}/.test(trimmed) || /^_{2,}/.test(trimmed)) {
-          return (
-            <div key={i} className="text-xs text-gray-400 dark:text-gray-500">
-              {trimmed}
-            </div>
-          );
-        }
-        // Detect key-value pairs like "Title: And Rebirth" or "UPC: 123456"
-        if (/^[A-Za-z\s/]+:\s/.test(trimmed) && trimmed.length < 120) {
+        if (!trimmed) return null;
+        // Key-value pairs
+        if (/^(Title|Artist|Label|UPC|Release|ISRC|Track|Genre):\s/i.test(trimmed) && trimmed.length < 150) {
           const [label, ...rest] = trimmed.split(':');
           return (
-            <div key={i} className="flex gap-1">
-              <span className="font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{label}:</span>
-              <span className="break-words">{rest.join(':').trim()}</span>
+            <div key={i} className="flex gap-1.5 text-xs">
+              <span className="font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">{label}:</span>
+              <span className="text-gray-700 dark:text-gray-300">{rest.join(':').trim()}</span>
             </div>
           );
         }
-        return <p key={i} className="break-words whitespace-pre-wrap">{trimmed}</p>;
+        return <p key={i} className="text-sm leading-relaxed break-words">{trimmed}</p>;
       })}
     </div>
   );
