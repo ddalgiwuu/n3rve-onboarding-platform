@@ -15,6 +15,11 @@ export interface QCLog {
   createdBy: string;
   resolvedBy?: string;
   resolvedAt?: string;
+  senderEmail?: string;
+  receivedAt?: string;
+  outlookMessageId?: string;
+  upc?: string;
+  metadata?: any;
   createdAt: string;
   updatedAt: string;
 }
