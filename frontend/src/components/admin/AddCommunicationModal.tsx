@@ -7,13 +7,14 @@ interface AddCommunicationModalProps {
   onClose: () => void;
   onCreated: () => void;
   language: string;
+  defaultUpc?: string;
 }
 
-export default function AddCommunicationModal({ isOpen, onClose, onCreated, language }: AddCommunicationModalProps) {
+export default function AddCommunicationModal({ isOpen, onClose, onCreated, language, defaultUpc }: AddCommunicationModalProps) {
   const t = (ko: string, en: string) => language === 'ko' ? ko : en;
 
   const [form, setForm] = useState({
-    upc: '',
+    upc: defaultUpc || '',
     type: 'GENERAL' as string,
     subject: '',
     summary: '',
@@ -47,7 +48,7 @@ export default function AddCommunicationModal({ isOpen, onClose, onCreated, lang
       onCreated();
       onClose();
       setForm({
-        upc: '',
+        upc: defaultUpc || '',
         type: 'GENERAL',
         subject: '',
         summary: '',
