@@ -1,7 +1,9 @@
 import { Controller, Get, Post, Body, Param, UseGuards, ForbiddenException, Query, Patch, Delete, HttpException, HttpStatus } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ApiKeyGuard } from '../auth/guards/api-key.guard';
 import { Public } from '../auth/decorators/public.decorator';
+import { ApiKeyAuth } from '../auth/decorators/api-key.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CreateQCLogDto } from './dto/create-qc-log.dto';
 import { CreateDSPOverrideDto } from './dto/create-dsp-override.dto';
@@ -304,5 +306,25 @@ export class AdminController {
       throw new ForbiddenException('Admin access required');
     }
     return this.adminService.createDSPOverride(submissionId, body, user.id);
+  }
+
+  @Post('qc-logs/by-upc')
+  @Public()
+  @ApiKeyAuth()
+  @UseGuards(ApiKeyGuard)
+  async createQCLogByUpc(@Body() body: {
+    upc: string;
+    source: string;
+    type: string;
+    severity: string;
+    dsp?: string;
+    title: string;
+    description: string;
+    senderEmail?: string;
+    receivedAt?: string;
+    outlookMessageId?: string;
+    metadata?: any;
+  }) {
+    return this.adminService.createQCLogByUpc(body);
   }
 }

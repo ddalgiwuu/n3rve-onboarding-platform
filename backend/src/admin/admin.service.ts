@@ -807,6 +807,54 @@ export class AdminService {
     return safe;
   }
 
+  async createQCLogByUpc(data: {
+    upc: string;
+    source: string;
+    type: string;
+    severity: string;
+    dsp?: string;
+    title: string;
+    description: string;
+    senderEmail?: string;
+    receivedAt?: string;
+    outlookMessageId?: string;
+    metadata?: any;
+  }) {
+    // Find submission by UPC via CatalogProduct
+    const catalogProduct = await this.prisma.catalogProduct.findFirst({
+      where: { upc: data.upc },
+    });
+
+    let submissionId = catalogProduct?.submissionId;
+
+    // If no catalog product match, try finding submission by release.upc
+    if (!submissionId) {
+      const submissions = await this.prisma.submission.findMany({
+        select: { id: true, release: true },
+      });
+      const matched = submissions.find((s) => (s.release as any)?.upc === data.upc);
+      submissionId = matched?.id ?? null;
+    }
+
+    return this.prisma.qCLog.create({
+      data: {
+        submissionId: submissionId || undefined,
+        source: data.source,
+        type: data.type,
+        severity: data.severity,
+        dsp: data.dsp,
+        title: data.title,
+        description: data.description,
+        senderEmail: data.senderEmail,
+        receivedAt: data.receivedAt ? new Date(data.receivedAt) : undefined,
+        outlookMessageId: data.outlookMessageId,
+        upc: data.upc,
+        metadata: data.metadata,
+        createdBy: 'nanoclaw-auto',
+      },
+    });
+  }
+
   // ─── B2B → n3rve-submissions Migration ───────────────────────────
 
   private readonly B2B_ROOT = '/N3RVE B2B/Clients/Labels';

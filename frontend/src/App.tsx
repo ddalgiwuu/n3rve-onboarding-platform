@@ -17,7 +17,6 @@ const SubmissionManagementPage = lazy(() => import('./pages/admin/SubmissionMana
 const AdminCustomersPage = lazy(() => import('./pages/admin/AdminCustomers'));
 const AdminSettingsPage = lazy(() => import('./pages/admin/AdminSettings'));
 const AdminAccountsPage = lazy(() => import('./pages/admin/AdminAccounts'));
-const AdminCommunicationsPage = lazy(() => import('./pages/admin/AdminCommunications'));
 
 // Lazy load non-admin pages
 const HomePage = lazy(() => import('./pages/Home'));
@@ -226,10 +225,6 @@ function App() {
             <Route path="/admin/accounts" element={
               isAuthenticated && userRole === 'ADMIN' ? <AdminAccountsPage /> : <Navigate to="/login" />
             } />
-            <Route path="/admin/communications" element={
-              isAuthenticated && userRole === 'ADMIN' ? <AdminCommunicationsPage /> : <Navigate to="/login" />
-            } />
-
             {/* Admin Catalog routes */}
             <Route path="/admin/catalog" element={
               isAuthenticated && userRole === 'ADMIN' ? <Suspense fallback={<LoadingSpinner />}><CatalogPage /></Suspense> : <Navigate to="/login" />

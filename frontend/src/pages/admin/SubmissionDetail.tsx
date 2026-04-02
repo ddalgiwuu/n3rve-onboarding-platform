@@ -7,11 +7,10 @@ import { adminService } from '@/services/admin.service';
 import SubmissionDetailView from '@/components/admin/SubmissionDetailView';
 import QCLogTab from '@/components/admin/QCLogTab';
 import DSPMemoTab from '@/components/admin/DSPMemoTab';
-import CommunicationsTab from '@/components/admin/CommunicationsTab';
 import toast from 'react-hot-toast';
 import catalogApi from '@/lib/catalog-api';
 
-type TabId = 'details' | 'qclogs' | 'dspmemo' | 'communications';
+type TabId = 'details' | 'qclogs' | 'dspmemo';
 
 export default function SubmissionDetail() {
   const { id } = useParams<{ id: string }>();
@@ -102,7 +101,6 @@ export default function SubmissionDetail() {
     { id: 'details', label: t('기본 정보', 'Details') },
     { id: 'qclogs', label: t('QC 로그', 'QC Logs') },
     { id: 'dspmemo', label: t('DSP 메모', 'DSP Memo') },
-    { id: 'communications', label: t('커뮤니케이션', 'Communications') },
   ];
 
   return (
@@ -214,12 +212,6 @@ export default function SubmissionDetail() {
         <DSPMemoTab submissionId={id!} tracks={tracks} />
       )}
 
-      {activeTab === 'communications' && (
-        <CommunicationsTab
-          upc={submission.release?.upc || ''}
-          language={language || 'ko'}
-        />
-      )}
     </div>
   );
 }
