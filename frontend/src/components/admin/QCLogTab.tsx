@@ -77,8 +77,8 @@ function relativeTime(dateStr: string, language: string | undefined) {
 }
 
 function isOutgoing(log: QCLog): boolean {
-  const sender = (log as any).senderEmail?.toLowerCase() || '';
-  return sender.includes('ryan') || sender.includes('n3rve.com') || sender.includes('n3rve.co');
+  const sender = log.senderEmail?.toLowerCase() || '';
+  return sender.includes('ryan') || sender.includes('n3rve.com') || sender.includes('n3rve.co') || log.createdBy === 'nanoclaw-auto' && !sender;
 }
 
 function threadKey(title: string): string {
@@ -102,16 +102,40 @@ function threadDisplaySubject(title: string): string {
     .trim();
 }
 
-function senderName(log: QCLog): string {
-  const email = (log as any).senderEmail || '';
-  if (!email) return 'Unknown';
-  const name = email.split('@')[0];
-  return name.charAt(0).toUpperCase() + name.slice(1);
+const KNOWN_SENDERS: Record<string, { name: string; role: string; color: string }> = {
+  'support@fuga.com': { name: 'FUGA Support', role: 'Support', color: 'bg-orange-500' },
+  'emma.levitz@fuga.com': { name: 'Emma Levitz', role: 'Client Dir.', color: 'bg-pink-500' },
+  'anj.punzalan@fuga.com': { name: 'Anj Punzalan', role: 'Support', color: 'bg-teal-500' },
+  'anita.zagar@fuga.com': { name: 'Anita Zagar', role: 'Account Mgr', color: 'bg-cyan-500' },
+  'semin.seo@fuga.com': { name: 'Semin Seo', role: 'Marketing', color: 'bg-blue-500' },
+  'ivana.anastasia@fuga.com': { name: 'Ivana Anastasia', role: 'Support', color: 'bg-violet-500' },
+  'hannah.h@fuga.com': { name: 'Hannah H.', role: 'Support', color: 'bg-rose-500' },
+  'marketing-services@fuga.com': { name: 'FUGA Marketing', role: 'Auto', color: 'bg-indigo-500' },
+  'catalogdevelopment-noreply@fuga.com': { name: 'FUGA Catalog', role: 'Auto', color: 'bg-gray-500' },
+};
+
+function senderInfo(log: QCLog): { name: string; role: string; color: string; initial: string } {
+  if (isOutgoing(log)) return { name: 'Ryan', role: 'N3RVE', color: 'bg-purple-500', initial: 'R' };
+  const email = log.senderEmail?.toLowerCase() || '';
+  const known = KNOWN_SENDERS[email];
+  if (known) return { ...known, initial: known.name.charAt(0) };
+  if (email) {
+    const local = email.split('@')[0].replace(/[._-]/g, ' ');
+    const name = local.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    return { name, role: email.split('@')[1]?.replace('.com','') || '', color: 'bg-gray-500', initial: name.charAt(0) };
+  }
+  return { name: 'System', role: '', color: 'bg-gray-400', initial: 'S' };
 }
 
-function senderInitial(log: QCLog): string {
-  const name = senderName(log);
-  return name.charAt(0).toUpperCase();
+function getMessageDate(log: QCLog): string {
+  return log.receivedAt || log.createdAt;
+}
+
+function formatFullDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const day = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  return `${day[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
 const emptyForm: CreateQCLogData = {
@@ -160,15 +184,15 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
       threadMap.get(key)!.push(log);
     }
 
-    // Sort messages within each thread chronologically (oldest first)
+    // Sort messages within each thread chronologically (oldest first) using receivedAt
     for (const [, msgs] of threadMap) {
-      msgs.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      msgs.sort((a, b) => new Date(getMessageDate(a)).getTime() - new Date(getMessageDate(b)).getTime());
     }
 
     // Sort threads by most recent message (newest thread first)
     const sortedThreads = Array.from(threadMap.entries()).sort((a, b) => {
-      const aLatest = new Date(a[1][a[1].length - 1].createdAt).getTime();
-      const bLatest = new Date(b[1][b[1].length - 1].createdAt).getTime();
+      const aLatest = new Date(getMessageDate(a[1][a[1].length - 1])).getTime();
+      const bLatest = new Date(getMessageDate(b[1][b[1].length - 1])).getTime();
       return bLatest - aLatest;
     });
 
@@ -532,82 +556,118 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
                     )}
                   </div>
                   <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
-                    {formatDate(latestMsg.createdAt)}
+                    {formatDate(getMessageDate(latestMsg))}
                   </span>
                 </button>
 
-                {/* Expanded thread: chat bubbles */}
+                {/* Expanded thread: timeline messages */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 pt-1 space-y-3 border-t border-gray-100 dark:border-gray-700">
-                    {messages.map(msg => {
-                      const outgoing = isOutgoing(msg);
-                      return (
-                        <div
-                          key={msg.id}
-                          className={`flex ${outgoing ? 'justify-end' : 'justify-start'}`}
-                        >
-                          {/* Left avatar for incoming */}
-                          {!outgoing && (
-                            <div className="flex-shrink-0 mr-2 mt-5">
-                              <div className="w-7 h-7 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-200">
-                                {senderInitial(msg)}
-                              </div>
-                            </div>
-                          )}
+                  <div className="px-4 pb-4 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <div className="relative">
+                      {/* Vertical timeline line */}
+                      <div className="absolute left-4 top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-600" />
 
-                          <div className={`max-w-[75%] ${outgoing ? 'items-end' : 'items-start'} flex flex-col`}>
-                            {/* Sender name */}
-                            <span className={`text-xs text-gray-500 dark:text-gray-400 mb-0.5 ${outgoing ? 'text-right self-end' : 'text-left self-start'}`}>
-                              {outgoing ? 'Ryan' : senderName(msg)}
-                            </span>
+                      {messages.map((msg, idx) => {
+                        const sender = senderInfo(msg);
+                        const outgoing = isOutgoing(msg);
+                        const msgDate = getMessageDate(msg);
+                        const prevDate = idx > 0 ? getMessageDate(messages[idx - 1]) : null;
+                        const dayChanged = prevDate && new Date(msgDate).toDateString() !== new Date(prevDate).toDateString();
 
-                            {/* Bubble */}
-                            <div
-                              className={`rounded-lg px-3 py-2 text-sm ${
-                                outgoing
-                                  ? 'bg-purple-100 dark:bg-purple-900/30 text-gray-900 dark:text-gray-100'
-                                  : 'bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-gray-100'
-                              }`}
-                            >
-                              <p className="whitespace-pre-wrap break-words">{msg.description}</p>
-
-                              {/* Footer: date + severity + status */}
-                              <div className={`mt-1.5 flex items-center gap-2 text-xs ${outgoing ? 'justify-end' : 'justify-start'}`}>
-                                {(msg.severity === 'ERROR' || msg.severity === 'WARN') && (
-                                  <span className={`inline-block w-2 h-2 rounded-full ${severityDot(msg.severity)}`} />
-                                )}
-                                <span className="text-gray-400 dark:text-gray-500">
-                                  {formatDate(msg.createdAt)}
+                        return (
+                          <React.Fragment key={msg.id}>
+                            {/* Date separator */}
+                            {(idx === 0 || dayChanged) && (
+                              <div className="relative flex items-center py-2 pl-10">
+                                <div className="absolute left-[13px] w-2.5 h-2.5 rounded-full bg-gray-300 dark:bg-gray-500 border-2 border-white dark:border-gray-800 z-10" />
+                                <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+                                  {new Date(msgDate).toLocaleDateString(language === 'ko' ? 'ko-KR' : 'en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                                 </span>
-                                <Select
-                                  value={msg.status}
-                                  onValueChange={v => handleStatusChange(msg.id, v)}
-                                >
-                                  <SelectTrigger className={`h-5 text-[10px] px-1.5 py-0 border-0 rounded w-auto gap-0.5 ${statusBadgeClass(msg.status)}`}>
-                                    <SelectValue />
-                                    <ChevronDown className="w-2.5 h-2.5 opacity-60" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {STATUSES.map(s => (
-                                      <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
                               </div>
-                            </div>
-                          </div>
+                            )}
 
-                          {/* Right avatar for outgoing */}
-                          {outgoing && (
-                            <div className="flex-shrink-0 ml-2 mt-5">
-                              <div className="w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center text-xs font-medium text-white">
-                                R
+                            {/* Message card */}
+                            <div className="relative pl-10 py-1.5 group">
+                              {/* Timeline dot */}
+                              <div className={`absolute left-[11px] top-4 w-3 h-3 rounded-full ${sender.color} border-2 border-white dark:border-gray-800 z-10`} />
+
+                              <div className={`rounded-lg border p-3 ${
+                                outgoing
+                                  ? 'border-purple-200 dark:border-purple-800 bg-purple-50/50 dark:bg-purple-950/20'
+                                  : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800'
+                              }`}>
+                                {/* Header: sender tag + date + status */}
+                                <div className="flex items-center justify-between gap-2 mb-1.5">
+                                  <div className="flex items-center gap-2">
+                                    {/* Avatar */}
+                                    <div className={`w-6 h-6 rounded-full ${sender.color} flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0`}>
+                                      {sender.initial}
+                                    </div>
+                                    {/* Name + role tag */}
+                                    <span className="font-semibold text-sm text-gray-900 dark:text-white">{sender.name}</span>
+                                    {sender.role && (
+                                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
+                                        outgoing
+                                          ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
+                                          : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+                                      }`}>
+                                        {sender.role}
+                                      </span>
+                                    )}
+                                    {outgoing && (
+                                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-purple-200 dark:bg-purple-800 text-purple-800 dark:text-purple-200">
+                                        {t('보냄', 'SENT')}
+                                      </span>
+                                    )}
+                                    {!outgoing && (
+                                      <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">
+                                        {t('받음', 'RECV')}
+                                      </span>
+                                    )}
+                                    {(msg.severity === 'ERROR' || msg.severity === 'WARN') && (
+                                      <span className={`inline-block w-2 h-2 rounded-full ${severityDot(msg.severity)}`} />
+                                    )}
+                                  </div>
+                                  <div className="flex items-center gap-2 flex-shrink-0">
+                                    <span className="text-xs text-gray-400 dark:text-gray-500">
+                                      {formatFullDate(msgDate)}
+                                    </span>
+                                    <Select value={msg.status} onValueChange={v => handleStatusChange(msg.id, v)}>
+                                      <SelectTrigger className={`h-5 text-[10px] px-1.5 py-0 border-0 rounded w-auto gap-0.5 ${statusBadgeClass(msg.status)}`}>
+                                        <SelectValue />
+                                        <ChevronDown className="w-2.5 h-2.5 opacity-60" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {STATUSES.map(s => (
+                                          <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                </div>
+
+                                {/* Email body — full content */}
+                                <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
+                                  {msg.description}
+                                </div>
+
+                                {/* Metadata: attachments */}
+                                {msg.metadata?.attachments && (
+                                  <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {(msg.metadata.attachments as any[]).map((att: any, i: number) => (
+                                      <span key={i} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-xs text-gray-600 dark:text-gray-300">
+                                        📎 {att.name || 'attachment'}
+                                        {att.size && <span className="text-gray-400">({Math.round(att.size/1024)}KB)</span>}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
                             </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
