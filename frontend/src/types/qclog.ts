@@ -2,7 +2,7 @@ export interface QCLog {
   id: string;
   submissionId: string;
   trackId?: string;
-  source: 'FUGA' | 'INTERNAL' | 'MANUAL';
+  source: 'FUGA' | 'INTERNAL' | 'MANUAL' | 'EMAIL';
   type: 'QC_ERROR' | 'QC_WARNING' | 'DSP_OVERRIDE' | 'NOTE' | 'REQUEST';
   severity: 'INFO' | 'WARN' | 'ERROR';
   dsp?: string;
