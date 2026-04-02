@@ -9,9 +9,21 @@ export class DropboxService {
 
   constructor(private configService: ConfigService) {
     this.accessToken = this.configService.get<string>('DROPBOX_ACCESS_TOKEN') || '';
-    this.dbx = new Dropbox({ 
-      accessToken: this.accessToken,
-    });
+    const refreshToken = this.configService.get<string>('DROPBOX_REFRESH_TOKEN');
+    const clientId = this.configService.get<string>('DROPBOX_APP_KEY');
+    const clientSecret = this.configService.get<string>('DROPBOX_APP_SECRET');
+
+    // Use refresh token for auto-renewal when available
+    if (refreshToken && clientId && clientSecret) {
+      this.dbx = new Dropbox({
+        accessToken: this.accessToken,
+        refreshToken,
+        clientId,
+        clientSecret,
+      });
+    } else {
+      this.dbx = new Dropbox({ accessToken: this.accessToken });
+    }
   }
 
   /**
