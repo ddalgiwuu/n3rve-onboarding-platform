@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Plus, ChevronDown, X } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Plus, ChevronDown, ChevronRight, X } from 'lucide-react';
 import { useLanguageStore } from '@/store/language.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import { adminService } from '@/services/admin.service';
@@ -27,7 +27,7 @@ interface Props {
   tracks?: Track[];
 }
 
-const SOURCES = ['FUGA', 'INTERNAL', 'MANUAL'] as const;
+const SOURCES = ['FUGA', 'INTERNAL', 'MANUAL', 'EMAIL'] as const;
 const TYPES = ['QC_ERROR', 'QC_WARNING', 'DSP_OVERRIDE', 'NOTE', 'REQUEST'] as const;
 const SEVERITIES = ['ERROR', 'WARN', 'INFO'] as const;
 const STATUSES = ['OPEN', 'IN_PROGRESS', 'RESOLVED', 'DISMISSED'] as const;
@@ -44,6 +44,7 @@ function sourceBadgeClass(source: string) {
     case 'FUGA': return 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300';
     case 'INTERNAL': return 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300';
     case 'MANUAL': return 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300';
+    case 'EMAIL': return 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300';
     default: return 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300';
   }
 }
@@ -75,6 +76,44 @@ function relativeTime(dateStr: string, language: string | undefined) {
   return `${days}d ago`;
 }
 
+function isOutgoing(log: QCLog): boolean {
+  const sender = (log as any).senderEmail?.toLowerCase() || '';
+  return sender.includes('ryan') || sender.includes('n3rve.com') || sender.includes('n3rve.co');
+}
+
+function threadKey(title: string): string {
+  return title
+    .replace(/^(Re:\s*|Fwd:\s*|FW:\s*|RE:\s*|Subject:\s*)+/gi, '')
+    .replace(/^#\d+\s*-\s*/, '')
+    .trim()
+    .toLowerCase();
+}
+
+function formatDate(dateStr: string): string {
+  const d = new Date(dateStr);
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${months[d.getMonth()]} ${d.getDate()}, ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function threadDisplaySubject(title: string): string {
+  return title
+    .replace(/^(Re:\s*|Fwd:\s*|FW:\s*|RE:\s*|Subject:\s*)+/gi, '')
+    .replace(/^#\d+\s*-\s*/, '')
+    .trim();
+}
+
+function senderName(log: QCLog): string {
+  const email = (log as any).senderEmail || '';
+  if (!email) return 'Unknown';
+  const name = email.split('@')[0];
+  return name.charAt(0).toUpperCase() + name.slice(1);
+}
+
+function senderInitial(log: QCLog): string {
+  const name = senderName(log);
+  return name.charAt(0).toUpperCase();
+}
+
 const emptyForm: CreateQCLogData = {
   source: 'MANUAL',
   type: 'NOTE',
@@ -103,6 +142,38 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
   const [filterSeverity, setFilterSeverity] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDSP, setFilterDSP] = useState('');
+  const [expandedThreads, setExpandedThreads] = useState<Record<string, boolean>>({});
+
+  const toggleThread = (key: string) => {
+    setExpandedThreads(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  // Separate email logs (threaded) from non-email logs (flat)
+  const { emailThreads, nonEmailLogs } = useMemo(() => {
+    const emailLogs = logs.filter(l => l.source === 'EMAIL');
+    const nonEmail = logs.filter(l => l.source !== 'EMAIL');
+
+    const threadMap = new Map<string, QCLog[]>();
+    for (const log of emailLogs) {
+      const key = threadKey(log.title);
+      if (!threadMap.has(key)) threadMap.set(key, []);
+      threadMap.get(key)!.push(log);
+    }
+
+    // Sort messages within each thread chronologically (oldest first)
+    for (const [, msgs] of threadMap) {
+      msgs.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    }
+
+    // Sort threads by most recent message (newest thread first)
+    const sortedThreads = Array.from(threadMap.entries()).sort((a, b) => {
+      const aLatest = new Date(a[1][a[1].length - 1].createdAt).getTime();
+      const bLatest = new Date(b[1][b[1].length - 1].createdAt).getTime();
+      return bLatest - aLatest;
+    });
+
+    return { emailThreads: sortedThreads, nonEmailLogs: nonEmail };
+  }, [logs]);
 
   const loadLogs = useCallback(async () => {
     try {
@@ -419,7 +490,132 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
         </div>
       ) : (
         <div className="space-y-2">
-          {logs.map(log => (
+          {/* Email threads — grouped and collapsible */}
+          {emailThreads.map(([key, messages]) => {
+            const isExpanded = expandedThreads[key] ?? false;
+            const latestMsg = messages[messages.length - 1];
+            const subject = threadDisplaySubject(messages[0].title);
+            const latestStatus = latestMsg.status;
+            const hasDSP = messages.some(m => m.dsp);
+            const dspLabel = messages.find(m => m.dsp)?.dsp;
+
+            return (
+              <div
+                key={key}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+              >
+                {/* Thread header */}
+                <button
+                  type="button"
+                  onClick={() => toggleThread(key)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors"
+                >
+                  {isExpanded ? (
+                    <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  )}
+                  <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-sm text-gray-900 dark:text-white truncate">
+                      {subject || '(no subject)'}
+                    </span>
+                    <span className="inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300">
+                      {messages.length}
+                    </span>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium ${statusBadgeClass(latestStatus)}`}>
+                      {latestStatus}
+                    </span>
+                    {hasDSP && dspLabel && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300">
+                        {dspLabel}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+                    {formatDate(latestMsg.createdAt)}
+                  </span>
+                </button>
+
+                {/* Expanded thread: chat bubbles */}
+                {isExpanded && (
+                  <div className="px-4 pb-4 pt-1 space-y-3 border-t border-gray-100 dark:border-gray-700">
+                    {messages.map(msg => {
+                      const outgoing = isOutgoing(msg);
+                      return (
+                        <div
+                          key={msg.id}
+                          className={`flex ${outgoing ? 'justify-end' : 'justify-start'}`}
+                        >
+                          {/* Left avatar for incoming */}
+                          {!outgoing && (
+                            <div className="flex-shrink-0 mr-2 mt-5">
+                              <div className="w-7 h-7 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-xs font-medium text-gray-700 dark:text-gray-200">
+                                {senderInitial(msg)}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className={`max-w-[75%] ${outgoing ? 'items-end' : 'items-start'} flex flex-col`}>
+                            {/* Sender name */}
+                            <span className={`text-xs text-gray-500 dark:text-gray-400 mb-0.5 ${outgoing ? 'text-right self-end' : 'text-left self-start'}`}>
+                              {outgoing ? 'Ryan' : senderName(msg)}
+                            </span>
+
+                            {/* Bubble */}
+                            <div
+                              className={`rounded-lg px-3 py-2 text-sm ${
+                                outgoing
+                                  ? 'bg-purple-100 dark:bg-purple-900/30 text-gray-900 dark:text-gray-100'
+                                  : 'bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-gray-100'
+                              }`}
+                            >
+                              <p className="whitespace-pre-wrap break-words">{msg.description}</p>
+
+                              {/* Footer: date + severity + status */}
+                              <div className={`mt-1.5 flex items-center gap-2 text-xs ${outgoing ? 'justify-end' : 'justify-start'}`}>
+                                {(msg.severity === 'ERROR' || msg.severity === 'WARN') && (
+                                  <span className={`inline-block w-2 h-2 rounded-full ${severityDot(msg.severity)}`} />
+                                )}
+                                <span className="text-gray-400 dark:text-gray-500">
+                                  {formatDate(msg.createdAt)}
+                                </span>
+                                <Select
+                                  value={msg.status}
+                                  onValueChange={v => handleStatusChange(msg.id, v)}
+                                >
+                                  <SelectTrigger className={`h-5 text-[10px] px-1.5 py-0 border-0 rounded w-auto gap-0.5 ${statusBadgeClass(msg.status)}`}>
+                                    <SelectValue />
+                                    <ChevronDown className="w-2.5 h-2.5 opacity-60" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {STATUSES.map(s => (
+                                      <SelectItem key={s} value={s} className="text-xs">{s}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Right avatar for outgoing */}
+                          {outgoing && (
+                            <div className="flex-shrink-0 ml-2 mt-5">
+                              <div className="w-7 h-7 rounded-full bg-purple-500 flex items-center justify-center text-xs font-medium text-white">
+                                R
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {/* Non-email logs — flat list (existing style) */}
+          {nonEmailLogs.map(log => (
             <div
               key={log.id}
               className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4"
@@ -479,7 +675,7 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
                         <span className="line-through text-red-500 dark:text-red-400">&ldquo;{log.beforeValue}&rdquo;</span>
                       )}
                       {log.beforeValue && log.afterValue && (
-                        <span className="text-gray-400">→</span>
+                        <span className="text-gray-400">&rarr;</span>
                       )}
                       {log.afterValue && (
                         <span className="text-green-600 dark:text-green-400">&ldquo;{log.afterValue}&rdquo;</span>
