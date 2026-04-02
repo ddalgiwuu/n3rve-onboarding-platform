@@ -114,11 +114,57 @@ const KNOWN_SENDERS: Record<string, { name: string; role: string; color: string 
   'catalogdevelopment-noreply@fuga.com': { name: 'FUGA Catalog', role: 'Auto', color: 'bg-gray-500' },
 };
 
+// Extract actual person name from email body (e.g. "Emma Levitz (FUGA)" or "Hi Ryan, ... Best, Vladimira")
+function extractPersonFromBody(description: string): string | null {
+  // Pattern: "Name (FUGA)" — most common in FUGA support emails
+  const fugaMatch = description.match(/([A-Z][a-z]+(?:\s+[A-Z][a-z.]+)+)\s*\(FUGA\)/);
+  if (fugaMatch) return fugaMatch[1].trim();
+  // Pattern: "Best regards, Name" or "Best, Name"
+  const bestMatch = description.match(/Best(?:\s+regards)?,?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z.]+)*)/);
+  if (bestMatch) return bestMatch[1].trim();
+  // Pattern: "Kind regards, Name"
+  const kindMatch = description.match(/Kind regards,?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z.]+)*)/);
+  if (kindMatch) return kindMatch[1].trim();
+  // Pattern: "Thanks, Name"
+  const thanksMatch = description.match(/Thanks,?\s*\n?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z.]+)*)/);
+  if (thanksMatch) return thanksMatch[1].trim();
+  return null;
+}
+
+const PERSON_COLORS: Record<string, string> = {
+  'Emma Levitz': 'bg-pink-500',
+  'Anj Punzalan': 'bg-teal-500',
+  'Anita Zagar': 'bg-cyan-500',
+  'Semin Seo': 'bg-blue-500',
+  'Ivana Anastasia': 'bg-violet-500',
+  'Hannah H': 'bg-rose-500',
+  'Hannah H.': 'bg-rose-500',
+  'Vladimira Dovalova': 'bg-emerald-500',
+  'Albert Kim': 'bg-amber-500',
+};
+
 function senderInfo(log: QCLog): { name: string; role: string; color: string; initial: string } {
-  if (isOutgoing(log)) return { name: 'Ryan', role: 'N3RVE', color: 'bg-purple-500', initial: 'R' };
+  if (isOutgoing(log)) return { name: 'Ryan Song', role: 'N3RVE', color: 'bg-purple-500', initial: 'R' };
   const email = log.senderEmail?.toLowerCase() || '';
+
+  // Try to extract actual person from body
+  const personName = extractPersonFromBody(log.description || '');
+
+  // For support@fuga.com, show the actual person if found in body
+  if (email === 'support@fuga.com' && personName) {
+    const color = PERSON_COLORS[personName] || 'bg-orange-500';
+    return { name: personName, role: 'FUGA Support', color, initial: personName.charAt(0) };
+  }
+
   const known = KNOWN_SENDERS[email];
-  if (known) return { ...known, initial: known.name.charAt(0) };
+  if (known) {
+    // Even for known senders, check if body has a different person
+    if (personName && personName !== known.name) {
+      const color = PERSON_COLORS[personName] || known.color;
+      return { name: personName, role: known.role, color, initial: personName.charAt(0) };
+    }
+    return { ...known, initial: known.name.charAt(0) };
+  }
   if (email) {
     const local = email.split('@')[0].replace(/[._-]/g, ' ');
     const name = local.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
@@ -136,6 +182,55 @@ function formatFullDate(dateStr: string): string {
   const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const day = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   return `${day[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+// Format email body: clean up FUGA ticket noise, highlight key info
+function EmailBody({ text }: { text: string }) {
+  if (!text) return <span className="text-gray-400 italic">No content</span>;
+
+  // Clean up common FUGA ticket header
+  let cleaned = text
+    .replace(/^Your request \(#\d+\) has been updated\.\s*To add additional comments, reply to this email\.\s*/i, '')
+    .trim();
+
+  // Split into paragraphs
+  const paragraphs = cleaned.split(/\n{2,}/).filter(p => p.trim());
+
+  return (
+    <div className="space-y-2">
+      {paragraphs.map((para, i) => {
+        const trimmed = para.trim();
+        // Detect quoted reply lines (starting with >)
+        if (trimmed.startsWith('>') || trimmed.startsWith('On ') && trimmed.includes(' wrote:')) {
+          return (
+            <div key={i} className="border-l-2 border-gray-300 dark:border-gray-600 pl-3 text-xs text-gray-500 dark:text-gray-400 italic">
+              {trimmed}
+            </div>
+          );
+        }
+        // Detect signature blocks
+        if (/^(Best regards|Kind regards|Thanks|Sincerely|Regards),?$/i.test(trimmed) ||
+            /^-{2,}/.test(trimmed) || /^_{2,}/.test(trimmed)) {
+          return (
+            <div key={i} className="text-xs text-gray-400 dark:text-gray-500">
+              {trimmed}
+            </div>
+          );
+        }
+        // Detect key-value pairs like "Title: And Rebirth" or "UPC: 123456"
+        if (/^[A-Za-z\s/]+:\s/.test(trimmed) && trimmed.length < 120) {
+          const [label, ...rest] = trimmed.split(':');
+          return (
+            <div key={i} className="flex gap-1">
+              <span className="font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{label}:</span>
+              <span className="break-words">{rest.join(':').trim()}</span>
+            </div>
+          );
+        }
+        return <p key={i} className="break-words whitespace-pre-wrap">{trimmed}</p>;
+      })}
+    </div>
+  );
 }
 
 const emptyForm: CreateQCLogData = {
@@ -646,9 +741,9 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
                                   </div>
                                 </div>
 
-                                {/* Email body — full content */}
-                                <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
-                                  {msg.description}
+                                {/* Email body — formatted content */}
+                                <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                                  <EmailBody text={msg.description} />
                                 </div>
 
                                 {/* Metadata: attachments */}
