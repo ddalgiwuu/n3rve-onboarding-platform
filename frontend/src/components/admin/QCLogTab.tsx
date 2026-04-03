@@ -78,7 +78,7 @@ function relativeTime(dateStr: string, language: string | undefined) {
 
 function isOutgoing(log: QCLog): boolean {
   const sender = log.senderEmail?.toLowerCase() || '';
-  return sender.includes('ryan') || sender.includes('n3rve.com') || sender.includes('n3rve.co') || log.createdBy === 'nanoclaw-auto' && !sender;
+  return sender.includes('@n3rve.com') || sender.includes('@n3rve.co');
 }
 
 function threadKey(title: string): string {
@@ -184,133 +184,72 @@ function formatFullDate(dateStr: string): string {
   return `${day[d.getDay()]} ${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
 }
 
-// Parse email thread into individual messages
-interface ParsedMessage {
-  sender: string;
-  date: string;
-  body: string;
-  isRyan: boolean;
-}
-
-function parseEmailThread(text: string): ParsedMessage[] {
-  if (!text) return [];
-
-  // Remove FUGA ticket headers
-  let cleaned = text
-    .replace(/Your request \(#\d+\) has been updated\.\s*To add additional comments, reply to this email\.\s*/gi, '')
-    .replace(/---\s*\[원본 이메일.*?\]\s*Subject:.*?From:.*?\n/gi, '')
-    .trim();
-
-  // Split by sender headers: "Name (FUGA)\nDate" or "Ryan Song\nDate"
-  const msgPattern = /(?:^|\n)((?:[A-Z][a-z]+(?:\s+[A-Z][a-z.]+)*)\s*(?:\(FUGA\))?\s*\n\s*(?:(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},\s+\d{4},?\s+\d{1,2}:\d{2}\s*(?:GMT[+-]\d+)?))/g;
-
-  const splits: { index: number; sender: string; date: string }[] = [];
-  let match;
-  while ((match = msgPattern.exec(cleaned)) !== null) {
-    const block = match[1].trim();
-    const lines = block.split('\n').map(l => l.trim());
-    const senderLine = lines[0]?.replace(/\s*\(FUGA\)\s*$/, '').trim() || '';
-    const dateLine = lines[1]?.trim() || '';
-    splits.push({ index: match.index, sender: senderLine, date: dateLine });
-  }
-
-  if (splits.length === 0) {
-    // No parseable thread — show as single message
-    return [{ sender: '', date: '', body: cleanMessageBody(cleaned), isRyan: false }];
-  }
-
-  const messages: ParsedMessage[] = [];
-  for (let i = 0; i < splits.length; i++) {
-    const start = splits[i].index + (cleaned.substring(splits[i].index).indexOf('\n', cleaned.substring(splits[i].index).indexOf(splits[i].date)) + splits[i].index);
-    const bodyStart = cleaned.indexOf('\n', cleaned.indexOf(splits[i].date, splits[i].index)) + 1;
-    const bodyEnd = i + 1 < splits.length ? splits[i + 1].index : cleaned.length;
-    const rawBody = cleaned.substring(bodyStart, bodyEnd).trim();
-    const body = cleanMessageBody(rawBody);
-
-    if (body.length > 10) {
-      const isRyan = splits[i].sender.toLowerCase().includes('ryan');
-      messages.push({ sender: splits[i].sender, date: splits[i].date, body, isRyan });
-    }
-  }
-
-  return messages.length > 0 ? messages : [{ sender: '', date: '', body: cleanMessageBody(cleaned), isRyan: false }];
-}
-
-function cleanMessageBody(text: string): string {
+function cleanEmailBody(text: string): string {
+  if (!text) return '';
   return text
+    // Remove FUGA ticket headers
+    .replace(/Your request \(#\d+\) has been updated\.\s*To add additional comments, reply to this email\.\s*/gi, '')
+    // Remove separator lines added by the backfill script
+    .replace(/---\s*\[원본 이메일.*?\]\s*Subject:.*?\nFrom:.*?\n/gi, '')
     // Remove FUGA signatures
-    .replace(/Best regards,?\s*\n\s*[A-Z][a-z]+.*?(?:Content Manager|Support Manager|Account Manager).*?·\s*FUGA\s*/gi, '')
+    .replace(/Best regards,?\s*\n\s*\w[\w\s.]+,\s*(?:Content Manager|Support Manager|Account Manager|Director|Client).*?·\s*FUGA\s*/gi, '')
     .replace(/Visit the FUGA Knowledge Base.*$/gim, '')
     .replace(/A Downtown company.*?Music Industry Lives Here\.\s*/gi, '')
     .replace(/The content of this email is confidential.*?backups of it\.\s*/gis, '')
+    // Remove divider lines
     .replace(/[–—]{2,}\s*/g, '')
-    // Remove ticket references
-    .replace(/\[\w+-\w+\]\s*$/gm, '')
-    .replace(/Your request \(#\d+\).*?reply to this email\.\s*/gi, '')
-    // Clean whitespace
+    // Remove ticket reference codes
+    .replace(/\[\w{4,}-\w{4,}\]\s*$/gm, '')
+    // Clean excessive whitespace
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 
-// Format email body with parsed thread
 function EmailBody({ text }: { text: string }) {
   if (!text) return <span className="text-gray-400 italic">No content</span>;
 
-  const messages = parseEmailThread(text);
+  const cleaned = cleanEmailBody(text);
+  const paragraphs = cleaned.split(/\n\n+/).filter(p => p.trim());
 
-  // If single message or unparseable, show cleaned text
-  if (messages.length <= 1 && !messages[0]?.sender) {
-    const cleaned = cleanMessageBody(text);
-    return <FormattedText text={cleaned} />;
-  }
-
-  // Show parsed thread as conversation
   return (
-    <div className="space-y-3">
-      {messages.map((msg, i) => (
-        <div key={i} className={`${msg.isRyan ? 'pl-4 border-l-2 border-purple-300 dark:border-purple-700' : ''}`}>
-          {msg.sender && (
-            <div className="flex items-center gap-2 mb-1">
-              <span className={`text-xs font-semibold ${msg.isRyan ? 'text-purple-600 dark:text-purple-400' : 'text-orange-600 dark:text-orange-400'}`}>
-                {msg.sender}
-              </span>
-              {msg.date && (
-                <span className="text-[10px] text-gray-400 dark:text-gray-500">{msg.date}</span>
-              )}
-              <span className={`px-1 py-0.5 rounded text-[9px] font-medium ${
-                msg.isRyan
-                  ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
-                  : 'bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300'
-              }`}>
-                {msg.isRyan ? 'SENT' : 'RECV'}
-              </span>
-            </div>
-          )}
-          <FormattedText text={msg.body} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function FormattedText({ text }: { text: string }) {
-  const paragraphs = text.split(/\n{2,}/).filter(p => p.trim());
-  return (
-    <div className="space-y-1.5">
+    <div className="space-y-2.5">
       {paragraphs.map((para, i) => {
         const trimmed = para.trim();
         if (!trimmed) return null;
-        // Key-value pairs
-        if (/^(Title|Artist|Label|UPC|Release|ISRC|Track|Genre):\s/i.test(trimmed) && trimmed.length < 150) {
-          const [label, ...rest] = trimmed.split(':');
+
+        // Quoted previous messages (lines starting with > or "On ... wrote:")
+        if (trimmed.startsWith('>') || (trimmed.startsWith('On ') && trimmed.includes('wrote:'))) {
           return (
-            <div key={i} className="flex gap-1.5 text-xs">
-              <span className="font-semibold text-gray-500 dark:text-gray-400 whitespace-nowrap">{label}:</span>
-              <span className="text-gray-700 dark:text-gray-300">{rest.join(':').trim()}</span>
+            <div key={i} className="border-l-2 border-gray-300 dark:border-gray-600 pl-3 text-xs text-gray-400 dark:text-gray-500 italic whitespace-pre-wrap">
+              {trimmed}
             </div>
           );
         }
-        return <p key={i} className="text-sm leading-relaxed break-words">{trimmed}</p>;
+
+        // Key-value metadata lines (Title: xxx, UPC: xxx, etc.)
+        const kvMatch = trimmed.match(/^(Title|Artist|Label|UPC|Release[^:]*|ISRC|Track|Genre|Barcode|Cat\.?\s*(?:nr|no|number)?)\s*:\s*(.+)$/im);
+        if (kvMatch && trimmed.length < 150 && !trimmed.includes('\n')) {
+          return (
+            <div key={i} className="flex gap-2 py-0.5">
+              <span className="font-semibold text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap min-w-[80px]">{kvMatch[1]}:</span>
+              <span className="text-sm text-gray-800 dark:text-gray-200">{kvMatch[2].trim()}</span>
+            </div>
+          );
+        }
+
+        // Greeting/closing lines (smaller, muted)
+        if (/^(Hi\s+\w+|Hello\s|Dear\s|Hey\s)/i.test(trimmed) && trimmed.length < 50) {
+          return <p key={i} className="text-sm text-gray-500 dark:text-gray-400">{trimmed}</p>;
+        }
+        if (/^(Best regards|Kind regards|Thanks|Thank you|Sincerely|Regards|Cheers),?\s*$/i.test(trimmed)) {
+          return <p key={i} className="text-xs text-gray-400 dark:text-gray-500 mt-1">{trimmed}</p>;
+        }
+        if (/^(Ryan|Ryan Song)\s*$/i.test(trimmed)) {
+          return <p key={i} className="text-xs text-gray-400 dark:text-gray-500">{trimmed}</p>;
+        }
+
+        // Regular paragraph
+        return <p key={i} className="text-sm leading-relaxed text-gray-800 dark:text-gray-200 whitespace-pre-wrap">{trimmed}</p>;
       })}
     </div>
   );
@@ -352,8 +291,18 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
 
   // Separate email logs (threaded) from non-email logs (flat)
   const { emailThreads, nonEmailLogs } = useMemo(() => {
-    const emailLogs = logs.filter(l => l.source === 'EMAIL');
+    const allEmailLogs = logs.filter(l => l.source === 'EMAIL');
     const nonEmail = logs.filter(l => l.source !== 'EMAIL');
+
+    // Deduplicate: same receivedAt (within 60s) + same threadKey = duplicate
+    const seen = new Set<string>();
+    const emailLogs = allEmailLogs.filter(l => {
+      const date = new Date(getMessageDate(l));
+      const key = `${threadKey(l.title)}|${Math.floor(date.getTime() / 60000)}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
     const threadMap = new Map<string, QCLog[]>();
     for (const log of emailLogs) {
@@ -362,15 +311,15 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
       threadMap.get(key)!.push(log);
     }
 
-    // Sort messages within each thread chronologically (oldest first) using receivedAt
+    // Sort messages within each thread: newest first
     for (const [, msgs] of threadMap) {
-      msgs.sort((a, b) => new Date(getMessageDate(a)).getTime() - new Date(getMessageDate(b)).getTime());
+      msgs.sort((a, b) => new Date(getMessageDate(b)).getTime() - new Date(getMessageDate(a)).getTime());
     }
 
     // Sort threads by most recent message (newest thread first)
     const sortedThreads = Array.from(threadMap.entries()).sort((a, b) => {
-      const aLatest = new Date(getMessageDate(a[1][a[1].length - 1])).getTime();
-      const bLatest = new Date(getMessageDate(b[1][b[1].length - 1])).getTime();
+      const aLatest = new Date(getMessageDate(a[1][0])).getTime();
+      const bLatest = new Date(getMessageDate(b[1][0])).getTime();
       return bLatest - aLatest;
     });
 
@@ -695,7 +644,7 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
           {/* Email threads — grouped and collapsible */}
           {emailThreads.map(([key, messages]) => {
             const isExpanded = expandedThreads[key] ?? false;
-            const latestMsg = messages[messages.length - 1];
+            const latestMsg = messages[0];
             const subject = threadDisplaySubject(messages[0].title);
             const latestStatus = latestMsg.status;
             const hasDSP = messages.some(m => m.dsp);
@@ -782,7 +731,7 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
                                       {sender.initial}
                                     </div>
                                     {/* Name + role tag */}
-                                    <span className="font-semibold text-sm text-gray-900 dark:text-white">{sender.name}</span>
+                                    <span className="font-semibold text-sm text-gray-900 dark:text-white" title={msg.senderEmail || ''}>{sender.name}</span>
                                     {sender.role && (
                                       <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
                                         outgoing
