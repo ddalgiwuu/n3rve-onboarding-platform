@@ -6,10 +6,18 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { SubmissionsModule } from '../submissions/submissions.module';
 import { UsersModule } from '../users/users.module';
 import { DropboxModule } from '../dropbox/dropbox.module';
+import { WebsocketModule } from '../websocket/websocket.module';
 
 @Module({
-  imports: [PrismaModule, SubmissionsModule, UsersModule, DropboxModule],
+  imports: [
+    PrismaModule,
+    SubmissionsModule,
+    UsersModule,
+    DropboxModule,
+    WebsocketModule,
+  ],
   controllers: [AdminController, AdminAccountsController],
   providers: [AdminService],
+  exports: [AdminService],
 })
 export class AdminModule {}

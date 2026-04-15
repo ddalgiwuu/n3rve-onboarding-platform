@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { DropboxService } from '../dropbox/dropbox.service';
+import { QCGateway } from '../websocket/qc.gateway';
 import * as bcrypt from 'bcryptjs';
 import { Prisma } from '@prisma/client';
 import { CreateQCLogDto } from './dto/create-qc-log.dto';
@@ -23,6 +24,7 @@ export class AdminService {
   constructor(
     private prisma: PrismaService,
     private dropbox: DropboxService,
+    private qcGateway: QCGateway,
   ) {}
 
   async getDashboardStats() {
@@ -836,7 +838,7 @@ export class AdminService {
       submissionId = matched?.id ?? null;
     }
 
-    return this.prisma.qCLog.create({
+    const created = await this.prisma.qCLog.create({
       data: {
         submissionId: submissionId || undefined,
         source: data.source,
@@ -853,6 +855,18 @@ export class AdminService {
         createdBy: 'nanoclaw-auto',
       },
     });
+
+    this.qcGateway.broadcastQCUpdate('qc-log-created', {
+      logId: created.id,
+      submissionId: created.submissionId,
+      upc: created.upc,
+      type: created.type,
+      severity: created.severity,
+      dsp: created.dsp,
+      source: created.source,
+    });
+
+    return created;
   }
 
   // ─── B2B → n3rve-submissions Migration ───────────────────────────

@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Plus, ChevronDown, ChevronRight, X } from 'lucide-react';
+import { io, Socket } from 'socket.io-client';
 import { useLanguageStore } from '@/store/language.store';
 import useSafeStore from '@/hooks/useSafeStore';
 import { adminService } from '@/services/admin.service';
@@ -346,6 +347,29 @@ export default function QCLogTab({ submissionId, tracks = [] }: Props) {
   useEffect(() => {
     loadLogs();
   }, [loadLogs]);
+
+  // Live updates: refetch when a new AUTO_EMAIL QC log arrives for this submission
+  const socketRef = useRef<Socket | null>(null);
+  useEffect(() => {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const socket = io(`${apiUrl}/qc`, {
+      transports: ['websocket', 'polling'],
+      reconnection: true,
+    });
+    socketRef.current = socket;
+
+    socket.on('qc-log-created', (payload: { submissionId?: string }) => {
+      if (!payload?.submissionId || payload.submissionId === submissionId) {
+        loadLogs();
+      }
+    });
+
+    return () => {
+      socket.off('qc-log-created');
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [submissionId, loadLogs]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
