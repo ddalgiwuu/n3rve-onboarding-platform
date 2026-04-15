@@ -152,6 +152,14 @@ export class GmailImapService implements OnModuleInit, OnModuleDestroy {
   private async handleMessage(message: FetchMessageObject) {
     if (!message.source) return;
     const parsed = await simpleParser(message.source as Buffer);
+
+    if (this.parser.shouldSkip(parsed)) {
+      this.logger.debug(
+        `Skipping system/noise email from ${parsed.from?.value?.[0]?.address}`,
+      );
+      return;
+    }
+
     const qc = this.parser.parse(parsed);
 
     if (!qc.messageId) {
@@ -167,9 +175,20 @@ export class GmailImapService implements OnModuleInit, OnModuleDestroy {
       return;
     }
 
+    // Only ingest emails that look QC-relevant:
+    //  - has a UPC (can match a release), OR
+    //  - has a classified QC/DSP/MARKETING type (not GENERAL)
+    // Drops system noise that doesn't match either signal.
+    if (!qc.upc && qc.type === 'GENERAL') {
+      this.logger.debug(
+        `Skipping non-QC email "${qc.title}" from ${qc.senderEmail}`,
+      );
+      return;
+    }
+
     if (!qc.upc) {
-      this.logger.warn(
-        `No UPC found in email "${qc.title}" from ${qc.senderEmail} — storing as UNMATCHED`,
+      this.logger.log(
+        `No UPC in QC-type email "${qc.title}" from ${qc.senderEmail} — storing as UNMATCHED`,
       );
     }
 

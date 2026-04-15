@@ -14,11 +14,25 @@ export interface ParsedQCEmail {
   rawSnippet: string;
 }
 
+// Strict: only match digits that are explicitly labeled as UPC/EAN/ISRC.
+// Do NOT match bare 13-digit numbers (causes false positives on Google
+// notification IDs, tracking numbers, timestamps, etc.).
 const UPC_PATTERNS = [
-  /\bUPC[:\s]*\(?(\d{13})\)?/i,
-  /\bEAN[:\s]*\(?(\d{13})\)?/i,
-  /\(UPC\s+(\d{13})\)/i,
-  /\b(\d{13})\b/,
+  /\bUPC[:\s#]*\(?(\d{12,13})\)?/i,
+  /\bEAN[:\s#]*\(?(\d{12,13})\)?/i,
+  /\(UPC\s+(\d{12,13})\)/i,
+  /\bbarcode[:\s]*(\d{12,13})/i,
+];
+
+// Sender domains whose emails should never be treated as QC communications.
+// Purely system/account noise — skip ingestion entirely.
+const SKIP_SENDER_DOMAINS = [
+  'accounts.google.com',
+  'no-reply@accounts.google.com',
+  'noreply@google.com',
+  'mail-noreply@google.com',
+  'googlemail.com',
+  'security-noreply@google.com',
 ];
 
 const TYPE_RULES: Array<{ type: string; severity: string; patterns: RegExp[] }> = [
@@ -95,6 +109,12 @@ const EMAIL_RX = /<([^>]+@[^>]+)>|([A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,})/i;
 @Injectable()
 export class EmailParserService {
   private readonly logger = new Logger(EmailParserService.name);
+
+  shouldSkip(mail: ParsedMail): boolean {
+    const from = (mail.from?.value?.[0]?.address ?? '').toLowerCase();
+    if (!from) return false;
+    return SKIP_SENDER_DOMAINS.some((d) => from.endsWith(d) || from === d);
+  }
 
   parse(mail: ParsedMail): ParsedQCEmail {
     const subject = mail.subject ?? '';
