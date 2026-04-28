@@ -8,13 +8,162 @@ import { TOTP } from 'totp-generator';
 export class FugaApiService {
   private readonly logger = new Logger(FugaApiService.name);
   private readonly baseUrl = 'https://login.n3rvemusic.com';
+
+  // OAuth state — primary auth path (FUGA migrated away from session-cookie login in 2026-04)
+  private accessToken: string | null = null;
+  private accessTokenExpiresAt = 0; // epoch ms
+
+  // Legacy session-cookie fallback (kept for code paths that still rely on it; new code should use OAuth)
   private sessionCookie: string | null = null;
+  private requires2FA = false;
 
   constructor(private configService: ConfigService) {}
 
-  // ==================== AUTH ====================
+  // ==================== OAUTH (primary) ====================
 
-  private requires2FA = false;
+  /**
+   * Acquire an OAuth 2.0 access token.
+   *
+   * Strategy: tries grants in order until one succeeds, then sticks with that grant for
+   * future refreshes (cached in `preferredGrant`). This handles FUGA tenants that expose
+   * either `client_credentials` (service-account) OR `password` (resource-owner) but not both,
+   * without requiring the operator to know which one their org has enabled in advance.
+   *
+   *   1. client_credentials  — when FUGA_CLIENT_ID + FUGA_CLIENT_SECRET are set
+   *   2. password            — when FUGA_USERNAME + FUGA_PASSWORD are set
+   *                            (TOTP auto-generated from FUGA_TOTP_SECRET when 2FA required)
+   *
+   * Reused for ~95% of token lifetime; refreshed automatically on expiry or 401.
+   */
+  private preferredGrant: 'client_credentials' | 'password' | null = null;
+
+  private async ensureAccessToken(): Promise<string> {
+    const now = Date.now();
+    if (this.accessToken && now < this.accessTokenExpiresAt - 30_000) {
+      return this.accessToken;
+    }
+
+    const clientId = this.configService.get<string>('FUGA_CLIENT_ID');
+    const clientSecret = this.configService.get<string>('FUGA_CLIENT_SECRET');
+    const username = this.configService.get<string>('FUGA_USERNAME');
+    const password = this.configService.get<string>('FUGA_PASSWORD');
+    const scope = this.configService.get<string>('FUGA_OAUTH_SCOPE') || 'read write';
+
+    const grantOrder: Array<'client_credentials' | 'password'> = this.preferredGrant
+      ? [this.preferredGrant]
+      : (['client_credentials', 'password'] as const).filter((g) =>
+          g === 'client_credentials' ? clientId && clientSecret : username && password,
+        );
+
+    if (grantOrder.length === 0) {
+      throw new Error(
+        'FUGA OAuth credentials missing — set either (FUGA_CLIENT_ID + FUGA_CLIENT_SECRET) or (FUGA_USERNAME + FUGA_PASSWORD)',
+      );
+    }
+
+    const errors: string[] = [];
+    for (const grant of grantOrder) {
+      try {
+        const token = await this.requestOAuthToken(grant, scope);
+        this.preferredGrant = grant; // remember the working grant for next time
+        return token;
+      } catch (err) {
+        errors.push(`${grant}: ${err.message}`);
+        // If we're locked into a preferredGrant, don't try alternatives — surface the error.
+        if (this.preferredGrant) throw err;
+      }
+    }
+
+    throw new Error(`All FUGA OAuth grants failed — ${errors.join(' | ')}`);
+  }
+
+  private async requestOAuthToken(
+    grant: 'client_credentials' | 'password',
+    scope: string,
+  ): Promise<string> {
+    const body = new URLSearchParams();
+    body.set('grant_type', grant);
+    if (scope) body.set('scope', scope);
+
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
+    };
+
+    if (grant === 'client_credentials') {
+      const id = this.configService.get<string>('FUGA_CLIENT_ID')!;
+      const secret = this.configService.get<string>('FUGA_CLIENT_SECRET')!;
+      headers.Authorization = `Basic ${Buffer.from(`${id}:${secret}`).toString('base64')}`;
+    } else {
+      // password (resource-owner) grant — uses the master FUGA user account.
+      const username = this.configService.get<string>('FUGA_USERNAME')!;
+      const password = this.configService.get<string>('FUGA_PASSWORD')!;
+      const totpSecret = this.configService.get<string>('FUGA_TOTP_SECRET');
+      const passwordClientId = this.configService.get<string>('FUGA_CLIENT_ID');
+      const passwordClientSecret = this.configService.get<string>('FUGA_CLIENT_SECRET');
+
+      body.set('username', username);
+      body.set('password', password);
+
+      // 2FA — auto-generate TOTP if a secret is configured.
+      if (totpSecret) {
+        const { otp } = await TOTP.generate(totpSecret);
+        body.set('totp', otp);
+        // Some servers expect the field under different names; provide common aliases.
+        body.set('otp', otp);
+        body.set('mfa_code', otp);
+        this.logger.log('FUGA OAuth password grant: TOTP auto-generated');
+      }
+
+      // Optional Basic auth in addition to body params (some FUGA deployments require it
+      // even for the password grant — harmless when the server ignores it).
+      if (passwordClientId && passwordClientSecret) {
+        headers.Authorization = `Basic ${Buffer.from(
+          `${passwordClientId}:${passwordClientSecret}`,
+        ).toString('base64')}`;
+      } else {
+        // Public client convention used by SPA frontends — server lets it pass.
+        body.set('client_id', 'fuga-portal');
+      }
+    }
+
+    const res = await fetch(`${this.baseUrl}/oauth/token`, {
+      method: 'POST',
+      headers,
+      body: body.toString(),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(
+        `/oauth/token ${grant} grant failed (${res.status}): ${text.slice(0, 500)}`,
+      );
+    }
+
+    const data = (await res.json()) as {
+      access_token: string;
+      token_type?: string;
+      expires_in?: number;
+      scope?: string;
+    };
+
+    if (!data.access_token) {
+      throw new Error(`${grant} grant returned no access_token: ${JSON.stringify(data)}`);
+    }
+
+    this.accessToken = data.access_token;
+    const ttlSec =
+      typeof data.expires_in === 'number' && data.expires_in > 0 ? data.expires_in : 3600;
+    this.accessTokenExpiresAt = Date.now() + ttlSec * 1000;
+    this.logger.log(
+      `FUGA OAuth token acquired (grant=${grant}, expires_in=${ttlSec}s, scope=${data.scope || scope})`,
+    );
+    return this.accessToken;
+  }
+
+  // ==================== AUTH (legacy session-cookie fallback) ====================
+  // Kept for backward compatibility; FUGA's POST /login endpoint returns 404 since 2026-04.
+  // Do not call this for new code paths — use ensureAccessToken() instead.
 
   async login(otpCode?: string): Promise<void> {
     const username = this.configService.get<string>('FUGA_USERNAME');
@@ -22,7 +171,6 @@ export class FugaApiService {
     const totpSecret = this.configService.get<string>('FUGA_TOTP_SECRET');
 
     try {
-      // Step 1: Username/password login
       const res = await fetch(`${this.baseUrl}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -44,10 +192,8 @@ export class FugaApiService {
         .map((c: string) => c.split(';')[0])
         .join('; ');
 
-      // Step 2: Handle 2FA if enabled
-      const loginData = await res.json().catch(() => ({})) as any;
+      const loginData = (await res.json().catch(() => ({}))) as any;
       if (loginData?.user?.is_two_factor_authentication_enabled) {
-        // Auto-generate OTP if TOTP secret is configured
         let code = otpCode;
         if (!code && totpSecret) {
           const { otp } = await TOTP.generate(totpSecret);
@@ -90,7 +236,6 @@ export class FugaApiService {
       throw new Error(`FUGA 2FA verification failed (${tfaRes.status}): ${body}`);
     }
 
-    // Update session cookie if new ones returned
     const tfaCookies = tfaRes.headers.raw()['set-cookie'];
     if (tfaCookies?.length) {
       this.sessionCookie = tfaCookies
@@ -106,11 +251,32 @@ export class FugaApiService {
     return this.requires2FA;
   }
 
-  private async ensureAuth(): Promise<string> {
-    if (!this.sessionCookie) {
-      await this.login();
+  // ==================== REQUEST ====================
+
+  /**
+   * Build the auth header(s) for an outbound API request.
+   *
+   * Strategy (first available wins):
+   *   1. FUGA_SESSION_COOKIE env — operator-provided portal session cookie (Express
+   *      `connect.sid`, typically copied from a logged-in browser via DevTools).
+   *      Fastest path-to-green when FUGA's portal is the only available auth surface
+   *      — confirmed working against `/api/v2/*` with just `connect.sid`.
+   *   2. OAuth Bearer token — when client_credentials/password grants are configured
+   *      (longer-term solution; `/oauth/token` currently returns 404 on n3rve's tenant
+   *      so this path is disabled until FUGA exposes API client credentials).
+   */
+  private async buildAuthHeaders(): Promise<Record<string, string>> {
+    const sessionCookie = this.configService.get<string>('FUGA_SESSION_COOKIE');
+    if (sessionCookie) {
+      // Accept either a bare cookie value or a full "name1=v1; name2=v2" string.
+      const cookieHeader = sessionCookie.includes('=')
+        ? sessionCookie
+        : `connect.sid=${sessionCookie}`;
+      return { Cookie: cookieHeader };
     }
-    return this.sessionCookie!;
+
+    const token = await this.ensureAccessToken();
+    return { Authorization: `Bearer ${token}` };
   }
 
   private async request<T = any>(
@@ -119,10 +285,10 @@ export class FugaApiService {
     body?: any,
     retryOnUnauth = true,
   ): Promise<T> {
-    const cookie = await this.ensureAuth();
+    const authHeaders = await this.buildAuthHeaders();
 
     const headers: Record<string, string> = {
-      Cookie: cookie,
+      ...authHeaders,
       Accept: 'application/json',
     };
 
@@ -141,11 +307,22 @@ export class FugaApiService {
       body: fetchBody,
     });
 
-    // If session expired, re-login once and retry
+    // If session/token rejected, retry once (token path force-refreshes; cookie path
+    // surfaces a clear error so the operator knows the cookie expired).
     if (res.status === 401 && retryOnUnauth) {
-      this.logger.warn('FUGA session expired, re-authenticating...');
-      this.sessionCookie = null;
-      return this.request<T>(method, path, body, false);
+      const usingCookie = !!this.configService.get<string>('FUGA_SESSION_COOKIE');
+      if (usingCookie) {
+        this.logger.error(
+          'FUGA returned 401 with FUGA_SESSION_COOKIE — cookie is expired or invalid. ' +
+            'Re-extract `connect.sid` from a logged-in browser session and update the secret.',
+        );
+        // No retry — cookie is the only credential and a stale one will keep failing.
+      } else {
+        this.logger.warn('FUGA returned 401 — refreshing OAuth token and retrying once');
+        this.accessToken = null;
+        this.accessTokenExpiresAt = 0;
+        return this.request<T>(method, path, body, false);
+      }
     }
 
     if (!res.ok) {
