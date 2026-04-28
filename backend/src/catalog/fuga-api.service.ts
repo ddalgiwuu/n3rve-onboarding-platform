@@ -293,12 +293,19 @@ export class FugaApiService {
     };
 
     let fetchBody: any;
-    if (body && !(body instanceof FormData)) {
-      headers['Content-Type'] = 'application/json';
-      fetchBody = JSON.stringify(body);
-    } else if (body instanceof FormData) {
-      // Let node-fetch set the multipart boundary automatically
-      fetchBody = body;
+    if (body !== undefined && body !== null) {
+      // FormData detection: node-fetch stamps it with a getBoundary() method.
+      // Avoid `instanceof FormData` because the imported class may be a different
+      // instance than the one that constructed the object (e.g. when called from
+      // a script that loaded form-data via a different module path).
+      const isFormData =
+        typeof body === 'object' && typeof (body as any).getBoundary === 'function';
+      if (isFormData) {
+        fetchBody = body;
+      } else {
+        headers['Content-Type'] = 'application/json';
+        fetchBody = JSON.stringify(body);
+      }
     }
 
     const res = await fetch(`${this.baseUrl}${path}`, {

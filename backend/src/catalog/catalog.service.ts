@@ -1452,7 +1452,7 @@ export class CatalogService {
       originalReleaseDate: product.original_release_date,
       addedDate: product.added_date,
       releaseVersion: product.release_version,
-      parentalAdvisory: product.parental_advisory || false,
+      parentalAdvisory: this.toBool(product.parental_advisory),
       suborg: product.suborg || [],
       courtesyLine: product.courtesy_line || null,
       labelCopyInfo: product.label_copy_info || null,
@@ -1515,7 +1515,7 @@ export class CatalogService {
       lyrics: asset.lyrics || null,
       pLineYear: asset.p_line_year,
       pLineText: asset.p_line_text,
-      parentalAdvisory: asset.parental_advisory || false,
+      parentalAdvisory: this.toBool(asset.parental_advisory),
       rightsClaim: asset.rights_claim,
       rightsHolderName: asset.rights_holder_name,
       recordingYear: asset.recording_year,
@@ -1832,6 +1832,20 @@ export class CatalogService {
       id: String(genre.id),
       name: String(genre.name),
     };
+  }
+
+  /**
+   * Coerce FUGA's parental_advisory field into a strict boolean.
+   * FUGA returns one of: true | false | "EXPLICIT" | "CLEAN" | "NOT_EXPLICIT" | null.
+   * Prisma rejects strings on Boolean fields, so we normalize at the boundary.
+   */
+  private toBool(value: any): boolean {
+    if (value === true) return true;
+    if (typeof value === 'string') {
+      const v = value.trim().toUpperCase();
+      return v === 'EXPLICIT' || v === 'TRUE' || v === 'YES' || v === '1';
+    }
+    return false;
   }
 
   private toRawDropboxUrl(url: string | null | undefined): string | null {
