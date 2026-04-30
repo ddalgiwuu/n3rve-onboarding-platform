@@ -56,6 +56,11 @@ const catalogApi = {
 
   pullFromFuga: () =>
     api.post('/catalog/sync/pull-from-fuga'),
+
+  deleteProduct: (id: string) =>
+    api.delete<{ deleted: boolean; product: { id: string; name: string; upc: string; fugaId: string }; assetsDeleted: number }>(
+      `/catalog/products/${id}`,
+    ),
 };
 
 export default catalogApi;

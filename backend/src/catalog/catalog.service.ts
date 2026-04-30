@@ -266,6 +266,50 @@ export class CatalogService {
     return { deleted: true };
   }
 
+  /**
+   * Delete a catalog product and all of its child assets from the local DB.
+   *
+   * This is a *local-only* delete — it does NOT touch FUGA. The next weekly
+   * pullFromFuga cron will re-import the product if it still exists upstream,
+   * which is usually fine; for permanent removal the operator should also
+   * delete (or untag) the product on the FUGA side.
+   *
+   * Mongo+Prisma has no automatic cascade, so we manually:
+   *   1. Delete every CatalogAsset whose productId matches.
+   *   2. Delete the CatalogProduct itself.
+   *
+   * Wrapped in a transaction so a partial failure leaves DB consistent.
+   */
+  async deleteCatalogProduct(id: string) {
+    const product = await this.prisma.catalogProduct.findUnique({
+      where: { id },
+      select: { id: true, name: true, upc: true, fugaId: true },
+    });
+    if (!product) {
+      throw new NotFoundException(`CatalogProduct ${id} not found`);
+    }
+
+    const [{ count: assetsDeleted }] = await this.prisma.$transaction([
+      this.prisma.catalogAsset.deleteMany({ where: { productId: id } }),
+      this.prisma.catalogProduct.delete({ where: { id } }),
+    ]);
+
+    this.logger.log(
+      `Deleted CatalogProduct id=${id} name="${product.name}" upc=${product.upc} (assets removed: ${assetsDeleted})`,
+    );
+
+    return {
+      deleted: true,
+      product: {
+        id: product.id,
+        name: product.name,
+        upc: product.upc,
+        fugaId: product.fugaId.toString(),
+      },
+      assetsDeleted,
+    };
+  }
+
   async findArtistById(id: string) {
     const artist = await this.prisma.catalogArtist.findUnique({ where: { id } });
     if (!artist) throw new NotFoundException('Artist not found');

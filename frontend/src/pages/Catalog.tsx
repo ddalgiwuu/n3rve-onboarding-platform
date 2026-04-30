@@ -57,6 +57,7 @@ export default function CatalogPage() {
   const [viewMode, setViewMode] = useState<'table' | 'tile'>('tile');
   const [page, setPage] = useState(1);
   const [isPulling, setIsPulling] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handlePullFromFuga = async () => {
     setIsPulling(true);
@@ -69,6 +70,23 @@ export default function CatalogPage() {
       toast.error(err.response?.data?.message || 'FUGA 동기화 실패');
     } finally {
       setIsPulling(false);
+    }
+  };
+
+  const handleDeleteProduct = async (id: string, name: string) => {
+    if (!window.confirm(`'${name}' 앨범을 카탈로그에서 삭제하시겠습니까?\n\n주의: 로컬 DB에서만 삭제되며, FUGA에는 영향이 없습니다. 다음 주간 동기화 때 다시 들어올 수 있습니다.`)) {
+      return;
+    }
+    setDeletingId(id);
+    try {
+      const result = await catalogApi.deleteProduct(id);
+      toast.success(`'${result.data.product.name}' 삭제 완료 (트랙 ${result.data.assetsDeleted}개 포함)`);
+      queryClient.invalidateQueries({ queryKey: ['catalog-unified'] });
+      queryClient.invalidateQueries({ queryKey: ['catalog-infinite'] });
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || '앨범 삭제 실패');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -264,7 +282,7 @@ export default function CatalogPage() {
             tileItems.map((item: any) => (
               <div
                 key={item.catalogProductId || item.submissionId}
-                className="cursor-pointer overflow-hidden rounded-lg border border-zinc-200 bg-white transition-shadow hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
+                className="group relative cursor-pointer overflow-hidden rounded-lg border border-zinc-200 bg-white transition-shadow hover:shadow-lg dark:border-zinc-700 dark:bg-zinc-800"
                 onMouseEnter={() => {
                   const id = item.catalogProductId || item.submissionId;
                   const type = item.catalogProductId ? 'catalog' : 'submission';
@@ -313,6 +331,30 @@ export default function CatalogPage() {
                   <span className="absolute bottom-2 left-2 rounded-md bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-sm">
                     {item.albumType || 'SINGLE'}
                   </span>
+                  {/* Delete button — visible on hover, only for catalog-sourced products */}
+                  {item.catalogProductId && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteProduct(item.catalogProductId, item.name);
+                      }}
+                      disabled={deletingId === item.catalogProductId}
+                      title="카탈로그에서 삭제 (FUGA에는 영향 없음)"
+                      className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-md bg-red-600/90 text-white opacity-0 backdrop-blur-sm transition-opacity hover:bg-red-700 group-hover:opacity-100 disabled:opacity-50"
+                    >
+                      {deletingId === item.catalogProductId ? (
+                        <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                          <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" className="opacity-25" />
+                          <path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" className="opacity-75" />
+                        </svg>
+                      ) : (
+                        <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M9 7V3a2 2 0 012-2h2a2 2 0 012 2v4" />
+                        </svg>
+                      )}
+                    </button>
+                  )}
                 </div>
                 {/* Info below image */}
                 <div className="p-3">

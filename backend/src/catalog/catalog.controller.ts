@@ -130,6 +130,13 @@ export class CatalogController {
     return this.catalogService.deleteArtist(id);
   }
 
+  @Delete('products/:id')
+  @UseGuards(JwtAuthGuard)
+  async deleteProduct(@Request() req, @Param('id') id: string) {
+    if (req.user.role !== 'ADMIN') throw new ForbiddenException();
+    return this.catalogService.deleteCatalogProduct(id);
+  }
+
   @Get('assets/search')
   @UseGuards(JwtAuthGuard)
   async searchAssets(
