@@ -1519,7 +1519,7 @@ export class CatalogService {
       territoryReleaseDate: product.territory_release_date || null,
       productAttachments: product.attachments || null,
       deliveryInstructions: product.delivery_instructions || null,
-      tags: product.tags || [],
+      tags: this.toStringArray(product.tags),
       territories: product.territories || null,
       artists: (product.artists || []).map((a: any) => ({
         fugaId: BigInt(a.id),
@@ -1595,7 +1595,7 @@ export class CatalogService {
       courtesyLine: asset.courtesy_line || null,
       iswc: asset.iswc || null,
       extraFields: asset.extra_fields || null,
-      tags: asset.tags || [],
+      tags: this.toStringArray(asset.tags),
       assetTerritories: asset.asset_territories || null,
       assetTranslations: asset.translations || null,
       metadataLanguage: asset.metadata_language || null,
@@ -1890,6 +1890,23 @@ export class CatalogService {
       return v === 'EXPLICIT' || v === 'TRUE' || v === 'YES' || v === '1';
     }
     return false;
+  }
+
+  /**
+   * Coerce FUGA's tags field into a clean String[].
+   * FUGA inconsistency observed: most products return [] or ["promo", "new-release"],
+   * but some (esp. tagged via the portal UI) return [{ id, name, ... }, ...] objects.
+   * Our schema is `tags String[]`, so we extract a name/string from each element.
+   */
+  private toStringArray(value: any): string[] {
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((v) => {
+        if (typeof v === 'string') return v;
+        if (v && typeof v === 'object') return v.name || v.label || v.value || v.id || null;
+        return null;
+      })
+      .filter((v): v is string => typeof v === 'string' && v.length > 0);
   }
 
   private toRawDropboxUrl(url: string | null | undefined): string | null {
