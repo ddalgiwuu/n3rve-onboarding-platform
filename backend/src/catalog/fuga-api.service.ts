@@ -3,6 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 import { TOTP } from 'totp-generator';
+import { PrismaService } from '../prisma/prisma.service';
+
+const FUGA_SESSION_KEY = 'current';
 
 @Injectable()
 export class FugaApiService {
@@ -17,7 +20,15 @@ export class FugaApiService {
   private sessionCookie: string | null = null;
   private requires2FA = false;
 
-  constructor(private configService: ConfigService) {}
+  // Cached DB session cookie (refreshed at most every 30s to avoid hammering DB on every request)
+  private cachedDbCookie: string | null = null;
+  private cachedDbCookieAt = 0;
+  private static readonly DB_COOKIE_CACHE_MS = 30_000;
+
+  constructor(
+    private configService: ConfigService,
+    private prisma: PrismaService,
+  ) {}
 
   // ==================== OAUTH (primary) ====================
 
@@ -257,26 +268,106 @@ export class FugaApiService {
    * Build the auth header(s) for an outbound API request.
    *
    * Strategy (first available wins):
-   *   1. FUGA_SESSION_COOKIE env — operator-provided portal session cookie (Express
-   *      `connect.sid`, typically copied from a logged-in browser via DevTools).
-   *      Fastest path-to-green when FUGA's portal is the only available auth surface
-   *      — confirmed working against `/api/v2/*` with just `connect.sid`.
-   *   2. OAuth Bearer token — when client_credentials/password grants are configured
-   *      (longer-term solution; `/oauth/token` currently returns 404 on n3rve's tenant
-   *      so this path is disabled until FUGA exposes API client credentials).
+   *   1. FugaSession DB row — pushed by NanoClaw after every portal login.
+   *      Highest priority because it's always the freshest credential and
+   *      doesn't require redeploying secrets when the portal session rotates.
+   *      Cached in-memory for 30s to avoid a Mongo read on every API call.
+   *   2. FUGA_SESSION_COOKIE env — operator-provided portal session cookie
+   *      (manual extraction fallback). Used when DB has nothing.
+   *   3. OAuth Bearer token — when client_credentials/password grants are
+   *      configured (long-term solution; not currently usable on n3rve's
+   *      tenant because OAuth client credentials haven't been provisioned).
    */
   private async buildAuthHeaders(): Promise<Record<string, string>> {
+    // 1. DB cookie (NanoClaw-managed) — preferred
+    const dbCookie = await this.getDbSessionCookie();
+    if (dbCookie) {
+      const cookieHeader = dbCookie.includes('=')
+        ? dbCookie
+        : `connect.sid=${dbCookie}`;
+      return { Cookie: cookieHeader };
+    }
+
+    // 2. Env var fallback
     const sessionCookie = this.configService.get<string>('FUGA_SESSION_COOKIE');
     if (sessionCookie) {
-      // Accept either a bare cookie value or a full "name1=v1; name2=v2" string.
       const cookieHeader = sessionCookie.includes('=')
         ? sessionCookie
         : `connect.sid=${sessionCookie}`;
       return { Cookie: cookieHeader };
     }
 
+    // 3. OAuth Bearer
     const token = await this.ensureAccessToken();
     return { Authorization: `Bearer ${token}` };
+  }
+
+  /**
+   * Read the latest cookie from the FugaSession Mongo row, with a 30s in-memory
+   * cache so the hot request path doesn't hit the DB on every call.
+   * Cache is invalidated immediately when setSessionCookie() writes a new value.
+   */
+  private async getDbSessionCookie(): Promise<string | null> {
+    const now = Date.now();
+    if (this.cachedDbCookie !== null && now - this.cachedDbCookieAt < FugaApiService.DB_COOKIE_CACHE_MS) {
+      return this.cachedDbCookie || null;
+    }
+    try {
+      const row = await this.prisma.fugaSession.findUnique({
+        where: { key: FUGA_SESSION_KEY },
+        select: { cookie: true },
+      });
+      this.cachedDbCookie = row?.cookie ?? '';
+      this.cachedDbCookieAt = now;
+      return row?.cookie ?? null;
+    } catch (err) {
+      this.logger.warn(`Failed to read FugaSession from DB: ${(err as Error).message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Persist a new FUGA portal session cookie pushed by NanoClaw (or operator).
+   * Returns the saved row metadata so the caller can decide whether to
+   * trigger a sync (e.g. via debounce).
+   */
+  async setSessionCookie(cookie: string, source = 'nanoclaw'): Promise<{ updatedAt: Date; lastSyncAt: Date | null }> {
+    const trimmed = cookie.trim();
+    if (!trimmed) {
+      throw new Error('Empty cookie value');
+    }
+    const row = await this.prisma.fugaSession.upsert({
+      where: { key: FUGA_SESSION_KEY },
+      create: { key: FUGA_SESSION_KEY, cookie: trimmed, source },
+      update: { cookie: trimmed, source },
+    });
+    // Invalidate the in-memory cache so the very next request picks up the new value.
+    this.cachedDbCookie = trimmed;
+    this.cachedDbCookieAt = Date.now();
+    this.logger.log(`FugaSession updated by ${source} (length=${trimmed.length})`);
+    return { updatedAt: row.updatedAt, lastSyncAt: row.lastSyncAt };
+  }
+
+  /**
+   * Mark the current FugaSession as having driven a successful sync.
+   * Used by the debounce logic in the cookie-ingest controller.
+   */
+  async recordSessionSyncedAt(when: Date = new Date()): Promise<void> {
+    await this.prisma.fugaSession.updateMany({
+      where: { key: FUGA_SESSION_KEY },
+      data: { lastSyncAt: when },
+    });
+  }
+
+  /**
+   * Read-only accessor for last-sync timestamp (for debounce check).
+   */
+  async getLastSyncAt(): Promise<Date | null> {
+    const row = await this.prisma.fugaSession.findUnique({
+      where: { key: FUGA_SESSION_KEY },
+      select: { lastSyncAt: true },
+    });
+    return row?.lastSyncAt ?? null;
   }
 
   private async request<T = any>(

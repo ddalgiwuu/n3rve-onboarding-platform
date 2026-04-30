@@ -762,3 +762,17 @@ model CatalogPublisher {
   createdAt     DateTime @default(now()) @db.Date
   updatedAt     DateTime @updatedAt @db.Date
 }
+
+/// Stores the latest FUGA portal session cookie injected by NanoClaw.
+/// Single-row table — `key` is always "current". Old values are overwritten.
+/// Used by FugaApiService.request() as the highest-priority auth credential,
+/// ahead of the legacy FUGA_SESSION_COOKIE env var.
+model FugaSession {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  key          String   @unique
+  cookie       String   /// Full Cookie header value, e.g. "connect.sid=s%3A..."
+  source       String?  /// Who pushed it last (e.g. "nanoclaw")
+  lastSyncAt   DateTime? @db.Date /// Last time this cookie successfully drove a pullFromFuga
+  updatedAt    DateTime @updatedAt @db.Date
+  createdAt    DateTime @default(now()) @db.Date
+}
