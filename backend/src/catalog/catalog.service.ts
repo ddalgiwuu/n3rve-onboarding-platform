@@ -1579,7 +1579,7 @@ export class CatalogService {
       isCompilation: product.is_compilation || false,
       explicitContent: product.explicit_content || null,
       preorderDate: product.preorder_date || null,
-      recordingYear: product.recording_year || null,
+      recordingYear: this.toStringOrNull(product.recording_year),
       recordingLocation: product.recording_location || null,
       alternateGenre: this.normalizeGenre(product.alternate_genre),
       alternateSubgenre: this.normalizeGenre(product.alternate_subgenre),
@@ -1627,12 +1627,12 @@ export class CatalogService {
       versionTypes: (asset.version_types || []).map((v: any) => ({ id: String(v.id), name: String(v.name) })),
       hasLyrics: asset.has_lyrics || false,
       lyrics: asset.lyrics || null,
-      pLineYear: asset.p_line_year,
+      pLineYear: this.toStringOrNull(asset.p_line_year),
       pLineText: asset.p_line_text,
       parentalAdvisory: this.toBool(asset.parental_advisory),
       rightsClaim: asset.rights_claim,
       rightsHolderName: asset.rights_holder_name,
-      recordingYear: asset.recording_year,
+      recordingYear: this.toStringOrNull(asset.recording_year),
       recordingLocation: asset.recording_location,
       countryOfRecording: asset.country_of_recording,
       assetCatalogTier: asset.asset_catalog_tier,
@@ -1977,6 +1977,22 @@ export class CatalogService {
         return null;
       })
       .filter((v): v is string => typeof v === 'string' && v.length > 0);
+  }
+
+  /**
+   * FUGA returns several "year" fields as Int (e.g. recording_year=2026,
+   * c_line_year=2026), but our schema stores them as String? because some
+   * tenants emit "2026-Q1" / "Unknown" / etc. Coerce numbers to their
+   * string representation; pass strings through; treat 0 / empty / undefined
+   * as null so Prisma doesn't see an Int where it expects String|null.
+   */
+  private toStringOrNull(value: any): string | null {
+    if (value === null || value === undefined || value === '') return null;
+    if (typeof value === 'string') return value;
+    // Treat 0 / NaN / Infinity as "no value" — recording_year=0 from FUGA
+    // is meaningless and shouldn't be persisted as "0".
+    if (typeof value === 'number' && Number.isFinite(value) && value !== 0) return String(value);
+    return null;
   }
 
   private toRawDropboxUrl(url: string | null | undefined): string | null {

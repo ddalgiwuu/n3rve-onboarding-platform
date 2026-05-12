@@ -343,3 +343,33 @@ describe('CatalogService.persistCoverArtUrl', () => {
     expect(prisma.$runCommandRaw).not.toHaveBeenCalled();
   });
 });
+
+describe('CatalogService.toStringOrNull', () => {
+  const svc = new CatalogService({} as any, {} as any, {} as any);
+  const fn = (v: any) => (svc as any).toStringOrNull(v);
+
+  it('coerces numbers to their string representation (FUGA returns recording_year as Int)', () => {
+    expect(fn(2026)).toBe('2026');
+    expect(fn(0)).toBeNull(); // 0 is falsy → null
+    expect(fn(-1)).toBe('-1');
+  });
+
+  it('passes strings through', () => {
+    expect(fn('2026')).toBe('2026');
+    expect(fn('2026-Q1')).toBe('2026-Q1');
+  });
+
+  it('returns null for null/undefined/empty/NaN/Infinity', () => {
+    expect(fn(null)).toBeNull();
+    expect(fn(undefined)).toBeNull();
+    expect(fn('')).toBeNull();
+    expect(fn(NaN)).toBeNull();
+    expect(fn(Infinity)).toBeNull();
+  });
+
+  it('returns null for unsupported types (objects, booleans, arrays)', () => {
+    expect(fn({})).toBeNull();
+    expect(fn(true)).toBeNull();
+    expect(fn([2026])).toBeNull();
+  });
+});
