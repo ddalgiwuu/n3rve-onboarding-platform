@@ -279,13 +279,27 @@ export class FugaApiService {
    *      tenant because OAuth client credentials haven't been provisioned).
    */
   private async buildAuthHeaders(): Promise<Record<string, string>> {
+    const { headers } = await this.buildAuthHeadersWithSource();
+    return headers;
+  }
+
+  /**
+   * Variant of buildAuthHeaders that also reports which credential source
+   * produced the headers. Used by the 401-retry branch to make accurate
+   * decisions about whether a stale DB cookie / stale env cookie / expired
+   * OAuth token is to blame.
+   */
+  private async buildAuthHeadersWithSource(): Promise<{
+    headers: Record<string, string>;
+    source: 'db-cookie' | 'env-cookie' | 'oauth';
+  }> {
     // 1. DB cookie (NanoClaw-managed) — preferred
     const dbCookie = await this.getDbSessionCookie();
     if (dbCookie) {
       const cookieHeader = dbCookie.includes('=')
         ? dbCookie
         : `connect.sid=${dbCookie}`;
-      return { Cookie: cookieHeader };
+      return { headers: { Cookie: cookieHeader }, source: 'db-cookie' };
     }
 
     // 2. Env var fallback
@@ -294,12 +308,12 @@ export class FugaApiService {
       const cookieHeader = sessionCookie.includes('=')
         ? sessionCookie
         : `connect.sid=${sessionCookie}`;
-      return { Cookie: cookieHeader };
+      return { headers: { Cookie: cookieHeader }, source: 'env-cookie' };
     }
 
     // 3. OAuth Bearer
     const token = await this.ensureAccessToken();
-    return { Authorization: `Bearer ${token}` };
+    return { headers: { Authorization: `Bearer ${token}` }, source: 'oauth' };
   }
 
   /**
@@ -376,7 +390,7 @@ export class FugaApiService {
     body?: any,
     retryOnUnauth = true,
   ): Promise<T> {
-    const authHeaders = await this.buildAuthHeaders();
+    const { headers: authHeaders, source: authSource } = await this.buildAuthHeadersWithSource();
 
     const headers: Record<string, string> = {
       ...authHeaders,
@@ -405,16 +419,29 @@ export class FugaApiService {
       body: fetchBody,
     });
 
-    // If session/token rejected, retry once (token path force-refreshes; cookie path
-    // surfaces a clear error so the operator knows the cookie expired).
+    // If session/token rejected, branch on which credential source we used:
+    //   - DB cookie  : NanoClaw push is stale. Invalidate the 30s memory cache
+    //                  so the next request re-reads the DB row (in case NanoClaw
+    //                  pushed a fresh cookie in the last 30s). Do not retry —
+    //                  retrying with the same cached value will fail the same way.
+    //   - env cookie : operator-provided cookie is stale. Log and surface.
+    //   - oauth      : token expired or invalidated. Refresh + retry once.
     if (res.status === 401 && retryOnUnauth) {
-      const usingCookie = !!this.configService.get<string>('FUGA_SESSION_COOKIE');
-      if (usingCookie) {
+      if (authSource === 'db-cookie') {
         this.logger.error(
-          'FUGA returned 401 with FUGA_SESSION_COOKIE — cookie is expired or invalid. ' +
+          `FUGA returned 401 with DB session cookie — NanoClaw-pushed cookie is stale. ` +
+            `Invalidating 30s memory cache; next call will re-read the FugaSession row.`,
+        );
+        this.cachedDbCookie = null;
+        this.cachedDbCookieAt = 0;
+        // Single retry: if NanoClaw just pushed a fresh cookie, the next read picks it up.
+        return this.request<T>(method, path, body, false);
+      } else if (authSource === 'env-cookie') {
+        this.logger.error(
+          'FUGA returned 401 with FUGA_SESSION_COOKIE env — cookie is expired or invalid. ' +
             'Re-extract `connect.sid` from a logged-in browser session and update the secret.',
         );
-        // No retry — cookie is the only credential and a stale one will keep failing.
+        // No retry — env cookie can only be refreshed by a redeploy.
       } else {
         this.logger.warn('FUGA returned 401 — refreshing OAuth token and retrying once');
         this.accessToken = null;
@@ -452,6 +479,11 @@ export class FugaApiService {
     const query = new URLSearchParams({
       page: String(page),
       page_size: String(limit),
+      // Without this flag FUGA only returns products owned directly by the
+      // primary org. Sub-org products (e.g. TV Asahi under n3rve) are hidden
+      // from the default list response, which previously caused albums like
+      // Ghost (fugaId 1008916652726) to be silently missing from sync.
+      include_suborg: 'true',
     });
     if (modified_since) {
       query.set('modified_since', modified_since);
@@ -465,6 +497,82 @@ export class FugaApiService {
 
   async getProductAssets(productId: string): Promise<any> {
     return this.request('GET', `/api/v2/products/${productId}/assets`);
+  }
+
+  /**
+   * Download a product's full-size cover image as a Buffer.
+   * Returns null if the product has no uploaded cover or the endpoint returns
+   * a non-image response. Uses the same auth source as the JSON API (DB
+   * cookie pushed by NanoClaw → env fallback → OAuth bearer).
+   */
+  async downloadProductCoverArt(fugaProductId: string | number): Promise<{
+    buffer: Buffer;
+    contentType: string;
+  } | null> {
+    const authHeaders = await this.buildAuthHeaders();
+    const res = await fetch(
+      `${this.baseUrl}/ui-only/v2/products/${fugaProductId}/image/full`,
+      { headers: { ...authHeaders, Accept: 'image/*' } },
+    );
+    if (res.status === 401 || res.status === 403) {
+      // Auth failure — distinct from "this product has no cover". Surface
+      // upward so the caller can decide whether to abort the whole sync
+      // instead of silently dropping cover art for every product.
+      throw new Error(`FUGA auth rejected for cover-art of ${fugaProductId} (HTTP ${res.status})`);
+    }
+    if (!res.ok) {
+      this.logger.warn(`FUGA cover-art fetch failed for ${fugaProductId}: HTTP ${res.status}`);
+      return null;
+    }
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.startsWith('image/')) {
+      // Some FUGA tenants return an HTML error page when no image is uploaded.
+      return null;
+    }
+    const buffer = Buffer.from(await res.arrayBuffer());
+    if (buffer.length < 10_000) {
+      // Sanity guard — placeholder images are tiny.
+      return null;
+    }
+    return { buffer, contentType };
+  }
+
+  /**
+   * Download a track's audio file. Same auth path as cover art.
+   * Returns null if the asset has no uploaded audio, fetch fails, or the
+   * response is not an audio payload (e.g. HTML login redirect, JSON error).
+   */
+  async downloadAssetAudio(fugaAssetId: string | number): Promise<{
+    buffer: Buffer;
+    contentType: string;
+  } | null> {
+    const authHeaders = await this.buildAuthHeaders();
+    const res = await fetch(
+      `${this.baseUrl}/ui-only/v2/assets/${fugaAssetId}/audio`,
+      { headers: { ...authHeaders, Accept: 'audio/*,application/octet-stream' } },
+    );
+    if (res.status === 401 || res.status === 403) {
+      throw new Error(`FUGA auth rejected for audio of asset ${fugaAssetId} (HTTP ${res.status})`);
+    }
+    if (!res.ok) {
+      this.logger.warn(`FUGA audio fetch failed for asset ${fugaAssetId}: HTTP ${res.status}`);
+      return null;
+    }
+    const contentType = res.headers.get('content-type') || '';
+    // FUGA may return text/html for an unauthenticated redirect or
+    // application/json for an error envelope; only accept binary audio.
+    const isAudio =
+      contentType.startsWith('audio/') ||
+      contentType === 'application/octet-stream' ||
+      contentType.startsWith('application/x-');
+    if (!isAudio) {
+      this.logger.warn(
+        `FUGA audio fetch for asset ${fugaAssetId} returned non-audio content-type "${contentType}"`,
+      );
+      return null;
+    }
+    const buffer = Buffer.from(await res.arrayBuffer());
+    return { buffer, contentType };
   }
 
   // ==================== ASSETS ====================

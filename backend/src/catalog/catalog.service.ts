@@ -572,7 +572,12 @@ export class CatalogService {
         motionArtwork: (submission?.release as any)?.motionArtwork || false,
 
         // Files from submission (convert Dropbox shared links to raw URLs for img rendering)
-        coverImageUrl: this.toRawDropboxUrl((submission?.files as any)?.coverImageUrl) || null,
+        // Falls back to catalog.coverArtUrl for FUGA-only products that have
+        // no n3rve submission record.
+        coverImageUrl:
+          this.toRawDropboxUrl((submission?.files as any)?.coverImageUrl) ||
+          this.toRawDropboxUrl((catalog as any)?.coverArtUrl) ||
+          null,
         artistPhotoUrl: this.toRawDropboxUrl((submission?.files as any)?.artistPhotoUrl) || null,
         audioFiles: ((submission?.files as any)?.audioFiles || []).map((af: any) => ({
           ...af,
@@ -904,8 +909,12 @@ export class CatalogService {
       hasSyncHistory: (submission?.release as any)?.hasSyncHistory || false,
       motionArtwork: (submission?.release as any)?.motionArtwork || false,
 
-      // Files
-      coverImageUrl: this.toRawDropboxUrl((submission?.files as any)?.coverImageUrl) || null,
+      // Files — submission has priority, catalog.coverArtUrl is the fallback
+      // for FUGA-only products that were never submitted through n3rve.
+      coverImageUrl:
+        this.toRawDropboxUrl((submission?.files as any)?.coverImageUrl) ||
+        this.toRawDropboxUrl((catalogProduct as any)?.coverArtUrl) ||
+        null,
       artistPhotoUrl: this.toRawDropboxUrl((submission?.files as any)?.artistPhotoUrl) || null,
       audioFiles: ((submission?.files as any)?.audioFiles || []).map((af: any) => ({
         ...af,
@@ -1264,7 +1273,12 @@ export class CatalogService {
     return this.fugaApi.is2FARequired();
   }
 
-  async pullFromFuga(otp?: string): Promise<any> {
+  // The `otp` parameter is preserved for the admin manual-trigger HTTP path
+  // (catalog.controller.ts → POST /admin/sync-fuga). It is no longer used
+  // internally because FUGA auth is now driven entirely by the session cookie
+  // pushed via NanoClaw / FUGA_SESSION_COOKIE env, not by a TOTP login. Kept
+  // to avoid breaking that controller signature.
+  async pullFromFuga(_otp?: string): Promise<any> {
     const result = { created: 0, updated: 0, errors: [] as string[] };
 
     try {
@@ -1384,83 +1398,139 @@ export class CatalogService {
    * Cover art → /n3rve-submissions/{label}/Releases/{date}_{name}_{upc}/Cover Art/
    * Audio → .../Music/
    */
+  /**
+   * Strip everything that could break a Dropbox path or filename:
+   *  - path separators       / \
+   *  - shell/url metacharacters # @
+   *  - Windows-reserved      : * ? " < > |
+   *  - control chars + NUL    -
+   *  - leading/trailing space and dot (Dropbox rejects trailing dots)
+   * Also caps length at 120 chars to stay well inside Dropbox's 255-char
+   * filename limit even when extensions get appended later.
+   */
+  private sanitizeForDropbox(input: string, fallback = 'untitled'): string {
+    const cleaned = String(input ?? '')
+      .replace(/[ -]/g, '') // control chars + NUL + DEL
+      .replace(/[/\\:*?"<>|#@]/g, '_') // path/url/shell metacharacters
+      .replace(/^[\s.]+|[\s.]+$/g, '') // leading/trailing whitespace + dots
+      .slice(0, 120);
+    return cleaned || fallback;
+  }
+
   private async syncProductToDropbox(fugaProduct: any, fugaId: string | number): Promise<void> {
-    const label = fugaProduct.label?.name || fugaProduct.label || 'Unknown';
+    const name = this.sanitizeForDropbox(fugaProduct.name, 'untitled-product');
     const upc = fugaProduct.upc || '';
-    const name = (fugaProduct.name || '').replace(/[/\\:*?"<>|]/g, '_');
-    const dateStr = fugaProduct.consumer_release_date?.split?.('T')?.[0] || 'unknown';
-    const basePath = `/n3rve-submissions/${label}/Releases/${dateStr}_${name}_${upc}`;
 
-    // Check if already has cover art
-    try {
-      const existing = await this.dropbox.listFiles(`${basePath}/Cover Art`);
-      if (existing.some((f: any) => f['.tag'] === 'file')) return;
-    } catch {}
+    // Cover and audio are decided independently now. The previous implementation
+    // bailed out as soon as a Dropbox "Cover Art" folder had any file, which
+    // silently skipped audio sync for any product that already had a cover.
+    // The "already-exists" guard also relied on a derived Dropbox path that
+    // dropbox.uploadFile() does not actually use — uploadFile owns the path
+    // layout internally and returns the real path + shared link.
+    const fugaBig = BigInt(fugaId);
+    const existing = await this.prisma.catalogProduct.findUnique({
+      where: { fugaId: fugaBig },
+      select: { coverArtUrl: true },
+    });
+    const coverAlreadyPersisted = !!existing?.coverArtUrl;
 
-    // Create folder structure
-    for (const sub of ['Cover Art', 'Music', 'Lyrics', 'Marketing']) {
-      await this.dropbox.createFolder(`${basePath}/${sub}`);
-    }
-
-    // Download cover art from FUGA → upload to Dropbox
-    if (fugaProduct.cover_image?.has_uploaded) {
+    // ---- Cover art ----
+    if (!coverAlreadyPersisted && fugaProduct.cover_image?.has_uploaded) {
       try {
-        await this.fugaApi.login();
-        const imgRes = await fetch(
-          `https://login.n3rvemusic.com/ui-only/v2/products/${fugaId}/image/full`,
-          { headers: { Cookie: (this.fugaApi as any).sessionCookie } },
-        );
-        if (imgRes.ok) {
-          const buf = Buffer.from(await imgRes.arrayBuffer());
-          if (buf.length > 10000) {
-            const isPng = buf[0] === 0x89 && buf[1] === 0x50;
-            const coverFileName = `cover.${isPng ? 'png' : 'jpg'}`;
-            const coverPath = `${basePath}/Cover Art/${coverFileName}`;
-
-            const uploadResult = await this.dropbox.uploadFile(buf, coverFileName, '', '', name, 'cover');
-            // Also try direct path upload
-            try {
-              const sharedUrl = await this.dropbox.getOrCreateSharedLink(coverPath);
-              // Update submission with cover URL
-              const allSubs = await this.prisma.submission.findMany({ select: { id: true, release: true, files: true } });
-              const sub = allSubs.find(s => (s.release as any)?.upc === upc);
-              if (sub) {
-                const files = (sub.files || {}) as any;
-                await this.prisma.submission.update({
-                  where: { id: sub.id },
-                  data: { files: { ...files, coverImageUrl: sharedUrl } },
-                });
-              }
-            } catch {}
+        const cover = await this.fugaApi.downloadProductCoverArt(fugaId);
+        if (cover) {
+          const isPng = cover.contentType.includes('png') ||
+            (cover.buffer[0] === 0x89 && cover.buffer[1] === 0x50);
+          const coverFileName = `cover.${isPng ? 'png' : 'jpg'}`;
+          // dropbox.uploadFile() decides the destination path and returns the
+          // real path + shared URL. We must not pre-construct a path and call
+          // getOrCreateSharedLink against it — that path is never created.
+          const uploadResult = await this.dropbox.uploadFile(
+            cover.buffer,
+            coverFileName,
+            '',
+            '',
+            name,
+            'cover',
+          );
+          if (uploadResult?.url) {
+            await this.persistCoverArtUrl(fugaId, uploadResult.url);
           }
         }
       } catch (err) {
-        this.logger.warn(`Cover art sync failed for ${name}: ${err.message}`);
+        this.logger.warn(`Cover art sync failed for ${name}: ${(err as Error).message}`);
       }
     }
 
-    // Download audio from FUGA → upload to Dropbox
+    // ---- Audio ----
     for (const asset of fugaProduct.assets || []) {
       if (!asset.audio?.has_uploaded) continue;
       try {
-        await this.fugaApi.login();
-        const audioRes = await fetch(
-          `https://login.n3rvemusic.com/ui-only/v2/assets/${asset.id}/audio`,
-          { headers: { Cookie: (this.fugaApi as any).sessionCookie } },
-        );
-        if (audioRes.ok) {
-          const buf = Buffer.from(await audioRes.arrayBuffer());
-          if (buf.length > 1000 && buf.length < 150 * 1024 * 1024) {
-            const fileName = (asset.audio?.original_filename || `${asset.name || 'track'}.wav`).replace(/[/\\#@]/g, '_');
-            await this.dropbox.uploadFile(buf, fileName, '', '', name, 'audio');
-          }
+        const audio = await this.fugaApi.downloadAssetAudio(asset.id);
+        if (
+          audio &&
+          audio.buffer.length > 1000 &&
+          audio.buffer.length < 150 * 1024 * 1024
+        ) {
+          const rawName = asset.audio?.original_filename || `${asset.name || 'track'}.wav`;
+          const fileName = this.sanitizeForDropbox(rawName, 'track.wav');
+          await this.dropbox.uploadFile(audio.buffer, fileName, '', '', name, 'audio');
         }
       } catch (err) {
-        this.logger.warn(`Audio sync failed for asset ${asset.id}: ${err.message}`);
+        this.logger.warn(`Audio sync failed for asset ${asset.id}: ${(err as Error).message}`);
       }
     }
 
     this.logger.log(`Dropbox sync complete for: ${name} (${upc})`);
+  }
+
+  /**
+   * Save the cover-art shared URL onto the CatalogProduct (always) and the
+   * linked Submission (if one exists). The dual write lets the catalog
+   * listing show cover art for FUGA-only products that were never submitted
+   * through n3rve, while keeping the existing submission-driven behaviour.
+   */
+  private async persistCoverArtUrl(fugaId: string | number, sharedUrl: string): Promise<void> {
+    const fugaBig = BigInt(fugaId);
+    const product = await this.prisma.catalogProduct.findUnique({
+      where: { fugaId: fugaBig },
+      select: { id: true, submissionId: true },
+    });
+    if (!product) return;
+    await this.prisma.catalogProduct.update({
+      where: { fugaId: fugaBig },
+      data: { coverArtUrl: sharedUrl },
+    });
+    if (product.submissionId) {
+      // Atomic Mongo update with a dotted-path $set. Only writes when the
+      // coverImageUrl field is missing/null/empty so concurrent writers cannot
+      // overwrite a populated URL, and sibling fields (audioFiles, lyricsFiles,
+      // etc.) are never touched — eliminates the read-modify-write race that
+      // the previous implementation had.
+      try {
+        await this.prisma.$runCommandRaw({
+          update: 'Submission',
+          updates: [
+            {
+              q: {
+                _id: { $oid: product.submissionId },
+                $or: [
+                  { 'files.coverImageUrl': { $exists: false } },
+                  { 'files.coverImageUrl': null },
+                  { 'files.coverImageUrl': '' },
+                ],
+              },
+              u: { $set: { 'files.coverImageUrl': sharedUrl } },
+              multi: false,
+            },
+          ],
+        });
+      } catch (err) {
+        this.logger.warn(
+          `Submission cover-url backfill failed for ${product.submissionId}: ${(err as Error).message}`,
+        );
+      }
+    }
   }
 
   private mapReleaseFormatForDb(albumType?: string): string {

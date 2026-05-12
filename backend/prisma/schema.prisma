@@ -645,6 +645,7 @@ model CatalogProduct {
   deliveryInstructions  Json?
   tags                  String[]
   territories           Json?
+  coverArtUrl          String?            // Dropbox shared URL — populated by syncProductToDropbox during pullFromFuga
   createdAt            DateTime           @default(now()) @db.Date
   updatedAt            DateTime           @updatedAt @db.Date
 
