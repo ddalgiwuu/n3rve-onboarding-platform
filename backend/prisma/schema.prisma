@@ -777,3 +777,17 @@ model FugaSession {
   updatedAt    DateTime @updatedAt @db.Date
   createdAt    DateTime @default(now()) @db.Date
 }
+
+/// Stores the latest Softr (fugascore.softr.app) session cookie pushed by
+/// NanoClaw or operator. Mirrors FugaSession; intentionally a separate table
+/// so a stale FUGA portal cookie does not block Softr sync or vice versa.
+/// Single-row table — `key` is always "current". Old values are overwritten.
+model SoftrSession {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  key          String   @unique
+  cookie       String   /// Full Cookie header value
+  source       String?  /// Who pushed it last (e.g. "nanoclaw", "operator")
+  lastSyncAt   DateTime? @db.Date /// Last time this cookie drove a successful FUGA Score sync
+  updatedAt    DateTime @updatedAt @db.Date
+  createdAt    DateTime @default(now()) @db.Date
+}
