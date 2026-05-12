@@ -843,7 +843,7 @@ export default function CatalogDetailPage() {
           <Field label="Similar Artists" value={marketing.similarArtists} />
           <Field label="Marketing Keywords" value={marketing.marketingKeywords} />
           <Field label="Artist Gender" value={marketing.artistGender} />
-          <Field label="Main Genre" value={marketing.mainGenre} />
+          <Field label="Main Genre" value={marketing.mainGenre || marketing.genre} />
           {marketing.subgenres?.length > 0 && <Field label="Subgenres" value={marketing.subgenres.join(', ')} />}
           {(marketing.artistUgcPriorities || p.release?.artistUgcPriorities) && (
             <Field label={t('catalogDetail.artistUgcPriorities') || 'Artist UGC Priorities'} value={
