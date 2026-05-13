@@ -646,6 +646,38 @@ model CatalogProduct {
   tags                  String[]
   territories           Json?
   coverArtUrl          String?            // Dropbox shared URL — populated by syncProductToDropbox during pullFromFuga
+  // ----- FUGA-mirrored extended fields (added 2026-05-13 to match every
+  //       key returned by /api/v2/products/{id}, so DB preserves whatever
+  //       FUGA has, even when fields are empty) -----
+  acquisition          Json?              /// { id, acquisition_type } from FUGA
+  artwork              Json?              /// list of artwork image refs
+  coverImage           Json?              /// FUGA cover_image metadata (separate from coverArtUrl which is the Dropbox URL)
+  cLineYear            Int?
+  pLineYear            Int?
+  customFields         Json?              /// FUGA custom_fields list (free-form)
+  extra1               String?
+  extra2               String?
+  extra3               String?
+  extra4               String?
+  extra5               String?
+  extra6               String?
+  extra7               String?
+  extra8               String?
+  extra9               String?
+  extra10              String?
+  hasBeenDelivered     Boolean            @default(false)
+  hashedKey            String?            /// FUGA opaque ref, kept for debugging
+  masteredForItunes    Boolean            @default(false)
+  lastReviewItem       Json?
+  organization         Json?              /// { id, name }
+  parentalAdvisoryNext String?
+  physicalProduct      Json?
+  suborgOwners         Json?              /// list of {id, name}; supersedes the misnamed `suborg` string array
+  suborgState          String?
+  totalAssets          Int?
+  // -----
+  marketing            Json?              /// Marketing data for catalog-only products (no linked Submission). Mirrors Submission.marketing shape; populated by FugaScoreSyncService UPC-fallback path.
+  marketingSyncedAt    DateTime?          @db.Date
   createdAt            DateTime           @default(now()) @db.Date
   updatedAt            DateTime           @updatedAt @db.Date
 
@@ -710,6 +742,32 @@ model CatalogAsset {
   youtubeShortPreview   Boolean  @default(false)
   previewLength         Int?
   assetReleaseDate      String?
+  // ----- FUGA-mirrored extended asset fields (added 2026-05-13) -----
+  assetState                       String?
+  assetScheduleExcludedTerritories Json?
+  countryOfComissioning            String? /// FUGA's spelling preserved
+  extra1                           String?
+  extra2                           String?
+  extra3                           String?
+  extra4                           String?
+  extra5                           String?
+  extra6                           String?
+  extra7                           String?
+  extra8                           String?
+  extra9                           String?
+  extra10                          String?
+  mfitEmailAddress                 String?
+  musicalWork                      Json?
+  organization                     Json?
+  parentalAdvisoryNext             String?
+  previewReleaseDateTime           String?
+  previewReleaseDateTimeZone       String?
+  previewStart                     Int?
+  productsCount                    Int?
+  assetType                        String? /// FUGA `type` (TRACK / VIDEO / etc) — renamed to avoid Prisma reserved word
+  videoHd                          Boolean @default(false)
+  videoPreviewImage                Json?
+  // -----
   createdAt            DateTime             @default(now()) @db.Date
   updatedAt            DateTime             @updatedAt @db.Date
 

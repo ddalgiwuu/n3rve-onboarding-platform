@@ -158,15 +158,23 @@ export class FugaScoreSyncService {
       return this.finalizeRun({ status: 'PARTIAL', source: opts.source, dryRun, startedAt, counters, errors: ['Zero projects returned from Softr'] });
     }
 
-    // Step 2: Load submissions once for matching.
+    // Step 2: Load submissions AND catalog-only products (no submission link)
+    // for two-tier matching. Submissions first — they hold user-curated
+    // marketing data. CatalogProduct fallback covers FUGA-only releases that
+    // were never submitted through n3rve (e.g. RIVA / BBY NABE / 'this feeling'
+    // 2026-05-13).
     const submissions = await this.prisma.submission.findMany({
       select: { id: true, albumTitle: true, labelName: true, release: true },
+    });
+    const catalogOnlyProducts = await this.prisma.catalogProduct.findMany({
+      where: { submissionId: null },
+      select: { id: true, name: true, label: true, upc: true },
     });
 
     // Step 3: Per-project match + atomic update.
     for (const project of projects) {
       try {
-        const match = this.matchProject(project, submissions);
+        const match = this.matchProject(project, submissions, catalogOnlyProducts);
         if (match.kind === 'ambiguous') {
           counters.ambiguous++;
           this.logger.warn(`[${opts.source}] AMBIGUOUS: ${match.reason}`);
@@ -182,7 +190,11 @@ export class FugaScoreSyncService {
         if (Object.keys(patch).length === 0) continue;
 
         if (!dryRun) {
-          await this.applyAtomicMarketingPatch(match.submissionId, patch);
+          if (match.kind === 'submission') {
+            await this.applyAtomicMarketingPatch(match.submissionId, patch);
+          } else {
+            await this.applyAtomicCatalogMarketingPatch(match.catalogProductId, patch);
+          }
         }
         counters.updated++;
       } catch (err: any) {
@@ -287,21 +299,28 @@ export class FugaScoreSyncService {
   private matchProject(
     project: any,
     submissions: Array<{ id: string; albumTitle: string | null; labelName: string | null; release: any }>,
-  ): { kind: 'unique'; submissionId: string } | { kind: 'ambiguous'; reason: string } | { kind: 'none' } {
+    catalogOnlyProducts: Array<{ id: string; name: string; label: string | null; upc: string }> = [],
+  ):
+    | { kind: 'submission'; submissionId: string }
+    | { kind: 'catalog'; catalogProductId: string }
+    | { kind: 'ambiguous'; reason: string }
+    | { kind: 'none' } {
     const f = project.fields || {};
     const projectName = (f['Project Name'] || '').trim();
     const label = (f['Label'] || '').trim();
     const upcsRaw = f['Product UPCs - Unique'] || f['Digital Products'] || '';
 
-    // UPC primary.
+    // UPC primary — submission first, then catalog-only fallback.
     const upcList = Array.isArray(upcsRaw)
       ? upcsRaw.map(String).map((u) => u.trim()).filter(Boolean)
       : typeof upcsRaw === 'string'
         ? upcsRaw.split(',').map((u) => u.trim()).filter(Boolean)
         : [];
     for (const upc of upcList) {
-      const hit = submissions.find((s) => (s.release as any)?.upc === upc);
-      if (hit) return { kind: 'unique', submissionId: hit.id };
+      const subHit = submissions.find((s) => (s.release as any)?.upc === upc);
+      if (subHit) return { kind: 'submission', submissionId: subHit.id };
+      const catHit = catalogOnlyProducts.find((c) => c.upc === upc);
+      if (catHit) return { kind: 'catalog', catalogProductId: catHit.id };
     }
 
     // Name+label fallback — strict: non-empty normalized label AND exactly one candidate.
@@ -310,19 +329,37 @@ export class FugaScoreSyncService {
     }
     const normProjectName = this.normalize(projectName);
     const normLabel = this.normalize(label);
-    const candidates = submissions.filter((s) => {
+
+    // Try submission name+label match first.
+    const subCandidates = submissions.filter((s) => {
       const subName = this.normalize(s.albumTitle || '');
       const subLabel = this.normalize(s.labelName || '');
       if (!subName || !subLabel) return false;
       return subName === normProjectName && subLabel === normLabel;
     });
-    if (candidates.length === 1) return { kind: 'unique', submissionId: candidates[0].id };
-    if (candidates.length > 1) {
+    if (subCandidates.length === 1) return { kind: 'submission', submissionId: subCandidates[0].id };
+    if (subCandidates.length > 1) {
       return {
         kind: 'ambiguous',
-        reason: `"${projectName}" + "${label}" matched ${candidates.length} submissions: ${candidates.map((c) => c.id).join(', ')}`,
+        reason: `"${projectName}" + "${label}" matched ${subCandidates.length} submissions: ${subCandidates.map((c) => c.id).join(', ')}`,
       };
     }
+
+    // Catalog-only name+label fallback.
+    const catCandidates = catalogOnlyProducts.filter((c) => {
+      const catName = this.normalize(c.name || '');
+      const catLabel = this.normalize(c.label || '');
+      if (!catName || !catLabel) return false;
+      return catName === normProjectName && catLabel === normLabel;
+    });
+    if (catCandidates.length === 1) return { kind: 'catalog', catalogProductId: catCandidates[0].id };
+    if (catCandidates.length > 1) {
+      return {
+        kind: 'ambiguous',
+        reason: `"${projectName}" + "${label}" matched ${catCandidates.length} catalog-only products: ${catCandidates.map((c) => c.id).join(', ')}`,
+      };
+    }
+
     return { kind: 'none' };
   }
 
@@ -431,6 +468,34 @@ export class FugaScoreSyncService {
       updates: [
         {
           q: { _id: { $oid: submissionId } },
+          u: { $set },
+          multi: false,
+        },
+      ],
+    } as any);
+  }
+
+  /**
+   * Catalog-only fallback for products without a linked Submission.
+   * Writes to CatalogProduct.marketing (a new field added 2026-05-13).
+   * Same atomic dotted-$set pattern.
+   */
+  private async applyAtomicCatalogMarketingPatch(catalogProductId: string, patch: Record<string, unknown>): Promise<void> {
+    const $set: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(patch)) {
+      if (v === undefined) continue;
+      $set[`marketing.${k}`] = v;
+    }
+    if (Object.keys($set).length === 0) return;
+    // marketingSyncedAt mirrors the submission flow's fugaScoreSyncedAt so
+    // the unified API can surface a single "last marketing sync" timestamp.
+    $set['marketingSyncedAt'] = new Date();
+
+    await this.prisma.$runCommandRaw({
+      update: 'CatalogProduct',
+      updates: [
+        {
+          q: { _id: { $oid: catalogProductId } },
           u: { $set },
           multi: false,
         },

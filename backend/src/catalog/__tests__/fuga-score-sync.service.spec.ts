@@ -37,6 +37,9 @@ describe('FugaScoreSyncService', () => {
       submission: {
         findMany: jest.fn().mockResolvedValue(opts.submissions || []),
       },
+      catalogProduct: {
+        findMany: jest.fn().mockResolvedValue((opts as any).catalogOnlyProducts || []),
+      },
       syncRun: {
         create: jest.fn().mockResolvedValue({ id: 'run1' }),
         findMany: jest.fn().mockResolvedValue([]),
@@ -288,6 +291,54 @@ describe('FugaScoreSyncService', () => {
       expect(result.counters.ambiguous).toBe(1);
       expect(result.counters.updated).toBe(0);
       expect(prisma.$runCommandRaw).not.toHaveBeenCalled();
+    });
+
+    it('UPC matches catalog-only product → writes to CatalogProduct.marketing (new path)', async () => {
+      const { svc, prisma } = makeService({
+        dbCookie: 'c',
+        submissions: [], // no submission for this UPC
+        catalogOnlyProducts: [
+          { id: 'cat-prod-1', name: 'this feeling', label: 'ZEST', upc: '8721466979786' },
+        ],
+      } as any);
+      fetchMock.mockResolvedValueOnce(okResponse([
+        softrProject({
+          'Product UPCs - Unique': '8721466979786',
+          'Elevator Pitch': 'A catalog-only release',
+          'Main Genre': { id: 's1', label: 'Pop' },
+        }),
+      ]));
+
+      const result = await svc.runSync({ source: 'cli' });
+      expect(result.counters.matched).toBe(1);
+      expect(result.counters.updated).toBe(1);
+      // Atomic update should target CatalogProduct (not Submission), and
+      // include the marketingSyncedAt sentinel that the unified API reads.
+      const call = prisma.$runCommandRaw.mock.calls[0][0];
+      expect(call.update).toBe('CatalogProduct');
+      expect(call.updates[0].q._id.$oid).toBe('cat-prod-1');
+      expect(call.updates[0].u.$set['marketing.mainPitch']).toBe('A catalog-only release');
+      expect(call.updates[0].u.$set['marketingSyncedAt']).toBeDefined();
+    });
+
+    it('submission match takes precedence over catalog-only when UPC exists in both', async () => {
+      const { svc, prisma } = makeService({
+        dbCookie: 'c',
+        submissions: [
+          { id: 'sub-1', albumTitle: 'X', labelName: 'L', release: { upc: '777' } },
+        ],
+        catalogOnlyProducts: [
+          { id: 'cat-prod-1', name: 'X', label: 'L', upc: '777' },
+        ],
+      } as any);
+      fetchMock.mockResolvedValueOnce(okResponse([
+        softrProject({ 'Product UPCs - Unique': '777', 'Elevator Pitch': 'pitch' }),
+      ]));
+
+      await svc.runSync({ source: 'cli' });
+      const call = prisma.$runCommandRaw.mock.calls[0][0];
+      expect(call.update).toBe('Submission');
+      expect(call.updates[0].q._id.$oid).toBe('sub-1');
     });
 
     it('empty label: no fallback match, no update', async () => {

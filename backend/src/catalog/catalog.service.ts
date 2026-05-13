@@ -879,9 +879,56 @@ export class CatalogService {
       albumContributors: submission?.albumContributors || null,
       albumFeaturingArtists: submission?.albumFeaturingArtists || null,
       albumNote: submission?.albumNote || null,
-      explicitContent: submission?.explicitContent || false,
-      marketing: submission?.marketing || null,
+      // Prefer submission's explicitContent (boolean from the form). For
+      // catalog-only products fall back to CatalogProduct.explicitContent
+      // which can be a string (FUGA's value).
+      explicitContent: submission?.explicitContent ?? catalogProduct?.explicitContent ?? false,
+      // Marketing fallback for catalog-only products:
+      // 1. Submission.marketing (filled by user form or FUGA Score sync)
+      // 2. CatalogProduct.marketing (filled by FugaScoreSyncService when no
+      //    matching submission exists for this UPC — see PR-3 catalog-only path)
+      marketing: submission?.marketing || (catalogProduct as any)?.marketing || null,
+      marketingSyncedAt:
+        (submission?.marketing as any)?.fugaScoreSyncedAt ||
+        (catalogProduct as any)?.marketingSyncedAt ||
+        null,
       adminNotes: submission?.adminNotes || null,
+
+      // Catalog-only extended FUGA fields surfaced for the admin detail page.
+      // The UI reads these as `p.<fieldName>`; they were previously dropped
+      // by the unified mapper so the page rendered empty even when the DB
+      // had data.
+      preorderDate: catalogProduct?.preorderDate || null,
+      recordingYear: catalogProduct?.recordingYear || null,
+      recordingLocation: catalogProduct?.recordingLocation || null,
+      alternateGenre: catalogProduct?.alternateGenre || null,
+      alternateSubgenre: catalogProduct?.alternateSubgenre || null,
+      catalogTerritories: catalogProduct?.territories || null,
+      acquisition: (catalogProduct as any)?.acquisition || null,
+      artwork: (catalogProduct as any)?.artwork || null,
+      cLineYear: (catalogProduct as any)?.cLineYear || null,
+      pLineYear: (catalogProduct as any)?.pLineYear || null,
+      hasBeenDelivered: (catalogProduct as any)?.hasBeenDelivered || false,
+      masteredForItunes: (catalogProduct as any)?.masteredForItunes || false,
+      parentalAdvisoryNext: (catalogProduct as any)?.parentalAdvisoryNext || null,
+      organization: (catalogProduct as any)?.organization || null,
+      suborgOwners: (catalogProduct as any)?.suborgOwners || null,
+      totalAssets: (catalogProduct as any)?.totalAssets || null,
+      catalogCustomFields: (catalogProduct as any)?.customFields || null,
+      catalogExtraFields: catalogProduct
+        ? {
+            extra1: (catalogProduct as any).extra1,
+            extra2: (catalogProduct as any).extra2,
+            extra3: (catalogProduct as any).extra3,
+            extra4: (catalogProduct as any).extra4,
+            extra5: (catalogProduct as any).extra5,
+            extra6: (catalogProduct as any).extra6,
+            extra7: (catalogProduct as any).extra7,
+            extra8: (catalogProduct as any).extra8,
+            extra9: (catalogProduct as any).extra9,
+            extra10: (catalogProduct as any).extra10,
+          }
+        : null,
       submitterName: submission?.submitterName || null,
       submitterEmail: submission?.submitterEmail || null,
       reviewedBy: submission?.reviewedBy || null,
@@ -1311,44 +1358,91 @@ export class CatalogService {
 
         for (const product of products) {
           try {
-            // Fetch full product details (includes assets and artists)
+            // Fetch full product details (includes assets and artists).
+            // detailFetchFailed is the gate for the mapper: when we couldn't
+            // get a full payload we must NOT run mapProductData over the
+            // sparse summary — its `... || null` defaults would clobber rich
+            // data already persisted from earlier successful syncs.
             let fullProduct: any;
+            let detailFetchFailed = false;
             try {
               fullProduct = await this.fugaApi.getProduct(String(product.id));
-              // Fetch assets separately if not embedded
-              if (!fullProduct.assets || fullProduct.assets.length === 0) {
-                const assetsResponse = await this.fugaApi.getProductAssets(String(product.id));
-                fullProduct.assets = assetsResponse?.asset || assetsResponse?.assets || assetsResponse?.data || [];
-              }
             } catch (detailErr) {
-              // Fall back to the summary data from the list
+              detailFetchFailed = true;
               fullProduct = product;
               result.errors.push(`Product ${product.id} detail fetch failed: ${detailErr.message}`);
             }
 
-            const data = this.mapProductData(fullProduct);
+            // The embedded `assets[]` in /products/{id} is summary-shaped
+            // (~16 fields per asset; missing lyrics, contributors, language,
+            // preview info, rights, etc.). Always overwrite with the rich
+            // payload from /products/{id}/assets (~70 fields). Only skip
+            // when the dedicated endpoint also fails — otherwise we'd be
+            // persisting the same sparse asset shape that caused the data
+            // loss in production.
+            if (!detailFetchFailed) {
+              try {
+                const assetsResponse = await this.fugaApi.getProductAssets(String(product.id));
+                const richAssets =
+                  assetsResponse?.asset ||
+                  assetsResponse?.assets ||
+                  assetsResponse?.data ||
+                  [];
+                if (Array.isArray(richAssets) && richAssets.length > 0) {
+                  fullProduct.assets = richAssets;
+                }
+              } catch (assetsErr) {
+                // Asset detail fetch failure is non-fatal — we keep the
+                // embedded sparse assets to maintain link integrity, but
+                // log so operators can see why some assets are not enriched.
+                this.logger.warn(
+                  `Product ${product.id} assets-detail fetch failed; falling back to embedded summary: ${(assetsErr as Error).message}`,
+                );
+              }
+            }
+
+            // Only run the mapper when we have a real detail payload. With a
+            // sparse summary fallback, skip the update so the DB keeps
+            // whatever rich data the previous successful sync wrote.
+            const data = detailFetchFailed ? null : this.mapProductData(fullProduct);
 
             const existing = await this.prisma.catalogProduct.findUnique({
               where: { fugaId: BigInt(product.id) },
             });
 
-            if (existing) {
-              await this.prisma.catalogProduct.update({
-                where: { fugaId: BigInt(product.id) },
-                data: { ...data, syncedAt: new Date() },
-              });
-              result.updated++;
-            } else {
-              await this.prisma.catalogProduct.create({ data });
-              result.created++;
+            if (data) {
+              if (existing) {
+                await this.prisma.catalogProduct.update({
+                  where: { fugaId: BigInt(product.id) },
+                  data: { ...data, syncedAt: new Date() },
+                });
+                result.updated++;
+              } else {
+                await this.prisma.catalogProduct.create({ data });
+                result.created++;
+              }
+            } else if (!existing) {
+              // Detail fetch failed AND product is new — we cannot persist
+              // anything safely without a real payload. Record an error and
+              // move on; next sync should retry.
+              result.errors.push(`Product ${product.id} skipped: detail fetch failed and no prior record exists`);
+              continue;
             }
+            // (If data is null but existing row already exists, we keep it.
+            //  Better to serve a slightly stale rich record than to overwrite
+            //  with summary fields and clear lyrics/contributors/etc.)
 
-            // Upsert assets
-            for (const asset of fullProduct.assets || []) {
-              try {
-                await this.upsertAsset(asset, product.id);
-              } catch (assetErr) {
-                result.errors.push(`Asset ${asset.id} in product ${product.id}: ${assetErr.message}`);
+            // Upsert assets — only when we have rich asset data.
+            // With a fallback summary payload, asset data would be sparse
+            // and could clobber lyrics/contributors/etc. on existing
+            // CatalogAsset rows.
+            if (!detailFetchFailed) {
+              for (const asset of fullProduct.assets || []) {
+                try {
+                  await this.upsertAsset(asset, product.id);
+                } catch (assetErr) {
+                  result.errors.push(`Asset ${asset.id} in product ${product.id}: ${assetErr.message}`);
+                }
               }
             }
 
@@ -1561,13 +1655,23 @@ export class CatalogService {
       releaseFormatType: product.release_format_type,
       productType: product.product_type,
       cLineText: product.c_line_text,
+      cLineYear: this.toIntOrNull(product.c_line_year),
       pLineText: product.p_line_text,
+      pLineYear: this.toIntOrNull(product.p_line_year),
       consumerReleaseDate: product.consumer_release_date,
+      consumerReleaseTime: product.consumer_release_time || null,
       originalReleaseDate: product.original_release_date,
       addedDate: product.added_date,
       releaseVersion: product.release_version,
       parentalAdvisory: this.toBool(product.parental_advisory),
-      suborg: product.suborg || [],
+      parentalAdvisoryNext: product.parental_advisory_next || null,
+      // FUGA returns `suborg_owners` (list of {id, name}); the legacy
+      // `suborg String[]` field was never populated because FUGA never
+      // returned a `suborg` key. Keep the legacy column as [] for back-compat
+      // and store the real data in suborgOwners.
+      suborg: [],
+      suborgOwners: product.suborg_owners || null,
+      suborgState: product.suborg_state || null,
       courtesyLine: product.courtesy_line || null,
       labelCopyInfo: product.label_copy_info || null,
       albumNotes: product.album_notes || null,
@@ -1576,7 +1680,9 @@ export class CatalogService {
       extraFields: product.extra_fields || null,
       catalogTier: product.catalog_tier || null,
       totalVolumes: product.total_volumes || null,
-      isCompilation: product.is_compilation || false,
+      totalAssets: this.toIntOrNull(product.total_assets),
+      // FUGA returns `compilation` (boolean), not `is_compilation`.
+      isCompilation: this.toBool(product.compilation),
       explicitContent: product.explicit_content || null,
       preorderDate: product.preorder_date || null,
       recordingYear: this.toStringOrNull(product.recording_year),
@@ -1591,6 +1697,27 @@ export class CatalogService {
       deliveryInstructions: product.delivery_instructions || null,
       tags: this.toStringArray(product.tags),
       territories: product.territories || null,
+      // FUGA-mirrored extended fields
+      acquisition: product.acquisition || null,
+      artwork: product.artwork || null,
+      coverImage: product.cover_image || null,
+      customFields: product.custom_fields || null,
+      extra1: product.extra_1 ?? null,
+      extra2: product.extra_2 ?? null,
+      extra3: product.extra_3 ?? null,
+      extra4: product.extra_4 ?? null,
+      extra5: product.extra_5 ?? null,
+      extra6: product.extra_6 ?? null,
+      extra7: product.extra_7 ?? null,
+      extra8: product.extra_8 ?? null,
+      extra9: product.extra_9 ?? null,
+      extra10: product.extra_10 ?? null,
+      hasBeenDelivered: this.toBool(product.has_been_delivered),
+      hashedKey: product.hashed_key || null,
+      masteredForItunes: this.toBool(product.mastered_for_itunes),
+      lastReviewItem: product.last_review_item || null,
+      organization: product.organization || null,
+      physicalProduct: product.physical_product || null,
       artists: (product.artists || []).map((a: any) => ({
         fugaId: BigInt(a.id),
         name: a.name,
@@ -1625,16 +1752,22 @@ export class CatalogService {
       audioLocale: asset.audio_locale,
       assetVersion: asset.asset_version,
       versionTypes: (asset.version_types || []).map((v: any) => ({ id: String(v.id), name: String(v.name) })),
-      hasLyrics: asset.has_lyrics || false,
+      // FUGA does not return a `has_lyrics` flag — derive it from lyrics
+      // presence. The schema column was previously always false because
+      // every asset has lyrics == undefined for this key.
+      hasLyrics: !!(asset.lyrics && String(asset.lyrics).trim()),
       lyrics: asset.lyrics || null,
       pLineYear: this.toStringOrNull(asset.p_line_year),
       pLineText: asset.p_line_text,
       parentalAdvisory: this.toBool(asset.parental_advisory),
+      parentalAdvisoryNext: asset.parental_advisory_next || null,
       rightsClaim: asset.rights_claim,
       rightsHolderName: asset.rights_holder_name,
       recordingYear: this.toStringOrNull(asset.recording_year),
       recordingLocation: asset.recording_location,
       countryOfRecording: asset.country_of_recording,
+      // FUGA spells this `comissioning` (sic). Preserve their key as-is.
+      countryOfComissioning: asset.country_of_comissioning || null,
       assetCatalogTier: asset.asset_catalog_tier,
       audio: asset.audio || null,
       originalEncodings: asset.original_encodings || null,
@@ -1672,7 +1805,30 @@ export class CatalogService {
       audioLanguage: asset.audio_language || asset.audio_locale || null,
       youtubeShortPreview: asset.youtube_short_preview || false,
       previewLength: asset.preview_length || null,
+      previewStart: this.toIntOrNull(asset.preview_start),
+      previewReleaseDateTime: asset.preview_release_date_time || null,
+      previewReleaseDateTimeZone: asset.preview_release_date_time_zone || null,
       assetReleaseDate: asset.asset_release_date || null,
+      // FUGA-mirrored extended asset fields
+      assetState: asset.asset_state || null,
+      assetScheduleExcludedTerritories: asset.asset_schedule_excluded_territories || null,
+      extra1: asset.extra_1 ?? null,
+      extra2: asset.extra_2 ?? null,
+      extra3: asset.extra_3 ?? null,
+      extra4: asset.extra_4 ?? null,
+      extra5: asset.extra_5 ?? null,
+      extra6: asset.extra_6 ?? null,
+      extra7: asset.extra_7 ?? null,
+      extra8: asset.extra_8 ?? null,
+      extra9: asset.extra_9 ?? null,
+      extra10: asset.extra_10 ?? null,
+      mfitEmailAddress: asset.mfit_email_address || null,
+      musicalWork: asset.musical_work || null,
+      organization: asset.organization || null,
+      productsCount: this.toIntOrNull(asset.products_count),
+      assetType: asset.type || null,
+      videoHd: !!asset.video_hd,
+      videoPreviewImage: asset.video_preview_image || null,
       productId: product.id,
     };
 
@@ -1993,6 +2149,19 @@ export class CatalogService {
     // is meaningless and shouldn't be persisted as "0".
     if (typeof value === 'number' && Number.isFinite(value) && value !== 0) return String(value);
     return null;
+  }
+
+  /**
+   * Coerce FUGA year/count fields into Int or null. Used for c_line_year,
+   * p_line_year, total_assets, etc. that the schema models as Int? — empty
+   * strings and 0 are treated as "no value" the same as recording_year above
+   * (FUGA sometimes emits 0 for unknown years).
+   */
+  private toIntOrNull(value: any): number | null {
+    if (value === null || value === undefined || value === '') return null;
+    const n = typeof value === 'number' ? value : parseInt(String(value), 10);
+    if (!Number.isFinite(n) || n === 0) return null;
+    return n;
   }
 
   private toRawDropboxUrl(url: string | null | undefined): string | null {
