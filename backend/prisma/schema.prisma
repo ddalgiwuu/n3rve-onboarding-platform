@@ -791,3 +791,28 @@ model SoftrSession {
   updatedAt    DateTime @updatedAt @db.Date
   createdAt    DateTime @default(now()) @db.Date
 }
+
+/// Persistent record of automation sync runs (FUGA Score for now; other
+/// producers may be added later). Lets admin UI surface "last run status" and
+/// alerts detect stale syncs. Intentionally stores only counters + truncated
+/// error strings — never cookies, raw upstream payloads, or long marketing
+/// text.
+model SyncRun {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  type        String   /// "FUGA_SCORE" (extend as new producers are wired in)
+  source      String   /// "cron" | "admin" | "cookie-ingest-debounce" | "cli"
+  status      String   /// "SUCCESS" | "AUTH_ERROR" | "PARTIAL" | "FAILED" | "SKIPPED_LOCKED"
+  dryRun      Boolean  @default(false)
+  startedAt   DateTime @db.Date
+  endedAt     DateTime @db.Date
+  fetched     Int      @default(0)
+  matched     Int      @default(0)
+  updated     Int      @default(0)
+  ambiguous   Int      @default(0)
+  noMatch     Int      @default(0)
+  errorCount  Int      @default(0)
+  errors      String[] /// max 10 entries, each truncated to 200 chars
+  createdAt   DateTime @default(now()) @db.Date
+
+  @@index([type, startedAt(sort: Desc)])
+}

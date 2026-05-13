@@ -7,6 +7,7 @@ import { SubmissionsModule } from '../submissions/submissions.module';
 import { UsersModule } from '../users/users.module';
 import { DropboxModule } from '../dropbox/dropbox.module';
 import { WebsocketModule } from '../websocket/websocket.module';
+import { CatalogModule } from '../catalog/catalog.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { WebsocketModule } from '../websocket/websocket.module';
     UsersModule,
     DropboxModule,
     WebsocketModule,
+    CatalogModule,
   ],
   controllers: [AdminController, AdminAccountsController],
   providers: [AdminService],

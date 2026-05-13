@@ -7,11 +7,15 @@ import { ApiKeyAuth } from '../auth/decorators/api-key.decorator';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { CreateQCLogDto } from './dto/create-qc-log.dto';
 import { CreateDSPOverrideDto } from './dto/create-dsp-override.dto';
+import { FugaScoreSyncService } from '../catalog/fuga-score-sync.service';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard)
 export class AdminController {
-  constructor(private readonly adminService: AdminService) {}
+  constructor(
+    private readonly adminService: AdminService,
+    private readonly fugaScoreSync: FugaScoreSyncService,
+  ) {}
 
   @Get('dashboard')
   async getDashboard(@CurrentUser() user: any) {
@@ -326,5 +330,50 @@ export class AdminController {
     metadata?: any;
   }) {
     return this.adminService.createQCLogByUpc(body);
+  }
+
+  // ==================== FUGA SCORE SYNC ====================
+
+  /**
+   * Trigger a FUGA Score (Softr) marketing sync on demand. Use `dryRun=true`
+   * to preview matches without writing.
+   *
+   * The single-flight lock in FugaScoreSyncService collapses concurrent
+   * triggers (cron + admin + cookie-ingest debounce) into one run.
+   */
+  @Post('sync/fuga-score')
+  async triggerFugaScoreSync(
+    @CurrentUser() user: any,
+    @Body() body: { dryRun?: boolean } = {},
+  ) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    const result = await this.fugaScoreSync.runSync({
+      source: 'admin',
+      dryRun: !!body.dryRun,
+    });
+    return {
+      status: result.status,
+      dryRun: result.dryRun,
+      startedAt: result.startedAt,
+      endedAt: result.endedAt,
+      counters: result.counters,
+      errors: result.errors,
+    };
+  }
+
+  /**
+   * Last FUGA Score sync run status. Surfaces in admin UI so operators can
+   * see "are we current?" without Slack alerts. Returns null if no run has
+   * been recorded yet.
+   */
+  @Get('sync/fuga-score/status')
+  async getFugaScoreSyncStatus(@CurrentUser() user: any) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Admin access required');
+    }
+    const latest = await this.fugaScoreSync.getLatestSyncRun();
+    return { latest };
   }
 }
