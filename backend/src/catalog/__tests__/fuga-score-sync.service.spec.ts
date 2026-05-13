@@ -112,6 +112,72 @@ describe('FugaScoreSyncService', () => {
       expect($set['marketing.subgenres']).toEqual(['Synth-pop', 'Dream-pop']);
     });
 
+    it('extracts label from Softr {id, label} object for mainGenre (regression: was saving raw object)', async () => {
+      const { svc, prisma } = makeService({
+        dbCookie: 'connect.sid=valid',
+        submissions: [{ id: 'sub1', albumTitle: 'X', labelName: 'L', release: { upc: '111' } }],
+      });
+      fetchMock.mockResolvedValueOnce(okResponse([
+        softrProject({
+          'Product UPCs - Unique': '111',
+          'Main Genre': { id: 'selTWSt5mlX1JFlvl', label: 'Electronic' },
+        }),
+      ]));
+
+      await svc.runSync({ source: 'cli' });
+      const $set = prisma.$runCommandRaw.mock.calls[0][0].updates[0].u.$set;
+      expect($set['marketing.mainGenre']).toBe('Electronic'); // string, not object
+    });
+
+    it('extracts labels from array of {id, label} objects for subgenres (regression: was producing "[object Object]")', async () => {
+      const { svc, prisma } = makeService({
+        dbCookie: 'connect.sid=valid',
+        submissions: [{ id: 'sub1', albumTitle: 'X', labelName: 'L', release: { upc: '111' } }],
+      });
+      fetchMock.mockResolvedValueOnce(okResponse([
+        softrProject({
+          'Product UPCs - Unique': '111',
+          'Subgenre(s)': [
+            { id: 's1', label: 'Synth-pop' },
+            { id: 's2', label: 'Dream-pop' },
+          ],
+          'Mood(s)': [
+            { id: 'm1', label: 'Happy' },
+            { id: 'm2', label: 'Energetic' },
+          ],
+        }),
+      ]));
+
+      await svc.runSync({ source: 'cli' });
+      const $set = prisma.$runCommandRaw.mock.calls[0][0].updates[0].u.$set;
+      expect($set['marketing.subgenres']).toEqual(['Synth-pop', 'Dream-pop']);
+      expect($set['marketing.moods']).toEqual(['Happy', 'Energetic']);
+      // No "[object Object]" entries anywhere
+      const allStrings = [
+        ...($set['marketing.subgenres'] as string[]),
+        ...($set['marketing.moods'] as string[]),
+      ];
+      expect(allStrings.every((s) => !s.includes('[object'))).toBe(true);
+    });
+
+    it('handles mixed shapes gracefully (object + string in same array)', async () => {
+      const { svc, prisma } = makeService({
+        dbCookie: 'connect.sid=valid',
+        submissions: [{ id: 'sub1', albumTitle: 'X', labelName: 'L', release: { upc: '111' } }],
+      });
+      fetchMock.mockResolvedValueOnce(okResponse([
+        softrProject({
+          'Product UPCs - Unique': '111',
+          'Subgenre(s)': [{ id: 's1', label: 'A' }, 'B', { name: 'C' }, null, ''],
+        }),
+      ]));
+
+      await svc.runSync({ source: 'cli' });
+      const $set = prisma.$runCommandRaw.mock.calls[0][0].updates[0].u.$set;
+      // 'A' (label), 'B' (plain string), 'C' (name fallback). null and '' filtered out.
+      expect($set['marketing.subgenres']).toEqual(['A', 'B', 'C']);
+    });
+
     it('normalizes moods/instruments arrays', async () => {
       const { svc, prisma } = makeService({
         dbCookie: 'connect.sid=valid',

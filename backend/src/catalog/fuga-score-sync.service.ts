@@ -347,14 +347,14 @@ export class FugaScoreSyncService {
     if (f['Elevator Pitch']) patch.mainPitch = f['Elevator Pitch'];
     if (f['Social Media Rollout Plan']) patch.socialMediaPlan = f['Social Media Rollout Plan'];
     if (f['Marketing Spend']) patch.marketingSpend = f['Marketing Spend'];
-    if (f['Priority Level']) patch.priorityLevel = f['Priority Level'];
-    if (f['Main Genre']) patch.mainGenre = f['Main Genre']; // canonical name (NOT `genre`)
+    if (f['Priority Level']) patch.priorityLevel = this.extractLabel(f['Priority Level']);
+    if (f['Main Genre']) patch.mainGenre = this.extractLabel(f['Main Genre']); // canonical name (NOT `genre`)
     if (f['Subgenre(s)']) patch.subgenres = this.toStringArray(f['Subgenre(s)']);
     if (f['Mood(s)']) patch.moods = this.toStringArray(f['Mood(s)']);
     if (f['Instruments']) patch.instruments = this.toStringArray(f['Instruments']);
     if (f['Listening Link']) patch.listeningLink = f['Listening Link'];
     if (f['Client Project Code']) patch.projectCode = f['Client Project Code'];
-    if (f['Frontline / Catalog']) patch.frontlineCatalog = f['Frontline / Catalog'];
+    if (f['Frontline / Catalog']) patch.frontlineCatalog = this.extractLabel(f['Frontline / Catalog']);
     if (f['Label Notes']) patch.labelNotes = f['Label Notes'];
     if (f['Project Start Date']) patch.projectStartDate = f['Project Start Date'];
     if (f['Project ID']) patch.fugaProjectId = f['Project ID'];
@@ -367,9 +367,47 @@ export class FugaScoreSyncService {
     return patch;
   }
 
+  /**
+   * Softr returns single-select fields as either a plain string or a
+   * `{ id, label }` object (depending on the field type / API endpoint).
+   * Extract the human-readable label and drop everything else.
+   * Returns empty string for null/undefined/unrecognized shapes so the
+   * `if (f[...])` guard in buildMarketingPatch still skips empty values.
+   */
+  private extractLabel(value: unknown): string {
+    if (value == null) return '';
+    if (typeof value === 'string') return value.trim();
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value);
+    if (typeof value === 'object') {
+      const obj = value as Record<string, unknown>;
+      if (typeof obj.label === 'string') return obj.label.trim();
+      if (typeof obj.name === 'string') return obj.name.trim();
+      if (typeof obj.value === 'string') return obj.value.trim();
+    }
+    return '';
+  }
+
+  /**
+   * Normalize Softr multi-select to a clean string array. Handles:
+   *   - real arrays of strings: ['Pop', 'Rock'] → ['Pop', 'Rock']
+   *   - arrays of {id, label} objects (Softr default): [{label: 'Pop'}, ...]
+   *   - comma-separated string: 'Pop, Rock' → ['Pop', 'Rock']
+   *   - single object: { label: 'Pop' } → ['Pop']
+   * Empty / unrecognized entries are filtered out.
+   */
   private toStringArray(value: unknown): string[] {
-    if (Array.isArray(value)) return value.map(String).map((s) => s.trim()).filter(Boolean);
-    if (typeof value === 'string') return value.split(',').map((s) => s.trim()).filter(Boolean);
+    if (Array.isArray(value)) {
+      return value
+        .map((item) => this.extractLabel(item))
+        .filter((s) => s.length > 0);
+    }
+    if (typeof value === 'string') {
+      return value.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    if (value && typeof value === 'object') {
+      const label = this.extractLabel(value);
+      return label ? [label] : [];
+    }
     return [];
   }
 
