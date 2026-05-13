@@ -1408,14 +1408,20 @@ export class CatalogService {
 
             const existing = await this.prisma.catalogProduct.findUnique({
               where: { fugaId: BigInt(product.id) },
+              select: { id: true },
             });
 
             if (data) {
               if (existing) {
-                await this.prisma.catalogProduct.update({
-                  where: { fugaId: BigInt(product.id) },
-                  data: { ...data, syncedAt: new Date() },
-                });
+                // MongoDB Atlas caps update aggregation pipelines at 50 stages.
+                // Prisma's `update({ data })` serializes every field as its own
+                // `$set` stage, so our enriched ~60-field CatalogProduct hit
+                // the cap (`Error code 8000 (AtlasError): Pipeline length
+                // greater than 50 not supported`) on first re-sync after
+                // PR #16. Bypass with a single-stage raw `$set` command —
+                // same pattern already used at catalog.service.ts:1505 for
+                // cover-art backfill.
+                await this.atomicUpdateCatalogProduct(existing.id, { ...data, syncedAt: new Date() });
                 result.updated++;
               } else {
                 await this.prisma.catalogProduct.create({ data });
@@ -1839,18 +1845,14 @@ export class CatalogService {
           productId: product.id,
         },
       },
+      select: { id: true },
     });
 
     if (existing) {
-      await this.prisma.catalogAsset.update({
-        where: {
-          fugaId_productId: {
-            fugaId: BigInt(asset.id),
-            productId: product.id,
-          },
-        },
-        data,
-      });
+      // Same Atlas 50-stage pipeline limit as CatalogProduct above — see
+      // atomicUpdateCatalogProduct comment. CatalogAsset is even wider after
+      // the FUGA-mirror schema expansion, so this MUST be a raw single-$set.
+      await this.atomicUpdateCatalogAsset(existing.id, data);
     } else {
       await this.prisma.catalogAsset.create({ data });
     }
@@ -2162,6 +2164,82 @@ export class CatalogService {
     const n = typeof value === 'number' ? value : parseInt(String(value), 10);
     if (!Number.isFinite(n) || n === 0) return null;
     return n;
+  }
+
+  /**
+   * Convert a Prisma-style data object into Mongo extended-JSON suitable for
+   * `$runCommandRaw`. BigInt → { $numberLong }, Date → { $date }. Nulls and
+   * undefined are passed through. Other values pass through as-is — Mongo
+   * accepts JS-native types in extended JSON for Json columns.
+   *
+   * This is called by atomicUpdateCatalogProduct / atomicUpdateCatalogAsset
+   * to avoid the Prisma pipeline-style update that hits the Atlas
+   * 50-stage pipeline limit on our wide schema.
+   */
+  private toMongoExtendedJson(value: any): any {
+    if (value === null || value === undefined) return value;
+    if (typeof value === 'bigint') return { $numberLong: value.toString() };
+    if (value instanceof Date) return { $date: value.toISOString() };
+    if (Array.isArray(value)) return value.map((v) => this.toMongoExtendedJson(v));
+    if (typeof value === 'object') {
+      const out: Record<string, any> = {};
+      for (const [k, v] of Object.entries(value)) {
+        out[k] = this.toMongoExtendedJson(v);
+      }
+      return out;
+    }
+    return value;
+  }
+
+  /**
+   * Single-stage `$set` update of a CatalogProduct, bypassing Prisma's
+   * pipeline-style update that explodes into one stage per field. Required
+   * because MongoDB Atlas caps update aggregation pipelines at 50 stages,
+   * and our CatalogProduct schema mirrors FUGA's full payload (~60 fields).
+   *
+   * `data` is shaped like a Prisma update payload: plain JS object with
+   * BigInt / Date / nested objects. We convert to Mongo extended JSON and
+   * issue a raw `update` command with a single `$set` stage.
+   */
+  private async atomicUpdateCatalogProduct(id: string, data: Record<string, any>): Promise<void> {
+    const $set: Record<string, any> = {};
+    for (const [k, v] of Object.entries(data)) {
+      if (v === undefined) continue;
+      $set[k] = this.toMongoExtendedJson(v);
+    }
+    if (Object.keys($set).length === 0) return;
+    await this.prisma.$runCommandRaw({
+      update: 'CatalogProduct',
+      updates: [
+        {
+          q: { _id: { $oid: id } },
+          u: { $set },
+          multi: false,
+        },
+      ],
+    } as any);
+  }
+
+  /**
+   * Same as atomicUpdateCatalogProduct, for CatalogAsset.
+   */
+  private async atomicUpdateCatalogAsset(id: string, data: Record<string, any>): Promise<void> {
+    const $set: Record<string, any> = {};
+    for (const [k, v] of Object.entries(data)) {
+      if (v === undefined) continue;
+      $set[k] = this.toMongoExtendedJson(v);
+    }
+    if (Object.keys($set).length === 0) return;
+    await this.prisma.$runCommandRaw({
+      update: 'CatalogAsset',
+      updates: [
+        {
+          q: { _id: { $oid: id } },
+          u: { $set },
+          multi: false,
+        },
+      ],
+    } as any);
   }
 
   private toRawDropboxUrl(url: string | null | undefined): string | null {
