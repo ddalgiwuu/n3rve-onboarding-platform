@@ -172,7 +172,6 @@ export class ExternalService {
       artistTranslations: dto.artistTranslations || {},
       socialLinks: dto.socialLinks || {},
       members: dto.members || [],
-      marketing: dto.marketing || {},
       createdAt: new Date(),
       updatedAt: new Date(),
       files: { set: {
@@ -298,13 +297,25 @@ export class ExternalService {
     };
 
     if (existing) {
-      // Update existing submission
+      // Update existing submission.
+      //
+      // Marketing handling: omit `marketing` from the update payload when the
+      // caller did not provide it. If provided, shallow-merge with the existing
+      // marketing object so partial updates do not wipe sibling fields (e.g.
+      // FUGA Score sync state, user-entered marketing). Top-level keys replace;
+      // we intentionally do not deep-merge to avoid surprising array/object
+      // union semantics.
+      const updateData: any = {
+        ...submissionData,
+        updatedAt: new Date(),
+      };
+      if (dto.marketing !== undefined) {
+        const currentMarketing = (existing.marketing as any) || {};
+        updateData.marketing = { ...currentMarketing, ...dto.marketing };
+      }
       const updated = await this.prisma.submission.update({
         where: { id: existing.id },
-        data: {
-          ...submissionData,
-          updatedAt: new Date(),
-        },
+        data: updateData,
       });
       return { action: 'updated', submissionId: updated.id, dropboxPath };
     } else {
@@ -324,6 +335,7 @@ export class ExternalService {
       const created = await this.prisma.submission.create({
         data: {
           ...submissionData,
+          marketing: dto.marketing || {},
           submitterId: submitter.id,
         },
       });
