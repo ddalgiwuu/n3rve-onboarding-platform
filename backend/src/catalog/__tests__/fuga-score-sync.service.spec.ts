@@ -22,6 +22,7 @@ describe('FugaScoreSyncService', () => {
     dbCookie?: string | null;
     envCookie?: string | null;
     submissions?: any[];
+    slackWebhook?: string;
   } = {}) {
     const prisma: any = {
       softrSession: {
@@ -36,10 +37,18 @@ describe('FugaScoreSyncService', () => {
       submission: {
         findMany: jest.fn().mockResolvedValue(opts.submissions || []),
       },
+      syncRun: {
+        create: jest.fn().mockResolvedValue({ id: 'run1' }),
+        findMany: jest.fn().mockResolvedValue([]),
+      },
       $runCommandRaw: jest.fn().mockResolvedValue({ ok: 1, nModified: 1 }),
     };
+    const envMap: Record<string, any> = {
+      SOFTR_SESSION_COOKIE: opts.envCookie,
+      SLACK_WEBHOOK_URL_OPS: opts.slackWebhook,
+    };
     const configService: any = {
-      get: jest.fn((key: string) => (key === 'SOFTR_SESSION_COOKIE' ? opts.envCookie : undefined)),
+      get: jest.fn((key: string) => envMap[key]),
     };
     return { svc: new FugaScoreSyncService(prisma, configService), prisma };
   }
@@ -286,6 +295,114 @@ describe('FugaScoreSyncService', () => {
       expect(result.status).toBe('PARTIAL'); // zero items returned
       expect(fetchMock).toHaveBeenCalledTimes(2);
       expect(fetchMock.mock.calls[1][1].headers.Cookie).toBe('fresh');
+    });
+  });
+
+  // ==================== SYNC RUN PERSISTENCE ====================
+
+  describe('SyncRun persistence', () => {
+    it('persists SyncRun row with counters on non-dry runs', async () => {
+      const { svc, prisma } = makeService({
+        dbCookie: 'c',
+        submissions: [{ id: 'sub1', albumTitle: 'X', labelName: 'L', release: { upc: '111' } }],
+      });
+      fetchMock.mockResolvedValueOnce(okResponse([
+        softrProject({ 'Product UPCs - Unique': '111', 'Elevator Pitch': 'p' }),
+      ]));
+
+      await svc.runSync({ source: 'cron' });
+      // persistSyncRun is fire-and-forget — wait a tick.
+      await new Promise((r) => setImmediate(r));
+
+      expect(prisma.syncRun.create).toHaveBeenCalledTimes(1);
+      const row = prisma.syncRun.create.mock.calls[0][0].data;
+      expect(row.type).toBe('FUGA_SCORE');
+      expect(row.source).toBe('cron');
+      expect(row.status).toBe('SUCCESS');
+      expect(row.updated).toBe(1);
+      expect(row.errorCount).toBe(0);
+    });
+
+    it('does NOT persist SyncRun for dry runs', async () => {
+      const { svc, prisma } = makeService({
+        dbCookie: 'c',
+        submissions: [{ id: 'sub1', albumTitle: 'X', labelName: 'L', release: { upc: '111' } }],
+      });
+      fetchMock.mockResolvedValueOnce(okResponse([
+        softrProject({ 'Product UPCs - Unique': '111', 'Elevator Pitch': 'p' }),
+      ]));
+
+      await svc.runSync({ source: 'admin', dryRun: true });
+      await new Promise((r) => setImmediate(r));
+
+      expect(prisma.syncRun.create).not.toHaveBeenCalled();
+    });
+
+    it('getLatestSyncRun returns most recent row', async () => {
+      const { svc, prisma } = makeService({});
+      prisma.syncRun.findMany.mockResolvedValueOnce([
+        { id: 'recent', startedAt: new Date(), status: 'SUCCESS' },
+      ]);
+      const result = await svc.getLatestSyncRun();
+      expect(result?.id).toBe('recent');
+      expect(prisma.syncRun.findMany.mock.calls[0][0]).toMatchObject({
+        where: { type: 'FUGA_SCORE' },
+        orderBy: { startedAt: 'desc' },
+        take: 1,
+      });
+    });
+  });
+
+  // ==================== ALERTS ====================
+
+  describe('alerts', () => {
+    it('AUTH_ERROR with webhook configured: posts to Slack', async () => {
+      const { svc } = makeService({
+        dbCookie: 'stale',
+        slackWebhook: 'https://hooks.slack.example/x',
+      });
+      // first fetch: 401 (sync auth fails)
+      fetchMock.mockResolvedValueOnce(status401Response());
+      // alert fetch: also intercepted by the same mock
+      fetchMock.mockResolvedValueOnce({ status: 200, json: jest.fn().mockResolvedValue({}) });
+
+      await svc.runSync({ source: 'cron' });
+      await new Promise((r) => setImmediate(r));
+
+      // 2 fetches: one for Softr (401), one for Slack
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      const slackCall = fetchMock.mock.calls[1];
+      expect(slackCall[0]).toBe('https://hooks.slack.example/x');
+      expect(slackCall[1].method).toBe('POST');
+    });
+
+    it('AUTH_ERROR without webhook: no Slack call, sync result still AUTH_ERROR', async () => {
+      const { svc } = makeService({ dbCookie: 'stale' /* no slackWebhook */ });
+      fetchMock.mockResolvedValueOnce(status401Response());
+
+      const result = await svc.runSync({ source: 'cron' });
+      await new Promise((r) => setImmediate(r));
+
+      expect(result.status).toBe('AUTH_ERROR');
+      // Only the Softr fetch happened — no Slack call.
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('SUCCESS status: does NOT alert', async () => {
+      const { svc } = makeService({
+        dbCookie: 'c',
+        slackWebhook: 'https://hooks.slack.example/x',
+        submissions: [{ id: 'sub1', albumTitle: 'X', labelName: 'L', release: { upc: '111' } }],
+      });
+      fetchMock.mockResolvedValueOnce(okResponse([
+        softrProject({ 'Product UPCs - Unique': '111', 'Elevator Pitch': 'p' }),
+      ]));
+
+      await svc.runSync({ source: 'cron' });
+      await new Promise((r) => setImmediate(r));
+
+      // Only the Softr fetch, no Slack on success.
+      expect(fetchMock).toHaveBeenCalledTimes(1);
     });
   });
 

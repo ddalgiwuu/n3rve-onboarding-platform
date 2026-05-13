@@ -202,6 +202,86 @@ export class FugaScoreSyncService {
     return this.finalizeRun({ status, source: opts.source, dryRun, startedAt, counters, errors });
   }
 
+  // ==================== SYNC RUN PERSISTENCE ====================
+
+  /**
+   * Most recent SyncRun row for the FUGA_SCORE type. Surfaced by the admin
+   * GET /admin/sync/fuga-score/status endpoint and the stale-sync alert.
+   */
+  async getLatestSyncRun(): Promise<any | null> {
+    try {
+      const rows = await this.prisma.syncRun.findMany({
+        where: { type: 'FUGA_SCORE' },
+        orderBy: { startedAt: 'desc' },
+        take: 1,
+      });
+      return rows[0] || null;
+    } catch (err) {
+      this.logger.warn(`Failed to read SyncRun: ${(err as Error).message}`);
+      return null;
+    }
+  }
+
+  private async persistSyncRun(result: RunSyncResult): Promise<void> {
+    try {
+      await this.prisma.syncRun.create({
+        data: {
+          type: 'FUGA_SCORE',
+          source: result.source,
+          status: result.status,
+          dryRun: result.dryRun,
+          startedAt: result.startedAt,
+          endedAt: result.endedAt,
+          fetched: result.counters.fetched,
+          matched: result.counters.matched,
+          updated: result.counters.updated,
+          ambiguous: result.counters.ambiguous,
+          noMatch: result.counters.noMatch,
+          errorCount: result.counters.errors,
+          errors: result.errors,
+        },
+      });
+    } catch (err) {
+      // Non-fatal — telemetry should never block the actual sync result.
+      this.logger.warn(`Failed to persist SyncRun: ${(err as Error).message}`);
+    }
+  }
+
+  /**
+   * Optional Slack notification for failure conditions. If
+   * `SLACK_WEBHOOK_URL_OPS` is not configured, this degrades to a WARN log
+   * line — SyncRun.status remains the authoritative state record either way.
+   */
+  private async maybeAlert(result: RunSyncResult): Promise<void> {
+    const shouldAlert =
+      result.status === 'AUTH_ERROR' ||
+      result.status === 'FAILED' ||
+      (result.status === 'PARTIAL' && result.counters.fetched === 0);
+    if (!shouldAlert) return;
+
+    const webhook = this.configService.get<string>('SLACK_WEBHOOK_URL_OPS');
+    const summary =
+      `*FUGA Score sync ${result.status}* (source=${result.source})\n` +
+      `Counters: fetched=${result.counters.fetched}, matched=${result.counters.matched}, ` +
+      `updated=${result.counters.updated}, errors=${result.counters.errors}\n` +
+      (result.errors.length ? `First error: ${result.errors[0]}` : '');
+
+    if (!webhook) {
+      this.logger.warn(`[FugaScoreSync] alert suppressed (no SLACK_WEBHOOK_URL_OPS): ${result.status}`);
+      return;
+    }
+
+    try {
+      await fetch(webhook, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: summary }),
+      });
+    } catch (err) {
+      this.logger.warn(`Slack alert post failed: ${(err as Error).message}`);
+    }
+  }
+
   // ==================== MATCHING ====================
 
   private matchProject(
@@ -430,6 +510,11 @@ export class FugaScoreSyncService {
         `ambiguous=${result.counters.ambiguous}, noMatch=${result.counters.noMatch}, ` +
         `errors=${result.counters.errors}) in ${endedAt.getTime() - result.startedAt.getTime()}ms`,
     );
+    // Persist + alert are fire-and-forget — telemetry never blocks the result.
+    if (!result.dryRun) {
+      void this.persistSyncRun(result);
+    }
+    void this.maybeAlert(result);
     return result;
   }
 
