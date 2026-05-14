@@ -682,12 +682,29 @@ export class CatalogService {
           recordingLocation: asset.recordingLocation,
           countryOfRecording: asset.countryOfRecording,
           assetCatalogTier: asset.assetCatalogTier,
-          audio: asset.audio,
+          // audio: normalized to camelCase + enriched from originalEncodings
+          // (FUGA's `audio` dict is shallow snake_case; UI reads asset.audio?.sampleRate
+          // / .bitDepth / .format / .size / .duration / etc).
+          audio:
+            asset.audio || (asset.originalEncodings && asset.originalEncodings.length > 0)
+              ? {
+                  ...asset.audio,
+                  sampleRate: this.firstAudioField(asset, 'samplingRate', 'sampling_rate'),
+                  bitDepth: this.firstAudioField(asset, 'bitDepth', 'bit_depth'),
+                  numberOfChannels: this.firstAudioField(asset, 'numberOfChannels', 'number_of_channels'),
+                  fileSize: this.firstAudioField(asset, 'fileSize', 'file_size'),
+                  mimeType: this.firstAudioField(asset, 'mimeType', 'mime_type'),
+                  format: this.firstAudioField(asset, 'mimeType', 'mime_type'),
+                  filename: asset.audio?.original_filename || asset.audio?.filename || null,
+                  vaultHook: asset.audio?.vault_hook || asset.audio?.vaultHook || null,
+                  hasUploaded: asset.audio?.has_uploaded ?? asset.audio?.hasUploaded ?? null,
+                }
+              : null,
           originalEncodings: asset.originalEncodings,
           artists: asset.artists?.map((a: any) => ({ ...a, fugaId: a.fugaId?.toString() })),
           contributors: asset.contributors?.map((c: any) => ({ ...c, personId: c.personId?.toString() })),
           publishers: asset.publishers,
-          audioFileInfo: asset.audioFileInfo,
+          // (audioFileInfo normalized below — see {filename, size, mimeType, ...} block)
           dolbyAtmosFileInfo: asset.dolbyAtmosFileInfo,
           availableSeparately: asset.availableSeparately,
           allowPreorder: asset.allowPreorder,
@@ -713,13 +730,85 @@ export class CatalogService {
           producer: matchedTrack?.producer || null,
           mixer: matchedTrack?.mixer || null,
           masterer: matchedTrack?.masterer || null,
-          dolbyAtmos: matchedTrack?.dolbyAtmos || false,
-          sampleRate: matchedTrack?.sampleRate || null,
-          bitDepth: matchedTrack?.bitDepth || null,
-          audioFormat: matchedTrack?.audioFormat || null,
-          previewStart: matchedTrack?.previewStart || null,
+          dolbyAtmos: matchedTrack?.dolbyAtmos || !!asset.dolbyAtmosFileInfo || false,
+          // Audio technical metadata: prefer submission track values (user-
+          // entered), then derive from FUGA's originalEncodings (rich, real)
+          // → asset.audio. originalEncodings is an array of {bitDepth,
+          // samplingRate, fileSize, mimeType, originalFilename, vaultItem...}
+          // straight from FUGA. Pick the first entry as the canonical audio.
+          sampleRate:
+            matchedTrack?.sampleRate ||
+            this.firstAudioField(asset, 'samplingRate', 'sampling_rate') ||
+            null,
+          bitDepth:
+            matchedTrack?.bitDepth ||
+            this.firstAudioField(asset, 'bitDepth', 'bit_depth') ||
+            null,
+          audioFormat:
+            matchedTrack?.audioFormat ||
+            this.firstAudioField(asset, 'mimeType', 'mime_type') ||
+            null,
+          numberOfChannels:
+            this.firstAudioField(asset, 'numberOfChannels', 'number_of_channels') || null,
+          fileSize: this.firstAudioField(asset, 'fileSize', 'file_size') || null,
+          stereo:
+            ((): boolean | null => {
+              const ch = this.firstAudioField(asset, 'numberOfChannels', 'number_of_channels');
+              if (ch == null) return null;
+              return Number(ch) === 2;
+            })(),
+          // Normalized audioFileInfo for the UI: { filename, size, mimeType,
+          // duration, vaultHook } — flattens FUGA's heterogeneous shape.
+          audioFileInfo:
+            asset.audioFileInfo || asset.audio
+              ? {
+                  filename:
+                    asset.audioFileInfo?.filename ||
+                    asset.audioFileInfo?.original_filename ||
+                    asset.audio?.original_filename ||
+                    null,
+                  size:
+                    asset.audioFileInfo?.size ||
+                    asset.audioFileInfo?.file_size ||
+                    asset.audio?.file_size ||
+                    this.firstAudioField(asset, 'fileSize', 'file_size') ||
+                    null,
+                  mimeType:
+                    asset.audioFileInfo?.mimeType ||
+                    asset.audio?.mime_type ||
+                    this.firstAudioField(asset, 'mimeType', 'mime_type') ||
+                    null,
+                  duration:
+                    asset.audioFileInfo?.duration ||
+                    asset.audio?.duration ||
+                    null,
+                  vaultHook:
+                    asset.audioFileInfo?.vaultHook ||
+                    asset.audioFileInfo?.vault_hook ||
+                    asset.audio?.vault_hook ||
+                    null,
+                  hasUploaded:
+                    asset.audioFileInfo?.has_uploaded ??
+                    asset.audio?.has_uploaded ??
+                    null,
+                }
+              : null,
+          // previewStart: asset has authoritative value (FUGA preview_start),
+          // submission track is the fallback.
+          previewStart: asset.previewStart ?? matchedTrack?.previewStart ?? null,
           previewEnd: matchedTrack?.previewEnd || null,
           explicitContent: asset.parentalAdvisory || matchedTrack?.explicitContent || false,
+          // Asset-level type (TRACK / VIDEO) — frontend reads as `asset.trackType`
+          trackType: matchedTrack?.trackType || asset.assetType || null,
+          // Disc number from submission track (FUGA's `volume` is on asset.volume already)
+          discNumber: matchedTrack?.discNumber || null,
+          // Extra asset fields the UI surfaces in the preview/video card
+          videoHd: asset.videoHd || false,
+          videoPreviewImage: asset.videoPreviewImage || null,
+          assetState: asset.assetState || null,
+          musicalWork: asset.musicalWork || null,
+          previewReleaseDateTime: asset.previewReleaseDateTime || null,
+          previewReleaseDateTimeZone: asset.previewReleaseDateTimeZone || null,
           source: 'catalog',
         };
       });
@@ -2199,6 +2288,33 @@ export class CatalogService {
     // Treat 0 / NaN / Infinity as "no value" — recording_year=0 from FUGA
     // is meaningless and shouldn't be persisted as "0".
     if (typeof value === 'number' && Number.isFinite(value) && value !== 0) return String(value);
+    return null;
+  }
+
+  /**
+   * Read a single audio-technical field from FUGA's heterogeneous shapes.
+   *
+   * FUGA returns audio metadata in two places with different key cases:
+   *   - asset.audio       — flat dict, snake_case (bit_depth, sampling_rate, file_size, mime_type)
+   *   - asset.originalEncodings[*].vaultItem — camelCase (bitDepth, samplingRate, fileSize, mimeType)
+   *
+   * UI expects camelCase (asset.audio?.bitDepth etc). This helper looks at
+   * both shapes — first preferring originalEncodings (richer + present even
+   * when audio dict is missing), falling back to asset.audio. Pass both the
+   * camelCase and snake_case key names since FUGA uses both.
+   */
+  private firstAudioField(asset: any, camelKey: string, snakeKey: string): any {
+    const encodings = Array.isArray(asset?.originalEncodings) ? asset.originalEncodings : [];
+    for (const enc of encodings) {
+      const vault = enc?.vaultItem || enc;
+      const v = vault?.[camelKey] ?? vault?.[snakeKey];
+      if (v != null && v !== '') return v;
+    }
+    const audio = asset?.audio;
+    if (audio) {
+      const v = audio[camelKey] ?? audio[snakeKey];
+      if (v != null && v !== '') return v;
+    }
     return null;
   }
 
