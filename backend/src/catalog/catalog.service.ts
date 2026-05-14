@@ -1942,7 +1942,15 @@ export class CatalogService {
       audioLanguage: asset.audio_language || asset.audio_locale || null,
       youtubeShortPreview: asset.youtube_short_preview || false,
       previewLength: asset.preview_length || null,
-      previewStart: this.toIntOrNull(asset.preview_start),
+      // preview_start = 0 is a VALID value (preview begins at start of track)
+      // so we cannot use toIntOrNull which collapses 0 to null. Coerce
+      // explicitly, preserve 0, only null out genuine null/undefined/empty.
+      previewStart:
+        asset.preview_start === null ||
+        asset.preview_start === undefined ||
+        asset.preview_start === ''
+          ? null
+          : Number(asset.preview_start),
       previewReleaseDateTime: asset.preview_release_date_time || null,
       previewReleaseDateTimeZone: asset.preview_release_date_time_zone || null,
       assetReleaseDate: asset.asset_release_date || null,
