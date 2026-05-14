@@ -938,23 +938,56 @@ export class CatalogService {
       // Full files object from submission
       files: submission?.files || null,
 
-      // Release details extracted to top-level for easy access
-      copyrightHolder: (submission?.release as any)?.copyrightHolder || null,
-      copyrightYear: (submission?.release as any)?.copyrightYear || null,
-      productionHolder: (submission?.release as any)?.productionHolder || null,
-      productionYear: (submission?.release as any)?.productionYear || null,
+      // Release details extracted to top-level for easy access.
+      // For catalog-only products (no linked Submission) we fall back to the
+      // equivalent CatalogProduct fields so the admin detail page renders
+      // the data FUGA already gives us instead of showing all "미입력".
+      //   c/p line:    cLineText/cLineYear, pLineText/pLineYear
+      //   territories: catalogProduct.territories (full 255-territory list)
+      //   language:    catalogProduct.language (FUGA `language`)
+      //   format:      catalogProduct.releaseFormatType (SINGLE/ALBUM/EP)
+      // Fields with no catalog equivalent (priceType, territoryType,
+      // preOrderEnabled, previouslyReleased, motionArtwork, recordingCountry,
+      // selectedTimezone, hasSyncHistory) stay submission-only — they don't
+      // exist in the FUGA product payload.
+      copyrightHolder:
+        (submission?.release as any)?.copyrightHolder ||
+        catalogProduct?.cLineText ||
+        null,
+      copyrightYear:
+        (submission?.release as any)?.copyrightYear ||
+        ((catalogProduct as any)?.cLineYear != null ? String((catalogProduct as any).cLineYear) : null),
+      productionHolder:
+        (submission?.release as any)?.productionHolder ||
+        catalogProduct?.pLineText ||
+        null,
+      productionYear:
+        (submission?.release as any)?.productionYear ||
+        ((catalogProduct as any)?.pLineYear != null ? String((catalogProduct as any).pLineYear) : null),
       recordingCountry: (submission?.release as any)?.recordingCountry || null,
-      recordingLanguage: (submission?.release as any)?.recordingLanguage || null,
-      territories: (submission?.release as any)?.territories || null,
+      recordingLanguage:
+        (submission?.release as any)?.recordingLanguage ||
+        catalogProduct?.language ||
+        null,
+      territories:
+        (submission?.release as any)?.territories ||
+        catalogProduct?.territories ||
+        null,
       territoryType: (submission?.release as any)?.territoryType || null,
       priceType: (submission?.release as any)?.priceType || null,
       preOrderEnabled: (submission?.release as any)?.preOrderEnabled || false,
       previouslyReleased: (submission?.release as any)?.previouslyReleased || false,
-      releaseFormat: (submission?.release as any)?.releaseFormat || null,
+      releaseFormat:
+        (submission?.release as any)?.releaseFormat ||
+        catalogProduct?.releaseFormatType ||
+        null,
       releaseTime: catalogProduct?.consumerReleaseTime || (submission?.release as any)?.releaseTime || null,
       selectedTimezone: (submission?.release as any)?.selectedTimezone || null,
       hasSyncHistory: (submission?.release as any)?.hasSyncHistory || false,
       motionArtwork: (submission?.release as any)?.motionArtwork || false,
+      // (albumNotes / courtesyLine / labelCopyInfo / metadataLanguage /
+      //  isCompilation / parentalAdvisory are already mapped earlier in
+      //  this object with catalog fallback — see lines 848-864.)
 
       // Files — submission has priority, catalog.coverArtUrl is the fallback
       // for FUGA-only products that were never submitted through n3rve.
