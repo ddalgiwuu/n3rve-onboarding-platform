@@ -1784,14 +1784,23 @@ export class CatalogService {
         spotifyUrl: a.spotify_url,
         appleMusicUrl: a.apple_music_url,
       })),
-      contributors: (asset.contributors || []).map((c: any) => ({
-        personId: BigInt(c.person_id),
-        name: c.name,
-        roleId: c.role_id,
-        role: c.role,
-        spotifyUrl: c.spotify_url !== '없음' ? c.spotify_url : null,
-        appleMusicUrl: c.apple_music_url !== '없음' ? c.apple_music_url : null,
-      })),
+      // FUGA returns contributors as { id, person: {id, name}, role: {id, name} }
+      // — NOT the flat shape `c.person_id` / `c.role_id` the old mapper assumed.
+      // Reading `c.person_id` always yielded undefined, and `BigInt(undefined)`
+      // threw, which caused every upsertAsset call to silently fail. Result:
+      // lyrics, contributors, language and every other rich asset field were
+      // never persisted even though FUGA was returning them.
+      // Filter out entries where person.id is missing rather than throwing.
+      contributors: (asset.contributors || [])
+        .filter((c: any) => c?.person?.id != null)
+        .map((c: any) => ({
+          personId: BigInt(c.person.id),
+          name: c.person?.name || '',
+          roleId: typeof c.role === 'object' ? (c.role?.id || '') : (c.role_id || ''),
+          role: typeof c.role === 'object' ? (c.role?.name || '') : (c.role || ''),
+          spotifyUrl: c.spotify_url && c.spotify_url !== '없음' ? c.spotify_url : null,
+          appleMusicUrl: c.apple_music_url && c.apple_music_url !== '없음' ? c.apple_music_url : null,
+        })),
       publishers: asset.publishers || null,
       audioFileInfo: asset.audio_file_info || asset.audio || null,
       dolbyAtmosFileInfo: asset.dolby_atmos_file || null,
@@ -1867,14 +1876,21 @@ export class CatalogService {
         }
       }
       for (const contributor of asset.contributors || []) {
-        if (!allArtists.find((a: any) => a.id === contributor.person_id)) {
+        // FUGA shape: { id, person: {id, name}, role: {id, name} }
+        const personId = contributor.person?.id ?? contributor.person_id;
+        const personName = contributor.person?.name ?? contributor.name;
+        const roleName = typeof contributor.role === 'object'
+          ? contributor.role?.name
+          : contributor.role;
+        if (personId == null) continue; // skip malformed entries instead of throwing
+        if (!allArtists.find((a: any) => a.id === personId)) {
           allArtists.push({
-            id: contributor.person_id,
-            name: contributor.name,
+            id: personId,
+            name: personName,
             spotify_url: contributor.spotify_url,
             apple_music_url: contributor.apple_music_url,
             _isContributor: true,
-            _role: contributor.role,
+            _role: roleName,
           });
         }
       }
