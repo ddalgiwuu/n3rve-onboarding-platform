@@ -765,7 +765,29 @@ export default function CatalogDetailPage() {
         <SubSection title={t('catalogDetail.distribution')} />
         <FieldGrid>
           <Field label="Territory Type" value={p.territoryType} />
-          <Field label="Territories" value={Array.isArray(p.territories) ? p.territories.join(', ') : p.territories} />
+          <Field
+            label="Territories"
+            value={(() => {
+              const t = p.territories;
+              if (!t) return undefined;
+              if (Array.isArray(t)) {
+                if (t.length === 0) return undefined;
+                // FUGA returns territories as {code, id, name} objects; older
+                // submission data was string array of codes. Normalize either
+                // shape to a short comma-separated label list, with "+N more"
+                // for the long FUGA worldwide-territory list (~255 entries).
+                const names = t.map((x: any) =>
+                  typeof x === 'string' ? x : x?.name || x?.code || x?.id || '',
+                ).filter(Boolean);
+                if (names.length === 0) return undefined;
+                if (names.length > 8) {
+                  return `${names.slice(0, 8).join(', ')} +${names.length - 8} more`;
+                }
+                return names.join(', ');
+              }
+              return String(t);
+            })()}
+          />
           <Field label="Is Compilation" value={p.isCompilation} />
           <Field label="Product Type" value={p.productType} />
           <Field label="Release Format" value={p.releaseFormatType} />

@@ -1099,19 +1099,50 @@ export class CatalogService {
       artists: await (async () => {
         const productArtists = catalogProduct?.artists || [];
         const fugaIds = productArtists.map((a: any) => a.fugaId).filter(Boolean).map((id: any) => BigInt(id));
-        const idMap = new Map<string, string>();
+        // Batch-load CatalogArtist rows so each product-artist gets the full
+        // profile (countryOfOrigin / bookingAgent / youtubeOac / biography /
+        // roles / spotifyId / appleMusicId / etc) the admin detail page reads.
+        // ARTIST type preferred when both ARTIST + CONTRIBUTOR rows exist.
+        const profileMap = new Map<string, any>();
         if (fugaIds.length > 0) {
           const dbArtists = await this.prisma.catalogArtist.findMany({
             where: { fugaId: { in: fugaIds } },
-            select: { fugaId: true, id: true },
           });
-          dbArtists.forEach(a => idMap.set(a.fugaId.toString(), a.id));
+          for (const a of dbArtists) {
+            const key = a.fugaId.toString();
+            const existing = profileMap.get(key);
+            if (!existing || (a.type === 'ARTIST' && existing.type !== 'ARTIST')) {
+              profileMap.set(key, a);
+            }
+          }
         }
-        return productArtists.map((a: any) => ({
-          ...a,
-          fugaId: a.fugaId?.toString(),
-          id: idMap.get(a.fugaId?.toString()) || null,
-        }));
+        return productArtists.map((a: any) => {
+          const key = a.fugaId?.toString();
+          const profile = profileMap.get(key);
+          return {
+            ...a,
+            fugaId: key,
+            id: profile?.id || null,
+            // Enriched profile fields the UI reads as p.artists[0].X
+            countryOfOrigin: profile?.countryOfOrigin || null,
+            bookingAgent: profile?.bookingAgent || null,
+            youtubeOac: profile?.youtubeOac || null,
+            biography: profile?.biography || null,
+            roles: profile?.roles || [],
+            // Identifier IDs at the artist level (alongside the URLs already
+            // on the product.artists ref). Spotify/Apple IDs come from
+            // CatalogArtist when FUGA returned an extracted value.
+            spotifyId: profile?.spotifyId || null,
+            appleMusicId: profile?.appleMusicId || null,
+            spotifyUrl: a.spotifyUrl || profile?.spotifyUrl || null,
+            appleMusicUrl: a.appleMusicUrl || profile?.appleMusicUrl || null,
+            // FUGA artist profile may carry these too
+            isni: profile?.isni || null,
+            ipn: profile?.ipn || null,
+            ipi: profile?.ipi || null,
+            type: profile?.type || 'ARTIST',
+          };
+        });
       })(),
 
       // Merged tracks/assets
