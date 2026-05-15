@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import catalogApi from '../lib/catalog-api';
+import FugaRawPanel from '../components/FugaRawPanel';
 import { formatDuration } from '../utils/format';
 import { useAudioPlayer } from '../contexts/AudioPlayerContext';
 import { useTranslation } from '../hooks/useTranslation';
@@ -1191,6 +1192,9 @@ export default function CatalogDetailPage() {
           </div>
         </Section>
       )}
+
+      {/* 100% FUGA parity fallback — every raw FUGA field, value or not */}
+      <FugaRawPanel raw={(p as any).fugaRaw} />
     </div>
   );
 }

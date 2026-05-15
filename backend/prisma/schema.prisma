@@ -677,6 +677,7 @@ model CatalogProduct {
   totalAssets          Int?
   fugaCreatedDate      String?            /// FUGA's product created_date (distinct from our DB createdAt)
   fugaModifiedDate     String?            /// FUGA's product modified_date (distinct from our DB updatedAt)
+  fugaRaw              Json?              /// VERBATIM FUGA /api/v2/products/{id} response. Guarantees 100% field parity — every key FUGA returns is here even if no curated column exists. Source of truth for the "FUGA Raw Fields" UI panel. Meta keys (actions/validation_rules/missing_fields/required_fields/hashed_key) are stripped before storage.
   // -----
   marketing            Json?              /// Marketing data for catalog-only products (no linked Submission). Mirrors Submission.marketing shape; populated by FugaScoreSyncService UPC-fallback path.
   marketingSyncedAt    DateTime?          @db.Date
@@ -773,6 +774,7 @@ model CatalogAsset {
   video                            Json?   /// FUGA asset `video` object ({has_uploaded})
   fugaCreatedDate                  String? /// FUGA asset created_date (distinct from our DB createdAt)
   fugaModifiedDate                 String? /// FUGA asset modified_date (distinct from our DB updatedAt)
+  fugaRaw                          Json?   /// VERBATIM FUGA asset payload (from /products/{id}/assets). 100% parity guarantee — see CatalogProduct.fugaRaw.
   // -----
   createdAt            DateTime             @default(now()) @db.Date
   updatedAt            DateTime             @updatedAt @db.Date
@@ -805,6 +807,7 @@ model CatalogArtist {
   organization          Json?    /// FUGA artist/person `organization` ({id, name})
   photo                 Json?    /// FUGA artist `photo` ({id, vault_hook, has_uploaded, ...})
   proprietaryId         String?  /// FUGA artist `proprietary_id`
+  fugaRaw               Json?    /// VERBATIM FUGA artist (/api/v2/artists/{id}) or person (/api/v2/people/{id}) payload. 100% parity guarantee — see CatalogProduct.fugaRaw.
   youtubeOac            String?
   melonUrl              String?
   bugsUrl               String?

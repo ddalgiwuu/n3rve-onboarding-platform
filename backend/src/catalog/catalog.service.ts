@@ -667,6 +667,7 @@ export class CatalogService {
           video: asset.video ?? null,
           fugaCreatedDate: asset.fugaCreatedDate ?? null,
           fugaModifiedDate: asset.fugaModifiedDate ?? null,
+          fugaRaw: asset.fugaRaw ?? null,
           genre: asset.genre,
           subgenre: asset.subgenre,
           alternateGenre: asset.alternateGenre,
@@ -1009,6 +1010,9 @@ export class CatalogService {
       totalAssets: (catalogProduct as any)?.totalAssets || null,
       fugaCreatedDate: (catalogProduct as any)?.fugaCreatedDate || null,
       fugaModifiedDate: (catalogProduct as any)?.fugaModifiedDate || null,
+      // Verbatim FUGA product payload — powers the "FUGA Raw Fields" UI panel
+      // so 100% of FUGA's fields are visible without per-field plumbing.
+      fugaRaw: (catalogProduct as any)?.fugaRaw || null,
       catalogCustomFields: (catalogProduct as any)?.customFields || null,
       catalogExtraFields: catalogProduct
         ? {
@@ -1152,6 +1156,7 @@ export class CatalogService {
             labels: profile?.labels || [],
             genres: profile?.genres || [],
             subgenres: profile?.subgenres || [],
+            fugaRaw: (profile as any)?.fugaRaw || null,
             type: profile?.type || 'ARTIST',
           };
         });
@@ -1901,6 +1906,10 @@ export class CatalogService {
       // when empty.
       fugaCreatedDate: product.created_date || null,
       fugaModifiedDate: product.modified_date || null,
+      // Verbatim FUGA payload (meta stripped). Guarantees 100% parity even
+      // for keys with no curated column — the "FUGA Raw Fields" UI panel
+      // renders straight off this.
+      fugaRaw: this.stripFugaMeta(product),
       syncedAt: new Date(),
       syncSource: 'nanoclaw',
     };
@@ -2028,6 +2037,7 @@ export class CatalogService {
       video: asset.video || null,
       fugaCreatedDate: asset.created_date || null,
       fugaModifiedDate: asset.modified_date || null,
+      fugaRaw: this.stripFugaMeta(asset),
       productId: product.id,
     };
 
@@ -2138,6 +2148,9 @@ export class CatalogService {
           spotifyDjMixesOptIn: detail?.spotify_dj_mixes_opt_in || artist.spotify_dj_mixes_opt_in || false,
           translations: detail?.translations || artist.translations || null,
           customIdentifiers: detail?.custom_identifiers || artist.custom_identifiers || null,
+          // Verbatim FUGA artist/person payload (detail preferred, falls back
+          // to the product.artists summary when detail fetch failed).
+          fugaRaw: this.stripFugaMeta(detail || artist),
           syncedAt: new Date(),
         };
 
@@ -2381,6 +2394,30 @@ export class CatalogService {
     // is meaningless and shouldn't be persisted as "0".
     if (typeof value === 'number' && Number.isFinite(value) && value !== 0) return String(value);
     return null;
+  }
+
+  /**
+   * Strip FUGA-internal meta keys from a raw payload before persisting it to
+   * the `fugaRaw` mirror column. These keys are FUGA workflow scaffolding
+   * (validation state, available UI actions, opaque refs) — not catalog
+   * metadata the user cares about, and some are large/noisy.
+   */
+  private stripFugaMeta(raw: any): any {
+    if (!raw || typeof raw !== 'object') return raw;
+    const META = new Set([
+      'actions',
+      'validation_rules',
+      'missing_fields',
+      'required_fields',
+      'hashed_key',
+      'last_review_item',
+    ]);
+    const out: Record<string, any> = {};
+    for (const [k, v] of Object.entries(raw)) {
+      if (META.has(k)) continue;
+      out[k] = v;
+    }
+    return out;
   }
 
   /**
