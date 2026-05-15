@@ -2062,29 +2062,55 @@ export class CatalogService {
         const spotifyUrl = artist.spotify_url && artist.spotify_url !== '없음' ? artist.spotify_url : null;
         const appleMusicUrl = artist.apple_music_url && artist.apple_music_url !== '없음' ? artist.apple_music_url : null;
 
+        // The product.artists payload only carries {id, name, primary, urls}.
+        // Fetch the FUGA detail endpoint to enrich:
+        //   - ARTIST  → GET /api/v2/artists/{id}  (genres/labels/subgenres/
+        //               photo/proprietary_id/biography/booking_agent/...)
+        //   - CONTRIB → GET /api/v2/people/{id}   (isni_code/ipn/ipi; the
+        //               artist endpoint 404s for a contributor person id)
+        // Detail may legitimately have null biography/country/etc when the
+        // label didn't fill the FUGA profile — non-fatal, we still capture
+        // genres/labels which FUGA does populate.
+        let detail: any = null;
+        try {
+          if (artist._isContributor) {
+            detail = await this.fugaApi.getPerson(String(artist.id));
+          } else {
+            detail = await this.fugaApi.getArtist(String(artist.id));
+          }
+        } catch (detailErr) {
+          this.logger.debug(
+            `Artist/person ${artist.id} detail fetch failed (non-fatal): ${(detailErr as Error).message}`,
+          );
+        }
+        const detailNames = (arr: any): string[] =>
+          Array.isArray(arr)
+            ? arr.map((x: any) => (typeof x === 'string' ? x : x?.name)).filter(Boolean)
+            : [];
+
         const data = {
           fugaId: BigInt(artist.id),
-          name: artist.name,
+          name: detail?.name || artist.name,
           type: (artist._isContributor ? 'CONTRIBUTOR' : 'ARTIST') as any,
           spotifyUrl,
           appleMusicUrl,
           spotifyId: spotifyUrl ? this.extractSpotifyId(spotifyUrl) : null,
           appleMusicId: appleMusicUrl ? this.extractAppleMusicId(appleMusicUrl) : null,
           roles: artist._role ? [artist._role] : [],
-          contactDetails: artist.contact_details || null,
-          bookingAgent: artist.booking_agent || null,
-          countryOfOrigin: artist.country_of_origin || null,
-          biography: artist.biography || null,
-          labels: artist.labels || [],
-          genres: artist.genres || [],
-          subgenres: artist.subgenres || [],
-          isni: artist.isni || null,
-          ipn: artist.ipn || null,
-          ipi: artist.ipi || null,
-          youtubeOac: artist.youtube_oac || null,
-          spotifyDjMixesOptIn: artist.spotify_dj_mixes_opt_in || false,
-          translations: artist.translations || null,
-          customIdentifiers: artist.custom_identifiers || null,
+          contactDetails: detail?.contact_details || artist.contact_details || null,
+          bookingAgent: detail?.booking_agent || artist.booking_agent || null,
+          countryOfOrigin: detail?.country_of_origin || artist.country_of_origin || null,
+          biography: detail?.biography || artist.biography || null,
+          labels: detail ? detailNames(detail.labels) : artist.labels || [],
+          genres: detail ? detailNames(detail.genres) : artist.genres || [],
+          subgenres: detail ? detailNames(detail.subgenres) : artist.subgenres || [],
+          isni: detail?.isni_code || artist.isni || null,
+          ipn: detail?.ipn || artist.ipn || null,
+          ipi: detail?.ipi || artist.ipi || null,
+          youtubeOac: detail?.youtube_oac || artist.youtube_oac || null,
+          spotifyDjMixesOptIn: detail?.spotify_dj_mixes_opt_in || artist.spotify_dj_mixes_opt_in || false,
+          translations: detail?.translations || artist.translations || null,
+          customIdentifiers: detail?.custom_identifiers || artist.custom_identifiers || null,
           syncedAt: new Date(),
         };
 

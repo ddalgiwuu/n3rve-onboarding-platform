@@ -500,6 +500,27 @@ export class FugaApiService {
   }
 
   /**
+   * Artist profile detail. Returns name/photo/labels/genres/subgenres/
+   * proprietary_id/organization plus biography/booking_agent/
+   * country_of_origin/isni_code/ipn (often null — depends on whether the
+   * label filled the FUGA artist profile). Used to enrich CatalogArtist
+   * beyond the bare {id,name,primary} the product payload carries.
+   */
+  async getArtist(artistId: string): Promise<any> {
+    return this.request('GET', `/api/v2/artists/${artistId}`);
+  }
+
+  /**
+   * Contributor "person" detail. NOTE: contributors are a separate FUGA
+   * entity from artists — /api/v2/artists/{personId} returns 404 for a
+   * contributor person id, /api/v2/people/{personId} is the correct path.
+   * Returns id/name/isni_code/ipn/ipi/organization.
+   */
+  async getPerson(personId: string): Promise<any> {
+    return this.request('GET', `/api/v2/people/${personId}`);
+  }
+
+  /**
    * Download a product's full-size cover image as a Buffer.
    * Returns null if the product has no uploaded cover or the endpoint returns
    * a non-image response. Uses the same auth source as the JSON API (DB
