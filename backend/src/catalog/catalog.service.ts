@@ -2052,10 +2052,18 @@ export class CatalogService {
     });
 
     if (existing) {
+      // Immutable identity (fugaId, productId) is the @@unique key. The raw
+      // $set path does NOT apply Prisma's @db.ObjectId coercion, so re-setting
+      // productId here writes it back as a plain string; that collides with the
+      // legacy string-typed duplicate row under CatalogAsset_fugaId_productId_key
+      // and MongoDB rejects the whole update with E11000 (silent until the
+      // result is asserted below). Identity is set on create only — never
+      // rewritten on update.
+      const { fugaId: _fugaId, productId: _productId, ...updateData } = data;
       // Same Atlas 50-stage pipeline limit as CatalogProduct above — see
       // atomicUpdateCatalogProduct comment. CatalogAsset is even wider after
       // the FUGA-mirror schema expansion, so this MUST be a raw single-$set.
-      await this.atomicUpdateCatalogAsset(existing.id, data);
+      await this.atomicUpdateCatalogAsset(existing.id, updateData);
     } else {
       await this.prisma.catalogAsset.create({ data });
     }
@@ -2524,7 +2532,10 @@ export class CatalogService {
       $set[k] = this.toMongoExtendedJson(v);
     }
     if (Object.keys($set).length === 0) return;
-    await this.prisma.$runCommandRaw({
+    // Prisma's @updatedAt is bypassed by raw commands — set it explicitly so
+    // a successful write is observable.
+    $set.updatedAt = this.toMongoExtendedJson(new Date());
+    const res: any = await this.prisma.$runCommandRaw({
       update: 'CatalogAsset',
       updates: [
         {
@@ -2534,6 +2545,13 @@ export class CatalogService {
         },
       ],
     } as any);
+    // $runCommandRaw does NOT throw on write-level failures (e.g. E11000) —
+    // it returns { ok, n, nModified, writeErrors }. Without this assertion the
+    // whole update can be silently rejected and the caller never knows.
+    if (res?.ok !== 1 || (res?.writeErrors && res.writeErrors.length > 0) || res?.n < 1) {
+      const detail = res?.writeErrors?.[0]?.errmsg || JSON.stringify(res);
+      throw new Error(`atomicUpdateCatalogAsset ${id} failed: ${detail}`);
+    }
   }
 
   private toRawDropboxUrl(url: string | null | undefined): string | null {
