@@ -663,6 +663,10 @@ export class CatalogService {
           version: asset.version,
           duration: asset.duration,
           sequence: asset.sequence,
+          volume: asset.volume ?? null,
+          video: asset.video ?? null,
+          fugaCreatedDate: asset.fugaCreatedDate ?? null,
+          fugaModifiedDate: asset.fugaModifiedDate ?? null,
           genre: asset.genre,
           subgenre: asset.subgenre,
           alternateGenre: asset.alternateGenre,
@@ -1003,6 +1007,8 @@ export class CatalogService {
       organization: (catalogProduct as any)?.organization || null,
       suborgOwners: (catalogProduct as any)?.suborgOwners || null,
       totalAssets: (catalogProduct as any)?.totalAssets || null,
+      fugaCreatedDate: (catalogProduct as any)?.fugaCreatedDate || null,
+      fugaModifiedDate: (catalogProduct as any)?.fugaModifiedDate || null,
       catalogCustomFields: (catalogProduct as any)?.customFields || null,
       catalogExtraFields: catalogProduct
         ? {
@@ -1140,6 +1146,12 @@ export class CatalogService {
             isni: profile?.isni || null,
             ipn: profile?.ipn || null,
             ipi: profile?.ipi || null,
+            organization: profile?.organization || null,
+            photo: profile?.photo || null,
+            proprietaryId: profile?.proprietaryId || null,
+            labels: profile?.labels || [],
+            genres: profile?.genres || [],
+            subgenres: profile?.subgenres || [],
             type: profile?.type || 'ARTIST',
           };
         });
@@ -1884,6 +1896,11 @@ export class CatalogService {
         spotifyUrl: a.spotify_url,
         appleMusicUrl: a.apple_music_url,
       })),
+      // FUGA's own timestamps (distinct from our DB createdAt/updatedAt which
+      // track when WE synced). User mandate: mirror every FUGA field even
+      // when empty.
+      fugaCreatedDate: product.created_date || null,
+      fugaModifiedDate: product.modified_date || null,
       syncedAt: new Date(),
       syncSource: 'nanoclaw',
     };
@@ -2005,6 +2022,12 @@ export class CatalogService {
       assetType: asset.type || null,
       videoHd: !!asset.video_hd,
       videoPreviewImage: asset.video_preview_image || null,
+      // FUGA fields previously dropped — user mandate: mirror everything.
+      // `volume` is read directly by the track-detail UI (asset.volume).
+      volume: this.toIntOrNull(asset.volume),
+      video: asset.video || null,
+      fugaCreatedDate: asset.created_date || null,
+      fugaModifiedDate: asset.modified_date || null,
       productId: product.id,
     };
 
@@ -2107,6 +2130,10 @@ export class CatalogService {
           isni: detail?.isni_code || artist.isni || null,
           ipn: detail?.ipn || artist.ipn || null,
           ipi: detail?.ipi || artist.ipi || null,
+          // FUGA artist/person fields previously dropped — mirror all.
+          organization: detail?.organization || artist.organization || null,
+          photo: detail?.photo || artist.photo || null,
+          proprietaryId: detail?.proprietary_id || artist.proprietary_id || null,
           youtubeOac: detail?.youtube_oac || artist.youtube_oac || null,
           spotifyDjMixesOptIn: detail?.spotify_dj_mixes_opt_in || artist.spotify_dj_mixes_opt_in || false,
           translations: detail?.translations || artist.translations || null,
