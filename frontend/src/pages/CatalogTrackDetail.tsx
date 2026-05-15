@@ -8,6 +8,7 @@ import {
 import catalogApi from '../lib/catalog-api';
 import { formatDuration } from '../utils/format';
 import type { CatalogContributor } from '../types/catalog';
+import FugaRawPanel from '../components/FugaRawPanel';
 
 /* ─── Field Components ─── */
 
@@ -756,6 +757,9 @@ export default function CatalogTrackDetail() {
             )}
           </Section>
         )}
+
+        {/* 100% FUGA parity — every raw asset field, value or not */}
+        <FugaRawPanel raw={(asset as any).fugaRaw} label="FUGA Raw Fields (Track)" />
 
         <div className="h-8" />
       </div>
